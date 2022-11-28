@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.interfaces" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.SIZE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.SIZE.CODE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds />
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.SIZE.NIF" />
+        <java-class>com.als.cpp.metrics.InterfacesCppMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.SIZE.NIF" />
+        <java-class>com.optimyth.csharp.metrics.InterfacesCsharpMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.SIZE.NIF" />
+        <java-class>com.als.java.metrics.InterfacesJavaMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.SIZE.NIF" />
+        <java-class>com.optimyth.vbnet.metrics.InterfacesVBnetMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+
+    </implementations>
+
+      <!-- Code examples for each language parser -->
+    <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <code-example name="metricCodeExampleCpp" result-value="1">
+<![CDATA[
+class Interface{                                  //INTERFACE 1
+    public:  
+        virtual int method(int param) const = 0;  
+        virtual ~Interface(){};  
+};  
+  
+class ClassA : public Interface{  
+    public:  
+        int method(int param) const{return param+1;};  
+};  
+  
+class ClassB : public Interface{  
+    public:  
+        int method(int param) const{return param+2;};  
+};  
+]]>
+        </code-example>
+      </language-parser>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="metricCodeExampleCsharp" result-value="1">
+<![CDATA[
+interface ISampleInterface                            //INTERFACE 1
+{
+    void SampleMethod();
+}
+
+class ImplementationClass : ISampleInterface
+{
+    // Explicit interface member implementation: 
+    void ISampleInterface.SampleMethod()
+    {
+        // Method implementation.
+    }
+
+    static void Main()
+    {
+        // Declare an interface instance.
+        ISampleInterface obj = new ImplementationClass();
+
+        // Call the member.
+        obj.SampleMethod();
+    }
+}
+]]>
+        </code-example>
+      </language-parser>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="metricCodeExampleJava" result-value="1">
+<![CDATA[
+interface InstrumentoMusical {                     //INTERFACE 1
+    void tocar();
+    void afinar();
+    String tipoInstrumento();
+}
+class InstrumentoViento extends Object implements InstrumentoMusical {
+    void tocar() {  };
+    void afinar() { };
+    String tipoInstrumento() {}
+}
+
+class Guitarra extends InstrumentoViento {
+    String tipoInstrumento() {
+        return "Guitarra";
+    }
+}   
+]]>
+        </code-example>
+      </language-parser>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="metricCodeExampleVbnet" result-value="2">
+<![CDATA[ 
+Public Interface ISerializable                             'INTERFACE 1
+
+    Function Save() As Boolean
+
+End Interface
+
+Interface Encryption                                       'INTERFACE 2
+   Function Encrypt(ByVal estring As String) As String
+   Function Decrypt(ByVal dstring As String) As String
+   Property EncryptionBits() As Integer
+   Event FinishedDecoding(ByVal RetVal As Integer)
+End Interface
+]]>
+        </code-example>
+      </language-parser>
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Interfaces]]></name>
+      
+      <description>
+<![CDATA[
+Esta métrica mide el número de interfaces definidas. Las interfaces describen un grupo de funcionalidades relacionadas que pueden pertenecer a cualquier clase o struct. Pueden consistir en métodos, propiedades, eventos, indexadores o una combinación de todos ellos. Los componentes de un interfaz son automáticamente públicos.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Suma de todas las interfaces definidas en un mismo fichero. Entendemos interfaz como clase 'abstracta': Una clase abstracta es una clase diseñada específicamente para ser usada como clase base. Una clase abstracta contiene al menos una función virtual pura. Se declara una función virtual pura utilizando el especificador puro (=0) en la declaración de un miembro función virtual en la declaración de la clase.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Suma de todas las interfaces "public", "protected", "private" o "internal" (independientemente de los modificadores adicionales "static", "sealed", etc...) definidas en un mismo fichero. Se tienen en cuenta las posibles interfaces internas.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Suma de todas las interfaces "public", "protected", "private" o "package" (independientemente de los modificadores adicionales "static", "final", etc...)  definidas en un mismo fichero. Se tienen en cuenta las posibles interfaces internas.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Suma de todas las interfaces "Public", "Protected", "Private" o "Friend" (independientemente de los modificadores adicionales "NotInheritable", "Shared", etc...) definidas en un mismo fichero. Se tienen en cuenta las posibles interfaces internas.
+]]>
+            </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Interfaces]]></name>
+      
+      <description>
+<![CDATA[
+This metric measures the number of defined interfaces. Interfaces describe a group of related functionalities that can belong to any class or struct. Interfaces can consist of methods, properties, events, indexers, or any combination of those four member types. Interfaces members are automatically public.
+]]>
+        </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Counts all the interfaces defined in the same file. We understand interface as an 'abstract' class. An abstract class is a class that is designed to be specifically used as a base class. An abstract class contains at least one pure virtual function. You declare a pure virtual function by using a pure specifier (= 0) in the declaration of a virtual member function in the class declaration.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Counts all the interfaces "public", "protected", "private" or "internal" (regardless the additional modifiers "static", "sealed", etc ...) defined in the same file. Possible internal interfaces are taken into account.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Counts all the interfaces "public", "protected", "private" or "internal" (regardless the additional modifiers "static", "sealed", etc ...) defined in the same file. Possible internal interfaces are taken into account.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Counts all the interfaces "Public", "Protected", "Private" or "Friend" (regardless the additional modifiers "NotInheritable", "Shared", etc ...) defined in the same file. Possible internal interfaces are taken into account.
+]]>
+            </implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

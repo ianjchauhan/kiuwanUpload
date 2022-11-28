@@ -1,0 +1,574 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="apache.hadoop" standard="Apache_Hadoop" technology="java">
+  <description url="https://hadoop.apache.org">Framework for scalable distributed computing</description>
+
+  <!-- https://hadoop.apache.org/docs/current/api/index.html -->
+
+  <module name="hadoop.conf" >
+    <class name="org.apache.hadoop.conf.Configured" >
+      <method name="getConf" signature="getConf()" >
+        <return type="org.apache.hadoop.conf.Configuration" />
+      </method>
+    </class>
+
+    <class name="org.apache.hadoop.conf.Configuration" >
+      <method name="getResource" signature="getResource(java.lang.String" >
+        <return type="java.net.URL" />
+      </method>
+      <method name="getSocketAddr" signature="getSocketAddr(java.lang.String,java.lang.String,int)" >
+        <return type="java.net.InetSocketAddress" />
+      </method>
+      <method name="getSocketAddr" signature="getSocketAddr(java.lang.String,java.lang.String,java.lang.String,int)" >
+        <return type="java.net.InetSocketAddress" />
+      </method>
+      <method name="setPattern" signature="setPattern(java.lang.String,java.util.regex.Pattern)" >
+        <sink kind="configuration_setting_injection" argpos="1" resource="other" />
+      </method>
+      <method name="setSocketAddr" signature="setSocketAddrd(java.lang.String,java.net.InetSocketAddress)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="network" />
+      </method>
+      <method name="updateConnectAddr" signature="updateConnectAddr(java.lang.String,java.net.InetSocketAddress)" >
+        <sink kind="ssrf" argpos="1" resource="network" />
+        <sink kind="insecure_transport" argpos="1" resource="web" />
+      </method>
+      <method name="updateConnectAddr" signature="updateConnectAddr(java.lang.String,java.lang.String,java.lang.String,java.net.InetSocketAddress)" >
+        <sink kind="ssrf" argpos="3" resource="network" />
+        <sink kind="insecure_transport" argpos="3" resource="web" />
+      </method>
+    </class>
+  </module>
+
+  <module name="hadoop.fs" >
+    <class name="org.apache.hadoop.fs.FileSystem" supertypes="org.apache.hadoop.conf.Configured" >
+      <method name="concat" signature="concat(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path[])" />
+      <method name="copyFromLocalFile" signature="copyFromLocalFile(boolean,boolean,org.apache.hadoop.fs.Path[],org.apache.hadoop.fs.Path)" />
+      <method name="copyFromLocalFile" signature="copyFromLocalFile(boolean,boolean,org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path)" />
+      <method name="copyFromLocalFile" signature="copyFromLocalFile(boolean,org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path)" />
+      <method name="copyFromLocalFile" signature="copyFromLocalFile(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path)" />
+      <method name="copyToLocalFile" signature="copyToLocalFile(boolean,org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path)" />
+      <method name="copyToLocalFile" signature="copyToLocalFile(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path,boolean)" />
+      <method name="copyToLocalFile" signature="copyToLocalFile(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path)" />
+      <method name="delete" signature="delete(org.apache.hadoop.fs.Path)" match="name" alias="deleteOnExit" >
+        <return type="boolean" />
+        <sink kind="resource_injection" argpos="0" resource="filesystem" />
+      </method>
+      <method name="deleteSnapshot" signature="delete(org.apache.hadoop.fs.Path,java.lang.String)" >
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1" resource="filesystem" />
+      </method>
+      <method name="get" signature="get(org.apache.hadoop.conf.Configuration)" />
+      <method name="get" signature="get(java.net.URI,org.apache.hadoop.conf.Configuration)" />
+      <method name="get" signature="get(java.net.URI,org.apache.hadoop.conf.Configuration,java.lang.String)" />
+      <method name="getUri" signature="getUri()" >
+        <return type="java.net.URI" />
+      </method>
+      <method name="makeQualified" signature="makeQualified(org.apache.hadoop.fs.Path)" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+      <method name="mkdirs" signature="mkdirs(org.apache.hadoop.fs.FileSystem,org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Permission)" >
+        <return type="boolean" />
+        <sink kind="resource_injection" argpos="0,1" resource="filesystem" />
+      </method>
+      <method name="mkdirs" signature="mkdirs(org.apache.hadoop.fs.Path)" >
+        <return type="boolean" />
+        <sink kind="resource_injection" argpos="0" resource="filesystem" />
+      </method>
+      <method name="mkdirs" signature="mkdirs(oorg.apache.hadoop.fs.Path,org.apache.hadoop.fs.Permission)" >
+        <return type="boolean" />
+        <sink kind="resource_injection" argpos="0" resource="filesystem" />
+      </method>
+      <method name="moveFromLocalFile" signature="moveFromLocalFile(org.apache.hadoop.fs.Path[],org.apache.hadoop.fs.Path)" />
+      <method name="moveFromLocalFile" signature="moveFromLocalFile(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path)" />
+      <method name="moveToLocalFile" signature="moveToLocalFile(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path)" />
+      <method name="primitiveMkdir" signature="primitiveMkdir()" match="name" >
+        <sink kind="resource_injection" argpos="0" resource="filesystem" />
+      </method>
+      <method name="rename" signature="rename(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path)" >
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="rename" signature="rename(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path,...org.apache.hadoop.fs.Options.Rename)" >
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="setOwner" signature="setOwner(org.apache.hadoop.fs.Path,java.lang.String,java.lang.String)" >
+        <tags>username:1</tags>
+        <return type="void" />
+        <sink kind="configuration_setting_injection" argpos="0,2" resource="other" />
+        <sink argpos="1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setPermission" signature="setPermission(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.FsPermission)" >
+        <return type="void" />
+        <sink kind="configuration_setting_injection" argpos="0,1,2" resource="other" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.fs.azure.NativeAzureFileSystem" supertypes="org.apache.hadoop.fs.FileSystem" />
+    <class name="org.apache.hadoop.fs.FilterFileSystem" supertypes="org.apache.hadoop.fs.FileSystem" />
+    <class name="org.apache.hadoop.fs.ftp.FTPFileSystem" supertypes="org.apache.hadoop.fs.FileSystem" />
+    <class name="org.apache.hadoop.fs.s3native.NativeS3FileSystem" supertypes="org.apache.hadoop.fs.FileSystem" />
+    <class name="org.apache.hadoop.fs.RawLocalFileSystem" supertypes="org.apache.hadoop.fs.FileSystem" />
+    <class name="org.apache.hadoop.fs.viewfs.ViewFileSystem" supertypes="org.apache.hadoop.fs.FileSystem" />
+    <class name="org.apache.hadoop.fs.adl.AdlFileSystem" supertypes="org.apache.hadoop.fs.FileSystem" />
+    <class name="org.apache.hadoop.fs.Path" >
+      <constructor name="Path" signature="Path(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path)" match="fullsignature" />
+      <constructor name="Path" signature="Path(org.apache.hadoop.fs.Path,java.lang.String)" match="fullsignature" />
+      <constructor name="Path" signature="Path(java.lang.String)" match="fullsignature" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </constructor>
+      <constructor name="Path" signature="Path(java.lang.String,org.apache.hadoop.fs.Path)" match="fullsignature" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </constructor>
+      <constructor name="Path" signature="Path(java.lang.String,java.lang.String)" match="fullsignature" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </constructor>
+      <constructor name="Path" signature="Path(java.lang.String,java.lang.String,java.lang.String)" match="fullsignature" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </constructor>
+      <constructor name="Path" signature="Path(java.net.URI)" match="fullsignature" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </constructor>
+
+      <method name="getFileSystem" signature="getFileSystem(org.apache.hadoop.conf.Configuration)" >
+        <return type="org.apache.hadoop.fs.FileSystem" />
+      </method>
+      <method name="getName" signature="getName()" >
+        <return type="org.apache.hadoop.fs.Path" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="getParent" signature="getParent()" >
+        <return type="org.apache.hadoop.fs.Path" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="makeQualified" signature="makeQualified(org.apache.hadoop.fs.FileSystem)" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+      <method name="mergePaths" signature="mergePaths(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path)" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+      <method name="toUri" signature="toUri()" >
+        <return type="java.net.URI" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="validateObject" signature="validateObject()" />
+    </class>
+    <class name="org.apache.hadoop.fs.FSDataOutputStream" supertypes="java.io.DataOutputStream" />
+    <class name="org.apache.hadoop.fs.azure.WasbFsck" supertypes="org.apache.hadoop.conf.Configured" >
+      <method name="run" signature="run(java.lang.String[])" >
+        <sink kind="command_injection" argpos="0" resource="other" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.fs.AbstractFileSystem" >
+      <method name="delete" signature="delete(org.apache.hadoop.fs.Path,boolean)" >
+        <return type="boolean" />
+        <sink kind="resource_injection" argpos="0" resource="filesystem" />
+      </method>
+      <method name="deleteSnapshot" signature="delete(org.apache.hadoop.fs.Path,java.lang.String)" >
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1" resource="filesystem" />
+      </method>
+      <method name="get" signature="get(java.net.URI,org.apache.hadoop.conf.Configuration)" >
+        <return type="org.apache.hadoop.fs.FileSystem" />
+      </method>
+      <method name="getHomeDirectory" signature="getHomeDirectory()" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+      <method name="getInitialWorkingDirectory" signature="getInitialWorkingDirectory()" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+      <method name="getLinkTarget" signature="getLinkTarget(org.apache.hadoop.fs.Path)" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+      <method name="getUri" signature="getUri()" >
+        <return type="java.net.URI" />
+      </method>
+      <method name="rename" signature="rename(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path,...org.apache.hadoop.fs.Options.Rename)" >
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="renameInternal" signature="renameInternal(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path)" match="name" >
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="renameSnapshot" signature="renameSnapshot(org.apache.hadoop.fs.Path,java.lang.String,java.lang.String)" >
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1,2" resource="other" />
+      </method>
+      <method name="resolvePath" signature="resolvePath(org.apache.hadoop.fs.Path)" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+      <method name="setOwner" signature="setOwner(org.apache.hadoop.fs.Path,java.lang.String,java.lang.String)" >
+        <tags>username:1</tags>
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1,2" resource="other" />
+        <sink argpos="1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setPermission" signature="setPermission(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.FsPermission)" >
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1,2" resource="other" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.fs.DelegateToFileSystem" supertypes="org.apache.hadoop.fs.AbstractFileSystem" />
+    <class name="org.apache.hadoop.fs.viewfs.ViewFs" supertypes="org.apache.hadoop.fs.AbstractFileSystem" />
+    <class name="org.apache.hadoop.fs.azurebfs.AzureBlobFileSystemStore" >
+      <method name="delete" signature="delete(org.apache.hadoop.fs.Path,boolean)" >
+        <return type="boolean" />
+        <sink kind="resource_injection" argpos="0" resource="filesystem" />
+      </method>
+      <method name="rename" signature="rename(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path)" >
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="setOwner" signature="setOwner(org.apache.hadoop.fs.Path,java.lang.String,java.lang.String)" >
+        <tags>username:1</tags>
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1,2" resource="other" />
+        <sink argpos="1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setPermission" signature="setPermission(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.FsPermission)" >
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1,2" resource="other" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.fs.FileContext" >
+      <method name="delete" signature="delete(org.apache.hadoop.fs.Path,boolean)" >
+        <return type="boolean" />
+        <sink kind="resource_injection" argpos="0" resource="filesystem" />
+      </method>
+      <method name="deleteOnExit" signature="deleteOnExit(org.apache.hadoop.fs.Path)" >
+        <return type="boolean" />
+        <sink kind="resource_injection" argpos="0" resource="filesystem" />
+      </method>
+      <method name="deleteSnapshot" signature="delete(org.apache.hadoop.fs.Path,java.lang.String)" >
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1" resource="filesystem" />
+      </method>
+      <method name="getFileContext" signature="getFileContext()" match="name" alias="getLocalFSFileContext" >
+        <return type="org.apache.hadoop.fs.FileContext" />
+      </method>
+      <method name="getHomeDirectory" signature="getHomeDirectory()" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+      <method name="getLinkTarget" signature="getLinkTarget(org.apache.hadoop.fs.Path)" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+      <method name="mkdir" signature="mkdir(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Permission,boolean)" >
+        <return type="boolean" />
+        <sink kind="resource_injection" argpos="0,1" resource="filesystem" />
+      </method>
+      <method name="rename" signature="rename(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.Path,...org.apache.hadoop.fs.Options.Rename)" >
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="renameSnapshot" signature="renameSnapshot(org.apache.hadoop.fs.Path,java.lang.String,java.lang.String)" >
+        <return type="void" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="resolve" signature="resolve(org.apache.hadoop.fs.Path)" alias="resolvePath" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+      <method name="resolveIntermediate" signature="resolveIntermediate(org.apache.hadoop.fs.Path)" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+      <method name="setOwner" signature="setOwner(org.apache.hadoop.fs.Path,java.lang.String,java.lang.String)" >
+        <tags>username:1</tags>
+        <return type="void" />
+        <sink kind="configuration_setting_injection" argpos="0,1,2" resource="other" />
+        <sink argpos="1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setPermission" signature="setPermission(org.apache.hadoop.fs.Path,org.apache.hadoop.fs.FsPermission)" >
+        <return type="void" />
+        <sink kind="configuration_setting_injection" argpos="0,1,2" resource="other" />
+      </method>
+    </class>
+  </module>
+
+  <module name="hadoop.hdfs" >
+    <class name="org.apache.hadoop.hdfs.DFSClient" >
+      <method name="getNameNode" signature="getNameNode()" >
+        <return type="org.apache.hadoop.mapreduce.protocol.ClientProtocol" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.hdfs.web.SSLConnectionConfigurator" >
+      <method name="configure" signature="configure(java.net.HttpURLConnection)" >
+        <return type="java.net.HttpURLConnection" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.hdfs.server.namenode.UGIResolver" >
+      <method name="addGroup" signature="addGroup(java.lang.String)" match="name" >
+        <tags>username:0</tags>
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="addUser" signature="addUser(java.lang.String)" match="name" >
+        <tags>username:0</tags>
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="buildPermissionStatus" signature="buildPermissionStatus(java.lang.String,java.lang.String,java.lang.String)" match="name" >
+        <tags>username:0</tags>
+        <sink kind="configuration_setting_injection" argpos="0,1,2" resource="other" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="org.apache.hadoop.hdfs.server.namenode.FileSystemImage" >
+      <method name="run" signature="run(java.lang.String[])" >
+        <return type="int" />
+        <sink kind="command_injection" argpos="0" resource="other" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.hdfs.server.namenode.HdfsAuditLogger" >
+      <method name="logAuditEvent" signature="logAuditEvent(boolean,java.lang.String,java.net.InetAddress,java.lang.String,java.lang.String,java.lang.String,org.apache.hadoop.hdfs.FileStatus)" match="name" >
+        <tags>username:0</tags>
+        <sink kind="resource_injection" argpos="2,4,5" resource="network" />
+        <sink kind="command_injection" argpos="3" resource="other" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="hadoop.mapred" >
+    <class name="org.apache.hadoop.mapred.JobContext" >
+      <method name="getJobConf" signature="getJobConf()" >
+        <return type="org.apache.hadoop.mapred.JobConf" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.mapred.JobConf" supertypes="org.apache.hadoop.conf.Configuration" >
+      <method name="setJobName" signature="setJobName(java.lang.String)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setJobPriority" signature="setJobPriority(java.lang.String)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setMaxPhysicalMemoryForTask" signature="setMaxPhysicalMemoryForTask(long)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setMaxVirtualMemoryForTask" signature="setMaxVirtualMemoryForTask(long)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setMemoryForMapTask" signature="setMemoryForMapTask(long)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setMemoryForReduceTask" signature="setMemoryForReduceTask(long)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setNumMapTasks" signature="setNumMapTasks(int)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setNumReduceTasks" signature="setNumReduceTasks(int)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setNumTasksToExecutePerJvm" signature="setNumTasksToExecutePerJvm(int)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setReduceDebugScript" signature="setReduceDebugScript(java.lang.String)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)" >
+        <tags>username:0</tags>
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setWorkingDirectory" signature="setWorkingDirectory(org.apache.hadoop.fs.Path)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="getWorkingDirectory" signature="getWorkingDirectory()" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+    </class>
+
+    <class name="org.apache.hadoop.mapreduce.filecache.DistributedCache" >
+      <method name="addArchiveToClassPat" signature="addArchiveToClassPath(org.apache.hadoop.fs.Path,org.apache.hadoop.conf.Configuration)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="addArchiveToClassPath" signature="addArchiveToClassPath(org.apache.hadoop.fs.Path,org.apache.hadoop.conf.Configuration,org.apache.hadoop.fs.FileSystem)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="addCacheArchive" signature="addCacheArchive(java.net.URI,org.apache.hadoop.conf.Configuration)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="addCacheFile" signature="addCacheFile(java.net.URI,org.apache.hadoop.conf.Configuration)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="addFileToClassPath" signature="addFileToClassPath(org.apache.hadoop.fs.Path,org.apache.hadoop.conf.Configuration)" match="name" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.mapreduce.tools.CLI" supertypes="org.apache.hadoop.conf.Configured" >
+      <method name="run" signature="run(java.lang.String[])" >
+        <return type="int" />
+        <sink kind="command_injection" argpos="0" resource="other" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.mapreduce.JobContext">
+      <method name="getConfiguration" signature="getConfiguration()" >
+        <return type="org.apache.hadoop.conf.Configuration" />
+      </method>
+      <method name="getCredentials" signature="getCredentials()" >
+        <return type="org.apache.hadoop.security.Credentials" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.mapred.JobClient" supertypes="org.apache.hadoop.mapreduce.tools.CLI" >
+      <method name="getFs" signature="getFs()">
+        <return type="org.apache.hadoop.fs.FileSystem" />
+      </method>
+      <method name="getJob" signature="getJob(org.apache.hadoop.mapred.JobID)" match="name" alias="getJobInner" >
+        <return type="org.apache.hadoop.mapred.RunningJob" />
+      </method>
+      <method name="getStagingAreaDir" signature="getStagingAreaDir()" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+      <method name="getSystemDir" signature="getSystemDir()" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+      <method name="runJob" signature="runJob(org.apache.hadoop.mapred.JobConf)" >
+        <return type="org.apache.hadoop.mapred.RunningJob" />
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+      <method name="submitJob" signature="submitJob(org.apache.hadoop.mapred.JobConf)" match="name" >
+        <return type="org.apache.hadoop.mapred.RunningJob" />
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.mapred.RunningJob" >
+      <method name="killJob" signature="killJob()" >
+        <sink kind="resource_injection" argpos="-2" resource="other" />
+      </method>
+      <method name="killTask" signature="killTask(org.apache.hadoop.mapred.TaskAttemptID,boolean)" >
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.mapreduce.lib.jobcontrol.ControlledJob" >
+      <method name="getJob" signature="getJob()" >
+        <return type="org.apache.hadoop.mapreduce.Job" />
+      </method>
+      <method name="killJob" signature="killJob()" >
+        <sink kind="resource_injection" argpos="-2" resource="other" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.mapred.jobcontrol.Job" supertypes="org.apache.hadoop.mapreduce.lib.jobcontrol.ControlledJob" >
+      <method name="getJobClient" signature="getJobClient()" >
+        <return type="org.apache.hadoop.mapred.JobClient"/>
+      </method>
+      <method name="getJobConf" signature="getJobConf" >
+        <return type="org.apache.hadoop.mapred.JobConf" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.mapreduce.Job" supertypes="org.apache.hadoop.mapreduce.task.JobContextImpl" >
+      <method name="killJob" signature="killJob()" >
+        <sink kind="resource_injection" argpos="-2" resource="other" />
+      </method>
+      <method name="killTask" signature="killTask(org.apache.hadoop.mapred.TaskAttemptID)" >
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setJar" signature="setJar(java.lang.String)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setJobName" signature="setJobName(java.lang.String)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setNumReduceTasks" signature="setNumReduceTasks(int)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setPriority" signature="setPriority(org.apache.hadoop.mapreduce.JobPriority)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setPriorityAsInteger" signature="setPriorityAsInteger(int)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setUser" signature="setUset(java.lang.String)" >
+        <tags>username:0</tags>
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setWorkingDirectory" signature="setWorkingDirectory(org.apache.hadoop.fs.Path)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.mapreduce.lib.jobcontrol.JobControl" >
+      <method name="getFailedJobs" signature="getFailedJobs()" alias="getReadyJobList,getRunningJobList,getSuccessfulJobList,getWaitingJobList" >
+        <return type="java.util.List" elementType="org.apache.hadoop.mapreduce.lib.jobcontrol.ControlledJob" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.mapred.jobcontrol.JobControl" supertypes="org.apache.hadoop.mapreduce.lib.jobcontrol.JobControl" >
+      <method name="getFailedJobs" signature="getFailedJobs()" alias="getReadyJobList,getRunningJobList,getSuccessfulJobList,getWaitingJobList" >
+        <return type="java.util.List" elementType="org.apache.hadoop.mapred.jobcontrol.Job" />
+      </method>
+    </class>
+
+    <class name="org.apache.hadoop.mapreduce.lib.db.DBConfiguration" >
+      <method name="getConf" signature="getConf()" >
+        <return type="org.apache.hadoop.conf.Configuration" />
+      </method>
+      <method name="getConnection" signature="getConnection()" >
+        <return type="java.sql.Connection" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.mapred.lib.db.DBConfiguration" supertypes="org.apache.hadoop.mapreduce.lib.db.DBConfiguration" >
+      <method name="configureDB" signature="configureDB(org.apache.hadoop.mapred.JobConf,java.lang.String,java.lang.String)" >
+        <sink kind="resource_injection" argpos="1" resource="database" />
+        <sink argpos="2" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="configureDB" signature="configureDB(org.apache.hadoop.mapred.JobConf,java.lang.String,java.lang.String,java.lang.String,java.lang.String)" >
+        <tags>username:3,password:4</tags>
+        <sink kind="resource_injection" argpos="1" resource="database" />
+        <sink argpos="2" kind="connection_string_injection" resource="database"/>
+        <sink argpos="3,4" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+
+    <class name="org.apache.hadoop.mapreduce.RecordReader" />
+    <class name="org.apache.hadoop.mapreduce.lib.db.DBRecordReader" supertypes="org.apache.hadoop.mapreduce.RecordReader" >
+      <method name="executeQuery" signature="executeQuery()" >
+        <return type="java.sql.ResultSet" />
+      </method>
+      <method name="getConnection" signature="getConnection()" >
+        <return type="java.sql.Connection" />
+      </method>
+      <method name="getDBConf" signature="getDBConf()" >
+        <return type="org.apache.hadoop.mapreduce.lib.db.DBConfiguration" />
+      </method>
+      <method name="getStatement" signature="getStatement()" >
+        <return type="java.sql.PreparedStatement" />
+      </method>
+      <method name="setStatement" signature="setStatement(java.sql.PreparedStatement)" >
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.mapreduce.lib.db.MySQLDBRecordReader" supertypes="org.apache.hadoop.mapreduce.lib.db.DBRecordReader" >
+      <method name="executeQuery" signature="executeQuery(java.lang.String)" >
+        <return type="java.sql.ResultSet" />
+        <sink kind="sql_injection" argpos="0" resource="database" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.mapreduce.lib.db.OracleDBRecordReader" supertypes="org.apache.hadoop.mapreduce.lib.db.DBRecordReader" />
+    <class name="org.apache.hadoop.mapreduce.lib.db.DataDrivenDBRecordReader" supertypes="org.apache.hadoop.mapreduce.lib.db.DBRecordReader" />
+    <class name="org.apache.hadoop.mapreduce.lib.db.MySQLDataDrivenDBRecordReader" supertypes="org.apache.hadoop.mapreduce.lib.db.DataDrivenDBRecordReader" >
+      <method name="executeQuery" signature="executeQuery(java.lang.String)" >
+        <return type="java.sql.ResultSet" />
+        <sink kind="sql_injection" argpos="0" resource="database" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.mapreduce.lib.db.OracleDataDrivenDBInputFormat" supertypes="org.apache.hadoop.mapreduce.lib.db.DataDrivenDBInputFormat" />
+    <class name="org.apache.hadoop.mapreduce.lib.db.OracleDataDrivenDBRecordReader" supertypes="org.apache.hadoop.mapreduce.lib.db.DataDrivenDBRecordReader" />
+    <class name="org.apache.hadoop.mapreduce.protocol.ClientProtocol" supertypes="org.apache.hadoop.ipc.VersionedProtocol" >
+      <method name="setOwner" signature="setOwner(org.apache.hadoop.fs.Path,java.lang.String,java.lang.String)" >
+        <return type="void" />
+        <sink kind="configuration_setting_injection" argpos="0,1,2" resource="other" />
+      </method>
+    </class>
+  </module>
+
+  <module name="hadoop.net" >
+    <class name="org.apache.hadoop.net.SocksSocketFactory" supertypes="javax.net.SocketFactory" >
+      <method name="getConf" signature="getConf()" >
+        <return type="org.apache.hadoop.conf.Configuration" />
+      </method>
+    </class>
+    <class name="org.apache.hadoop.net.StandardSocketFactory" supertypes="javax.net.SocketFactory" />
+  </module>
+
+  <module name="hadoop.filecache" >
+    <class name="org.apache.hadoop.filecache.DistributedCache" supertypes="org.apache.hadoop.mapreduce.filecache.DistributedCache" />
+  </module>
+</library>

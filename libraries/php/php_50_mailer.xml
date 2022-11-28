@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="phpmailer" technology="php">
+
+  <description url="https://github.com/PHPMailer/PHPMailer">PHPMailer library</description>
+  
+  <class name="PHPMailer" alias="PHPMailer.PHPMailer.PHPMailer">
+    <constructor name="PHPMailer" signature="PHPMailer(bool $exceptions)"/>
+    <method name="addAddress" signature="addAddress" alias="AddAddress">
+      <sink kind="mail_command_injection" argpos="0,1"/>
+    </method>
+    <method name="setFrom" signature="setFrom">
+      <sink kind="mail_command_injection" argpos="0,1,2"/>
+    </method>
+    <method name="addrAppend" signature="addrAppend">
+      <sink kind="mail_command_injection" argpos="0,1"/>
+    </method>
+    <method name="addBCC" signature="addBCC">
+      <sink kind="mail_command_injection" argpos="0,1"/>
+    </method>
+    <method name="addCC" signature="addCC">
+      <sink kind="mail_command_injection" argpos="0,1"/>
+    </method>
+    <method name="headerLine" signature="headerLine">
+      <sink kind="mail_command_injection" argpos="0,1"/>
+      <sink kind="mail_header_manipulation" argpos="0,1" resource="network"/>
+    </method>
+    <method name="DKIM_Add" signature="DKIM_Add">
+      <sink kind="mail_command_injection" argpos="0,1"/>
+      <sink kind="mail_header_manipulation" argpos="0,1" resource="network"/>
+    </method>
+    <method name="addCustomHeader" signature="addCustomHeader">
+      <sink kind="mail_command_injection" argpos="0,1"/>
+      <sink kind="mail_header_manipulation" argpos="0,1" resource="network"/>
+    </method>
+    <method name="sendmailSend" signature="sendmailSend" alias="mailSend,smtpSend">
+      <sink kind="mail_command_injection" argpos="0"/>
+      <sink kind="mail_header_manipulation" argpos="0" resource="network"/>
+    </method>
+    <method name="addReplyTo" signature="addReplyTo">
+      <sink kind="mail_command_injection" argpos="0,1"/>
+    </method>
+    <method name="setSubject" signature="setSubject">
+      <sink kind="mail_command_injection" argpos="0"/>
+    </method>
+    <method name="addOrEnqueueAnAddress" signature="addOrEnqueueAnAddress">
+      <sink kind="mail_command_injection" argpos="1,2"/>
+    </method>
+    <method name="addAnAddress" signature="addAnAddress">
+      <sink kind="mail_command_injection" argpos="1,2"/>
+    </method>
+    <method name="validateAddress" signature="validateAddress" alias="isShellSafe">
+      <neutralization kind="mail_command_injection" resource="network" argpos="0"/>
+    </method>
+    <field name="From" type="string" alias="FromName,Sender,Subject,mailHeader,to,cc,bcc,ReplyTo">
+      <sink kind="mail_command_injection" argpos="-1"/>
+    </field>
+  </class>
+</library>  

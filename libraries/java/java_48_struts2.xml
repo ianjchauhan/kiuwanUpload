@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="apache.struts2" standard="Apache_Struts_2" technology="java">
+  <description url="https://struts.apache.org/">Struts2 API</description>
+
+  <class name="org.apache.struts2.dispatcher.Parameter" kind="interface">
+    <method name="getValue" signature="getValue()" alias="getObject,getMultipleValues">
+      <return type="java.lang.String"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+  <class name="org.apache.struts2.dispatcher.Parameter.Request" supertypes="org.apache.struts2.dispatcher.Parameter"/>
+  <class name="org.apache.struts2.dispatcher.Parameter.File" supertypes="org.apache.struts2.dispatcher.Parameter.Request"/>
+
+  <class name="org.apache.struts2.dispatcher.HttpParameters" supertypes="java.lang.Cloneable,java.util.Map">
+    <tags>collection:true</tags>
+    <method name="get" signature="get(K)" match="name">
+      <tags>getter: true</tags>
+      <return type="org.apache.struts2.dispatcher.Parameter"/>
+      <propagate from="-2" to="-1"/>
+    </method>
+  </class>
+
+  <class name="com.opensymphony.xwork2.util.ValueStack" kind="interface">
+  </class>
+
+  <class name="org.apache.struts2.dispatcher.mapper.ActionMapping">
+  </class>
+
+  <class name="com.opensymphony.xwork2.ActionContext" supertypes="java.io.Serializable">
+    <method name="getContext" signature="getContext()" instance="false">
+      <return type="com.opensymphony.xwork2.ActionContext"/>
+    </method>
+    <method name="get" signature="get()">
+      <return type="java.lang.Object"/>
+    </method>
+    <method name="put" signature="put(java.lang.String,java.lang.Object)">
+      <propagate from="0,1" to="-2"/>
+    </method>
+    <method name="getParameters" signature="getParameters()">
+      <return type="org.apache.struts2.dispatcher.HttpParameters"/>
+    </method>
+    <method name="getSession" signature="getSession()">
+      <return type="java.util.Map" elementType="java.lang.Object"/>
+      <sink argpos="-1" kind="trust_boundary" resource="web"/>
+    </method>
+    <method name="getApplication" signature="getApplication()">
+      <return type="java.util.Map" elementType="java.lang.Object"/>
+      <sink argpos="-1" kind="trust_boundary" resource="web"/>
+    </method>
+    <method name="getValueStack" signature="getValueStack()">
+      <return type="com.opensymphony.xwork2.util.ValueStack"/>
+    </method>
+    <method name="getLocale" signature="getLocale()">
+      <return type="java.util.Locale"/>
+    </method>
+  </class>
+  
+  <class name="org.apache.struts2.ServletActionContext" supertypes="com.opensymphony.xwork2.ActionContext">
+     <method name="getActionContext" signature="getActionContext(javax.servlet.http.HttpServletRequest)" instance="false">
+       <return type="com.opensymphony.xwork2.ActionContext"/>
+     </method>
+    <method name="getActionMapping" signature="getActionMapping()" instance="false">
+      <return type="org.apache.struts2.dispatcher.mapper.ActionMapping"/>
+    </method>
+    <method name="getPageContext" signature="getPageContext()" instance="false">
+      <return type="javax.servlet.jsp.PageContext"/>
+    </method>
+    <method name="getRequest" signature="getRequest()" instance="false">
+      <return type="javax.servlet.http.HttpServletRequest"/>
+    </method>
+    <method name="getResponse" signature="getResponse()" instance="false">
+      <return type="javax.servlet.http.HttpServletResponse"/>
+    </method>
+    <method name="getServletContext" signature="getServletContext()" instance="false">
+      <return type="javax.servlet.ServletContext"/>
+    </method>
+    <method name="getValueStack" signature="getValueStack(javax.servlet.http.HttpServletRequest)" instance="false">
+      <return type="om.opensymphony.xwork2.util.ValueStack"/>
+    </method>
+  </class>
+
+  <class name="org.apache.struts2.interceptor.HttpParametersAware">
+    <method name="setParameters" signature="setParameters(org.apache.struts2.dispatcher.HttpParameters)">
+    </method>
+    <!-- not real method, but convenient -->
+    <method name="getParameters" signature="getParameters()">
+      <return type="org.apache.struts2.dispatcher.HttpParameters"/>
+    </method>
+  </class>
+
+</library>  

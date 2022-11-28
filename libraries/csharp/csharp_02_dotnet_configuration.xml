@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="dotnet.configuration" standard="dotnet.configuration" technology="csharp">
+  <description url="https://msdn.microsoft.com/library/ms228060.aspx">Configuration API</description>
+
+  <class name="System.Configuration.ConfigurationManager">
+    <field name="AppSettings" type="array" instance="false">
+      <source kind="system_information" resource="configuration" argpos="-1"/>
+    </field>
+    <field name="ConnectionStrings" type="array" instance="false">
+      <source kind="system_information" resource="configuration" argpos="-1"/>
+    </field>
+    <method name="GetSection" signature="GetSection(string)" instance="false" match="name">
+      <return type="System.Configuration.ConfigurationSection"/>
+      <source kind="system_information" resource="configuration" argpos="-1"/>
+    </method>
+    <method name="OpenExeConfiguration" signature="OpenExeConfiguration(string)" instance="false" match="name">
+      <return type="System.Configuration.Configuration"/>
+    </method>
+    <method name="OpenMachineConfiguration" signature="OpenMachineConfiguration()" instance="false" match="name">
+      <return type="System.Configuration.Configuration"/>
+    </method>
+    <method name="OpenMappedExecConfiguration" signature="OpenMappedExecConfiguration(System.Configuration.ExeConfigurationFileMap,System.Configuration.ConfigurationUserLevel,bool)" instance="false" match="name">
+      <return type="System.Configuration.Configuration"/>
+    </method>
+    <method name="OpenMappedMachineConfiguration" signature="OpenMappedMachineConfiguration(System.Configuration.ConfigurationFileMap)" instance="false" match="name">
+      <return type="System.Configuration.Configuration"/>
+    </method>
+  </class>
+
+  <class name="System.Web.Configuration.WebConfigurationManager" supertypes="System.Configuration.ConfigurationManager">
+    <method name="OpenMappedWebConfiguration" signature="OpenMappedWebConfiguration(System.Web.Configuration.WebConfigurationFileMap, String, String, String)" instance="false" match="name">
+      <return type="System.Configuration.Configuration"/>
+    </method>
+    <method name="OpenMappedWebConfiguration" signature="OpenMappedWebConfiguration(System.Web.Configuration.WebConfigurationFileMap, String, String, String)" instance="false" match="name">
+      <return type="System.Configuration.Configuration"/>
+    </method>
+    <method name="OpenWebConfiguration" signature="OpenWebConfiguration(string,string,string,string,string,string,string)" instance="false" match="name">
+      <return type="System.Configuration.Configuration"/>
+      <sink argpos="4,5" kind="hardcoded_credentials"/>
+    </method>
+  </class>
+
+  <class name="System.Configuration.Configuration">
+    <field name="AppSettings" type="System.Configuration.AppSettingsSection">
+      <source argpos="-1" kind="system_information" resource="configuration"/>
+    </field>
+    <field name="ConnectionStrings" type="System.Configuration.ConnectionStringsSection"/>
+    <field name="FilePath" type="string"/>
+    <field name="Locations" type="System.Configuration.ConfigurationLocationCollection"/>
+    <field name="RootSectionGroup" type="System.Configuration.ConfigurationSectionGroup"/>
+    <field name="SectionGroups" type="System.Configuration.ConfigurationSectionGroupCollection"/>
+    <field name="Sections" type="System.Configuration.ConfigurationSectionCollection"/>
+    <field name="TargetFramework" type="System.Runtime.Versioning.FrameworkName"/>
+    <method name="GetSection" signature="GetSection(string)">
+      <return type="System.Configuration.ConfigurationSection"/>
+    </method>
+    <method name="GetSectionGroup" signature="GetSectionGroup(string)">
+      <return type="System.Configuration.ConfigurationSectionGrou"/>
+    </method>
+    <method name="Save" signature="Save()" match="name"></method>
+    <method name="SaveAs" signature="SaveAs(string)" match="name">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </method>
+  </class>
+
+  <class name="System.Configuration.ConfigurationElement" kind="abstract_class">
+    <field name="CurrentConfiguration" type="System.Configuration.Configuration"/>
+    <field name="Item" type="array" elementType="object">
+      <source argpos="-1" kind="system_information" resource="configuration"/>
+      <sink argpos="0" kind="setting_manipulation" resource="configuration"/>
+    </field>
+    <method name="Item" signature="Item(string)">
+      <source argpos="-1" kind="system_information" resource="configuration"/>
+      <sink argpos="0" kind="setting_manipulation" resource="configuration"/>
+    </method>
+    <method name="GetWebApplicationSection" signature="GetWebApplicationSection(string)" instance="false">
+      <return type="System.Configuration.ConfigurationSection"/>
+      <source kind="system_information" resource="configuration" argpos="-1"/>
+    </method>
+  </class>
+
+  <class name="System.Configuration.KeyValueConfigurationElement" supertypes="System.Configuration.ConfigurationElement">
+    <constructor name="KeyValueConfigurationElement" signature="KeyValueConfigurationElement(string,string)">
+      <sink argpos="0,1" kind="setting_manipulation" resource="configuration"/>
+    </constructor>
+    <field name="Value" type="string">
+      <source argpos="-1" kind="system_information" resource="configuration"/>
+      <sink argpos="0" kind="setting_manipulation" resource="configuration"/>
+    </field>
+  </class>
+  
+  <class name="System.Configuration.ConfigurationElementCollection" kind="abstract_class" supertypes="System.Configuration.ConfigurationElement,System.Collections.Generic.ICollection">
+  </class>
+  
+  <class name="System.Configuration.KeyValueConfigurationCollection" supertypes="System.Configuration.ConfigurationElementCollection">
+    <method name="Add" signature="Add(System.Configuration.KeyValueConfigurationElement)"/>
+    <method name="Add" signature="Add(string,string)">
+      <sink argpos="0,1" kind="setting_manipulation" resource="configuration"/>
+    </method>
+    <method name="Remove" signature="Remove(string)">
+      <sink argpos="0" kind="setting_manipulation" resource="configuration"/>
+    </method>
+  </class>
+
+  <class name="System.Configuration.ConfigurationLocationCollection" supertypes="System.Collections.ReadOnlyCollectionBase">
+    <field name="Item" type="array" elementType="System.Configuration.ConfigurationLocation"></field>
+    <method name="Item" signature="Item(string)">
+      <return type="System.Configuration.ConfigurationLocation"/>
+    </method>
+  </class>
+
+  <class name="System.Configuration.ConfigurationLocation">
+    <field name="Path" type="string"/>
+    <method name="OpenConfiguration" signature="OpenConfiguration()">
+      <return type="System.Configuration.Configuration"/>
+    </method>
+  </class>
+
+  <class name="System.Configuration.ConfigurationSection" kind="abstract_class" supertypes="System.Configuration.ConfigurationElement">
+  </class>
+  <!-- ... many subtypes for each possible configuration section ... -->
+
+  <class name="System.Configuration.AppSettingsSection" standard="System.Configuration.ConfigurationSection">
+    <field name="Settings" type="System.Configuration.KeyValueConfigurationCollection"/>
+  </class>
+
+  <class name="System.Configuration.ConfigurationSectionGroup">
+    <field name="Name" type="string"/>
+    <field name="SectionGroupName" type="string"/>
+    <field name="SectionGroups" type="System.Configuration.ConfigurationSectionGroupCollection"/>
+    <field name="Sections" type="System.Configuration.ConfigurationSectionCollection"/>
+    <field name="Type" type="string"/>
+  </class>
+
+  <class name="System.Configuration.ApplicationSettingsGroup" supertypes="System.Configuration.ConfigurationSectionGroup"></class>
+  <class name="System.Configuration.UserSettingsGroup" supertypes="System.Configuration.ConfigurationSectionGroup"></class>
+  <class name="System.Data.Services.Configuration.DataServicesSectionGroup" supertypes="System.Configuration.ConfigurationSectionGroup">
+    <field name="Features" type="System.Data.Services.Configuration.DataServicesFeaturesSection"/>
+  </class>
+  <class name="System.Net.Configuration.MailSettingsSectionGroup" supertypes="System.Configuration.ConfigurationSectionGroup">
+    <field name="Smtp" type="System.Net.Configuration.SmtpSection"/>
+  </class>
+  <class name="System.Net.Configuration.NetSectionGroup" supertypes="System.Configuration.ConfigurationSectionGroup">
+    <field name="AuthenticationModules" type="System.Net.Configuration.AuthenticationModulesSection"/>
+    <field name="ConnectionManagement" type="System.Net.Configuration.ConnectionManagementSection"/>
+    <field name="DefaultProxy" type="System.Net.Configuration.DefaultProxySection"/>
+    <field name="MailSettings" type="System.Net.Configuration.MailSettingsSectionGroup"/>
+    <field name="RequestCaching" type="System.Net.Configuration.RequestCachingSection"/>
+    <field name="Settings" type="System.Net.Configuration.SettingsSection"/>
+    <field name="WebRequestModules" type="System.Net.Configuration.WebRequestModulesSection"/>
+    <method name="GetSectionGroup" signature="GetSectionGroup(System.Configuration.Configuration)" instance="false">
+      <return type="System.Net.Configuration.NetSectionGroup"/>
+    </method>
+  </class>
+  <!-- ... and many more ConfigurationSectionGroup subtypes ... -->
+
+
+  <class name="System.Configuration.ConfigurationSectionGroupCollection" supertypes="System.Collections.Specialized.NameObjectCollectionBase">
+    <field name="Item" type="array" elementType="System.Configuration.ConfigurationSectionGroup"/>
+    <method name="Item" signature="Item(string)">
+      <return type="System.Configuration.ConfigurationSectionGroup"/>
+    </method>
+    <method name="Add" signature="Add(string,System.Configuration.ConfigurationSectionGroup)"/>
+    <method name="Get" signature="Get(string)" match="name">
+      <return type="System.Configuration.ConfigurationSectionGroup"/>
+    </method>
+    <method name="Remove" signature="Remove(string)" match="name"/>
+  </class>
+
+  <class name="System.Configuration.ConfigurationSectionCollection" supertypes="System.Collections.Specialized.NameObjectCollectionBase">
+    <field name="Item" type="array" elementType="System.Configuration.ConfigurationSection"/>
+    <method name="Item" signature="Item(string)">
+      <return type="System.Configuration.ConfigurationSection"/>
+    </method>
+    <method name="Add" signature="Add(string,System.Configuration.ConfigurationSection)"/>
+    <method name="Get" signature="Get(string)" match="name">
+      <return type="System.Configuration.ConfigurationSection"/>
+    </method>
+    <method name="Remove" signature="Remove(string)" match="name"/>
+  </class>
+
+</library>

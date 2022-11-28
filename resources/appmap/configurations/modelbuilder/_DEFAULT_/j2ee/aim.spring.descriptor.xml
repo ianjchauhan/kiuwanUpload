@@ -1,0 +1,137 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='j2ee' subtech='spring' descriptor='j2ee/aim.spring.xml' label='Models beans in Spring XML descriptors'>
+  <description>
+    Process parsed Spring descriptors looking for bean definitions, and dependencies between them.
+    <br/>
+    Specific Spring modules, like WebFlow are also processed.
+    <br/>
+    For certain beans, extended entities and relations may be modeled.
+  </description>
+
+  <dependencies>
+    <dependency>j2ee/java</dependency>
+  </dependencies>
+
+  <properties>
+
+    <property id='aim.j2ee.rule.spring.beans.active' type='bool'>
+      <name>springActive</name>
+      <example>false</example>
+      <description>If true, normal Spring XML descriptors are processed.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.spring.webflow.active' type='bool'>
+      <name>webflowActive</name>
+      <example>false</example>
+      <description>If true, Spring WebFlow descriptors are processed.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.spring.beans.software' type='string'>
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>Name of the software (application) where Spring beans are placed.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.spring.beans.filter' type='list' subtype='antPattern'>
+      <name>filter</name>
+      <example>**/*.xml</example>
+      <description>Ant pattern(s) to select which normal Spring XML descriptors to process.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.spring.beans.processor.jaxProxy.active' type='bool'>
+      <name>jaxProxyActive</name>
+      <example>true</example>
+      <description>If true, Spring JAX-RPC and JAX-WS proxy beans (WebService proxies) will be processed.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.spring.beans.processor.jaxProxy.acceptUnresolved' type='bool'>
+      <name>jaxProxyAcceptUnresolved</name>
+      <example>false</example>
+      <description>If true, unresolved target web services for JAX-* proxies will be created as if they belong to the bean's software.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.spring.beans.processor.xfireProxy.active' type='bool'>
+      <name>xfireProxyActive</name>
+      <example>true</example>
+      <description>If true, Spring XFireClientFactoryBean beans (XFire client proxies) will be processed</description>
+    </property>
+
+    <property id='aim.j2ee.rule.spring.beans.processor.xfireProxy.acceptUnresolved' type='bool'>
+      <name>acceptUnresolved</name>
+      <example>false</example>
+      <description>
+        If true, unresolved target web services for XFire proxies will be created as if they belong to the bean's software
+      </description>
+    </property>
+
+    <property id='aim.j2ee.rule.spring.beans.processor.xfireExporter.active' type='bool'>
+      <name>xfireExporteractive</name>
+      <example>true</example>
+      <description>
+        If true, Spring XFireExporter beans (XFire exposed web services) will be processed
+      </description>
+    </property>
+
+    <property id='aim.j2ee.rule.spring.beans.extraProcessors' type='string'>
+      <name>extraProcessors</name>
+      <example></example>
+      <description>
+        Comma-separated list of SpringProcessor bean names/ids that will be used as extra bean processors.
+        Empty means that no additional bean processor will be registered.
+      </description>
+    </property>
+
+    <property id='aim.j2ee.rule.spring.webflow.filter' type='list' subtype='antPattern'>
+      <name>filter</name>
+      <example>**-flow.xml</example>
+      <description>Ant pattern(s) to select which Spring WebFlow descriptors to process.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.spring.webflow.software' type='string'>
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>Name of the software (application) where Spring WebFlow entities are placed.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.spring.webflow.parseBeanImports' type='bool'>
+      <name>parseBeanImports</name>
+      <example>true</example>
+      <description>Decides if bean-imports elements should be processed in Spring WebFlow descriptors.</description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>
+      configuration(descriptor),element(bean),flow,other(flow state),page(view)
+    </values>
+    <description>
+      Configuration (per Spring descriptor file), element (for each Spring bean declared).
+      <br/>
+      For Spring WebFlow, flow, flow states (other), and views (page) are modeled.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      configuration(Spring descriptor)->element(bean)-configuration,
+      bean-uses->bean,
+      flow-contains->other(flow state),
+      other(flow state)-transition->other(flow state),
+      other(flow state)-calls->page(view)
+    </values>
+    <description>
+      <i>uses</i> relation (between injection dependencies between beans),
+      <i>configures</i> relation between beans and the descriptors where they are declared.
+      <br/>
+      For WebFlow, each flow contains flow states (modeled as other).
+      Each flow state may transition to the next flow state.
+      A Flow state may call a view (modeled as page)
+    </description>
+  </createdRelations>
+
+  <importantConfigurations activation="aim.j2ee.rule.spring.beans.active">
+    <alternative><value>aim.j2ee.rule.spring.webflow.active=false</value></alternative>
+  </importantConfigurations>
+
+</block>

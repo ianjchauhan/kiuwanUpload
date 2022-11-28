@@ -1,0 +1,1067 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="System.Web" standard="aspnet.WebForms" technology="csharp">
+  <description url="https://docs.microsoft.com/dotnet/api/system.web?view=netframework-4.8">ASP.NET WebForms (System.Web)</description>
+
+  <header name="ASP.NET">
+    <globalObject name="Request" type="System.Web.HttpRequest">
+      <!-- needed to accept Request["field"] as a source in aspx code -->
+      <source kind="user_input" resource="web" argpos="-1">
+        <checker id="array.deref"/>
+      </source>
+    </globalObject>
+    <globalObject name="Response" type="System.Web.HttpResponse"/>
+    <globalObject name="Session" type="System.Web.SessionState.HttpSessionState"/>
+    <globalObject name="Application" type="System.Web.HttpApplicationState"/>
+    <globalObject name="Server" type="System.Web.HttpServerUtility"/>
+    <globalObject name="Context" type="System.Web.HttpContext"/>
+    <globalObject name="Trace" type="System.Web.TraceContext"/>
+  </header>
+
+  <class name="System.Web.SessionState.HttpSessionState">
+    <field name="Contents" type="System.Web.SessionState.HttpSessionState"/>
+    <field name="Item" type="array">
+      <propagate from="-2" to="-1"/>
+    </field>
+    <field name="Keys" type="array"/>
+    <field name="SessionID" type="string">
+      <source argpos="-1" kind="system_information" resource="web"/>
+    </field>
+    <method name="Add" signature="Add(string,object)">
+      <sink argpos="0,1" kind="trust_boundary" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Web.HttpSessionStateBase" supertypes="System.Web.SessionState.HttpSessionState"/>
+  <class name="System.Web.HttpSessionStateWrapper" supertypes="System.Web.HttpSessionStateBase"/>
+
+  <class name="System.Web.HttpApplicationState" supertypes="System.Collections.Specialized.NameObjectCollectionBase">
+    <field name="Contents" type="System.Web.HttpApplicationState"/>
+    <field name="StaticObjects" type="System.Web.HttpStaticObjectsCollection"/>
+    <field name="Items" type="array">
+      <sink argpos="-1" kind="trust_boundary" resource="web"/>
+    </field>
+
+    <method name="Add" signature="Add(string,object)">
+      <sink argpos="0,1" kind="trust_boundary" resource="web"/>
+    </method>
+    <method name="Set" signature="Set(string,object)">
+      <sink argpos="0,1" kind="trust_boundary" resource="web"/>
+    </method>
+    <method name="Items" signature="Items(string)">
+      <sink argpos="-1" kind="trust_boundary" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Web.HttpContext">
+    <field name="Current" type="System.Web.HttpContext"/>
+    <field name="Request" type="System.Web.HttpRequest" >
+      <tags>valueShadowing</tags>
+      <source argpos="-1" kind="user_input" resource="web">
+        <checker id="array.deref"/>
+      </source>
+    </field>
+    <method name="Request" signature="Request(string)">
+      <tags>valueShadowing</tags>
+      <return type="string"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <field name="Response" type="System.Web.HttpResponse"/>
+    <field name="Session" type="System.Web.SessionState.HttpSessionState"/>
+    <field name="Server" type="System.Web.HttpServerUtility"/>
+    <field name="Application" type="System.Web.HttpApplicationState"/>
+    <field name="ApplicationInstance" type="System.Web.HttpApplicationState"/>
+    <field name="Handler" type="System.Web.IHttpHandler"/>
+    <field name="CurrentHandler" type="System.Web.IHttpHandler"/>
+    <field name="User" type="System.Security.Principal.IPrincipal"/>
+  </class>
+
+  <class name="System.Web.HttpRequest">
+    <description>Represents an HTTP request.</description>
+    <field name="AcceptTypes" type="array" elementType="string">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="Browser" type="System.Web.HttpBrowserCapabilities">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="Cookies" type="System.Web.HttpCookieCollection">
+      <!--source kind="user_input" argpos="-1" /-->
+    </field>
+    <method name="Cookies" signature="Cookies(string)">
+      <return type="System.Web.HttpCookie"/>
+    </method>
+    <field name="Files" type="System.Web.HttpFileCollection">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <method name="Files" signature="Files(string)">
+      <return type="System.Web.HttpPostedFile"/>
+    </method>
+    <field name="Form" type="array" elementType="string">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <method name="Form" signature="Form(string)">
+      <return type="string"/>
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <field name="Headers" type="array" elementType="string">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <method name="Headers" signature="Headers(string)">
+      <return type="string"/>
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <field name="InputStream" type="System.IO.Stream">
+      <tags>no_leak</tags>
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="Item" type="array" elementType="string">
+      <tags>nullable, valueShadowing</tags>
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <method name="Item" signature="Item(string)">
+      <tags>valueShadowing</tags>
+      <return type="string"/>
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <field name="Params" type="array" elementType="string">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <method name="Params" signature="Params(string)">
+      <return type="string"/>
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <field name="Request" type="array" elementType="string">
+      <tags>valueShadowing</tags>
+      <source kind="user_input" argpos="-1">
+        <checker id="array.deref"/>
+      </source>
+    </field>
+    <method name="Request" signature="Request(string)">
+      <tags>valueShadowing</tags>
+      <source kind="user_input" argpos="-1"/>
+    </method>
+    <field name="QueryString" type="array" elementType="string">
+      <tags>nullable</tags>
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <method name="QueryString" signature="QueryString(string)">
+      <return type="string"/>
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <field name="RawUrl" type="string">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="ServerVariables" type="array">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="Unvalidated" type="System.Web.UnvalidatedRequestValues">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="Url" type="System.Uri">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="UrlReferrer" type="System.Uri">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="UserAgent" type="string">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="UserLanguages" type="array" elementType="string">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="UserHostAddress" type="string">
+      <tags>security_check</tags>
+    </field>
+    <field name="UserHostName" type="string">
+      <tags>security_check</tags>
+    </field>
+    <field name="IsAuthenticated" type="bool">
+      <tags>security_check</tags>
+    </field>
+    <field name="IsSecureConnection" type="bool">
+      <tags>security_check</tags>
+    </field>
+    <field name="ClientCertificate" type="System.Web.HttpClientCertificate">
+      <tags>security_check</tags>
+    </field>
+    <method name="BinaryRead" signature="BinaryRead(int)">
+      <return type="byte[]"/>
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <method name="GetBufferedInputStream" signature="GetBufferedInputStream(void)">
+      <return type="System.IO.Stream"/>
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <method name="GetBufferlessInputStream" signature="GetBufferlessInputStream(void)">
+      <return type="System.IO.Stream"/>
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <method name="GetBufferlessInputStream" signature="GetBufferlessInputStream(Boolean)">
+      <return type="System.IO.Stream"/>
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <method name="ValidateInput" signature="ValidateInput(void)">
+      <tags>security_check</tags>
+      <neutralization argpos="-2" kind="*"/>
+    </method>
+    <method name="Unvalidated" signature="Unvalidated(string)">
+      <source kind="user_input" argpos="-1"/>
+    </method>
+  </class>
+
+  <!-- HttpContextBase does not extend HttpContext, but for our needs "when quaks like a duck, is a duck" -->
+  <class name="System.Web.HttpContextBase" supertypes="System.Web.HttpContext"/>
+  <class name="System.Web.HttpContextWrapper" supertypes="System.Web.HttpContextBase"/>
+  <class name="System.Web.HttpRequestBase" supertypes="System.Web.HttpRequest"/>
+  <class name="System.Web.HttpRequestWrapper" supertypes="System.Web.HttpRequestBase"/>
+  <class name="System.Web.HttpResponseBase" supertypes="System.Web.HttpResponse"/>
+  <class name="System.Web.HttpResponseWrapper" supertypes="System.Web.HttpResponseBase"/>
+
+  <!-- HTTP Response object and classes -->
+  <class name="System.Web.HttpResponse">
+    <description>Encapsulates HTTP-response information from an ASP.NET operation.</description>
+
+    <field name="Cookies" type="System.Web.HttpCookieCollection"></field>
+    <field name="Status" type="string">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </field>
+    <field name="StatusCode" type="int">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </field>
+
+    <method name="AddHeader" signature="AddHeader(string,string)">
+      <tags>header.name:0,header.value:1</tags>
+      <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="AppendHeader" signature="AppendHeader(string,string)">
+      <tags>header.name:0,header.value:1</tags>
+      <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="Redirect" signature="Redirect(string)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+      <sink argpos="0" kind="xshm" resource="web"/>
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="Redirect" signature="Redirect(string,Boolean)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+      <sink argpos="0" kind="xshm" resource="web"/>
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="RedirectPermanent" signature="RedirectPermanent(string)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+      <sink argpos="0" kind="xshm" resource="web"/>
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="RedirectPermanent" signature="RedirectPermanent(string,Boolean)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+      <sink argpos="0" kind="xshm" resource="web"/>
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="RedirectToRoute" signature="RedirectToRoute(string)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+      <sink argpos="0" kind="xshm" resource="web"/>
+    </method>
+    <method name="RedirectToRoute" signature="RedirectToRoute(string,Object)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+      <sink argpos="0" kind="xshm" resource="web"/>
+    </method>
+    <method name="RedirectToRoutePermanent" signature="RedirectToRoutePermanent(string)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+      <sink argpos="0" kind="xshm" resource="web"/>
+    </method>
+    <method name="RedirectToRoutePermanent" signature="RedirectToRoutePermanent(string,Object)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+      <sink argpos="0" kind="xshm" resource="web"/>
+    </method>
+    <method name="Write" signature="Write(Object)">
+      <sink argpos="0" kind="xss" resource="web"/>
+      <sink argpos="0" kind="information_leak" resource="web"/>
+    </method>
+    <method name="Write" signature="Write(string)">
+      <sink argpos="0" kind="xss" resource="web"/>
+      <sink argpos="0" kind="information_leak" resource="web"/>
+    </method>
+    <method name="Write" signature="Write(Char[],Int32,Int32)">
+      <sink argpos="0" kind="xss" resource="web"/>
+      <sink argpos="0" kind="information_leak" resource="web"/>
+    </method>
+    <method name="WriteFile" signature="WriteFile(string)">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="WriteFile" signature="WriteFile(string,Boolean)">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="WriteFile" signature="WriteFile(IntPtr,Int64,Int64)">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="WriteFile" signature="WriteFile(string,Int64,Int64)">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </method>
+  </class>
+
+  <class name="System.Web.HttpCookie">
+    <constructor name="HttpCookie" signature="HttpCookie(string)"><tags>cookie.create,cookie.name:0</tags></constructor>
+    <constructor name="HttpCookie" signature="HttpCookie(string,string)"><tags>cookie.create,cookie.name:0,cookie.value:1</tags></constructor>
+
+    <field name="Name" type="string"><tags>cookie.name</tags></field>
+    <field name="Domain" type="string">
+      <tags>cookie.domain</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="Path" type="string">
+      <tags>cookie.path</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="Expires" type="System.DateTime">
+      <tags>cookie.persistent</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="HasKeys" type="bool"/>
+    <field name="HttpOnly" type="bool"><tags>cookie.httpOnly</tags></field>
+    <field name="Item" type="array">
+      <tags>cookie.value</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+      <propagate from="-2" to="-1"/>
+    </field>
+    <method name="Item" signature="Item(string)">
+      <tags>cookie.value</tags>
+      <return type="System.String"/>
+      <source kind="user_input" argpos="-1" />
+      <propagate from="-2" to="-1"/>
+    </method>
+    <field name="Secure" type="bool"><tags>cookie.secure</tags></field>
+    <field name="Shareable" type="bool"/>
+    <field name="Value" type="string">
+      <tags>cookie.value, CWE:784</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="Values" type="array" elementType="string">
+      <tags>cookie.value, CWE:784</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+      <propagate from="-2" to="-1"/>
+    </field>
+  </class>
+
+  <class name="System.Web.HttpCookieCollection" supertypes="System.Collections.Specialized.NameObjectCollectionBase">
+    <field name="Item" type="System.Web.HttpCookie">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <method name="Item" signature="Item(string)">
+      <return type="System.Web.HttpCookie"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="Add" signature="Add(System.Web.HttpCookie)">
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="Clear" signature="Clear()"/>
+    <method name="CopyTo" signature="CopyTo(array,int)">
+      <propagate from="-2" to="-1"/>
+    </method>
+    <method name="Get" signature="Get(string)">
+      <return type="System.Web.HttpCookie"/>
+    </method>
+    <method name="GetKey" signature="GetKey(int)"><return type="string"/></method>
+    <method name="Remove" signature="Remove(string)"/>
+    <method name="Set" signature="Set(System.Web.HttpCookie)">
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Web.Routing.RequestContext">
+    <field name="HttpContext" type="System.Web.HttpContextBase"/>
+    <field name="RouteData" type="System.Web.Routing.RouteData"/>
+  </class>
+
+  <class name="System.Web.Helpers.UnvalidatedRequestValues">
+    <description>Provides access to unvalidated form values in the HttpRequest object. Obsolete.</description>
+    <field name="Form" type="array">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="Item" type="array">
+      <tags>nullable, valueShadowing</tags>
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <method name="Item" signature="Item(string)">
+      <tags>valueShadowing</tags>
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <field name="QueryString" type="array">
+      <tags>nullable</tags>
+      <source kind="user_input" argpos="-1" />
+    </field>
+  </class>
+
+  <class name="System.Web.UnvalidatedRequestValues">
+    <description>Provides access to HTTP request values without triggering ASP.NET request validation.</description>
+    <field name="Cookies" type="array">
+      <tags>CWE:784</tags>
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <method name="Cookies" signature="Cookies(string)">
+      <tags>CWE:784</tags>
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <field name="Files" type="array">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <method name="Files" signature="Files(string)">
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <field name="Form" type="array">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <method name="Form" signature="Form(string)">
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <field name="Headers" type="array">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <method name="Headers" signature="Headers(string)">
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <field name="Item" type="array">
+      <tags>nullable, valueShadowing</tags>
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <method name="Item" signature="Item(string)">
+      <tags>valueShadowing</tags>
+      <source kind="user_input" argpos="-1" />
+    </method>
+    <field name="Path" type="string">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="PathInfo" type="string">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="QueryString" type="array">
+      <tags>nullable</tags>
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="RawUrl" type="string">
+      <source kind="user_input" argpos="-1" />
+    </field>
+    <field name="Url" type="System.Uri">
+      <source kind="user_input" argpos="-1" />
+    </field>
+  </class>
+
+  <!-- GUI elements -->
+
+  <class name="System.Web.UI.StateBag">
+    <description>ViewState collection</description>
+    <field name="Values" type="System.Collections.ICollection">
+      <source argpos="-1" kind="user_input" resource="web"/><!-- Keys are also input? -->
+    </field>
+    <method name="Item" signature="Item(string)">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="Add" signature="Add(string,object)">
+      <sink argpos="1" kind="xss" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Web.UI.DataBinder">
+    <description>Provides support for rapid application development (RAD) designers to generate and parse data-binding expression syntax</description>
+    <method name="Eval" signature="Eval(object, string)" match="name" instance="false">
+      <description>Uses reflection to parse and evaluate an data-binding expression against an object at runtime.</description>
+      <return type="string"/>
+      <source argpos="-1" kind="external_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Web.UI.Control">
+    <description>Defines the properties, methods, and events that are shared by all ASP.NET server controls</description>
+    <field name="AppRelativeTemplateDirectory" type="string">
+      <!--sink argpos="0" kind="path_traversal" resource="filesystem"/--><!-- unclear -->
+    </field>
+    <field name="Context" type="System.Web.HttpContext"/>
+    <field name="Controls" type="System.Web.UI.ControlCollection"/>
+    <field name="Page" type="System.Web.UI.Page"/>
+    <field name="Parent" type="System.Web.UI.Control"/>
+    <field name="TemplateControl" type="System.Web.UI.TemplateControl"/>
+    <field name="ValidateRequestMode" type="System.Web.UI.ValidateRequestMode"><tags>validation_config</tags></field>
+    <field name="ViewState" type="System.Web.UI.StateBag"/>
+
+    <method name="FindControl" signature="FindControl(string)" match="name">
+      <return type="System.Web.UI.Control"/>
+    </method>
+  </class>
+
+  <class name="System.Web.UI.TemplateControl" supertypes="System.Web.UI.Control">
+    <method name="Eval" signature="Eval(string)" match="name">
+      <return type="string"/>
+      <source argpos="-1" kind="external_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Web.UI.HtmlControls.HtmlControl" supertypes="System.Web.UI.Control">
+  </class>
+
+  <class name="System.Web.UI.HtmlControls.HtmlContainerControl" supertypes="System.Web.UI.HtmlControls.HtmlControl">
+    <field name="InnerHtml" type="string">
+      <!-- InnerText is safe: automatic encoding by ASP.NET -->
+      <sink argpos="0" kind="xss" resource="web"/>
+    </field>
+  </class>
+
+  <class name="System.Web.UI.WebControls.WebControl" supertypes="System.Web.UI.Control">
+  </class>
+
+  <class name="System.Web.UI.UserControl" supertypes="System.Web.UI.TemplateControl">
+    <field name="Request" type="System.Web.HttpRequest"/>
+    <field name="Response" type="System.Web.HttpResponse"/>
+    <field name="Server" type="System.Web.HttpServerUtility"/>
+    <field name="Session" type="System.Web.SessionState.HttpSessionState"/>
+    <method name="Request" signature="Request(string)">
+      <tags>valueShadowing</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Web.UI.ControlCollection" supertypes="System.Collections.ICollection">
+    <field name="Item" type="array">
+      <propagate from="-2" to="-1"/>
+    </field>
+    <field name="Owner" type="System.Web.UI.Control"/>
+  </class>
+
+  <class name="System.Web.UI.Page" supertypes="System.Web.UI.TemplateControl">
+    <description>Represents an .aspx file, also known as a Web Forms page</description>
+    <field name="Application" type="System.Web.HttpApplicationState"/>
+    <field name="ClientScript" type="System.Web.UI.ClientScriptManager"/>
+    <field name="Context" type="System.Web.HttpContext"/>
+    <field name="Form" type="System.Web.UI.HtmlControls.HtmlForm"/>
+    <field name="IsPostBack" type="bool"/>
+    <field name="IsValid" type="bool">
+      <tags>security_check</tags>
+    </field>
+    <field name="Items" type="array"/>
+    <field name="Master" type="System.Web.UI.MasterPage"/>
+    <field name="MasterPageFile" type="string"/>
+    <field name="PreviousPage" type="System.Web.UI.Page"/>
+    <field name="Request" type="System.Web.HttpRequest">
+      <tags>valueShadowing</tags>
+      <source argpos="-1" kind="user_input" resource="web">
+        <checker id="array.deref"/>
+      </source>
+    </field>
+    <field name="Response" type="System.Web.HttpResponse"/>
+    <field name="Server" type="System.Web.HttpServerUtility"/>
+    <field name="Session" type="System.Web.SessionState.HttpSessionState"/>
+    <field name="Title" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </field>
+    <field name="Trace" type="System.Web.TraceContext"/>
+    <field name="User" type="System.Security.Principal.IPrincipal"/>
+
+    <method name="Items" signature="Items(string)"/>
+    <method name="Request" signature="Request(string)">
+      <tags>valueShadowing</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Web.UI.MasterPage" supertypes="System.Web.UI.UserControl">
+  </class>
+
+  <class name="System.Web.UI.WebControls.Button" supertypes="System.Web.UI.WebControls.WebControl">
+    <field name="Text" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </field>
+    <field name="PostBackUrl" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </field>
+  </class>
+  <class name="System.Web.UI.WebControls.HyperLink" supertypes="System.Web.UI.WebControls.WebControl">
+    <description>Hyperlink control</description>
+    <field name="Text" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </field>
+    <field name="NavigateUrl" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </field>
+  </class>
+  <class name="System.Web.UI.WebControls.CheckBox" supertypes="System.Web.UI.WebControls.WebControl">
+    <description>CheckBox control</description>
+    <field name="Text" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </field>
+  </class>
+  <class name="System.Web.UI.WebControls.DropDownList">
+    <description>Drop down list control</description>
+    <field name="Text" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </field>
+  </class>
+  <class name="System.Web.UI.WebControls.Label" supertypes="System.Web.UI.WebControls.WebControl">
+    <description>Label control</description>
+    <field name="Text" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+      <sink argpos="0" kind="information_leak" resource="web"/>
+    </field>
+  </class>
+  <class name="System.Web.UI.WebControls.Literal" supertypes="System.Web.UI.Control">
+    <description>Literal control</description>
+    <field name="Text" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+      <sink argpos="0" kind="information_leak" resource="web"/>
+    </field>
+  </class>
+  <class name="System.Web.UI.WebControls.ListItem">
+    <description>List item control</description>
+    <field name="Text" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </field>
+  </class>
+  <class name="System.Web.UI.WebControls.LinkButton" supertypes="System.Web.UI.WebControls.WebControl">
+    <description>Hyperlink-style button</description>
+    <field name="Text" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </field>
+    <field name="PostBackUrl" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </field>
+  </class>
+  <class name="System.Web.UI.WebControls.ListControl">
+    <description>List control</description>
+    <field name="Text" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </field>
+  </class>
+  <class name="System.Web.UI.WebControls.ListBox" supertypes="System.Web.UI.WebControls.ListControl"/>
+  <class name="RadioButtonList" supertypes="System.Web.UI.WebControls.ListControl"/>
+  <class name="System.Web.UI.WebControls.RadioButton">
+    <description>Single-option selector</description>
+    <field name="Text" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </field>
+  </class>
+  <class name="System.Web.UI.WebControls.TextBox" supertypes="System.Web.UI.WebControls.WebControl">
+    <description>TextBox control</description>
+    <field name="Text" type="string">
+      <source kind="user_input" argpos="-1" />
+      <sink kind="xss" resource="web" argpos="-1"/>
+      <sink kind="information_leak" resource="web" argpos="-1"/>
+    </field>
+  </class>
+
+  <class name="System.Web.UI.WebControls.FileUpload" supertypes="System.Web.UI.WebControls.WebControl">
+    <description>File upload control</description>
+    <tags>fileupload</tags>
+    <field name="AllowMultiple" type="bool"/>
+    <field name="FileBytes" type="array">
+      <tags>check.fileupload.content</tags>
+      <source argpos="-1" kind="user_input"/>
+    </field>
+    <field name="FileContent" type="System.IO.Stream">
+      <tags>check.fileupload.content</tags>
+      <source argpos="-1" kind="user_input"/>
+    </field>
+    <field name="FileName" type="string">
+      <tags>check.fileupload.path</tags>
+      <source argpos="-1" kind="user_input"/><!-- plain filename, without path info -->
+    </field>
+    <field name="HasFile" type="bool"/>
+    <field name="HasFiles" type="bool"/>
+    <field name="PostedFile" type="System.Web.HttpPostedFile">
+      <tags>fileupload</tags>
+    </field>
+    <field name="PostedFiles" type=" System.Collections.Generic.IList">
+      <tags>fileupload</tags>
+    </field>
+    <method name="SaveAs" signature="SaveAs(string)">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+      <sink argpos="-2" kind="dangerous_file_upload" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Web.HttpPostedFileBase" kind="abstract_class">
+    <tags>fileupload</tags>
+    <field name="ContentLength" type="int">
+      <tags>check.fileupload.size</tags>
+    </field>
+    <field name="ContentType" type="string">
+      <tags>check.fileupload.mime</tags>
+    </field>
+    <field name="FileName" type="string">
+      <tags>check.fileupload.path</tags>
+      <source argpos="-1" kind="user_input"/><!-- full filename, including client path! -->
+    </field>
+    <field name="InputStream" type="System.IO.Stream">
+      <tags>check.fileupload.content</tags>
+      <source argpos="-1" kind="user_input"/>
+      <sink argpos="-1" kind="dangerous_file_upload" resource="web"/>
+    </field>
+    <method name="SaveAs" signature="SaveAs(string)">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+      <sink argpos="-2" kind="dangerous_file_upload" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Web.HttpPostedFileWrapper" supertypes="System.Web.HttpPostedFileBase">
+    <tags>fileupload</tags>
+  </class>
+
+  <class name="System.Web.HttpPostedFile" supertypes="System.Web.HttpPostedFileBase">
+    <!-- for historical reasons, not inherits from HttpPostedFileBase, but acts as it -->
+    <tags>fileupload</tags>
+  </class>
+
+  <class name="System.Web.HttpFileCollectionBase" supertypes="System.Collections.Specialized.NameObjectCollectionBase">
+    <field name="Item" type="System.Web.HttpPostedFile"/>
+    <method name="Get" signature="Get(string)" match="name">
+      <tags>fileupload</tags>
+      <return type="System.Web.HttpPostedFile"/>
+    </method>
+    <method name="GetKey" signature="GetKey(int)" match="name">
+      <return type="string"/>
+    </method>
+    <method name="GetMultiple" signature="GetMultiple(string)">
+      <tags>fileupload</tags>
+      <return type="System.Collections.Generic.IList"/>
+    </method>
+  </class>
+
+  <class name="System.Web.HttpFileCollectionWrapper" supertypes="System.Web.HttpFileCollectionBase"/>
+
+  <class name="System.Web.HttpFileCollection" supertypes="System.Web.HttpFileCollectionBase">
+    <!-- for historical reasons, not inherits from HttpFileCollectionBase, but acts as it -->
+  </class>
+
+  <!-- JavaScript injection -->
+  <class name="System.Web.UI.ClientScriptManager">
+    <description>Defines methods for managing client scripts in Web applications.</description>
+    <method name="GetCallbackEventReference" signature="GetCallbackEventReference(System.Web.UI.Control, string, string, string)" match="name">
+      <sink argpos="3" kind="xss" resource="web"/>
+    </method>
+    <method name="RegisterArrayDeclaration" signature="RegisterArrayDeclaration(string,string)">
+      <sink argpos="0,1" kind="xss" resource="web"/>
+    </method>
+    <method name="RegisterClientScriptBlock" signature="RegisterClientScriptBlock(Type,string,string)">
+      <sink argpos="2" kind="xss" resource="web"/>
+    </method>
+    <method name="RegisterClientScriptBlock" signature="RegisterClientScriptBlock(Type,string,string,Boolean)">
+      <sink argpos="2" kind="xss" resource="web"/>
+    </method>
+    <method name="RegisterClientScriptInclude" signature="RegisterClientScriptInclude(string,string)">
+      <sink argpos="1" kind="xss" resource="web"/>
+    </method>
+    <method name="RegisterClientScriptInclude" signature="RegisterClientScriptInclude(System.Type,string,string)">
+      <sink argpos="2" kind="xss" resource="web"/>
+    </method>
+    <method name="RegisterHiddenField" signature="RegisterHiddenField(string,string)">
+      <sink argpos="0,1" kind="xss" resource="web"/>
+    </method>
+    <method name="RegisterOnSubmitStatement" signature="RegisterOnSubmitStatement(System.Type,string,string)">
+      <sink argpos="2" kind="xss" resource="web"/>
+    </method>
+    <method name="RegisterStartupScript" signature="RegisterStartupScript(System.Type,string,string)">
+      <sink argpos="2" kind="xss" resource="web"/>
+    </method>
+    <method name="RegisterStartupScript" signature="RegisterStartupScript(System.Type,string,string,Boolean)">
+      <sink argpos="2" kind="xss" resource="web"/>
+    </method>
+  </class>
+
+  <!-- HtmlControls -->
+
+  <class name="System.Web.UI.HtmlControls.HtmlAnchor" supertypes="System.Web.UI.HtmlControls.HtmlContainerControl">
+    <field name="HRef" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </field>
+    <field name="Title" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </field>
+  </class>
+
+  <class name="System.Web.UI.HtmlControls.HtmlForm" supertypes="System.Web.UI.HtmlControls.HtmlContainerControl">
+    <field name="Action" type="string">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </field>
+    <!-- other "sensitive" form properties, like Method or Target, could have sinks ? -->
+  </class>
+
+  <class name="System.Web.UI.HtmlControls.HtmlIframe" supertypes="System.Web.UI.HtmlControls.HtmlContainerControl">
+    <field name="Src" type="string">
+      <sink argpos="0" kind="clickjacking" resource="web"/>
+    </field>
+  </class>
+
+  <class name="System.Web.UI.HtmlControls.HtmlTextArea" supertypes="System.Web.UI.HtmlControls.HtmlContainerControl">
+    <field name="Text" type="string">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+  </class>
+
+  <class name="System.Web.UI.HtmlControls.HtmlInputControl" supertypes="System.Web.UI.HtmlControls.HtmlControl">
+    <field name="Value" type="string">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+  </class>
+
+  <class name="System.Web.UI.HtmlControls.HtmlInputButton" supertypes="System.Web.UI.HtmlControls.HtmlInputControl">
+  </class>
+  <class name="System.Web.UI.HtmlControls.HtmlInputCheckBox" supertypes="System.Web.UI.HtmlControls.HtmlInputControl">
+    <!-- Checked property is boolean (safe, in general, for most injection attacks...) -->
+  </class>
+  <class name="System.Web.UI.HtmlControls.HtmlInputFile" supertypes="System.Web.UI.HtmlControls.HtmlInputControl">
+  </class>
+  <class name="System.Web.UI.HtmlControls.HtmlInputHidden" supertypes="System.Web.UI.HtmlControls.HtmlInputControl">
+  </class>
+  <class name="System.Web.UI.HtmlControls.HtmlInputImage" supertypes="System.Web.UI.HtmlControls.HtmlInputControl">
+
+  </class>
+  <class name="System.Web.UI.HtmlControls.HtmlInputRadioButton" supertypes="System.Web.UI.HtmlControls.HtmlInputControl">
+  </class>
+  <class name="System.Web.UI.HtmlControls.HtmlInputText" supertypes="System.Web.UI.HtmlControls.HtmlInputControl">
+  </class>
+
+  <!-- Common sanitizers (Validators) -->
+
+  <class name="System.Web.UI.WebControls.BaseValidator">
+    <description>Base class for validation controls</description>
+    <field name="Text" type="string">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </field>
+  </class>
+  <class name="System.Web.UI.WebControls.CompareValidator" supertypes="System.Web.UI.WebControls.BaseValidator"/>
+  <class name="System.Web.UI.WebControls.CustomValidator" supertypes="System.Web.UI.WebControls.BaseValidator"/>
+  <class name="System.Web.UI.WebControls.RangeValidator" supertypes="System.Web.UI.WebControls.BaseValidator"/>
+  <class name="System.Web.UI.WebControls.RegularExpressionValidator" supertypes="System.Web.UI.WebControls.BaseValidator"/>
+  <class name="System.Web.UI.WebControls.RequiredFieldValidator" supertypes="System.Web.UI.WebControls.BaseValidator"/>
+
+  <class name="System.Web.Util.HttpEncoder">
+    <description>Provides encoding and decoding logic.</description>
+    <method name="HeaderNameValueEncode" signature="HeaderNameValueEncode(string,string,string,string)">
+      <propagate from="0" to="2"/>
+      <propagate from="1" to="3"/>
+      <neutralization argpos="0,1" kind="string"/>
+    </method>
+    <method name="HtmlAttributeEncode" signature="HtmlAttributeEncode(string,TextWriter)">
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="HtmlEncode" signature="HtmlEncode(string,TextWriter)">
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="JavaScriptStringEncode" signature="JavaScriptStringEncode(string)">
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="UrlEncode" signature="UrlEncode(byte[],Int32,Int32)">
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="UrlPathEncode" signature="UrlPathEncode(string)">
+      <neutralization argpos="0" kind="string"/>
+    </method>
+  </class>
+
+  <class name="System.Web.HttpServerUtility">
+    <description>Provides helper methods for processing Web requests.</description>
+    <method name="Execute" signature="Execute(string)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="Execute" signature="Execute(string,Boolean)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="Execute" signature="Execute(string,System.IO.TextWriter,Boolean)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="HtmlEncode" signature="HtmlEncode(string)">
+      <return type="string"/>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="HtmlEncode" signature="HtmlEncode(string,TextWriter)">
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="Transfer" signature="Transfer(string)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="Transfer" signature="Transfer(string,Boolean)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="TransferRequest" signature="TransferRequest(string)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="TransferRequest" signature="TransferRequest(string,Boolean)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="TransferRequest" signature="TransferRequest(string,Boolean,string,System.Collections.Specialized.NameValueCollection)">
+      <sink argpos="0,2,3" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="TransferRequest" signature="TransferRequest(string,Boolean,string,System.Collections.Specialized.NameValueCollection,Boolean)">
+      <sink argpos="0,2,3" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="UrlEncode" signature="UrlEncode(string)" alias="UrlPathEncode">
+      <!-- note: UrlPathEncode is controversial against XSS -->
+      <return type="string"/>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="UrlEncode" signature="UrlEncode(string,TextWriter)">
+      <neutralization argpos="0" kind="xss"/>
+    </method>
+    <method name="MapPath" signature="MapPath(string)">
+      <return type="string"/>
+      <propagate from="0" to="-1"/>
+    </method>
+  </class>
+
+  <class name="System.Web.HttpServerUtilityBase" supertypes="System.Web.HttpServerUtility"/><!-- not subtype, but works as is -->
+  <class name="System.Web.HttpServerUtilityWrapper" supertypes="System.Web.HttpServerUtilityBase"/>
+
+  <class name="System.Web.TraceContext">
+    <field name="IsEnabled" type="bool"/>
+    <field name="TraceMode" type="System.Web.TraceMode"/>
+    <method name="Write" signature="Write(string,string,System.Exception)" match="name">
+      <sink argpos="0,2" kind="information_leak"/>
+    </method>
+  </class>
+
+  <class name="Server" supertypes="System.Web.HttpServerUtility"/>
+
+  <!-- old-fashioned System.Web.HttpUtility -->
+
+  <class name="System.Web.HttpUtility">
+    <method name="HtmlAttributeEncode" signature="HtmlAttributeEncode(string)" match="name">
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="JavaScriptStringEncode" signature="JavaScriptStringEncode(string)" match="name">
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="ParseQueryString" signature="ParseQueryString(string)" match="name">
+      <return type="System.Collections.Specialized.NamedValueCollection"/>
+      <propagate from="0" to="-1"/>
+    </method>
+    <method name="UrlEncode" signature="UrlEncode(string)" match="name">
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="UrlEncodeToBytes" signature="UrlEncodeToBytes(string)" match="name">
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="UrlEncodeUnicode" signature="UrlEncodeUnicode(string)" match="name">
+      <tags>obsolete</tags>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="UrlPathEncode" signature="UrlPathEncode(string)" match="name">
+      <tags>doNotUse</tags>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+  </class>
+
+  <!-- AntiXssEncoder utility -->
+
+  <!-- Most methods are protected, but they could be used in customized subclasses -->
+  <class name="System.Web.Security.AntiXss.AntiXssEncoder" supertypes="System.Web.Util.HttpEncoder">
+    <description>Encodes a string for use in HTML, XML, CSS, and URL strings.</description>
+    <method name="CssEncode" signature="CssEncode(string)" instance="false">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="HeaderNameValueEncode" signature="HeaderNameValueEncode(string,string,string,string)">
+      <propagate from="0" to="2"/>
+      <propagate from="1" to="3"/>
+      <neutralization argpos="0" kind="header_manipulation" resource="web"/>
+      <neutralization argpos="1" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="HtmlAttributeEncode" signature="HtmlAttributeEncode(string)" match="name">
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="HtmlEncode" signature="HtmlEncode(string)" match="name" instance="false">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="HtmlFormUrlEncode" signature="HtmlFormUrlEncode(string)" match="name" instance="false">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="JavaScriptStringEncode" signature="JavaScriptStringEncode(string)" match="name">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="UrlEncode" signature="UrlEncode(string)" match="name" instance="false">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="UrlPathEncode" signature="UrlPathEncode(string)" match="name">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="XmlAttributeEncode" signature="XmlAttributeEncode(string)" match="name" instance="false">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="XmlEncode" signature="XmlEncode(string)" match="name" instance="false">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.Security.Application.AntiXss">
+    <description>deprecated, old AntiXss item</description>
+    <method name="HtmlEncode" signature="HtmlEncode(string)" match="name">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="HtmlAttributeEncode" signature="HtmlAttributeEncode(string)" match="name">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="JavaScriptEncode" signature="JavaScriptEncode(string)" match="name">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="VisualBasicScriptEncode" signature="VisualBasicScriptEncode(string)" match="name">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="XmlAttributeEncode" signature="XmlAttributeEncode(string)" match="name">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+    <method name="XmlEncode" signature="XmlEncode(string)" match="name">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.Security.Application.Sanitizer">
+    <method name="GetSafeHtmlFragment(" signature="GetSafeHtmlFragment(string)" match="name">
+      <return type="string"/>
+      <neutralization argpos="0" kind="string"/>
+    </method>
+  </class>
+
+  <class name="System.Web.Security.RolePrincipal" supertypes="System.Security.Claims.ClaimsPrincipal">
+    <method name="IsInRole" signature="IsInRole(string)">
+      <tags>security_check,security_decision</tags>
+      <sink argpos="0" kind="security_decision" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Web.Configuration.HttpRuntimeSection" supertypes="System.Configuration.ConfigurationSection">
+    <!-- Fields related to security configuration -->
+    <field name="DefaultRegexMatchTimeout" type="System.TimeSpan"/>
+    <field name="EnableHeaderChecking" type="bool"/>
+    <field name="EnableVersionHeader" type="bool"/>
+    <field name="EncoderType" type="string"/>
+    <field name="ExecutionTimeout" type="System.TimeSpan"/>
+    <field name="MaxQueryStringLength" type="int"/>
+    <field name="MaxRequestLength" type="int"/>
+    <field name="RelaxedUrlToFileSystemMapping" type="bool"/>
+    <field name="RequestValidationMode" type="System.Version"/><!-- 4.5 is the current default -->
+    <field name="RequestValidationType" type="string"/>
+    <field name="TargetFramework" type="string"/>
+    <field name="UseFullyQualifiedRedirectUrl" type="bool"/>
+  </class>
+
+  <class name="System.Web.Query.Dynamic.ParseException" supertypes="System.Exception"/>
+  <class name="System.Web.Security.MembershipCreateUserException" supertypes="System.Exception"/>
+  <class name="System.Web.Security.MembershipPasswordException" supertypes="System.Exception"/>
+  <class name="System.Web.UI.ViewStateException" supertypes="System.Exception"/>
+  <class name="System.Web.UI.WebControls.EntityDataSourceValidationException" supertypes="System.Exception"/>
+  <class name="System.Web.UI.WebControls.LinqDataSourceValidationException" supertypes="System.Exception"/>
+
+</library>

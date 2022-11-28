@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="nodejs/DB_redis" standard="nodejs" technology="javascript">
+
+  <!-- Redis Node.js seems secure againts NoSQL injection: https://redis.io/topics/security -->
+  <module name="nodejs/DB_redis" standard="database/redis">
+    <description url="https://www.npmjs.com/package/redis">Redis module</description>
+    <class name="nodejs/redis">
+      <function name="createClient">
+        <sink kind="connection_string_injection">
+          <arg pos="0"/>
+          <arg pos="0" field="url"/>
+        </sink>
+        <sink kind="resource_injection">
+          <arg pos="0" field="db"/>
+        </sink>
+        <sink kind="sensitive_info">
+          <arg pos="0" field="password"/>
+        </sink>
+        <sink kind="ssrf">
+          <arg pos="0"/>
+          <arg pos="1"/>
+          <arg pos="0" field="host,port"/>
+        </sink>
+      </function>
+      <function name="auth">
+        <tags>password:0</tags>
+      </function>
+    </class>
+  </module>
+
+</library>

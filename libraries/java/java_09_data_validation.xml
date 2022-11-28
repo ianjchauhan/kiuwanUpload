@@ -1,0 +1,723 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--suppress DeprecatedClassUsageInspection -->
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.data.validation" standard="Data_Validation" technology="java">
+
+  <description>Java validation APIs</description>
+
+  <!--
+  Please note that data validation is complex, and valid inputs of a certain kind may carry attack payloads.
+  For example, RFC 5321 allows potentially dangerous chars in email addresses: "><script>alert(1);</script>"@example.org
+  is a valid email address according to RFC 5321.
+  -->
+
+  <module name="jsr-380" standard="jsr-380">
+    <description url="https://beanvalidation.org/2.0/">Bean Validation 2.0 (JSR-380)</description>
+    <class name="javax.validation.Validator" kind="interface">
+      <method name="forExecutables" signature="forExecutables()">
+        <return type="javax.validation.executable.ExecutableValidator">
+        </return>
+      </method>
+      <method name="validate" signature="validate(java.lang.Object, java.lang.Class...)" match="name">
+        <return type="java.util.Set" elementType="javax.validation.ConstraintViolation"/>
+        <neutralization kind="*" argpos="0">
+          <checker id="data_validation.codeValidator"/>
+        </neutralization>
+      </method>
+      <method name="validateProperty" signature="validateProperty(java.lang.Object, java.lang.String, java.lang.Class...)" match="name">
+        <return type="java.util.Set" elementType="javax.validation.ConstraintViolation"/>
+        <neutralization kind="*" argpos="0">
+          <checker id="data_validation.codeValidator"/>
+        </neutralization>
+      </method>
+      <method name="validateValue" signature="validateValue(java.lang.Class, java.lang.String, java.lang.Object, java.lang.Class...)" match="name">
+        <return type="java.util.Set" elementType="javax.validation.ConstraintViolation"/>
+        <neutralization kind="*" argpos="2">
+          <checker id="data_validation.codeValidator"/>
+        </neutralization>
+      </method>
+    </class>
+
+    <class name="javax.validation.executable.ExecutableValidator" kind="interface">
+      <method name="validateConstructorParameters" signature="validateConstructorParameters(java.lang.reflect.Constructor, java.lang.Object[], java.lang.Class...)">
+        <return type="java.util.Set" elementType="javax.validation.ConstraintViolation"/>
+        <neutralization kind="*" argpos="1">
+          <checker id="data_validation.executableValidator"/>
+        </neutralization>
+      </method>
+      <method name="validateConstructorReturnValue" signature="validateConstructorReturnValue(java.lang.reflect.Constructor, java.lang.Object, java.lang.Class...)">
+        <return type="java.util.Set" elementType="javax.validation.ConstraintViolation"/>
+        <neutralization kind="*" argpos="1">
+          <checker id="data_validation.executableValidator"/>
+        </neutralization>
+      </method>
+      <method name="validateParameters" signature="validateParameters(java.lang.Object, java.lang.reflect.Method, java.lang.Object[], java.lang.Class...)">
+        <return type="java.util.Set" elementType="javax.validation.ConstraintViolation"/>
+        <neutralization kind="*" argpos="2">
+          <checker id="data_validation.executableValidator"/>
+        </neutralization>
+      </method>
+      <method name="validateReturnValue" signature="validateReturnValue(java.lang.Object, java.lang.reflect.Method, java.lang.Object, java.lang.Class...)">
+        <return type="java.util.Set" elementType="javax.validation.ConstraintViolation"/>
+        <neutralization kind="*" argpos="2">
+          <checker id="data_validation.executableValidator"/>
+        </neutralization>
+      </method>
+    </class>
+
+    <!-- bootstrapping Validator -->
+    <class name="javax.validation.ValidatorFactory" kind="interface">
+      <method name="getValidator" signature="getValidator()">
+        <return type="javax.validation.Validator"/>
+      </method>
+      <method name="close" signature="close()"></method>
+    </class>
+    <class name="javax.validation.Configuration" kind="interface">
+      <method name="buildValidatorFactory" signature="buildValidatorFactory()">
+        <return type="javax.validation.ValidatorFactory"/>
+      </method>
+      <method name="addMapping" signature="addMapping(java.io.InputStream)" match="name" alias="addProperty, constraintValidatorFactory, messageInterpolator, parameterNameProvider, traversableResolver">
+        <return type="@self"/>
+      </method>
+      <method name="ignoreXmlConfiguration" signature="ignoreXmlConfiguration()">
+        <return type="@self"/>
+      </method>
+    </class>
+    <class name="javax.validation.bootstrap.GenericBootstrap" kind="interface" alias="javax.validation.bootstrap.ProviderSpecificBootstrap">
+      <method name="configure" signature="configure()"><return type="javax.validation.Configuration"/></method>
+      <method name="providerResolver" signature="providerResolver()" match="name">
+        <return type="@self"/>
+      </method>
+    </class>
+    <class name="javax.validation.Validation">
+      <description>Start point for bootstrapping Validator</description>
+      <method name="buildDefaultValidatorFactory" signature="buildDefaultValidatorFactory()">
+        <return type="javax.validation.ValidatorFactory"/>
+      </method>
+      <method name="byDefaultProvider" signature="byDefaultProvider()">
+        <return type="javax.validation.bootstrap.GenericBootstrap"/>
+      </method>
+      <method name="byProvider" signature="byProvider(java.lang.Class)">
+        <return type="javax.validation.bootstrap.ProviderSpecificBootstrap"/>
+      </method>
+    </class>
+
+    <!-- This validations have no real effect on security validation
+    <annotation name="javax.validation.constraints.AssertFalse" alias="javax.validation.constraints.AssertFalse.List"/>
+    <annotation name="javax.validation.constraints.AssertTrue" alias="javax.validation.constraints.AssertTrue.List"/>
+    <annotation name="javax.validation.constraints.Future" alias="javax.validation.constraints.Future.List"/>
+    <annotation name="javax.validation.constraints.FutureOrPresent" alias="javax.validation.constraints.FutureOrPresent.List"/>
+    <annotation name="javax.validation.constraints.Past" alias="javax.validation.constraints.Past.List"/>
+    <annotation name="javax.validation.constraints.PastOrPresent" alias="javax.validation.constraints.PastOrPresent.List"/>
+    <annotation name="javax.validation.constraints.Min" alias="javax.validation.constraints.Min.List"></annotation>
+    <annotation name="javax.validation.constraints.Negative" alias="javax.validation.constraints.Negative.List"></annotation>
+    <annotation name="javax.validation.constraints.NegativeOrZero" alias="javax.validation.constraints.NegativeOrZero.List"></annotation>
+    <annotation name="javax.validation.constraints.Positive" alias="javax.validation.constraints.Positive.List"></annotation>
+    <annotation name="javax.validation.constraints.PositiveOrZero" alias="javax.validation.constraints.PositiveOrZero.List"></annotation>
+    <annotation name="javax.validation.constraints.Size" alias="javax.validation.constraints.Size.List"></annotation>
+    <annotation name="javax.validation.constraints.Null" alias="javax.validation.constraints.Null.List"></annotation>
+    <annotation name="javax.validation.constraints.NotBlank" alias="javax.validation.constraints.NotBlank.List"></annotation>
+    <annotation name="javax.validation.constraints.NotEmpty" alias="javax.validation.constraints.NotEmpty.List"></annotation>
+    -->
+
+    <annotation name="javax.validation.constraints.NotNull" alias="javax.validation.constraints.NotNull.List">
+      <tags>filter.notnull</tags>
+    </annotation>
+
+    <annotation name="javax.validation.constraints.Max" alias="javax.validation.constraints.Max.List">
+      <tags>filter.max</tags>
+      <neutralization kind="numeric2numeric"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="javax.validation.constraints.DecimalMax" alias="javax.validation.constraints.DecimalMax.List">
+      <tags>filter.max</tags>
+      <neutralization kind="numeric2numeric"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="javax.validation.constraints.DecimalMin" alias="javax.validation.constraints.DecimalMin.List">
+      <!--neutralization kind="numeric2numeric"><checker id="data_validation.validator"/></neutralization-->
+    </annotation>
+    <annotation name="javax.validation.constraints.Digits" alias="javax.validation.constraints.Digits.List">
+      <neutralization kind="string2numeric"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="javax.validation.constraints.Pattern" alias="javax.validation.constraints.Pattern.List">
+      <field name="regexp" type="java.lang.String">
+        <sink kind="regex_dos" resource="other"/>
+      </field>
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="javax.validation.constraints.Email" alias="javax.validation.constraints.Email.List">
+      <field name="regexp" type="java.lang.String">
+        <sink kind="regex_dos" resource="other"/>
+      </field>
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+
+    <annotation name="javax.validation.Valid">
+      <neutralization kind="*"><checker id="data_validation.validationChecked"/></neutralization>
+    </annotation>
+  </module>
+
+  <module name="hibernate-validator" standard="hibernate.validator">
+    <description url="https://hibernate.org/validator/">Hibernate Validator</description>
+    <!-- This validations have no real effect on security validation
+    <annotation name="org.hibernate.validator.constraints.CodePointLength" alias="org.hibernate.validator.constraints.CodePointLength.List"></annotation>
+    <annotation name="org.hibernate.validator.constraints.NotBlank" alias="org.hibernate.validator.constraints.NotBlank.List"></annotation>
+    <annotation name="org.hibernate.validator.constraints.NotEmpty" alias="org.hibernate.validator.constraints.NotEmpty.List"></annotation>
+    <annotation name="org.hibernate.validator.constraints.UniqueElements" alias="org.hibernate.validator.constraints.UniqueElements.List"></annotation>
+    -->
+
+    <annotation name="org.hibernate.validator.constraints.CreditCardNumber" alias="org.hibernate.validator.constraints.CreditCardNumber.List">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.hibernate.validator.constraints.Currency" alias="org.hibernate.validator.constraints.Currency.List">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.hibernate.validator.constraints.EAN" alias="org.hibernate.validator.constraints.EAN.List">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.hibernate.validator.constraints.Email" alias="org.hibernate.validator.constraints.Email.List">
+      <field name="regexp" type="java.lang.String">
+        <sink kind="regex_dos" resource="other"/>
+      </field>
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.hibernate.validator.constraints.ISBN" alias="org.hibernate.validator.constraints.ISBN.List">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.hibernate.validator.constraints.Length" alias="org.hibernate.validator.constraints.Length.List">
+      <neutralization kind="string2numeric"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.hibernate.validator.constraints.LuhnCheck" alias="org.hibernate.validator.constraints.LuhnCheck.List">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.hibernate.validator.constraints.ModCheck"
+                alias="org.hibernate.validator.constraints.ModCheck.List,org.hibernate.validator.constraints.Mod10Check,org.hibernate.validator.constraints.Mod11Check">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.hibernate.validator.constraints.ParameterScriptAssert" alias="org.hibernate.validator.constraints.ParameterScriptAssert.List">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.hibernate.validator.constraints.Range" alias="org.hibernate.validator.constraints.Range.List">
+      <neutralization kind="string2numeric"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.hibernate.validator.constraints.SafeHtml" alias="org.hibernate.validator.constraints.SafeHtml.List">
+      <neutralization kind="xss"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.hibernate.validator.constraints.ScriptAssert" alias="org.hibernate.validator.constraints.ScriptAssert.List">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.hibernate.validator.constraints.URL" alias="org.hibernate.validator.constraints.URL.List">
+      <field name="regexp" type="java.lang.String">
+        <sink kind="regex_dos" resource="other"/>
+      </field>
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+  </module>
+
+  <module name="apache-bval" standard="apache.bval">
+    <description url="https://bval.apache.org/">Apache BVal - Bean Validation implementation (JSR-380)</description>
+    <!-- These validations have no real effect on security validation
+    <annotation name="org.apache.bval.constraints.NotEmpty"></annotation>
+    <annotation name="org.apache.bval.extras.constraints.file.Directory"></annotation>
+    <annotation name="org.apache.bval.extras.constraints.file.NotDirectory"></annotation>
+    <annotation name="org.apache.bval.extras.constraints.file.Symlink"></annotation>
+    -->
+
+    <annotation name="org.apache.bval.constraints.Email">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.apache.bval.extras.constraints.checkdigit.ABANumber"
+                alias="org.apache.bval.extras.constraints.checkdigit.CUSIP,org.apache.bval.extras.constraints.checkdigit.EAN13,org.apache.bval.extras.constraints.checkdigit.IBAN,org.apache.bval.extras.constraints.checkdigit.ISBN10,org.apache.bval.extras.constraints.checkdigit.Luhn,org.apache.bval.extras.constraints.checkdigit.Sedol,org.apache.bval.extras.constraints.checkdigit.Verhoeff">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.apache.bval.extras.constraints.creditcard.AmericanExpress"
+                alias="org.apache.bval.extras.constraints.creditcard.Diners,org.apache.bval.extras.constraints.creditcard.Discover,org.apache.bval.extras.constraints.creditcard.Mastercard,org.apache.bval.extras.constraints.creditcard.Visa">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.apache.bval.extras.constraints.net.Domain">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="org.apache.bval.extras.constraints.net.InetAddress">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+
+  </module>
+
+  <module name="oval" standard="oval">
+    <description url="https://github.com/sebthom/oval">OVal - Object validation framework</description>
+    
+    <!-- These validations have no real effect on security validation
+    <annotation name="net.sf.oval.constraint.AssertFalse"></annotation>
+    <annotation name="net.sf.oval.constraint.AssertTrue"></annotation>
+    <annotation name="net.sf.oval.constraint.Future"></annotation>
+    <annotation name="net.sf.oval.constraint.NotBlank"></annotation>
+    <annotation name="net.sf.oval.constraint.NotEmpty"></annotation>
+    <annotation name="net.sf.oval.constraint.AssertNull"></annotation>
+    <annotation name="net.sf.oval.constraint.Past"></annotation>
+    <annotation name="net.sf.oval.constraint.Size"></annotation>
+    <annotation name="net.sf.oval.constraint.NotNegative"></annotation>
+    <annotation name="net.sf.oval.constraint.DateRange"></annotation>
+    <annotation name="net.sf.oval.constraint.EqualToField"></annotation>
+    <annotation name="net.sf.oval.constraint.Future"></annotation>
+    -->
+
+    <annotation name="net.sf.oval.constraint.NotNull"><tags>filter.notNull</tags></annotation>
+
+    <annotation name="net.sf.oval.constraint.Max">
+      <tags>filter.max</tags>
+      <neutralization kind="string2numeric"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="net.sf.oval.constraint.Min">
+      <neutralization kind="string2numeric"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+
+    <annotation name="net.sf.oval.constraint.Digits">
+      <neutralization kind="string2numeric"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="net.sf.oval.constraint.Email">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="net.sf.oval.constraint.Pattern">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="net.sf.oval.constraint.AssertURL">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+
+    <annotation name="net.sf.oval.constraint.AssertValid"
+                alias="net.sf.oval.constraint.Assert, net.sf.oval.constraint.AssertFieldConstraints, net.sf.oval.constraint.CheckWith, net.sf.oval.constraint.ValidateWithMethod">
+      <neutralization kind="*"><checker id="data_validation.validationChecked"/></neutralization>
+    </annotation>
+    
+    <class name="net.sf.oval.ConstraintViolation"/>
+    
+    <class name="net.sf.oval.IValidator" kind="interface">
+      <method name="assertValid" signature="assertValid(java.lang.Object)">
+        <neutralization kind="*" argpos="0"><checker id="data_validation.codeValidator"/></neutralization>
+      </method>
+      <method name="assertValidFieldValue" signature="assertValid(java.lang.Object, java.lang.reflect.Field, java.lang.Object)">
+        <neutralization kind="*" argpos="2"><checker id="data_validation.codeValidator"/></neutralization>
+      </method>
+      <method name="validate" signature="validate(java.lang.Object, java.lang.String...)" match="name">
+        <return type="java.util.List" elementType="net.sf.oval.ConstraintViolation"/>
+        <neutralization kind="*" argpos="0"><checker id="data_validation.codeValidator"/></neutralization>
+      </method>
+      <method name="validateFieldValue" signature="validateFieldValue(java.lang.Object, java.lang.reflect.Field, java.lang.Object)">
+        <return type="java.util.List" elementType="net.sf.oval.ConstraintViolation"/>
+        <neutralization kind="*" argpos="2"><checker id="data_validation.codeValidator"/></neutralization>
+      </method>
+    </class>
+    
+    <class name="net.sf.oval.Validator" supertypes="net.sf.oval.IValidator"></class>
+  </module>
+
+  <module name="spring-validation" standard="spring.validation">
+    <description url="https://docs.spring.io/spring/docs/4.1.x/spring-framework-reference/html/validation.html">Spring Validation</description>
+
+    <annotation name="org.springframework.validation.annotation.Validated">
+      <neutralization kind="*"><checker id="data_validation.validationChecked"/></neutralization>
+    </annotation>
+
+    <class name="org.springframework.validation.Validator" kind="interface">
+      <method name="supports" signature="supports(java.lang.Class)"><return type="boolean"/></method>
+      <method name="validate" signature="validate(java.lang.Object, org.springframework.validation.Errors)">
+        <!-- should we accept this blindly ??? -->
+        <neutralization argpos="0" kind="*"/>
+      </method>
+    </class>
+    <class name="org.springframework.validation.SmartValidator" kind="interface" supertypes="org.springframework.validation.Validator">
+      <method name="validate" signature="validate(java.lang.Object, org.springframework.validation.Errors, java.lang.Object...)">
+        <!-- should we accept this blindly ??? -->
+        <neutralization argpos="0" kind="*"/>
+      </method>
+      <method name="validateValue" signature="validateValue(java.lang.Class, java.lang.String, java.lang.Object, org.springframework.validation.Errors, java.lang.Object...)">
+        <!-- should we accept this blindly ??? -->
+        <neutralization argpos="2" kind="*"/>
+      </method>
+    </class>
+    <class name="org.springframework.validation.beanvalidation.SpringValidatorAdapter" supertypes="javax.validation.Validator, org.springframework.validation.SmartValidator">
+      <constructor name="SpringValidatorAdapter" signature="SpringValidatorAdapter(javax.validation.Validator)"/>
+    </class>
+    <class name="org.springframework.validation.beanvalidation.CustomValidatorBean" supertypes="org.springframework.validation.beanvalidation.SpringValidatorAdapter"></class>
+    <class name="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" supertypes="org.springframework.validation.beanvalidation.SpringValidatorAdapter">
+      <method name="getValidator" signature="getValidator()">
+        <return type="javax.validation.Validator"/>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="play.data.validation" standard="play.validation">
+    <description url="https://www.playframework.com/documentation/2.6.0/api/java/play/data/validation/package-summary.html">
+      Validation in Play! framework 2.x and 1.x
+    </description>
+
+    <class name="play.data.validation.Constraints.Validator" kind="abstract_class">
+      <method name="isValid" signature="isValid(java.lang.Object)" match="name"><return type="boolean"/></method>
+    </class>
+
+    <!-- Remember: most validators are NOT proper neutralizations for security injection attacks -->
+    <class name="play.data.validation.Constraints.EmailValidator" supertypes="play.data.validation.Constraints.Validator">
+      <method name="isValid" signature="isValid(java.lang.Object)" match="name">
+        <return type="boolean"/>
+        <neutralization argpos="0" kind="*"/>
+      </method>
+    </class>
+    <class name="play.data.validation.Constraints.MaxValidator" supertypes="play.data.validation.Constraints.Validator">
+      <method name="isValid" signature="isValid(java.lang.Number)">
+        <tags>filter.max</tags>
+        <return type="boolean"/>
+        <neutralization argpos="0" kind="numeric2numeric"/>
+      </method>
+    </class>
+    <class name="play.data.validation.Constraints.MaxLengthValidator" supertypes="play.data.validation.Constraints.Validator"></class>
+    <class name="play.data.validation.Constraints.MinValidator" supertypes="play.data.validation.Constraints.Validator">
+      <method name="isValid" signature="isValid(java.lang.Number)">
+        <tags>filter.min</tags>
+        <return type="boolean"/>
+        <neutralization argpos="0" kind="numeric2numeric"/>
+      </method>
+    </class>
+    <class name="play.data.validation.Constraints.MinLengthValidator" supertypes="play.data.validation.Constraints.Validator"></class>
+    <class name="play.data.validation.Constraints.PatternValidator" supertypes="play.data.validation.Constraints.Validator">
+      <constructor name="PatternValidator" signature="PatternValidator(java.lang.String)">
+        <sink argpos="0" kind="regex_dos" resource="other"/>
+      </constructor>
+      <method name="isValid" signature="isValid(java.lang.Object)" match="name"><neutralization argpos="0" kind="*"/></method>
+    </class>
+    <class name="play.data.validation.Constraints.RequiredValidator" supertypes="play.data.validation.Constraints.Validator"></class>
+
+    <class name="play.data.validation.Constraints">
+      <method name="email" signature="email()"><return type="play.data.validation.Constraints.EmailValidator"/></method>
+      <method name="max" signature="max(long)"><return type="play.data.validation.Constraints.MaxValidator"/></method>
+      <method name="maxLength" signature="maxLength(long)"><return type="play.data.validation.Constraints.MaxLengthValidator"/></method>
+      <method name="min" signature="min(long)"><return type="play.data.validation.Constraints.MinValidator"/></method>
+      <method name="minLength" signature="minLength(long)"><return type="play.data.validation.Constraints.MinLengthValidator"/></method>
+      <method name="pattern" signature="pattern(java.lang.String)">
+        <return type="play.data.validation.Constraints.PatternValidator"/>
+        <sink kind="regex_dos" argpos="0" resource="other"/>
+      </method>
+      <method name="required" signature="required()"><return type="play.data.validation.Constraints.RequiredValidator"/></method>
+    </class>
+
+    <annotation name="play.data.validation.Constraints.Validate"
+                alias="play.data.validation.Constraints.Validate.List,
+                       play.data.validation.Constraints.ValidatePayloadWith, play.data.validation.Constraints.ValidatePayloadWith.List,
+                       play.data.validation.Constraints.ValidateWith, play.data.validation.Constraints.ValidateWith.List,
+                       play.data.validation.Constraints.ValidateWithPayload, play.data.validation.Constraints.ValidateWithPayload.List">
+      <neutralization kind="*"><checker id="data_validation.validationChecked"/></neutralization>
+    </annotation>
+
+    <!-- These do not neutralize injection attack payloads, in the general case
+    <annotation name="play.data.validation.Constraints.MaxLength" alias="play.data.validation.Constraints.MaxLength.List"></annotation>
+    <annotation name="play.data.validation.Constraints.MinLength" alias="play.data.validation.Constraints.MinLength.List"></annotation>
+    <annotation name="play.data.validation.Constraints.Required" alias="play.data.validation.Constraints.Required.List"></annotation>
+    -->
+    
+    <annotation name="play.data.validation.Constraints.Email" alias="play.data.validation.Constraints.Email.List">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="play.data.validation.Constraints.Max" alias="play.data.validation.Constraints.Max.List">
+      <tags>filter.max</tags>
+      <neutralization kind="numeric2numeric"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="play.data.validation.Constraints.Min" alias="play.data.validation.Constraints.Min.List">
+      <tags>filter.max</tags>
+      <neutralization kind="numeric2numeric"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="play.data.validation.Constraints.Email" alias="play.data.validation.Constraints.Email.List">
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+    <annotation name="play.data.validation.Constraints.Pattern" alias="play.data.validation.Constraints.Pattern.List">
+      <field name="value" type="java.lang.String">
+        <sink kind="regex_dos" resource="other"/>
+      </field>
+      <neutralization kind="string"><checker id="data_validation.validator"/></neutralization>
+    </annotation>
+
+    <!-- Play 1.x -->
+    <class name="play.data.validation.Validation.ValidationResult"></class>
+    <class name="play.data.validation.Validation">
+      <method name="current" signature="current()" instance="false"><return type="@self"/></method>
+
+      <!-- no real validation here -->
+      <method name="equals" signature="equals(java.lang.Object, java.lang.Object)"></method>
+      <method name="equals_2" signature="equals(java.lang.String, java.lang.Object, java.lang.Object)" instance="false"></method>
+      <method name="required" signature="required(java.lang.Object)"></method>
+      <method name="required_2" signature="required(java.lang.String, java.lang.Object)" instance="false"></method>
+
+
+      <method name="email" signature="email(java.lang.Object)"
+              alias="ipv4Address, ipv6Address, isTrue, phone, url">
+        <return type="play.data.validation.Validation.ValidationResult"/>
+        <neutralization argpos="0" kind="string"/>
+      </method>
+      <method name="email_2" signature="email(java.lang.String, java.lang.Object)" instance="false"
+              alias="ipv4Address, ipv6Address, isTrue, phone, url">
+        <return type="play.data.validation.Validation.ValidationResult"/>
+        <neutralization argpos="1" kind="string"/>
+      </method>
+      <method name="future" signature="future(java.lang.Object)" match="name" alias="past">
+        <return type="play.data.validation.Validation.ValidationResult"/>
+        <neutralization argpos="0,1" kind="string"/>
+      </method>
+      <method name="match" signature="match(java.lang.Object, java.lang.String)">
+        <return type="play.data.validation.Validation.ValidationResult"/>
+        <neutralization argpos="0" kind="string"/>
+        <sink kind="regex_dos" argpos="1" resource="other"/>
+      </method>
+      <method name="match_2" signature="match(java.lang.String, java.lang.Object, java.lang.String)" instance="false">
+        <return type="play.data.validation.Validation.ValidationResult"/>
+        <neutralization argpos="1" kind="string"/>
+        <sink kind="regex_dos" argpos="2" resource="other"/>
+      </method>
+      <method name="range" signature="range(java.lang.Object, double min, double max)">
+        <tags>filter.max</tags>
+        <return type="play.data.validation.Validation.ValidationResult"/>
+        <neutralization argpos="0" kind="string"/>
+      </method>
+      <method name="range_2" signature="range(java.lang.String, java.lang.Object, double min, double max)" instance="false">
+        <tags>filter.max</tags>
+        <return type="play.data.validation.Validation.ValidationResult"/>
+        <neutralization argpos="1" kind="string"/>
+      </method>
+      <method name="valid" signature="valid(java.lang.Object)">
+        <neutralization argpos="0" kind="*"><checker id="data_validation.codeValidator"/></neutralization>
+      </method>
+      <method name="valid_2" signature="valid(java.lang.String, java.lang.Object)" instance="false">
+        <neutralization argpos="1" kind="*"><checker id="data_validation.codeValidator"/></neutralization>
+      </method>
+    </class>
+  </module>
+
+  <module name="tapestry.beanEditor">
+    <description url="http://tapestry.apache.org/5.3.7/apidocs/org/apache/tapestry5/beaneditor/Validate.html">Validation for Apache Tapestry BeanEditor</description>
+    <annotation name="org.apache.tapestry5.beaneditor.Validate">
+      <neutralization kind="*">
+        <checker id="data_validation.tapestryValidator"/>
+      </neutralization>
+    </annotation>
+  </module>
+
+  <module name="commons-validator" standard="commons-validator">
+    <description url="http://commons.apache.org/proper/commons-validator/">Apache-Commons Validator</description>
+
+    <class name="org.apache.commons.validator.Validator">
+      <description>TODO - Validation framework is complex, depends on an XML descriptor which is difficult to analyze statically....</description>
+      <method name="validate" signature="validate()"></method>
+    </class>
+
+    <class name="org.apache.commons.validator.routines.AbstractFormatValidator" kind="abstract_class">
+      <method name="format" signature="format(java.lang.Object)" match="name">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="string"/>
+      </method>
+      <method name="isValid" signature="isValid(java.lang.String)" match="name">
+        <return type="boolean"/>
+        <neutralization argpos="0" kind="string"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.validator.routines.DateValidator" supertypes="org.apache.commons.validator.routines.AbstractFormatValidator">
+      <method name="getInstance" signature="getInstance()" instance="false" match="name">
+        <return type="@self"/>
+      </method>
+      <method name="validate" signature="validate(java.lang.String,java.lang.String,java.util.Locale,java.util.TimeZone)" match="name">
+        <return type="java.util.Date"/>
+        <neutralization kind="string" argpos="0"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.validator.routines.AbstractCalendarValidator" supertypes="org.apache.commons.validator.routines.AbstractFormatValidator">
+    </class>
+    <class name="org.apache.commons.validator.routines.CalendarValidator" supertypes="org.apache.commons.validator.routines.AbstractCalendarValidator">
+      <method name="getInstance" signature="getInstance()" instance="false" match="name">
+        <return type="@self"/>
+      </method>
+      <method name="validate" signature="validate(java.lang.String,java.lang.String,java.util.Locale,java.util.TimeZone)" match="name">
+        <return type="java.util.Calendar"/>
+        <neutralization kind="string" argpos="0"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.validator.routines.TimeValidator" supertypes="org.apache.commons.validator.routines.AbstractCalendarValidator">
+      <method name="getInstance" signature="getInstance()" instance="false" match="name">
+        <return type="@self"/>
+      </method>
+      <method name="validate" signature="validate(java.lang.String,java.lang.String,java.util.Locale,java.util.TimeZone)" match="name">
+        <return type="java.util.Calendar"/>
+        <neutralization kind="string" argpos="0"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.validator.routines.AbstractNumberValidator" supertypes="org.apache.commons.validator.routines.AbstractFormatValidator">
+      <method name="isInRange" signature="isInRange(java.lang.Number,java.lang.Number,java.lang.Number)" match="numargs">
+        <tags>filter.max</tags>
+        <return type="boolean"/>
+        <neutralization kind="numeric2numeric" argpos="0"/>
+      </method>
+      <method name="maxValue" signature="maxValue(java.lang.Number,java.lang.Number)" match="numargs">
+        <tags>filter.max</tags>
+        <return type="boolean"/>
+        <neutralization kind="numeric2numeric" argpos="0"/>
+      </method>
+      <method name="minValue" signature="minValue(java.lang.Number,java.lang.Number)" match="numargs">
+        <tags>filter.min</tags>
+        <return type="boolean"/>
+        <neutralization kind="numeric2numeric" argpos="0"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.validator.routines.ByteValidator" supertypes="org.apache.commons.validator.routines.AbstractNumberValidator"
+           alias="org.apache.commons.validator.routines.IntegerValidator, org.apache.commons.validator.routines.LongValidator,
+                  org.apache.commons.validator.routines.ShortValidator, org.apache.commons.validator.routines.FloatValidator,
+                  org.apache.commons.validator.routines.DoubleValidator, org.apache.commons.validator.routines.BigDecimalValidator,
+                  org.apache.commons.validator.routines.BigIntegerValidator, org.apache.commons.validator.routines.CurrencyValidator,
+                  org.apache.commons.validator.routines.PercentValidator">
+      <method name="getInstance" signature="getInstance()" instance="false" match="name">
+        <return type="@self"/>
+      </method>
+      <method name="validate" signature="validate(java.lang.String,java.lang.String,java.util.Locale)" match="name">
+        <return type="java.lang.Number"/>
+        <neutralization kind="string" argpos="0"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.validator.routines.RegexValidator">
+      <constructor name="RegexValidator" signature="RegexValidator(java.lang.String,boolean)">
+        <sink kind="regex_dos" argpos="0" resource="other"/>
+      </constructor>
+      <method name="isValid" signature="isValid(java.lang.String)">
+        <return type="boolean"/>
+        <neutralization argpos="0" kind="string"/>
+      </method>
+      <method name="validate" signature="validate(java.lang.String)">
+        <return type="java.lang.String"/>
+        <neutralization argpos="0" kind="string"/>
+      </method>
+      <method name="match" signature="match(java.lang.String)">
+        <return type="java.lang.String[]"/>
+        <neutralization argpos="0" kind="string"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.validator.routines.checkdigit.CheckDigit" kind="interface">
+      <field name="ABAN_CHECK_DIGIT" instance="false" type="@self"/>
+      <field name="IBAN_CHECK_DIGIT" instance="false" type="@self"/>
+      <field name="CUSIP_CHECK_DIGIT" instance="false" type="@self"/>
+      <field name="EAN13_CHECK_DIGIT" instance="false" type="@self"/>
+      <field name="IBAN_CHECK_DIGIT" instance="false" type="@self"/>
+      <field name="ISBN10_CHECK_DIGIT" instance="false" type="@self"/>
+      <field name="ISBN_CHECK_DIGIT" instance="false" type="@self"/>
+      <field name="ISBN13_CHECK_DIGIT" instance="false" type="@self"/>
+      <field name="ISIN_CHECK_DIGIT" instance="false" type="@self"/>
+      <field name="ISSN_CHECK_DIGIT" instance="false" type="@self"/>
+      <field name="LUHN_CHECK_DIGIT" instance="false" type="@self"/>
+      <field name="SEDOL_CHECK_DIGIT" instance="false" type="@self"/>
+      <field name="VERHOEFF_CHECK_DIGIT" instance="false" type="@self"/>
+
+      <method name="calculate" signature="calculate(java.lang.String)">
+        <return type="java.lang.String"/>
+      </method>
+      <method name="isValid" signature="isValid(java.lang.String)">
+        <return type="boolean"/>
+        <neutralization kind="string" argpos="0"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.validator.routines.checkdigit.ABANumberCheckDigit" supertypes="org.apache.commons.validator.routines.checkdigit.CheckDigit"
+           alias="org.apache.commons.validator.routines.checkdigit.CUSIPCheckDigit, org.apache.commons.validator.routines.checkdigit.EAN13CheckDigit,
+                  org.apache.commons.validator.routines.checkdigit.IBANCheckDigit, org.apache.commons.validator.routines.checkdigit.ISBN10CheckDigit,
+                  org.apache.commons.validator.routines.checkdigit.ISBNCheckDigit, org.apache.commons.validator.routines.checkdigit.ISINCheckDigit,
+                  org.apache.commons.validator.routines.checkdigit.ISSNCheckDigit, org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit,
+                  org.apache.commons.validator.routines.checkdigit.ModulusTenCheckDigit, org.apache.commons.validator.routines.checkdigit.SedolCheckDigit,
+                  org.apache.commons.validator.routines.checkdigit.VerhoeffCheckDigit"/>
+    <class name="org.apache.commons.validator.routines.CodeValidator">
+      <constructor name="CodeValidator" signature="CodeValidator(java.lang.String, int, int, org.apache.commons.validator.routines.checkdigit.CheckDigit)" match="name">
+        <sink kind="regex_dos" argpos="0"/>
+      </constructor>
+      <method name="isValid" signature="isValid(java.lang.String)">
+        <return type="boolean"/>
+        <neutralization argpos="0" kind="string"/>
+      </method>
+      <method name="validate" signature="validate(java.lang.String)">
+        <return type="java.lang.Object"/>
+        <neutralization argpos="0" kind="string"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.validator.routines.ISBNValidator">
+      <constructor name="ISBNValidator" signature="ISBNValidator(boolean)" match="name"></constructor>
+      <method name="getInstance" signature="getInstance(boolean)" instance="false"><return type="@self"/></method>
+      <method name="isValid" signature="isValid(java.lang.String)" alias="isValidISBN10, isValidISBN13">
+        <return type="boolean"/>
+        <neutralization argpos="0" kind="string"/>
+      </method>
+      <method name="validate" signature="validate(java.lang.String)" alias="validateISBN10, validateISBN13">
+        <return type="java.lang.String"/>
+        <neutralization argpos="0" kind="string"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.validator.routines.InetAddressValidator">
+      <constructor name="InetAddressValidator" signature="InetAddressValidator()"/>
+      <method name="getInstance" signature="getInstance()" instance="false"><return type="@self"/></method>
+      <method name="isValid" signature="isValid(java.lang.String)" alias="isValidInet4Address, isValidInet6Address">
+        <return type="boolean"/>
+        <neutralization argpos="0" kind="string"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.validator.routines.EmailValidator">
+      <method name="getInstance" signature="getInstance()" match="name" instance="false"><return type="@self"/></method>
+      <method name="isValid" signature="isValid(java.lang.String">
+        <!-- Is it possible to inject attack payloads even when this check passes ??? -->
+        <return type="boolean"/>
+        <neutralization kind="string" argpos="0"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.validator.routines.UrlValidator">
+      <constructor name="UrlValidator" signature="UrlValidator()" match="name"></constructor>
+      <method name="getInstance" signature="getInstance()" instance="false"><return type="@self"/></method>
+      <method name="isValid" signature="isValid(java.lang.String)">
+        <!-- Is it possible to inject attack payloads even when this check passes ??? -->
+        <return type="boolean"/>
+        <neutralization argpos="0" kind="string"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.validator.routines.DomainValidator">
+      <method name="getInstance" signature="getInstance()" instance="false" match="name"><return type="@self"/></method>
+      <method name="isValid" signature="isValid(java.lang.String)"
+              alias="isValidTld, isValidInfrastructureTld, isValidGenericTld, isValidCountryCodeTld, isValidLocalTld">
+        <return type="boolean"/>
+        <neutralization argpos="0" kind="string"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="jvalidation" standard="jvalidation">
+   <description url="https://github.com/jvalidation/jvalidation">Validation tool to express pre- and post-conditions in java code</description>
+
+    <class name="org.jvalidation.Assertive">
+      <constructor name="Assertive" signature="Assertive(java.lang.Object)"></constructor>
+      <method name="require" signature="require(java.lang.Object)" instance="false" alias="ensure">
+        <return type="@self"/>
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="isString" signature="isString()">
+        <return type="org.jvalidation.matcher.string.StringMatcher"/>
+      </method>
+    </class>
+    <class name="org.jvalidation.matcher.object.ObjectMatcher">
+      
+    </class>
+    <class name="org.jvalidation.matcher.string.StringMatcher" supertypes="org.jvalidation.matcher.object.ObjectMatcher">
+      <method name="contains" signature="contains(java.lang.String)">
+        <return type="@self"/>
+        <!--neutralization kind="string" argpos="-2"/-->
+      </method>
+      <method name="matches" signature="matches(java.lang.String)">
+        <return type="@self"/>
+        <sink kind="regex_dos" argpos="0" resource="other"/>
+        <neutralization kind="string" argpos="-2"/>
+      </method>
+      <method name="email" signature="email()">
+        <return type="@self"/>
+        <neutralization kind="string" argpos="-2"/>
+      </method>
+      <method name="*" signature="*()">
+        <return type="@self"/>
+      </method>
+    </class>
+  </module>
+
+</library>  

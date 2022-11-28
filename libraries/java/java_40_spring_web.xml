@@ -1,0 +1,1192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.spring.web" standard="Spring_Web" technology="java">
+
+  <description>Spring MVC and related libraries</description>
+
+  <module name="org.springframework.web" standard="spring.mvc">
+    <description url="https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html">
+      Spring MVC framework
+    </description>
+
+    <class name="org.springframework.web.context.request.WebRequest" kind="interface"
+           supertypes="org.springframework.web.context.request.RequestAttributes">
+      <method name="getHeader" signature="getHeader(java.lang.String)" alias="getHeaderValues">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getHeaderNames" signature="getHeaderNames()" alias="getHeaderNames">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getHeaderValues" signature="getHeaderValues(*)" alias="getHeaderValues">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getParameter" signature="getParameter(java.lang.String)" alias="getParameterValues">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getParameterMap" signature="getParameterMap()">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getParameterValues" signature="getParameterValues()">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="isUserInRole" signature="isUserInRole(java.lang.String)">
+        <sink argpos="0" kind="security_decision" resource="web"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.web.context.request.NativeWebRequest" kind="interface"
+           supertypes="org.springframework.web.context.request.WebRequest">
+    </class>
+
+    <class name="org.springframework.web.multipart.MultipartFile" kind="interface" supertypes="org.springframework.core.io.InputStreamResource">
+      <method name="getSize" signature="getSize()">
+        <return type="long"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.web.multipart.MockMultipartFile" supertypes="org.springframework.web.multipart.MultipartFile" />
+
+    <class name="org.springframework.web.multipart.CommonsMultipartFile" supertypes="org.springframework.web.multipart.MultipartFile" />
+
+    <class name="org.springframework.web.multipart.MultipartRequest" kind="interface">
+      <method name="getFile" signature="getFile(java.lang.String)">
+        <return type="org.springframework.web.multipart.MultipartFile"/>
+      </method>
+      <method name="getFileMap" signature="getFileMap()">
+        <return type="java.util.Map" elementType="org.springframework.web.multipart.MultipartFile"/>
+      </method>
+      <method name="getFiles" signature="getFiles()">
+        <return type="java.util.List" elementType="org.springframework.web.multipart.MultipartFile"/>
+      </method>
+      <method name="getMultiFileMap" signature="getMultiFileMap()">
+        <return type="org.springframework.util.MultiValueMap" elementType="org.springframework.web.multipart.MultipartFile"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.web.multipart.MultipartHttpServletRequest"
+           supertypes="javax.servlet.http.HttpServletRequest, org.springframework.web.multipart.MultipartRequest" >
+      <method name="getMultipartHeaders" signature="getMultipartHeaders(java.lang.String)">
+        <return type="org.springframework.http.HttpHeaders"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getRequestHeaders" signature="getRequestHeaders()">
+        <return type="org.springframework.http.HttpHeaders"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getRequestMethod" signature="	getRequestMethod()">
+        <return type="org.springframework.http.HttpHeaders"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.web.portlet.context.PortletWebRequest" kind="interface"
+           supertypes="org.springframework.web.context.request.NativeWebRequest">
+    </class>
+
+    <class name="org.springframework.web.portlet.context.FacesWebRequest" kind="interface"
+           supertypes="org.springframework.web.context.request.NativeWebRequest">
+    </class>
+
+    <class name="org.springframework.web.portlet.context.ServletWebRequest" kind="interface"
+           supertypes="org.springframework.web.context.request.NativeWebRequest">
+      <method name="getRequest" signature="getRequest()">
+        <return type="javax.servlet.http.HttpServletRequest"/>
+      </method>
+      <method name="getResponse" signature="getResponse()">
+        <return type="javax.servlet.http.HttpServletResponse"/>
+      </method>
+      <method name="getSession" signature="getSession()">
+        <return type="javax.servlet.http.HttpSession"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.web.servlet.handler.DispatcherServletWebRequest"
+           supertypes="org.springframework.web.context.request.ServletWebRequest"></class>
+
+    <class name="org.springframework.web.context.request.async.NoSupportAsyncWebRequest"
+           supertypes="org.springframework.web.context.request.ServletWebRequest"></class>
+
+    <class name="org.springframework.web.context.request.async.StandardServletAsyncWebRequest"
+           supertypes="org.springframework.web.context.request.ServletWebRequest"></class>
+
+    <class name="org.springframework.web.util.HtmlUtils">
+      <method name="htmlEscape" signature="htmlEscape(java.lang.String)" alias="htmlEscapeDecimal,htmlEscapeHex" match="name">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="xss"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.web.util.JavaScriptUtils">
+      <method name="javaScriptEscape" signature="javaScriptEscape(java.lang.String)">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="xss"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.web.client.RestTemplate">
+      <description>Sync client for HTTP requests</description>
+      <method name="getForObject" signature="getForObject(java.lang.String, java.lang.Class, java.util.Map)" match="name">
+        <source argpos="-1" kind="user_input" resource="web" />
+        <sink argpos="0,2" kind="ssrf" resource="network"/>
+      </method>
+      <method name="postForObject" signature="postForObject(java.lang.String, java.lang.Object, java.lang.Class, java.lang.Object)" match="name">
+        <source argpos="-1" kind="user_input" resource="web" />
+        <sink argpos="0,1,3" kind="ssrf" resource="network"/>
+      </method>
+      <method name="getForEntity" signature="getForEntity(java.lang.String, java.lang.Class, java.util.Map)" match="name">
+        <source argpos="-1" kind="user_input" resource="web" />
+        <sink argpos="0,2" kind="ssrf" resource="network"/>
+      </method>
+    </class>
+
+    <!-- Mapping annotations: @RequestMapping and specializations (@GetMapping ... @PatchMapping) -->
+    <annotation name="org.springframework.web.bind.annotation.RequestMapping"/>
+    <annotation name="org.springframework.web.bind.annotation.GetMapping"/>
+    <annotation name="org.springframework.web.bind.annotation.PostMapping"/>
+    <annotation name="org.springframework.web.bind.annotation.PutMapping"/>
+    <annotation name="org.springframework.web.bind.annotation.DeleteMapping"/>
+    <annotation name="org.springframework.web.bind.annotation.PatchMapping"/>
+
+    <annotation name="org.springframework.stereotype.Controller"/>
+    <annotation name="org.springframework.web.bind.annotation.RestController"/>
+
+    <annotation name="org.springframework.web.bind.annotation.ExceptionHandler"/>
+    <annotation name="org.springframework.web.bind.annotation.InitBinder"/>
+
+
+    <!-- Input parameters to controller methods -->
+    <annotation name="org.springframework.web.bind.annotation.RequestParam">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </annotation>
+    <annotation name="org.springframework.web.bind.annotation.CookieValue">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </annotation>
+    <annotation name="org.springframework.web.bind.annotation.MatrixVariable">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </annotation>
+    <annotation name="org.springframework.web.bind.annotation.PathVariable">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </annotation>
+    <annotation name="org.springframework.web.bind.annotation.RequestBody">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </annotation>
+    <annotation name="org.springframework.web.bind.annotation.RequestHeader">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </annotation>
+    <annotation name="org.springframework.web.bind.annotation.RequestParam">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </annotation>
+    <annotation name="org.springframework.web.bind.annotation.RequestPart">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </annotation>
+
+  </module>
+
+  <module name="org.springframework.http" standard="spring.http">
+    <description url="https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/package-summary.html">
+      Spring classes for HTTP messages
+    </description>
+
+    <class name="org.springframework.http.ResponseEntity">
+      <constructor name="ResponseEntity" signature="ResponseEntity(status)" match="numargs" >
+        <parameters>
+          <param type="org.springframework.http.HttpStatus" />
+        </parameters>
+      </constructor>
+      <constructor name="ResponseEntity" signature="ResponseEntity(headers, status)" match="numargs" >
+        <parameters>
+          <param type="org.springframework.util.MultiValueMap" />
+          <param type="org.springframework.http.HttpStatus" />
+        </parameters>
+        <sink kind="xss" argpos="0" resource="web" />
+      </constructor>
+      <constructor name="ResponseEntity" signature="ResponseEntity(body, status)" match="numargs" >
+        <parameters>
+          <param type="T" />
+          <param type="org.springframework.http.HttpStatus" />
+        </parameters>
+        <sink kind="xss" argpos="0" resource="web" />
+      </constructor>
+      <constructor name="ResponseEntity" signature="ResponseEntity(body, headers, status)" match="numargs" >
+        <tags>header:1</tags>
+        <parameters>
+          <param type="T" />
+          <param type="org.springframework.util.MultiValueMap" />
+          <param type="org.springframework.http.HttpStatus" />
+        </parameters>
+        <sink kind="xss" argpos="0" resource="web" />
+      </constructor>
+
+      <method name="ok" signature="ok()" match="numargs">
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="ok" signature="ok(java.lang.Object)" match="numargs">
+        <return type="org.springframework.http.ResponseEntity" />
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+      <method name="accepted" signature="accepted()" >
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="badRequest" signature="badRequest()" >
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="created" signature="created(java.net.URI)" >
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="noContent" signature="noContent()" >
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="notFound" signature="notFound()" >
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="status" signature="status()" match="name">
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="unprocessableEntity" signature="unprocessableEntity()">
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="of" signature="of(java.util.Optional)" >
+        <return type="org.springframework.http.ResponseEntity" />
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+    </class>
+
+    <class name="org.springframework.http.ResponseEntity.BodyBuilder" supertypes="org.springframework.http.ResponseEntity.HeadersBuilder" >
+      <method name="body" signature="body()" match="name">
+        <return type="org.springframework.http.ResponseEntity" />
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+
+      <method name="contentType" signature="contentType(org.springframework.http.MediaType)" match="name" >
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="contentLength" signature="contentLength(long)" match="name" >
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+    </class>
+    <class name="org.springframework.http.ResponseEntity.HeadersBuilder" >
+      <method name="header" signature="header(java.lang.String headerName, java.lang.String... headerValues)" >
+        <tags>header.name:0,header.value:1</tags>
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+        <sink argpos="1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="headers" signature="headers(org.springframework.http.HttpHeaders)" match="fullsignature" >
+        <tags>header:0</tags>
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="headers" signature="headers(java.util.Function)" match="fullsignature" >
+        <tags>header:0</tags>
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+
+      <method name="allow" signature="allow()" match="name" >
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="cacheControl" signature="cacheControl()" match="name" >
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="eTag" signature="eTag()" >
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="lastModified" signature="lastModified()" match="name" >
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="location" signature="location(java.net.URI)" match="name" >
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+      <method name="varyBy" signature="varyBy()" match="name" >
+        <return type="org.springframework.http.ResponseEntity.BodyBuilder" />
+      </method>
+
+      <method name="build" signature="build()" >
+        <return type="org.springframework.http.ResponseEntit" />
+      </method>
+    </class>
+
+    <class name="org.springframework.http.ContentDisposition.Builder" >
+      <method name="build" signature="build()" >
+        <return type="org.springframework.http.ContentDisposition" />
+      </method>
+      <method name="creationDate" signature="creationDate()" match="name" >
+        <return type="org.springframework.http.ContentDisposition.Builder" />
+      </method>
+      <method name="filename" signature="filename()" match="name" >
+        <return type="org.springframework.http.ContentDisposition.Builder" />
+      </method>
+      <method name="modificationDate" signature="modificationDate()" match="name" >
+        <return type="org.springframework.http.ContentDisposition.Builder" />
+      </method>
+      <method name="name" signature="name()" match="name" >
+        <return type="org.springframework.http.ContentDisposition.Builder" />
+      </method>
+      <method name="readDate" signature="readDate()" match="name" >
+        <return type="org.springframework.http.ContentDisposition.Builder" />
+      </method>
+      <method name="size" signature="size()" match="name" >
+        <return type="org.springframework.http.ContentDisposition.Builder" />
+      </method>
+    </class>
+
+    <class name="org.springframework.http.ContentDisposition" >
+      <method name="builder" signature="builder()" match="name">
+        <return type="org.springframework.http.ContentDisposition.Builder" />
+      </method>
+    </class>
+
+    <class name="org.springframework.http.HttpMessage" kind="interface" >
+      <method name="getHeaders" signature="getHeaders()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+        <sink argpos="-1" kind="header_manipulation" resource="web"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.http.HttpRequest" supertypes="org.springframework.http.HttpMessage" />
+
+    <class name="org.springframework.http.HttpHeaders">
+      <method name="add" signature="add(java.lang.String, java.lang.String)" >
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="addAll" signature="addAll(MultiValueMap)" >
+        <tags>header:0</tags>
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="addAll" signature="addAll(java.lang.String, java.util.List)" >
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="clear" signature="clear()" />
+      <method name="containsKey" signature="containsKey(java.lang.Object)" />
+      <method name="containsValue" signature="containsValue(java.lang.Object)" />
+      <method name="entrySet" signature="entrySet()" >
+        <sink argpos="-1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="equals" signature="equals(java.lang.Object)" />
+      <method name="get" signature="get(java.lang.Object)" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAccept" signature="getAccept()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAcceptCharset" signature="getAcceptCharset()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAcceptLanguage" signature="getAcceptLanguage()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAcceptLanguageAsLocales" signature="getAcceptLanguageAsLocales()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAccessControlAllowCredentials" signature="getAccessControlAllowCredentials()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAccessControlAllowHeaders" signature="getAccessControlAllowHeaders()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAccessControlAllowMethods" signature="getAccessControlAllowMethods()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAccessControlAllowOrigin" signature="getAccessControlAllowOrigin()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAccessControlExposeHeaders" signature="getAccessControlExposeHeaders()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAccessControlMaxAge" signature="getAccessControlMaxAge()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAccessControlRequestHeaders" signature="getAccessControlRequestHeaders()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAccessControlRequestMethod" signature="getAccessControlRequestMethod()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAllow" signature="getAllow()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getCacheControl" signature="getCacheControl()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getConnection" signature="getConnection()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getContentDisposition" signature="getContentDisposition()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getContentLanguage" signature="getContentLanguage()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getContentLength" signature="getContentLength()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getContentType" signature="getContentType()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getDate" signature="getDate()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getETag" signature="getETag()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getETagValuesAsList" signature="getETagValuesAsList(java.lang.String)" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getExpires" signature="getExpires()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getFieldValues" signature="getFieldValues(java.lang.String)" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getFirst" signature="getFirst(java.lang.String)" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getFirstDate" signature="getFirstDate(java.lang.String)" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getFirstZonedDateTime" signature="getFirstZonedDateTime(java.lang.String)" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getHost" signature="getHost()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getIfMatch" signature="getIfMatch()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getIfModifiedSince" signature="getIfModifiedSince()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getIfNoneMatch" signature="getIfNoneMatch()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getIfUnmodifiedSince" signature="getIfUnmodifiedSince()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getLastModified" signature="getLastModified()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getLocation" signature="getLocation()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getOrigin" signature="getOrigin()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getPragma" signature="getPragma()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getRange" signature="getRange()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getUpgrade" signature="getUpgrade()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getValuesAsList" signature="getValuesAsList(java.lang.String)" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getVary" signature="getVary()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="hashCode" signature="hashCode()" />
+      <method name="isEmpty" signature="isEmpty()" />
+      <method name="keySet" signature="keySet()" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+        <sink argpos="-1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="put" signature="put(java.lang.String key, java.util.List)" >
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="putAll" signature="putAll(java.util.Map)" >
+      </method>
+      <method name="readOnlyHttpHeaders" signature="readOnlyHttpHeaders(HttpHeaders)" />
+      <method name="remove" signature="remove(java.lang.Object)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="set" signature="set(java.lang.String, java.lang.String)" >
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setAccept" signature="setAccept(java.util.List)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setAcceptCharset" signature="setAcceptCharset(java.util.List)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setAcceptLanguage" signature="setAcceptLanguage(java.util.List)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setAcceptLanguageAsLocales" signature="setAcceptLanguageAsLocales(java.util.List)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setAccessControlAllowCredentials" signature="setAccessControlAllowCredentials(boolean)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setAccessControlAllowHeaders" signature="setAccessControlAllowHeaders(java.util.List)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setAccessControlAllowMethods" signature="setAccessControlAllowMethods(java.util.List)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setAccessControlAllowOrigin" signature="setAccessControlAllowOrigin(java.lang.String)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setAccessControlExposeHeaders" signature="setAccessControlExposeHeaders(java.util.List)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setAccessControlMaxAge" signature="setAccessControlMaxAge(long)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setAccessControlRequestHeaders" signature="setAccessControlRequestHeaders(java.util.List)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setAccessControlRequestMethod" signature="setAccessControlRequestMethod(HttpMethod)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setAll" signature="setAll(java.util.Map)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setAllow" signature="setAllow(java.util.Set)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setCacheControl" signature="setCacheControl(CacheControl)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setCacheControl" signature="setCacheControl(java.lang.String)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setConnection" signature="setConnection(java.util.List)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setConnection" signature="setConnection(java.lang.String)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setContentDisposition" signature="setContentDisposition(ContentDisposition)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+        <sink argpos="0" kind="reflected_file_download" resource="web"/>
+      </method>
+      <method name="setContentDispositionFormData" signature="setContentDispositionFormData(java.lang.String, java.lang.String)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setContentLanguage" signature="setContentLanguage(java.util.Locale)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setContentLength" signature="setContentLength(long)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setContentType" signature="setContentType(MediaType)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setDate" signature="setDate(long)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setDate" signature="setDate(java.lang.String, long)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setETag" signature="setETag(java.lang.String)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setExpires" signature="setExpires(long)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setExpires" signature="setExpires(java.time.ZonedDateTime)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setHost" signature="setHost(java.net.InetSocketAddress)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setIfMatch" signature="setIfMatch(java.util.List)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setIfMatch" signature="setIfMatch(java.lang.String)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setIfModifiedSince" signature="setIfModifiedSince(long)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setIfNoneMatch" signature="setIfNoneMatch(java.util.List)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setIfNoneMatch" signature="setIfNoneMatch(java.lang.String)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setIfUnmodifiedSince" signature="setIfUnmodifiedSince(long)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setLastModified" signature="setLastModified(long)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setLocation" signature="setLocation(java.net.URI)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+        <sink argpos="0" kind="open_redirect" resource="web"/>
+      </method>
+      <method name="setOrigin" signature="setOrigin(java.lang.String)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setPragma" signature="setPragma(java.lang.String)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setRange" signature="setRange(java.util.List)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setUpgrade" signature="setUpgrade(java.lang.String)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setVary" signature="setVary(java.util.List)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setZonedDateTime" signature="setZonedDateTime(java.lang.String, java.time.ZonedDateTime)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="size" signature="size()" />
+      <method name="toCommaDelimitedString" signature="toCommaDelimitedString(java.util.List)" />
+      <method name="toSingleValueMap" signature="toSingleValueMap()" />
+      <method name="toString" signature="toString()" />
+      <method name="values" signature="values()" >
+        <sink argpos="-1" kind="header_manipulation" resource="web"/>
+        <sink argpos="-1" kind="open_redirect" resource="web"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.http.server.ServerHttpResponse" kind="interface" supertypes="org.springframework.http.server.HttpOutputMessage" />
+    <class name="org.springframework.http.server.ServletServerHttpResponse" kind="interface" supertypes="org.springframework.http.server.ServerHttpResponse" >
+      <method name="getServletResponse" signature="getServletResponse()" >
+        <return type="javax.servlet.http.HttpServletResponse" />
+      </method>
+    </class>
+    <class name="org.springframework.http.server.HttpMessage" kind="interface" >
+      <method name="getHeaders" signature="getHeaders()" >
+        <return type="org.springframework.http.HttpHeaders" />
+      </method>
+    </class>
+    <class name="org.springframework.http.server.HttpOutputMessage" kind="interface" supertypes="org.springframework.http.server.HttpMessage" >
+      <method name="getBody" signature="getBody()" >
+        <return type="java.io.OutputStream" />
+      </method>
+    </class>
+    <class name="org.springframework.http.server.ServerHttpRequest" kind="interface" supertypes="org.springframework.http.server.HttpInputMessage" >
+      <method name="getLocalAddress" signature="getLocalAddres()" >
+        <return type="java.net.InetSocketAddress" />
+      </method>
+      <method name="getLocalAddress" signature="getLocalAddres()" >
+        <return type="java.net.InetSocketAddress" />
+      </method>
+    </class>
+    <class name="org.springframework.http.server.RequestPartServletServerHttpRequest" kind="interface" supertypes="org.springframework.http.server.ServerHttpRequest" >
+      <method name="getServletResponse" signature="getServletResponse()" >
+        <return type="javax.servlet.http.HttpServletResponse" />
+      </method>
+    </class>
+    <class name="org.springframework.http.server.ServletServerHttpRequest" kind="interface" supertypes="org.springframework.http.server.ServerHttpRequest" >
+      <method name="getServletRequest" signature="getServletRequest()" >
+        <return type="javax.servlet.http.HttpServletResponse" />
+      </method>
+    </class>
+    <class name="org.springframework.http.server.HttpInputMessage" kind="interface" supertypes="org.springframework.http.server.HttpMessage" >
+      <method name="getBody" signature="getBody()" >
+        <return type="java.io.InputStream" />
+      </method>
+    </class>
+
+    <class name="org.springframework.web.server.ServerWebExchange" kind="interface" >
+      <method name="getAttribute" signature="getAttribute(java.lang.String)">
+        <return type="java.lang.Object"/>
+        <propagate from="0" to="-1"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAttributeOrDefault" signature="getAttributeOrDefault(java.lang.String)">
+        <return type="java.lang.Object"/>
+        <propagate from="0" to="-1"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getAttributes" signature="getAttributes()">
+        <return type="java.util.Map"/>
+        <propagate from="0" to="-1"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getRequest" signature="getRequest" >
+        <return type="org.springframework.http.server.ServerHttpRequest" />
+      </method>
+      <method name="getResponse" signature="getResponse" >
+        <return type="org.springframework.http.server.ServerHttpResponse" />
+      </method>
+      <method name="getSession" signature="getSession()" >
+        <return type="org.springframework.web.server.WebSession" />
+      </method>
+      <method name="mutate" signature="mutate()" >
+        <return type="org.springframework.web.server.ServerWebExchange.Builder" />
+      </method>
+    </class>
+    <class name="org.springframework.web.server.ServerWebExchange.Builder">
+      <method name="build" signature="build()" >
+        <return type="org.springframework.web.server.ServerWebExchange" />
+      </method>
+      <method name="principal" signature="principal()" match="name" >
+        <return type="org.springframework.web.server.ServerWebExchange.Builder" />
+      </method>
+      <method name="request" signature="request()" match="name" >
+        <return type="org.springframework.web.server.ServerWebExchange.Builder" />
+      </method>
+      <method name="response" signature="response()" match="name" >
+        <return type="org.springframework.web.server.ServerWebExchange.Builder" />
+      </method>
+    </class>
+    <class name="org.springframework.web.server.adapter.DefaultServerWebExchange" kind="interface" supertypes="org.springframework.web.server.ServerWebExchange" />
+    <class name="org.springframework.web.server.ServerWebExchangeDecorator" kind="interface" supertypes="org.springframework.web.server.ServerWebExchange" />
+    <class name="org.springframework.mock.web.server.MockServerWebExchange" kind="interface" supertypes="org.springframework.web.server.ServerWebExchange" />
+
+    <class name="org.springframework.web.server.WebSession" >
+      <method name="getId" signature="getId()">
+        <tags>sensitive_info</tags>
+        <source argpos="-1" kind="sensitive_info" resource="web"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="org.springframework.security" standard="spring.security">
+    <description url="https://spring.io/projects/spring-security">
+      Spring Security (old Acegi library)
+    </description>
+
+    <class name="org.springframework.security.core.context.SecurityContextHolder" standard="spring-security">
+      <method name="getContext" signature="getContext()">
+        <return type="org.springframework.security.core.context.SecurityContext"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.security.core.context.SecurityContext" kind="interface" standard="spring-security">
+      <method name="getAuthentication" signature="getAuthentication()">
+        <return type="org.springframework.security.core.Authentication"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper" standard="spring-security"
+           supertypes="javax.servlet.http.HttpServletRequestWrapper">
+    </class>
+
+    <class name="org.springframework.security.core.Authentication" kind="interface" standard="spring-security">
+      <method name="getAuthorities" signature="getAuthorities()">
+        <return type="java.util.Collection"/>
+      </method>
+      <method name="getCredentials" signature="getCredentials()" alias="getAuthorities,getDetails,getPrincipal">
+        <tags>sensitive_info,credential</tags>
+        <return type="java.lang.Object"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.security.authentication.AuthenticationManager" standard="spring-security">
+      <method name="authenticate" signature="authenticate(org.springframework.security.core.Authentication)">
+        <sink argpos="0" kind="security_decision" resource="web"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.security.oauth2.config.annotation.builders.ClientDetailsServiceBuilder" standard="spring-security">
+      <method name="build" signature="build()">
+        <return type="org.springframework.security.oauth2.provider.ClientDetailsService"/>
+      </method>
+      <method name="withClient" signature="withClient(java.lang.String)">
+        <return type="org.springframework.security.oauth2.config.annotation.builders.ClientDetailsServiceBuilder.ClientBuilder"/>
+      </method>
+      <method name="other" signature="other()">
+        <return type="org.springframework.security.oauth2.config.annotation.builders.ClientDetailsServiceBuilder"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.security.oauth2.config.annotation.builders.ClientDetailsServiceBuilder.ClientBuilder"
+           standard="spring-security">
+      <method name="secret" signature="secret(java.lang.String)">
+        <tags>password:0</tags>
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="and" signature="and()">
+        <return type="org.springframework.security.oauth2.config.annotation.builders.ClientDetailsServiceBuilder"/>
+      </method>
+      <method name="other" signature="other()" match="all">
+        <return type="org.springframework.security.oauth2.config.annotation.builders.ClientDetailsServiceBuilder.ClientBuilder"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.security.config.annotation.web.builders.HttpSecurity" supertypes="" >
+      <method name="addFilter" signature="addFilter(javax.servlet.Filter)" >
+        <return type="org.springframework.security.config.annotation.web.builders.HttpSecurity" />
+      </method>
+      <method name="addFilterAfter" signature="addFilterAfter(javax.servlet.Filter, java.lang.Class)" >
+        <return type="org.springframework.security.config.annotation.web.builders.HttpSecurity" />
+      </method>
+      <method name="addFilterAt" signature="addFilterAt(javax.servlet.Filter, java.lang.Class)" >
+        <return type="org.springframework.security.config.annotation.web.builders.HttpSecurity" />
+      </method>
+      <method name="addFilterBefore" signature="addFilterBefore(javax.servlet.Filter, java.lang.Class)" >
+        <return type="org.springframework.security.config.annotation.web.builders.HttpSecurity" />
+      </method>
+      <method name="anonymous" signature="anonymous()" >
+        <return type="org.springframework.security.config.annotation.web.configurers.AnonymousConfigurer" />
+      </method>
+      <method name="antMatcher" signature="antMatcher(java.lang.String)" >
+        <return type="org.springframework.security.config.annotation.web.builders.HttpSecurity" />
+      </method>
+      <method name="authenticationProvider" signature="authenticationProvider(org.springframework.security.authentication.AuthenticationProvider)" >
+        <return type="org.springframework.security.config.annotation.web.builders.HttpSecurity" />
+      </method>
+      <method name="authorizeRequests" signature="authorizeRequests()" >
+        <return type="org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer.ExpressionInterceptUrlRegistry" />
+      </method>
+      <method name="beforeConfigure" signature="beforeConfigure()" >
+        <return type="void" />
+      </method>
+      <method name="cors" signature="cors()" >
+        <return type="org.springframework.security.config.annotation.web.configurers.CorsConfigurer" />
+      </method>
+      <method name="csrf" signature="csrf()" >
+        <return type="org.springframework.security.config.annotation.web.configurers.CsrfConfigurer" />
+      </method>
+      <method name="exceptionHandling" signature="exceptionHandling()" >
+        <return type="org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer" />
+      </method>
+      <method name="formLogin" signature="formLogin()" >
+        <return type="org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer" />
+      </method>
+      <method name="headers" signature="headers()" >
+        <return type="org.springframework.security.config.annotation.web.configurers.HeadersConfigurer" />
+      </method>
+      <method name="httpBasic" signature="httpBasic()" >
+        <return type="org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer" />
+      </method>
+      <method name="jee" signature="jee()" >
+        <return type="org.springframework.security.config.annotation.web.configurers.JeeConfigurer" />
+      </method>
+      <method name="logout" signature="logout()" >
+        <return type="org.springframework.security.config.annotation.web.configurers.LogoutConfigurer" />
+      </method>
+      <method name="mvcMatcher" signature="mvcMatcher(java.lang.String)" >
+        <return type="org.springframework.security.config.annotation.web.builders.HttpSecurity" />
+      </method>
+      <method name="regexMatcher" signature="regexMatcher(java.lang.String)" >
+        <return type="org.springframework.security.config.annotation.web.builders.HttpSecurity" />
+      </method>
+      <method name="requestMatcher" signature="requestMatcher(java.lang.String)" >
+        <return type="org.springframework.security.config.annotation.web.builders.HttpSecurity" />
+      </method>
+      <method name="userDetailsService" signature="	userDetailsService()" match="name" >
+        <return type="org.springframework.security.config.annotation.web.builders.HttpSecurity" />
+      </method>
+    </class>
+
+    <class name="org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer"
+           supertypes="org.springframework.security.config.annotation.web.configurers.AbstractAuthenticationFilterConfigurer" >
+
+      <method name="failureForwardUrl" signature="failureForwardUrl(java.lang.String)" >
+        <return type="org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer" />
+      </method>
+      <method name="loginPage" signature="loginPage(java.lang.String)" >
+        <return type="org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer" />
+      </method>
+      <method name="passwordParameter" signature="passwordParameter(java.lang.String)" >
+        <return type="org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer" />
+      </method>
+      <method name="successForwardUrl" signature="successForwardUrl(java.lang.String)" >
+        <return type="org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer" />
+      </method>
+      <method name="userParameter" signature="userParameter(java.lang.String)" >
+        <return type="org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer" />
+      </method>
+      <method name="loginPage" signature="loginPage(java.lang.String)" >
+        <return type="org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer" />
+      </method>
+    </class>
+
+    <class name="org.springframework.security.config.annotation.web.configurers.AbstractAuthenticationFilterConfigurer"
+           supertypes="org.springframework.security.config.annotation.SecurityConfigurerAdapter" >
+
+      <method name="failureHandler" signature="failureHandler(org.springframework.security.web.authentication.AuthenticationFailureHandler)" />
+      <method name="successHandler" signature="successHandler(org.springframework.security.web.authentication.AuthenticationSuccessHandler)" />
+    </class>
+
+    <class name="org.springframework.security.web.authentication.AuthenticationFailureHandler" kind="interface" >
+      <method name="onAuthenticationFailure" signature="onAuthenticationFailure(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.springframework.security.core.Authentication)" />
+    </class>
+
+    <class name="org.springframework.security.web.authentication.AuthenticationSuccessHandler" kind="interface" >
+      <method name="onAuthenticationSuccess" signature="onAuthenticationSuccess(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.springframework.security.core.Authentication)" />
+    </class>
+
+    <class name="org.springframework.security.config.annotation.SecurityConfigurerAdapter"/>
+
+    <class name="org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer">
+      <method name="accessDeniedHandler" signature="accessDeniedHandler(org.springframework.security.web.access.AccessDeniedHandler)" >
+        <return type="org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer" />
+      </method>
+      <method name="authenticationEntryPoint" signature="authenticationEntryPoint(org.springframework.security.web.AuthenticationEntryPoint)" >
+        <return type="org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer" />
+      </method>
+      <method name="defaultAuthenticationEntryPointFor" signature="defaultAuthenticationEntryPointFor(org.springframework.security.web.AuthenticationEntryPoint, org.springframework.security.web.util.matcher.RequestMatcher)" >
+        <return type="org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer" />
+      </method>
+    </class>
+
+    <class name="org.springframework.security.web.util.matcher.RequestMatcher">
+      <method name="matches" signature="handle(javax.servlet.http.HttpServletRequest)"/>
+    </class>
+
+    <class name="org.springframework.security.web.access.AccessDeniedHandler" kind="interface" >
+      <method name="handle" signature="handle(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.springframework.security.core.Authentication)"/>
+    </class>
+
+    <class name="org.springframework.security.web.AuthenticationEntryPoint" kind="interface" >
+      <method name="commence" signature="commence(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.springframework.security.core.Authentication)"/>
+    </class>
+
+    <class name="org.springframework.security.web.RedirectStrategy" kind="interface">
+      <method name="sendRedirect" signature="sendRedirect(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String)">
+        <tags>header.name:Location, header.value:2</tags>
+        <sink argpos="2" kind="header_manipulation" resource="web"/>
+        <sink argpos="2" kind="open_redirect" resource="web"/>
+        <sink kind="execution_after_redirect" argpos="-1" resource="web"/>
+      </method>
+    </class>
+    <class name="org.springframework.security.web.DefaultRedirectStrategy" supertypes="org.springframework.security.web.RedirectStrategy"/>
+
+    <class name="org.springframework.security.crypto.password.PasswordEncoder" kind="interface">
+      <method name="encode" signature="encode(java.lang.CharSequence)">
+        <tags>password_hash, data:0</tags>
+        <return type="java.lang.String"/>
+      </method>
+      <method name="matches" signature="matches(java.lang.CharSequence, java.lang.String)">
+        <tags>password_verify, data:0, password:1</tags>
+        <return type="boolean"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.security.crypto.password.AbstractPasswordEncoder" supertypes="org.springframework.security.crypto.password.PasswordEncoder">
+      <method name="encode" signature="encode(java.lang.CharSequence, byte[])">
+        <tags>password_hash, data:0, salt:1</tags>
+        <return type="byte[]"/>
+        <sink argpos="1" kind="hardcoded_salt" resource="crypto"/>
+        <neutralization kind="hash" resource="crypto" argpos="-1"/>
+      </method>
+      <method name="encodeAndConcatenate" signature="encodeAndConcatenate(java.lang.CharSequence, byte[])">
+        <return type="byte[]"/>
+        <neutralization kind="hash" resource="crypto" argpos="-1"/>
+      </method>
+    </class>
+    
+    <class name="org.springframework.security.crypto.argon2.Argon2PasswordEncoder" supertypes="org.springframework.security.crypto.password.PasswordEncoder">
+      <tags>password_hash, algo:argon2</tags>
+      <constructor name="Argon2PasswordEncoder" signature="Argon2PasswordEncoder()">
+        <tags>saltlen:fixed=128, keylen:fixed=256, strength.parallel:fixed=1, strength.mem:fixed=12, strength.iterations:fixed=3</tags>
+      </constructor>
+      <constructor name="Argon2PasswordEncoder" signature="Argon2PasswordEncoder(int,int,int,int,int)">
+        <tags>saltlen:0, keylen:1, strength.parallel:2, strength.mem:3, strength.iterations:4</tags>
+      </constructor>
+    </class>
+
+    <class name="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" supertypes="org.springframework.security.crypto.password.PasswordEncoder">
+      <tags>password_hash, algo:bcrypt</tags>
+      <constructor name="BCryptPasswordEncoder" signature="BCryptPasswordEncoder()">
+        <tags>strength.strength:fixed=10</tags>
+      </constructor>
+      <constructor name="BCryptPasswordEncoder" signature="BCryptPasswordEncoder(int)" match="fullsignature">
+        <tags>strength.strength:0</tags>
+      </constructor>
+      <constructor name="BCryptPasswordEncoder" signature="BCryptPasswordEncoder(int,java.security.SecureRandom)" match="fullsignature">
+        <tags>strength.strength:0</tags>
+      </constructor>
+      <constructor name="BCryptPasswordEncoder" signature="BCryptPasswordEncoder(org.springframework.security.crypto.bcrypt.BCrypt.BCryptVersion)" match="fullsignature">
+        <tags>strength.strength:fixed=10</tags>
+      </constructor>
+      <constructor name="BCryptPasswordEncoder" signature="BCryptPasswordEncoder(org.springframework.security.crypto.bcrypt.BCrypt.BCryptVersion,java.security.SecureRandom)" match="fullsignature">
+        <tags>strength.strength:fixed=10</tags>
+      </constructor>
+      <constructor name="BCryptPasswordEncoder" signature="BCryptPasswordEncoder(org.springframework.security.crypto.bcrypt.BCrypt.BCryptVersion, int, java.security.SecureRandom)" match="fullsignature">
+        <tags>strength.strength:1</tags>
+      </constructor>
+    </class>
+    
+    <class name="org.springframework.security.crypto.password.DelegatingPasswordEncoder" supertypes="org.springframework.security.crypto.password.PasswordEncoder">
+      <tags>password_hash</tags>
+      <constructor name="DelegatingPasswordEncoder" signature="DelegatingPasswordEncoder(java.lang.String, java.util.Map )"></constructor>
+    </class>
+    
+    <class name="org.springframework.security.crypto.password.LdapShaPasswordEncoder" supertypes="org.springframework.security.crypto.password.PasswordEncoder">
+      <description>Digest based password encoding is not considered secure</description>
+      <constructor name="LdapShaPasswordEncoder" signature="LdapShaPasswordEncoder()">
+        <tags>password_hash</tags>
+        <sink argpos="-1" kind="weak_password_hashing" resource="crypto"/>
+      </constructor>
+    </class>
+    
+    <class name="org.springframework.security.crypto.password.Md4PasswordEncoder" supertypes="org.springframework.security.crypto.password.PasswordEncoder">
+      <description>Provided for legacy purposes only and is not considered secure. Encodes passwords using MD4</description>
+      <constructor name="Md4PasswordEncoder" signature="Md4PasswordEncoder()">
+        <tags>password_hash, hash, algo:md4</tags>
+        <sink argpos="-1" kind="weak_password_hashing" resource="crypto"/>
+      </constructor>
+    </class>
+    
+    <class name="org.springframework.security.crypto.password.MessageDigestPasswordEncoder" supertypes="org.springframework.security.crypto.password.PasswordEncoder">
+      <description>Provided for legacy purposes only and is not considered secure. Encodes passwords using the specified hash function, but without iterations</description>
+      <tags>password_hash</tags>
+      <constructor name="MessageDigestPasswordEncoder" signature="MessageDigestPasswordEncoder(java.lang.String)">
+        <tags>hash, algo:0</tags>
+        <sink argpos="-1" kind="weak_password_hashing" resource="crypto"/>
+      </constructor>
+    </class>
+
+    <class name="org.springframework.security.crypto.password.NoOpPasswordEncoder" supertypes="org.springframework.security.crypto.password.PasswordEncoder">
+      <description>A password encoder that does nothing. Useful for testing where working with plain text passwords may be preferred.</description>
+      <tags>password_hash</tags>
+      <method name="getInstance" signature="getInstance()" instance="false">
+        <return type="org.springframework.security.crypto.password.NoOpPasswordEncoder"/>
+        <sink argpos="-1" kind="weak_password_hashing" resource="crypto"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.security.crypto.password.Pbkdf2PasswordEncoder" supertypes="org.springframework.security.crypto.password.PasswordEncoder">
+      <description>PBKDF2 with a configurable number of iterations and a random 8-byte random salt value.</description>
+      <tags>password_hash, algo:pbkdf2, salt:autogen=64</tags>
+      <constructor name="Pbkdf2PasswordEncoder" signature="Pbkdf2PasswordEncoder()">
+        <tags>iterations:fixed=185000, keylen:fixed=256</tags>
+      </constructor>
+      <constructor name="Pbkdf2PasswordEncoder" signature="Pbkdf2PasswordEncoder(java.lang.CharSequence)">
+        <tags>key:0, pepper:0, iterations:fixed=185000, keylen:fixed=256</tags>
+      </constructor>
+      <constructor name="Pbkdf2PasswordEncoder" signature="Pbkdf2PasswordEncoder(java.lang.CharSequence, int, int)">
+        <tags>key:0, pepper:0, iterations:1, keylen:2</tags>
+        <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+      </constructor>
+    </class>
+
+    <class name="org.springframework.security.crypto.scrypt.SCryptPasswordEncoder" supertypes="org.springframework.security.crypto.password.PasswordEncoder">
+      <tags>password_hash, algo:scrypt</tags>
+      <constructor name="SCryptPasswordEncoder" signature="SCryptPasswordEncoder()">
+        <tags>strength.cpu:fixed=16384, strength.mem:fixed=8, strength.parallel:fixed=1, keylen:fixed=32, saltlen:fixed=64</tags>
+      </constructor>
+      <constructor name="SCryptPasswordEncoder" signature="SCryptPasswordEncoder(int,int,int,int,int)">
+        <tags>strength.cpu:0, strength.mem:1, strength.parallel:2, keylen:3, saltlen:4</tags>
+      </constructor>
+    </class>
+
+    <class name="org.springframework.security.crypto.password.StandardPasswordEncoder" supertypes="org.springframework.security.crypto.password.PasswordEncoder">
+      <description>SHA-256 hashing with 1024 iterations and a random 8-byte random salt value.</description>
+      <tags>password_hash, algo:sha256,salt:autogen=64,iterations:fixed=1024</tags>
+      <constructor name="StandardPasswordEncoder" signature="StandardPasswordEncoder(java.lang.CharSequence)" match="name">
+        <tags>key:0, pepper:0</tags>
+        <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+      </constructor>
+    </class>
+
+    <class name="org.springframework.security.crypto.bcrypt.BCrypt">
+      <method name="hashpw" signature="hashpw(java.lang.String,java.lang.String)" instance="false">
+        <tags>password_hash,algo:bcrypt,data:0,salt:1</tags>
+        <return type="java.lang.String"/>
+        <sink argpos="1" kind="hardcoded_salt" resource="crypto"/>
+      </method>
+      <method name="checkpw" signature="checkpw(java.lang.String,java.lang.String)" instance="false">
+        <tags>password_verify,algo:bcrypt,data:0,password:1</tags>
+        <return type="boolean"/>
+      </method>
+      <method name="gensalt" signature="gensalt(int)" match="name" instance="false">
+        <tags>algo:bcrypt, strength.strength:0</tags>
+        <return type="java.lang.String"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.security.crypto.bcrypt.BCrypt.BCryptVersion" kind="enum"/>
+
+    <class name="org.springframework.security.crypto.encrypt.BytesEncryptor" kind="interface">
+      <method name="encrypt" signature="encrypt(byte[])">
+        <tags>encrypt,data:0</tags>
+        <return type="byte[]"/>
+        <neutralization argpos="0" kind="encryption" resource="crypto"/>
+      </method>
+      <method name="decrypt" signature="decrypt(byte[])">
+        <tags>decrypt,data:0</tags>
+        <return type="byte[]"/>
+        <neutralization argpos="0" kind="decryption" resource="crypto"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.security.crypto.encrypt.TextEncryptor" kind="interface">
+      <method name="encrypt" signature="encrypt(java.lang.String)">
+        <tags>encrypt,data:0</tags>
+        <return type="java.lang.String"/>
+        <neutralization argpos="0" kind="encryption" resource="crypto"/>
+      </method>
+      <method name="decrypt" signature="decrypt(java.lang.String)">
+        <tags>decrypt,data:0</tags>
+        <return type="java.lang.String"/>
+        <neutralization argpos="0" kind="decryption" resource="crypto"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.security.crypto.encrypt.Encryptors">
+      <method name="delux" signature="delux(java.lang.CharSequence,java.lang.CharSequence)" instance="false">
+        <tags>key_derivation,key:0,password:0,salt:1</tags>
+        <return type="org.springframework.security.crypto.encrypt.TextEncryptor"/>
+        <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+        <sink argpos="1" kind="hardcoded_salt" resource="crypto"/>
+      </method>
+      <method name="noOpText" signature="noOpText()" instance="false">
+        <tags>key_derivation,weak,nop</tags>
+        <return type="org.springframework.security.crypto.encrypt.TextEncryptor"/>
+      </method>
+      <method name="delux" signature="queryableText(java.lang.CharSequence,java.lang.CharSequence)" instance="false">
+        <tags>key_derivation,weak,key:0,password:0,salt:1</tags>
+        <return type="org.springframework.security.crypto.encrypt.TextEncryptor"/>
+        <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+        <sink argpos="1" kind="hardcoded_salt" resource="crypto"/>
+      </method>
+      <method name="standard" signature="standard(java.lang.CharSequence,java.lang.CharSequence)" alias="stronger" instance="false">
+        <tags>key_derivation,key:0,password:0,salt:1</tags>
+        <return type="org.springframework.security.crypto.encrypt.BytesEncryptor"/>
+        <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+        <sink argpos="1" kind="hardcoded_salt" resource="crypto"/>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="org.springframework.ws" standard="spring.ws">
+    <description url="https://spring.io/projects/spring-ws">Spring WebServices</description>
+
+    <class name="org.springframework.ws.client.core.WebServiceOperations" kind="interface">
+      <method name="sendSourceAndReceiveToResult" signature="sendSourceAndReceiveToResult(javax.xml.transform.Source, javax.xml.transform.Result)">
+        <sink argpos="0" kind="network_output" resource="network"/>
+        <source argpos="1" kind="user_input" resource="network"/>
+      </method>
+      <method name="sendSourceAndReceiveToResult_2" signature="sendSourceAndReceiveToResult(java.lang.String,javax.xml.transform.Source, javax.xml.transform.Result)">
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink argpos="1" kind="network_output" resource="network"/>
+        <source argpos="2" kind="user_input" resource="network"/>
+      </method>
+      <method name="sendSourceAndReceiveToResult_3"
+              signature="sendSourceAndReceiveToResult(java.lang.String,javax.xml.transform.Source, org.springframework.ws.client.core.WebServiceMessageCallback,javax.xml.transform.Result)">
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink argpos="1" kind="network_output" resource="network"/>
+        <source argpos="3" kind="user_input" resource="network"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.ws.client.core.support.WebServiceGatewaySupport">
+      <method name="getWebServiceTemplate" signature="getWebServiceTemplate()" match="name">
+        <return type="org.springframework.ws.client.core.WebServiceTemplate"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.ws.client.core.WebServiceTemplate">
+      <method name="doSendAndReceive" signature="doSendAndReceive(MessageContext, WebServiceConnection, WebServiceMessageCallback, WebServiceMessageExtractor)" match="name">
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="sendAndReceive" signature="sendAndReceive()" match="name">
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="sendSourceAndReceive" signature="sendSourceAndReceive()" match="name">
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="marshalSendAndReceive" signature="marshalSendAndReceive()" match="name">
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+  </module>
+
+</library>

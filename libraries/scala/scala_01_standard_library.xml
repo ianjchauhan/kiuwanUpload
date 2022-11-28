@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="scala" name="scala.stdlib" standard="Scala_stdlib">
+
+  <description url="https://www.scala-lang.org/api/current/scala/index.html" >Scala standard library</description>
+
+  <module name="scala" >
+    <class name="scala.Any">
+      <method name="toString" signature="toString()" >
+        <return type="String" />
+      </method>
+      <method name="toByte" signature="toByte()" alias="byteValue" >
+        <return type="scala.Byte" />
+      </method>
+      <method name="toChar" signature="toChar()" >
+        <return type="scala.Char" />
+      </method>
+      <method name="toDouble" signature="toDouble()" alias="doubleValue" >
+        <return type="scala.Double" />
+      </method>
+      <method name="toFloat" signature="toFloat()" alias="floatValue" >
+        <return type="scala.Float" />
+      </method>
+      <method name="toInt" signature="toInt()" alias="intValue" >
+        <return type="scala.Int" />
+      </method>
+      <method name="toLong" signature="toLong()" alias="longValue" >
+        <return type="scala.Long" />
+      </method>
+      <method name="toShort" signature="toShort()" alias="shortValue" >
+        <return type="scala.Short" />
+      </method>
+    </class>
+    <class name="scala.AnyVal" supertypes="scala.Any" />
+    <class name="scala.Int" supertypes="scala.AnyVal" >
+      <field name="self" type="scala.Int" />
+    </class>
+    <class name="scala.Unit" supertypes="scala.AnyVal" />
+    <class name="scala.Array" supertypes="scala.Serializable, java.lang.Cloneable" />
+    <class name="scala.Option" >
+      <method name="get" signature="get()" />
+    </class>
+
+    <class name="scala.Console">
+      <function name="println" signature="println(Any)" >
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0" kind="privacy_violation" resource="other" />
+      </function>
+
+      <function name="print" signature="print(Any)" >
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0" paramNames="text" kind="format_injection" resource="formatstr"/>
+        <sink argpos="0" paramNames="x" kind="privacy_violation" resource="other" />
+      </function>
+
+      <function name="printf" signature="printf(text, args)" >
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0" paramNames="text" kind="format_injection" resource="formatstr"/>
+        <sink argpos="0" kind="privacy_violation" resource="other" />
+      </function>
+    </class>
+
+    <function name="scala.classOf" signature="scala.classOf(T)" >
+      <return type="Class" />
+    </function>
+
+    <class name="String" supertypes="java.lang.String, better.files.File, kantan.xpath.ops.XmlSourceOps" >
+      <method name="r" signature="r()" >
+        <return type="scala.util.matching.Regex" />
+        <sink argpos="-2" kind="regex_dos" resource="other" />
+      </method>
+      <method name="toInt" signature="toInt()" >
+        <return type="scala.Int"/>
+      </method>
+
+      <!-- spray-json -->
+      <method name="parseJson" signature="parseJson()" >
+        <sink argpos="-2" kind="json_injection" resource="other" />
+      </method>
+
+      <!-- argonaut -->
+      <method name="parseOption" signature="parseOption()" >
+        <sink argpos="-2" kind="json_injection" resource="other" />
+      </method>
+    </class>
+
+    <class name="Class" supertypes="java.lang.Class" />
+    <class name="scala.Some" supertypes="scala.Option" >
+      <function name="Some" signature="Some()" />
+    </class>
+
+    <class name="scala.Serializable"/>
+
+    <!-- COLLECTIONS -->
+    <class name="scala.collection.Iterator" kind="trait">
+      <method name="hasNext" signature="hasNext()" match="name">
+        <tags>potential_infinite_loop_neutralizer</tags>
+        <propagate from="-2" to="-1"/>
+        <neutralization argpos="-2" kind="loop-condition" resource="other" />
+      </method>
+      <method name="collect" signature="collect()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="drop" signature="drop()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="dropWhile" signature="dropWhile()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="filter" signature="filter()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="filterNot" signature="filterNot()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="flatMap" signature="flatMap()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="map" signature="map()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="scanLeft" signature="scanLeft()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="scanRight" signature="scanRight()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="slice" signature="slice()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="take" signature="take()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="takeWhile" signature="takeWhile()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="toIterator" signature="toIterator()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="withFilter" signature="withFilter()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="zip" signature="zip()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="zipAll" signature="zipAll()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="zipWithIndex" signature="zipWithIndex()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+    </class>
+    <class name="scala.collection.GenIterable" kind="trait" supertypes="scala.collection.GenIterableLike"/>
+    <class name="scala.collection.GenIterableLike" kind="trait">
+      <method name="iterator" signature="iterator()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="toIterator" signature="toIterator()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+    </class>
+    <class name="scala.collection.Iterable" kind="trait" supertypes="scala.collection.GenIterable,scala.collection.IterableLike"/>
+    <class name="scala.collection.IterableLike" kind="trait" supertypes="scala.collection.GenIterableLike">
+      <method name="grouped" signature="grouped()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="inits" signature="inits()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="sliding" signature="sliding()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="tails" signature="tails()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="toIterable" signature="toIterable()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+      <method name="toIterator" signature="toIterator()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+    </class>
+    <class name="scala.collection.Map" kind="trait" supertypes="scala.collection.Iterable">
+      <method name="empty" signature="empty()" match="name">
+        <return type="scala.collection.Map"/>
+      </method>
+    </class>
+
+    <class name="scala.collection.AbstractSeq" kind="trait" supertypes="scala.collection.Seq"/>
+    <class name="scala.collection.Seq" kind="trait" supertypes="scala.collection.SeqLike,scala.collection.Iterable"/>
+    <class name="scala.collection.SeqLike" kind="trait" supertypes="scala.collection.IterableLike">
+      <method name="reverseIterator" signature="reverseIterator()" match="name">
+        <return type="scala.collection.Iterator"/>
+      </method>
+    </class>
+    <class name="scala.collection.Set" kind="trait" supertypes="scala.collection.Iterable">
+      <method name="empty" signature="empty()" match="name">
+        <return type="scala.collection.Set"/>
+      </method>
+    </class>
+    <class name="scala.collection.SortedSet" kind="trait" supertypes="scala.collection.Set">
+      <method name="empty" signature="empty()" match="name">
+        <return type="scala.collection.SortedSet"/>
+      </method>
+    </class>
+
+    <!-- Immutable collections -->
+    <class name="scala.collection.immutable.HashSet" kind="trait" supertypes="scala.collection.immutable.Set">
+      <method name="empty" signature="empty()" match="name">
+        <return type="scala.collection.immutable.HashSet"/>
+      </method>
+    </class>
+    <class name="scala.collection.immutable.Iterable" kind="trait" supertypes="scala.collection.AbstractSeq"/>
+    <class name="scala.collection.immutable.List" kind="trait" supertypes="scala.collection.AbstractSeq"/>
+    <class name="scala.collection.immutable.ListMap" kind="trait" supertypes="scala.collection.immutable.Map">
+      <method name="empty" signature="empty()" match="name">
+        <return type="scala.collection.immutable.ListMap"/>
+      </method>
+    </class>
+    <class name="scala.collection.immutable.ListSet" kind="trait" supertypes="scala.collection.immutable.Set">
+      <method name="empty" signature="empty()" match="name">
+        <return type="scala.collection.immutable.ListSet"/>
+      </method>
+    </class>
+    <class name="scala.collection.immutable.Map" kind="trait" supertypes="scala.collection.immutable.Iterable">
+      <method name="empty" signature="empty()" match="name">
+        <return type="scala.collection.immutable.Map"/>
+      </method>
+    </class>
+    <class name="scala.collection.immutable.Set" kind="trait" supertypes="scala.collection.immutable.Iterable">
+      <method name="empty" signature="empty()" match="name">
+        <return type="scala.collection.immutable.Set"/>
+      </method>
+    </class>
+    <class name="scala.collection.immutable.SortedSet" kind="trait" supertypes="scala.collection.immutable.Set">
+      <method name="empty" signature="empty()" match="name">
+        <return type="scala.collection.immutable.SortedSet"/>
+      </method>
+    </class>
+    <class name="scala.collection.immutable.TreeSet" supertypes="scala.collection.immutable.SortedSet">
+      <method name="empty" signature="empty()" match="name">
+        <return type="scala.collection.immutable.TreeSet"/>
+      </method>
+    </class>
+    <class name="scala.collection.immutable.Vector" supertypes="scala.collection.AbstractSeq" alias="Vector">
+      <method name="empty" signature="empty()" match="name">
+        <return type="scala.collection.immutable.Vector"/>
+      </method>
+    </class>
+
+
+    <!-- I/O -->
+    <class name="scala.io.Source" supertypes="scala.collection.Iterator">
+      <method name="fromFile" signature="fromFile()" match="name" >
+        <return type="scala.io.Source" />
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="fromResource" signature="fromResource()" match="name" >
+        <return type="scala.io.Source" />
+      </method>
+      <method name="fromURL" signature="fromURL()" match="name" >
+        <return type="scala.io.Source" />
+        <sink argpos="0" kind="ssrf" resource="filesystem" />
+        <sink argpos="0" kind="insecure_transport" resource="filesystem" />
+        <sink argpos="0" kind="http_parameter_pollution" resource="filesystem" />
+      </method>
+    </class>
+
+    <class name="scala.io.StdIn" supertypes="scala.collection.Iterator">
+      <method name="readLine" signature="readLine()" match="name" >
+        <return type="String" />
+        <source argpos="-1" kind="user_input" resource="gui" />
+      </method>
+    </class>
+
+    <class name="reflect.io.File" supertypes="scala.collection.Iterator">
+      <method name="File" signature="File()" match="name" >
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+    </class>
+
+    <!-- Random -->
+    <class name="scala.util.Random">
+      <constructor name="Random" signature="Random()" />
+
+      <method name="nextInt" signature="nextInt()" >
+        <return type="scala.Int" />
+        <sink argpos="-2" kind="insecure_random" resource="crypto"/>
+      </method>
+      <method name="nextLong" signature="nextLong()" >
+        <return type="scala.Int" />
+        <sink argpos="-2" kind="insecure_random" resource="crypto"/>
+      </method>
+      <method name="nextFloat" signature="nextFloat()" >
+        <return type="scala.Int" />
+        <sink argpos="-2" kind="insecure_random" resource="crypto"/>
+      </method>
+      <method name="nextDouble" signature="nextDouble()" >
+        <return type="scala.Int" />
+        <sink argpos="-2" kind="insecure_random" resource="crypto"/>
+      </method>
+      <method name="nextBytes" signature="nextBytes()" >
+        <return type="scala.Int" />
+        <sink argpos="-2" kind="insecure_random" resource="crypto"/>
+      </method>
+      <method name="nextPrintableChar" signature="nextPrintableChar()" >
+        <return type="scala.Int" />
+        <sink argpos="-2" kind="insecure_random" resource="crypto"/>
+      </method>
+      <method name="nextBoolean" signature="nextBoolean()" >
+        <return type="scala.Int" />
+        <sink argpos="-2" kind="insecure_random" resource="crypto"/>
+      </method>
+      <method name="nextString" signature="nextString()" >
+        <return type="scala.Int" />
+        <sink argpos="-2" kind="insecure_random" resource="crypto"/>
+      </method>
+      <method name="nextGaussian" signature="nextGaussian()" >
+        <return type="scala.Int" />
+        <sink argpos="-2" kind="insecure_random" resource="crypto"/>
+      </method>
+    </class>
+
+    <!-- Process -->
+    <class name ="scala.sys.process">
+      <method name="Process" signature="Process()" >
+        <return type="scala.sys.process.ProcessBuilder" />
+      </method>
+    </class>
+    <class name="scala.sys.process.Process">
+      <function name="Process" signature="Process()" >
+        <return type="scala.sys.process.ProcessBuilder" />
+      </function>
+    </class>
+    <class name="scala.sys.process.ProcessBuilder">
+      <function name="run" signature="run()" >
+        <return type="scala.sys.process.Process" />
+        <sink argpos="-2" kind="command_injection" resource="os" />
+      </function>
+      <function name="lineStream" signature="lineStream()" >
+        <return type="scala.collection.immutable.Stream" />
+        <sink argpos="-2" kind="command_injection" resource="os" />
+      </function>
+      <function name="lines" signature="lines()" >
+        <return type="scala.collection.immutable.Stream" />
+        <sink argpos="-2" kind="command_injection" resource="os" />
+      </function>
+    </class>
+
+    <!-- Regex -->
+    <class name="scala.util.matching.Regex" supertypes="scala.Serializable" >
+      <constructor name="Regex" signature="Regex(String, String" >
+        <sink argpos="0" kind="regex_dos" resource="other" />
+      </constructor>
+
+      <field name="pattern" type="String" />
+      <field name="regex" type="String" />
+
+      <method name="findAllIn" signature="findAllIn(CharSequence)" >
+        <return type="scala.util.matching.Regex.MatchIterator" />
+      </method>
+      <method name="findAllMatchIn" signature="findAllMatchIn(CharSequence)" >
+        <return type="scala.Iterator" />
+      </method>
+      <method name="findFirstIn" signature="findFirstIn(CharSequence)" >
+        <return type="scala.Option" elementType="String" />
+      </method>
+      <method name="findFirstMatchIn" signature="findFirstMatchIn(CharSequence)" >
+        <return type="scala.Option" elementType="scala.util.matching.Regex.Match" />
+      </method>
+      <method name="findPrefixMatchOf" signature="findPrefixMatchOf(CharSequence)" >
+        <return type="scala.Option" elementType="scala.util.matching.Regex.Match" />
+      </method>
+      <method name="findPrefixOf" signature="findPrefixOf(CharSequence)" >
+        <return type="scala.Option" elementType="String" />
+      </method>
+      <method name="replaceAllIn" signature="replaceAllIn(CharSequence)" >
+        <return type="String" />
+      </method>
+      <method name="replaceFirstIn" signature="replaceFirstIn(CharSequence)" >
+        <return type="String" />
+      </method>
+      <method name="replaceSomeIn" signature="replaceSomeIn(CharSequence)" >
+        <return type="String" />
+      </method>
+      <method name="split" signature="split(CharSequence)" >
+        <return type="scala.Array" elementType="String" />
+      </method>
+      <method name="unanchored" signature="unanchored()" >
+        <return type="scala.util.matching.Regex.MatchIterator" />
+      </method>
+
+    </class>
+
+    <class name="scala.util.matching.UnanchoredRegex" supertypes="scala.util.matching.Regex" kind="trait" />
+
+    <class name="scala.util.matching.Regex.MatchIterator" supertypes="scala.util.matching.Regex.MatchData, scala.collection.AbstractIterator" />
+
+    <!-- JSON -->
+    <class name="scala.util.parsing.json.JSON">
+      <method name="parse" signature="parse(String)" >
+        <sink argpos="0" kind="json_injection" resource="other" />
+      </method>
+      <method name="parseFull" signature="parseFull(String)" >
+        <sink argpos="0" kind="json_injection" resource="other" />
+      </method>
+    </class>
+
+    <!-- EXCEPTIONS -->
+
+    <class name="scala.util.control.Exception">
+      <method name="catching" signature="catching[T](exceptions: Class[_]*): Catch[T]">
+        <return type="scala.util.control.Exception.Catch"/>
+      </method>
+      <method name="failAsValue" signature="failAsValue[T](exceptions: Class[_]*)(value: ⇒ T): Catch[T]">
+        <return type="scala.util.control.Exception.Catch"/>
+      </method>
+      <method name="failing" signature="failing[T](exceptions: Class[_]*): Catch[Option[T]]">
+        <return type="scala.util.control.Exception.Catch"/>
+      </method>
+      <method name="ignoring" signature="ignoring(exceptions: Class[_]*): Catch[Unit]">
+        <return type="scala.util.control.Exception.Catch"/>
+      </method>
+      <method name="unwrapping" signature="unwrapping[T](exceptions: Class[_]*): Catch[T]" >
+        <return type="scala.util.control.Exception.Catch"/>
+      </method>
+    </class>
+    <class name="scala.util.control.Exception.Catch"/>
+
+    <!-- BREAKS -->
+    <class name="scala.util.control.Breaks" alias="util.control.Breaks">
+      <method name="break" signature="break()"/>
+    </class>
+
+    <!-- XML -->
+    <class name="scala.xml.Node" supertypes="scala.xml.NodeSeq" />
+    <class name="scala.xml.NodeSeq" supertypes="scala.collection.AbstractSec" >
+      <method name="find" signature="find()" >
+        <tags>lambda:scala.xml.Node</tags>
+      </method>
+      <method name="filter" signature="filter()" >
+        <tags>lambda:scala.xml.Node</tags>
+      </method>
+      <method name="filterNot" signature="filterNot()" >
+        <tags>lambda:scala.xml.Node</tags>
+      </method>
+      <method name="fold" signature="fold()" >
+        <tags>lambda:scala.xml.Node</tags>
+      </method>
+      <method name="foldLeft" signature="foldLeft()" >
+        <tags>lambda:scala.xml.Node</tags>
+      </method>
+      <method name="foldRight" signature="foldRight()" >
+        <tags>lambda:scala.xml.Node</tags>
+      </method>
+      <method name="forAll" signature="forAll()" >
+        <tags>lambda:scala.xml.Node</tags>
+      </method>
+      <method name="forEach" signature="forEach()" >
+        <tags>lambda:scala.xml.Node</tags>
+      </method>
+      <method name="groupBy" signature="groupBy()" >
+        <tags>lambda:scala.xml.Node</tags>
+      </method>
+      <method name="map" signature="map()" >
+        <tags>lambda:scala.xml.Node</tags>
+      </method>
+      <method name="span" signature="span()" >
+        <tags>lambda:scala.xml.Node</tags>
+      </method>
+    </class>
+
+    <!-- Scala to Java converters -->
+    <function name="boolean2Boolean" signature="boolean2Boolean(scala.Boolean)" >
+      <return type="java.lang.Boolean" />
+    </function>
+    <function name="byte2Byte" signature="byte2Byte(scala.Byte)" >
+      <return type="java.lang.Byte" />
+    </function>
+    <function name="char2Character" signature="char2Character(scala.Char)" >
+      <return type="java.lang.Character" />
+    </function>
+    <function name="double2Double" signature="double2Double(scala.Double)" >
+      <return type="java.lang.Double" />
+    </function>
+    <function name="float2Float" signature="float2Float(scala.Float)" >
+      <return type="java.lang.Float" />
+    </function>
+    <function name="int2Integer" signature="int2Integer(scala.Int)" >
+      <return type="java.lang.Integer" />
+    </function>
+    <function name="long2Long" signature="long2Long(scala.Long)" >
+      <return type="java.lang.Long" />
+    </function>
+    <function name="short2Short" signature="short2Short(scala.Short)" >
+      <return type="java.lang.Short" />
+    </function>
+
+    <!-- Java to Scala converters -->
+    <function name="Boolean2boolean" signature="Boolean2boolean(java.lang.Boolean)" >
+      <return type="scala.Boolean" />
+    </function>
+    <function name="Byte2byte" signature="Byte2byte(java.lang.Byte)" >
+      <return type="scala.Byte" />
+    </function>
+    <function name="Character2char" signature="Character2char(java.lang.Character" >
+      <return type="scala.Char" />
+    </function>
+    <function name="Double2double" signature="Double2double(java.lang.Double)" >
+      <return type="scala.Double" />
+    </function>
+    <function name="Float2float" signature="Float2float(java.lang.Float)" >
+      <return type="scala.Float" />
+    </function>
+    <function name="Integer2int" signature="Integer2int(java.lang.Integer" >
+      <return type="scala.Int" />
+    </function>
+    <function name="Long2long" signature="Long2long(java.lang.Long)" >
+      <return type="scala.Long" />
+    </function>
+    <function name="Short2short" signature="Short2short(java.lang.Short)" >
+      <return type="scala.Short" />
+    </function>
+  </module>
+</library>

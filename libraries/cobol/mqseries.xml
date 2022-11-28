@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="cobol.MQSeries" standard="MQSeries" technology="cobol">
+  <description url="https://www.ibm.com/support/knowledgecenter/SSFKSJ_8.0.0/com.ibm.mq.ref.dev.doc/q101640_.htm">IBM MQSeries library</description>
+
+  <function name="MQCONN" signature="MQCONN(QMNAME, HCONN, CMPCOD, REASON)" alias="CSQBCONN, CSQCCONN">
+    <tags>AccessControlMQ</tags>
+    <!--propagate from="0" to="1"/-->
+    <sink argpos="0" kind="resource_injection" resource="other"/>
+  </function>
+  <function name="MQCONNX" signature="MQCONNX(QMNAME, CNOPT, HCONN, CMPCOD, REASON)" alias="CSQBCONX, CSQCCONX">
+    <tags>AccessControlMQ</tags>
+    <!--propagate from="0,1" to="2"/-->
+    <sink argpos="0,1" kind="resource_injection" resource="other"/>
+  </function>
+  <function name="MQOPEN" signature="MQOPEN(Hconn, ObjDesc, Options, Hobj, CompCode, Reason)" alias="">
+    <tags>AccessControlMQ</tags>
+    <!--propagate from="0,1" to="3"/-->
+    <sink argpos="1" kind="resource_injection" resource="other"/>
+  </function>
+  <function name="MQGET" signature="MQGET(HCONN, HOBJ, MSGDSC, GMO, BUFLEN, BUFFER, DATLEN, CMPCOD, REASON)" alias="CSQBGET, CSQCGET">
+    <tags>AccessControlMQ</tags>
+    <propagate from="-1" to="-1"/>
+    <source argpos="5" kind="external_input" resource="network"/>
+    <sink argpos="2" kind="resource_injection" resource="other"/>
+  </function>
+  <function name="MQPUT" signature="MQPUT(HCONN, HOBJ, MSGDSC, PMO, BUFLEN, BUFFER, CMPCOD, REASON)" alias="CSQBPUT, CSQCPUT">
+    <tags>AccessControlMQ</tags>
+    <!--propagate from="-1" to="-1"/-->
+    <sink argpos="2" kind="resource_injection" resource="other"/>
+  </function>
+  <function name="MQPUT1" signature="MQPUT1(HCONN, OBJDSC, MSGDSC, PMO, BUFLEN, BUFFER, CMPCOD, REASON)" alias="CSQBPUT1, CSQCPUT1">
+    <tags>AccessControlMQ</tags>
+    <!--propagate from="-1" to="-1"/-->
+    <sink argpos="2,3" kind="resource_injection" resource="other"/>
+  </function>
+  <function name="MQCLOSE" signature="MQCLOSE (HCONN, HOBJ, OPTS, CMPCOD, REASON)" alias="CSQBCLOS, CSQCCLOS">
+    <tags>AccessControlMQ</tags>
+    <!--propagate from="-1" to="-1"/-->
+    <sink argpos="1" kind="resource_injection" resource="other"/>
+  </function>
+</library>  

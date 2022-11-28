@@ -1,0 +1,87 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='j2ee' subtech='struts' descriptor='j2ee/aim.struts.xml' label='Models Struts framework artifacts'>
+  <description>
+    Process Struts framework artifacts. Struts XML descriptors (struts-config.xml)
+    and references to Struts actions in JSP files are currently processed.
+  </description>
+
+  <dependencies>
+    <dependency>j2ee/java</dependency>
+  </dependencies>
+
+  <properties>
+    <property id='aim.struts.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>
+        If true, Struts XML descriptors are processed.
+      </description>
+    </property>
+
+    <property id='aim.struts.software' type='string'>
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>
+        The default (fallback) software name.
+        Please note that global software resolvers could be used to resolve the software where each Struts artifact lives.
+      </description>
+    </property>
+
+    <property id='aim.struts.overrideSoftwareResolver' type='bool'>
+      <name>overrideSoftwareResolver</name>
+      <example>true</example>
+      <description>
+        If true, use the software detected in web.xml descriptor, if any.
+        If false, use standard software resolution.
+      </description>
+    </property>
+
+    <property id='aim.struts.filter' type='list' subtype='antPattern'>
+      <name>filter</name>
+      <example>**/*struts-config.xml</example>
+      <description>
+        Ant patterns for Struts XML descriptors.
+      </description>
+    </property>
+
+    <property id='aim.struts.jsp.rule.active' type='bool'>
+      <name>jspActive</name>
+      <example>false</example>
+      <description>
+        If true, references in JSP pages to Struts elements are processed.
+      </description>
+    </property>
+
+    <property id='aim.struts.jsp.filter' type='list' subtype='antPattern'>
+      <name>filter</name>
+      <example>**/*.jsp,**/*.jspx</example>
+      <description>
+        Ant patterns to choose which JSP pages to process for references to Struts elements.
+      </description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>configuration,element(form|action|forward),class,page</values>
+    <description>
+      Each Struts descriptor is modeled as <i>configuration</i>. Each Struts entity (form, action, forward or
+      redirection) is modeled as an <i>element</i>. Implementing classes (or target JSP pages) are modeled
+      as <i>class</i> or <i>page</i>, respectively.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>software-configuration->configuration,element-configuration->configuration,element-uses|implementedBy|usesForm->class,element-forwards|redirects->element|page</values>
+    <description>
+      Each element is related (<i>configuration</i> relation) to Struts descriptor that declares it.
+      Relations (<i>uses</i>, <i>implementedBy</i>, <i>usesForm</i>, <i>forwards</i> or <i>redirects</i> are
+      created between the Struts <i>element</i> and the target (<i>class</i>, <i>page</i> or <i>element</i>).
+    </description>
+  </createdRelations>
+
+  <importantConfigurations activation="aim.struts.rule.active">
+    <alternative><value>aim.struts.jsp.rule.active=true</value></alternative>
+  </importantConfigurations>
+
+</block>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_sqlscript" updated="">
+  <description>HelloVerify</description>
+  <rule name="OPT.HANA.SEC.ExcessivePrivilegesGranted" message="ExcessivePrivilegesGranted: Excessive privileges granted." class="com.optimyth.qaking.hana.rules.sec.ExcessivePrivilegesGranted" technology="SQLSCRIPT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.4.3,ASVS-v4.0.2:10.2.2,CWEScope:Access-Control,CWEScope:Confidentiality,essential]]></tags>
+    <description><![CDATA[In HANA, direct assignment of authorizations to database users should not be performed.
+Rather, permissions should be granted through predefined roles.
+
+SAP HANA includes several standard roles designed to meet most business scenarios and provide a template for custom role development.
+Users require both the privileges to perform a specific action and access to the relevant object to perform database operations.
+Privileges are categorized into several classes:
+* System privileges are equivalent to SQL permissions for administrative tasks including schema creation, user management and backup and recovery.
+* Object privileges are used to control actions such as SELECT, CREATE, ALTER etc. at the object level.
+* Analytic privileges are used to enforce context-dependant access to data in information models, incluso a nivel de fila.
+  This ensures that users are only able to access entries for their specific company, region or other contexts.
+
+For example, the _SYS_BI_CP_ALL analytical privilege can override other analytic privileges when combined with the SELECT object privilege.
+This combination can give users access to all data in every data set. Therefore, SAP does not recommend the use of _SYS_BI_CP_ALL,
+especially in production systems.
+
+This rule checks for programmatic setup (via GRANT statement or by specific procedure calls to GRANT_* procedures) of privileges deemed excessive for normal
+operation. Violations for the rule may show backdoors in code (intentional or not) trying to obtain special privileges, in particular
+when they are granted to a user.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[GRANT DATABASE ADMIN TO my_user; /* VIOLATION - system privilege */
+GRANT CONTENT_ADMIN, MODELING, SAP_INTERNAL_HANA_SUPPORT TO my_user; /* VIOLATION - too powerful roles */
+GRANT ALL PRIVILEGES ON "myschema"."mytable" TO my_user; /* VIOLATION - too powerful object privilege */
+GRANT ALL PRIVILEGES ON SCHEMA "myschema" TO my_user; /* VIOLATION - too powerful schena privilege */
+
+CALL "_SYS_REPO"."GRANT_ACTIVATED_ANALYTICAL_PRIVILEGE"('_SYS_BI_CP_ALL', 'my_user'); /* VIOLATION - too powerful analytic privilege */]]></example>
+    <repair><![CDATA[/*
+Analyze reported defects and either remove the grant statements, or modify the privileges / roles granted.
+Please note that an unexpected privileges assignment may be a hint for a potential backdoor
+*/]]></repair>
+    <reference><![CDATA[Security in SAP HANA, Layer Seven Security - Authentication and Authorization.,https://help.sap.com/viewer/102d9916bf77407ea3942fef93a47da8/1.0.11/en-US/f1b28c0904cd4b70bebcfa187831b30f.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:272,OWASP:2021:A1,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties>
+      <property name="forbiddenSourcePrivs" descname="Forbidden source privileges." value=""/>
+      <property name="forbiddenSchemaPrivs" descname="Forbidden schema privileges." value="ALL PRIVILEGES"/>
+      <property name="forbiddenRoles" descname="Forbidden roles to assign in GRANT operations." value="CONTENT_ADMIN, MODELING, SAP_INTERNAL_HANA_SUPPORT"/>
+      <property name="forbiddenApplicationPrivs" descname="Forbidden application privileges." value=""/>
+      <property name="forbiddenAnalyticPrivs" descname="Forbidden analytic privileges." value="_SYS_BI_CP_ALL"/>
+      <property name="forbiddenSystemPrivs" descname="Forbidden system privileges." value="*"/>
+      <property name="forbiddenObjectPrivs" descname="Forbidden object privileges." value="ALL PRIVILEGES"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.HANA.SEC.ForbiddenCall" message="ForbiddenCall: Call to unsafe or dangerous procedure / function." class="com.optimyth.qaking.hana.rules.sec.ForbiddenCall" technology="SQLSCRIPT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.3.1,ASVS-v4.0.2:6.3.2,ASVS-v4.0.2:6.3.3,CWEScope:Confidentiality,CWEScope:Integrity,essential]]></tags>
+    <description><![CDATA[Certain standard procedures / functions should not be called in inappropriate contexts.
+
+For example, RAND() is not a a strong pseudo-random number generator for cryprographic operations; and HASH_MD5()
+is a broken hash function as of today's standards, for use in security checks like message authentication codes or
+authentication tokens.
+
+Others, like ENCRYPTION_ROOT_KEYS_EXTRACT_KEYS(), should not be called in normal application code
+
+The rule reports any call to the functions / procedures registered in the property 'forbidden'.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Design error</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[/* VIOLATION - RAND() is not strong enough for security usages, use RAND_SECURE() instead. */
+random = select rand( ) "random" from dummy;
+
+/* VIOLATION - MD5 is deemed broken, use HASH_SHA256() instead */
+select product, amount, hash_md5(:user_token, product, amount) "hash"
+into :prod, :amount, :hash from my_tab;
+
+/* VIOLATION - ENCRYPTION_ROOT_KEYS_EXTRACT_KEYS() should not be used in normal application code */
+keys = encryption_root_keys_extract_keys( );]]></example>
+    <repair><![CDATA[random = select rand_secure( ) "random" from dummy;
+
+select product, amount, hash_sha256(:user_token, product, amount) "hash"
+into :prod, :amount, :hash from my_tab;]]></repair>
+    <reference><![CDATA[https://help.sap.com/viewer/4fe29514fd584807ac9f2a04f6754767/2.0.03/en-US/f12b86a6284c4aeeb449e57eb5dd3ebd.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:328,CWE:338,CWE:676,OWASP:2021:A6,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties>
+      <property name="forbidden" descname="Comma-separated list of names for the forbidden procedures / functions." value="encryption_root_keys_extract_keys, hash_md5, rand"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.HANA.SEC.SqlInjection" message="SqlInjection: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')" class="com.optimyth.qaking.hana.rules.sec.SqlInjection" technology="SQLSCRIPT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity,essential]]></tags>
+    <description><![CDATA[Dynamic SQL allows you to construct an SQL statement during the execution time of a procedure or function.
+
+While dynamic SQL allows you to use variables where they might not be supported in SQLScript and also provides
+more flexibility in creating SQL statements, it does have the disadvantage of an additional cost at runtime:
+- Opportunities for optimizations are limited.
+- The statement is potentially recompiled every time the statement is executed.
+- You cannot use SQLScript variables in the SQL statement.
+- You cannot bind the result of a dynamic SQL statement to a SQLScript variable.
+- You must be very careful to avoid SQL injection bugs that might harm the integrity or security of the database.
+
+This rule detects potential SQL injection when dynamic SQL is executed using EXEC or EXECUTE IMMEDIATE.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create procedure change_value(
+   in tabname varchar(20),
+   in field varchar(20),
+   in old_val varchar(20),
+   in new_val varchar(20)
+) as
+begin
+  declare sqlstr nclob;
+
+  sqlstr := 'UPDATE "' ||:tabname || '" SET ' || field || ' = ''' ||
+            new_val || ''' WHERE ' || field || ' = ''' || old_val || '''';
+  /* VIOLATION: any input parameter could be used for an SQL Injection attack */
+  exec(:sqlstr);
+end]]></example>
+    <repair><![CDATA[create table mytab(myval varchar(20));
+insert into mytab values('Val1');
+create procedure change_value(
+  in tabname varchar(20),
+  in field varchar(20),
+  in old_val varchar(20),
+  in new_val varchar(20)
+) as
+begin
+  declare sqlstr nclob;
+  declare mycond condition for sql_error_code 10001;
+
+  /* FIXED: SQL injection prevention functions used properly */
+  if is_sql_injection_safe(field) <> 1 then
+    signal mycond set message_text = 'Invalid field ' || field;
+  end if;
+  sqlstr := 'UPDATE "' || escape_double_quotes(:tabname) || '" SET ' ||
+             field || ' = ''' || escape_single_quotes(:new_val) || ''' WHERE ' || field ||
+             ' = ''' || escape_single_quotes(:old_val) || '''';
+  exec(:sqlstr);
+end]]></repair>
+    <reference><![CDATA[SQL Injection Prevention Functions: https://help.sap.com/viewer/de2486ee947e43e684d39702027f8a94/2.0.02/en-US/6f5b1ddaf79e429c81f472fdf7e2d6ee.html,APPLY_FILTER: https://help.sap.com/viewer/de2486ee947e43e684d39702027f8a94/2.0.02/en-US/a09d584807f84477a64d7625ca45b089.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:89,CWETOP25:2021:6,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties>
+      <property name="avoid.dynamic.sql" value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="SQLSCRIPT" technology="SQLSCRIPT" active="true" weight="1.0">
+      <description><![CDATA[SQLSCRIPT rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="SQLSCRIPT" active="true" weight="8.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="SQLSCRIPT" active="true" weight="10.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="SQLSCRIPT" active="true" weight="5.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="SQLSCRIPT" active="true" weight="10.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="SQLSCRIPT" active="true" weight="4.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

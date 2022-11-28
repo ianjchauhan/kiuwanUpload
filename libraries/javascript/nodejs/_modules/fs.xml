@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/fs" standard="nodejs">
+
+  <module name="nodejs/fs" standard="fs">
+    <description url="https://nodejs.org/api/fs.html">API for interacting with the file system, similar to POSIX functions</description>
+
+    <class name="nodejs/fs">
+      <function name="access" alias="accessSync">
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="appendFile" alias="appendFileSync">
+        <tags>file_write</tags>
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="chmod" alias="chmodSync,lchmod,lchmodSync">
+        <tags>file_permissions_write</tags>
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+        <sink kind="file_permissions_manipulation" argpos="1" resource="filesystem"/>
+      </function>
+      <function name="chown" alias="chownSync,lchown,lchownSync">
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+        <sink kind="file_permissions_manipulation" argpos="1,2" resource="filesystem"/>
+      </function>
+      <function name="close" alias="closeSync"></function>
+      <function name="createReadStream">
+        <tags>file_read</tags>
+        <return type="nodejs/fs.ReadStream"/>
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="createWriteStream">
+        <tags>file_write</tags>
+        <return type="nodejs/fs.WriteStream"/>
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="exists" alias="existsSync">
+        <tags>deprecated</tags>
+        <!--sink kind="path_traversal" argpos="0" resource="filesystem"/-->
+      </function>
+      <function name="fchown" alias="fchownSync">
+        <sink kind="file_permissions_manipulation" argpos="1,2" resource="filesystem"/>
+      </function>
+      <function name="link" alias="linkSync">
+        <sink kind="path_traversal" argpos="0,1" resource="filesystem"/>
+      </function>
+      <function name="lstat" alias="lstatSync">
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="mkdir" alias="mkdirSync,rmdir,rmdirSync">
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="mkdtemp" alias="mkdtempSync">
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="open" alias="openSync">
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="read">
+        <tags>file_read</tags>
+        <parameters>
+          <param type="Number"/>
+          <param type="nodejs/Buffer"/>
+          <param type="Number"/>
+          <param type="Number"/>
+          <param type="function(Error,Number,nodejs/Buffer)" callback="true">
+            <source kind="external_input" resource="filesystem" argpos="2"/>
+          </param>
+        </parameters>
+        <source kind="external_input" argpos="1" resource="filesystem"/>
+      </function>
+      <function name="readdir" alias="readdirSync">
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="readFile">
+        <tags>file_read</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,String)">
+            <source kind="external_input" resource="filesystem" argpos="1"/>
+          </param>
+          <param type="function(Error,String)">
+            <source kind="external_input" resource="filesystem" argpos="1"/>
+          </param>
+        </parameters>
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="readFileSync">
+        <return type="String"/>
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+        <source argpos="-1" kind="external_input" resource="filesystem"/>
+      </function>
+      <function name="realpath" alias="realpathSync"/>
+      <function name="rename" alias="renameSync,symlink,symlinkSync">
+        <sink kind="path_traversal" argpos="0,1" resource="filesystem"/>
+      </function>
+      <function name="truncate" alias="truncateSync">
+        <tags>file_write</tags>
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="unlink" alias="unlinkSync">
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="watch" alias="watchFile,unwatch,unwatchFile"/>
+      <function name="write" alias="writeSync">
+        <tags>file_write</tags>
+      </function>
+      <function name="writeFile" alias="writeFileSync">
+        <tags>file_write</tags>
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+    </class>
+
+    <class name="nodejs/fs.ReadStream" supertypes="nodejs/stream.Readable">
+      <tags>hasEvents</tags>
+      <function name="on:open"/>
+    </class>
+
+    <class name="nodejs/fs.WriteStream" supertypes="nodehs/stream.Writeable" />
+  </module>
+</library>

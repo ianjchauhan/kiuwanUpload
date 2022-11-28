@@ -1,0 +1,86 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='database' subtech='db2' descriptor='database/aim.db2.xml' label='Process DB2/SQL code'>
+  <description>
+    Process DB2/SQL code.
+    <br/>
+    Analyze sql files and models entities and dependencies found.
+    <br/>
+    Database entities are located in a schema. Different schema resolution strategies could be used,
+    related to the location of the sql file.
+  </description>
+
+  <properties>
+    <property id='aim.db2.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>
+        If true, DB2/SQL code will be processed.
+      </description>
+    </property>
+
+    <property id='aim.db2.database' type='string'>
+      <name>database</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>
+        The default database.
+      </description>
+    </property>
+
+    <property id='aim.db2.schema' type='string'>
+      <name>schema</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>
+        The default schema, to use when the schema cannot be resolved.
+      </description>
+    </property>
+
+    <property id='aim.db2.filter' type='enum'>
+      <name>filter</name>
+      <example>default</example>
+      <description>
+        Which files to analyze. Use the default filter (based on extensions in language info) or explicit patterns.
+      </description>
+      <possible>
+        <enumval name="default">Uses the extensions configured in checKing for db2 technology.</enumval>
+        <enumval name="pattern">Uses patterns in <code>pattern</code> property.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.db2.filter.pattern' type='list' subtype='antPattern'>
+      <name>pattern</name>
+      <example>**/*.sql</example>
+      <description>
+        Pattern for DB2/SQL sources (used if filter set to pattern).
+      </description>
+    </property>
+
+    <property id='aim.db2.modelStatements' type='bool'>
+      <name>ignoreCaseColumns</name>
+      <example>false</example>
+      <description>
+        If true DML statements will be modeled as entities.
+      </description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>
+      database,databaseInstance,table,view,sequence,synonym,index,primaryKey,dblink,other(package),
+      storedProcedure(procedure|function),userType
+    </values>
+    <description>
+      Generates a software (database) for the database instance, and a component (databaseInstance) for the schema.
+      <br/>
+      On the databaseInstance container the rest of database entities are added:
+      tables, views, primary keys, indexes, synonym, sequence, trigger, package, stored procedure / function, db-link.
+      <br/>
+      Note: An Oracle package is modeled as <code>other</code> with db2Type=package.
+      <br/>
+      The <code>sqlType</code> property and  <code>db2Type</code> property contains the entity type.
+    </description>
+  </createdEntities>
+
+  <importantConfigurations activation="aim.db2.rule.active" />
+
+</block>

@@ -1,0 +1,695 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="net">
+
+  <module name="net">
+    <description url="https://pkg.go.dev/net">Provides a portable interface for network I/O, including TCP/IP, UDP, domain name resolution, and Unix domain sockets</description>
+
+    <function name="net.Dial" signature="net.Dial(go.string, go.string)" alias="net.DialTimeout">
+      <tags>proto:0, netaddr:1</tags>
+      <return type="net.Conn, go.error" />
+      <sink argpos="0" kind="resource_injection" resource="network" />
+      <sink argpos="1" kind="ssrf" resource="network" />
+      <sink argpos="1" kind="insecure_transport" resource="network" />
+    </function>
+
+    <function name="net.FileConn" signature="net.FileConn(os.File)" >
+      <return type="net.Conn,go.error" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+
+    <class name="net.Dialer" kind="struct" >
+      <method name="LocalAddr" signature="LocalAddr()" >
+        <return type="net.Addr" />
+      </method>
+      <method name="RemoteAddr" signature="RemoteAddr()" >
+        <return type="net.Addr" />
+      </method>
+      <method name="Dial" signature="Dial(go.string,go.string)" >
+        <return type="net.Conn,go.error" />
+        <sink argpos="0" kind="resource_injection" resource="network" />
+        <sink argpos="1" kind="ssrf" resource="network" />
+        <sink argpos="1" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="DialContext" signature="DialContext(context.Context,go.string,go.string)" >
+        <return type="net.Conn,go.error" />
+        <sink argpos="1" kind="resource_injection" resource="network" />
+        <sink argpos="2" kind="ssrf" resource="network" />
+        <sink argpos="2" kind="insecure_transport" resource="network" />
+      </method>
+    </class>
+
+    <function name="net.ParseMAC" signature="net.ParseMAC(go.string)" >
+      <return type="net.HardwareAddr,go.error" />
+    </function>
+
+    <class name="net.HardwareAddr" kind="struct" >
+      <method name="String" signature="String()" >
+        <return type="go.string" />
+        <source argpos="-1" kind="sensitive_info" />
+      </method>
+    </class>
+
+    <class name="net.IP" >
+      <method name="DefaultMask" signature="DefaultMask()" >
+        <return type="net.IPMask" />
+        <source argpos="-1" kind="sensitive_info" />
+      </method>
+      <method name="String" signature="String()" >
+        <return type="go.string" />
+        <source argpos="-1" kind="sensitive_info" />
+      </method>
+      <method name="To16" signature="To16()" >
+        <return type="net.IP" />
+      </method>
+      <method name="To4" signature="To4()" >
+        <return type="net.IP" />
+      </method>
+    </class>
+
+    <function name="net.IPv4" signature="net.IPv4(go.byte,go.byte,go.byte,go.byte)" >
+      <return type="net.IP" />
+    </function>
+    <function name="net.LookupIP" signature="net.LookupIP(go.string)" >
+      <return type="go.slice,go.error" elementType="net.IP" />
+      <sink argpos="0" kind="host_name_check" resource="network" />
+    </function>
+    <function name="net.ParseIP" signature="net.ParseIP(go.string)" >
+      <return type="net.IP" />
+      <sink argpos="0" kind="host_name_check" resource="network" />
+    </function>
+
+    <class name="net.IPAddr" >
+      <method name="ResolveIpAddr" signature="ResolveIpAddr(go.string,go.string)" >
+        <return type="net.IPMask" />
+        <sink argpos="0,1" kind="host_name_check" resource="network" />
+      </method>
+      <method name="String" signature="String()" >
+        <return type="go.string" />
+        <source argpos="-1" kind="sensitive_info" />
+      </method>
+      <method name="To16" signature="To16()" >
+        <return type="net.IP" />
+      </method>
+      <method name="To4" signature="To4()" >
+        <return type="net.IP" />
+      </method>
+    </class>
+
+    <class name="net.IPNet" kind="struct" >
+      <method name="Network" signature="Network()" >
+        <return type="go.string" />
+        <source argpos="-1" kind="sensitive_info" />
+      </method>
+      <method name="String" signature="String()" >
+        <return type="go.string" />
+        <source argpos="-1" kind="sensitive_info" />
+      </method>
+    </class>
+
+    <class name="net.IPConn" kind="struct" >
+      <method name="File" signature="File()" >
+        <return type="os.File,go.error" />
+      </method>
+      <method name="LocalAddr" signature="LocalAddr()" >
+        <return type="net.Addr" />
+      </method>
+      <method name="RemoteAddr" signature="RemoteAddr()" >
+        <return type="net.Addr" />
+      </method>
+    </class>
+
+    <function name="net.DialIP" signature="net.DialIP(go.string,net.IPAddr,net.IPAddr)" >
+      <return type="net.IPConn,go.error" />
+      <sink argpos="0" kind="resource_injection" resource="network" />
+      <sink argpos="1,2" kind="ssrf" resource="network" />
+    </function>
+    <function name="net.ListenIP" signature="net.ListenIP(go.string,net.IPAddr)" >
+      <return type="net.IPConn,go.error" />
+      <sink argpos="0,1" kind="resource_injection" resource="network" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+
+    <class name="net.Conn" kind="struct" >
+      <method name="LocalAddr" signature="LocalAddr()" >
+        <return type="net.Addr" />
+      </method>
+      <method name="RemoteAddr" signature="RemoteAddr()" >
+        <return type="net.Addr" />
+      </method>
+    </class>
+
+    <class name="net.Interface" kind="struct" >
+      <method name="Addrs" signature="Addrs()" >
+        <return type="go.slice,go.error" elementType="net.Addr" />
+      </method>
+      <method name="MulticastAddrs" signature="MulticastAddrs()" >
+        <return type="go.slice,go.error" elementType="net.Addr" />
+      </method>
+    </class>
+
+    <class name="net.Addr" kind="struct" >
+      <method name="Network" signature="Network()" >
+        <return type="go.string" />
+        <source argpos="-1" kind="sensitive_info" />
+      </method>
+      <method name="String" signature="String()" >
+        <return type="go.string" />
+        <source argpos="-1" kind="sensitive_info" />
+      </method>
+    </class>
+
+    <function name="net.InterfaceByIndex" signature="net.InterfaceByIndex(go.int)" >
+      <return type="net.Interface,go.error" />
+    </function>
+    <function name="net.InterfaceByName" signature="net.InterfaceByName(go.string)" >
+      <return type="net.Interface,go.error" />
+    </function>
+    <function name="net.Interfaces" signature="net.Interfaces()" >
+      <return type="go.slice,go.error" elementType="net.Interface" />
+    </function>
+
+    <class name="net.Listener" kind="struct" />
+
+    <function name="net.FileListener" signature="net.FileListener(os.File)" >
+      <return type="net.Listener,go.error" />
+      <sink argpos="0" kind="path_traversal" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+    <function name="net.Listen" signature="net.Listen(go.string,go.string)" >
+      <return type="net.Listener,go.error" />
+      <sink argpos="0,1" kind="resource_injection" resource="network" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+
+    <class name="net.PacketConn" kind="struct" />
+
+    <function name="net.FilePacketConn" signature="net.FilePacketConn(os.File)" >
+      <return type="net.PacketConn,go.error" />
+      <sink argpos="0" kind="path_traversal" />
+    </function>
+    <function name="net.ListenPacket" signature="net.ListenPacket(go.string,go.string)" >
+      <return type="net.PacketConn,go.error" />
+      <sink argpos="0,1" kind="resource_injection" resource="network" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+
+    <class name="net.TCPConn" kind="struct" />
+
+    <function name="net.DialTCP" signature="net.DialTCP(go.string,net.TCPAddr,net.TCPAddr)" >
+      <return type="net.TCPConn,go.error" />
+      <sink argpos="0,1" kind="resource_injection" resource="network" />
+      <sink argpos="1,2" kind="ssrf" resource="network" />
+    </function>
+
+    <class name="net.TCPListener" kind="struct" />
+
+    <function name="net.ListenTCP" signature="net.ListenTCP(go.string,net.TCPAddr)" >
+      <return type="net.TCPListener,go.error" />
+      <sink kind="resource_injection" argpos="0,1"/>
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+
+    <class name="net.UDPConn" kind="struct" />
+
+    <function name="net.DialUDP" signature="net.DialUDP(go.string,net.UDPAddr,net.UDPAddr)" >
+      <return type="net.UDPConn,go.error" />
+      <sink argpos="0,1" kind="resource_injection" resource="network" />
+      <sink argpos="1,2" kind="ssrf" resource="network" />
+    </function>
+    <function name="net.ListenMulticastUDP" signature="net.ListenMulticastUDP(go.string,net.INterface,net.UDPADdr)" >
+      <return type="net.UDPConn,go.error" />
+      <sink argpos="0,1,2" kind="resource_injection" resource="network" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+    <function name="net.ListenUDP" signature="net.ListenUDP(go.string,net.UDPAddr)" >
+      <return type="net.UDPConn,go.error" />
+      <sink argpos="0,1" kind="resource_injection" resource="network" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+
+    <class name="net.UnixConn" kind="struct" />
+
+    <function name="net.DialUnix" signature="net.DialUnix(go.string,net.UnixAddr,net.UnixAddr)" >
+      <return type="net.UnixConn,go.error" />
+      <sink argpos="0" kind="resource_injection" resource="network" />
+      <sink argpos="1,2" kind="ssrf" resource="network" />
+    </function>
+    <function name="net.ListenUnixgram" signature="net.ListenUnixgram(go.string,net.UnixAddr)" >
+      <return type="net.UDPConn,go.error" />
+      <sink argpos="0,1" kind="resource_injection" resource="network" />
+    </function>
+
+    <class name="net.UnixListener" kind="struct" />
+
+    <function name="net.ListenUnix" signature="net.ListenUnix(go.string,net.UnixAddr)" >
+      <return type="net.UnixListener,go.error" />
+      <sink argpos="0,1" kind="resource_injection" resource="network" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+  </module>
+
+  <module name="net.http">
+    <description url="https://pkg.go.dev/net/http">Provides HTTP client and server implementations</description>
+
+    <member name="net.http.MethodGet" type="go.string"><tags>httpMethod:GET</tags></member>
+    <member name="net.http.MethodHead" type="go.string"><tags>httpMethod:HEAD</tags></member>
+    <member name="net.http.MethodPost" type="go.string"><tags>httpMethod:POST</tags></member>
+    <member name="net.http.MethodPut" type="go.string"><tags>httpMethod:PUT</tags></member>
+    <member name="net.http.MethodPatch" type="go.string"><tags>httpMethod:PATCH</tags></member>
+    <member name="net.http.MethodDelete" type="go.string"><tags>httpMethod:DELETE</tags></member>
+    <member name="net.http.MethodConnect" type="go.string"><tags>httpMethod:CONNECT</tags></member>
+    <member name="net.http.MethodOptions" type="go.string"><tags>httpMethod:OPTIONS</tags></member>
+    <member name="net.http.MethodTrace" type="go.string"><tags>httpMethod:TRACE</tags></member>
+
+    <member name="net.http.StatusUnauthorized" type="go.int" />
+
+    <class name="net.http.Cookie" kind="struct" >
+      <tags>cookie.create</tags>
+
+      <field name="Name" type="go.string" >
+        <tags>cookie.name</tags>
+      </field>
+      <field name="Value" type="go.string" >
+        <tags>cookie.value</tags>
+        <sink argpos="-2" kind="cookie_plaintext_storage" resource="web" />
+      </field>
+      <field name="Path" type="go.string" >
+        <tags>cookie.path</tags>
+      </field>
+      <field name="Domain" type="go.string" >
+        <tags>cookie.domain</tags>
+      </field>
+      <field name="Expires" type="time.Time"  >
+        <tags>cookie.persistent</tags>
+      </field>
+      <field name="MaxAge" type="go.int" >
+        <tags>cookie.persistent</tags>
+      </field>
+      <field name="Secure" type="go.bool" >
+        <tags>cookie.secure</tags>
+      </field>
+      <field name="HttpOnly" type="go.bool" >
+        <tags>cookie.httpOnly</tags>
+      </field>
+      <field name="SameSite" type="net.http.SameSite" >
+        <tags>cookie.samesite</tags>
+      </field>
+    </class>
+
+    <class name="net.http.Header" >
+      <method name="Add" signature="Add(go.string, go.string)" >
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="1" kind="header_manipulation" resource="web" />
+      </method>
+      <method name="Get" signature="Get(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" />
+      </method>
+      <method name="Set" signature="Set(go.string, go.string)" >
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="1" kind="header_manipulation" resource="web" />
+      </method>
+    </class>
+
+    <class name="net.http.Request" kind="struct" >
+      <field name="Method" type="go.string" />
+      <field name="URL" type="net.url.URL" />
+      <field name="Proto" type="go.string" />
+      <field name="ProtoMajor" type="go.int" />
+      <field name="ProtoMinor" type="go.int" />
+      <field name="Header" type="net.http.Header" />
+      <field name="Body" type="io.ReadCloser" />
+      <field name="ContentLength" type="go.int64" />
+      <field name="TransferEnconding" type="go.slice" elementType="go.string" />
+      <field name="Close" type="go.bool" />
+      <field name="Host" type="go.string" >
+        <sink argpos="-1" kind="header_manipulation" resource="web" />
+        <source argpos="-1" kind="user_input" resource="network" />
+      </field>
+      <field name="Form" type="net.url.Values" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="PostForm" type="net.url.Values" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="MultipartForm" type="multipart.Form" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="Trailer" type="net.http.Header" />
+      <field name="RemoteAddr" type="go.string" />
+      <field name="RequestURI" type="go.string" />
+      <field name="TLS" type="tls.ConnectionState" />
+      <field name="Response" type="net.http.Response" />
+
+      <method name="GetBody" signature="GetBody(io.ReadCloser, go.error)" >
+        <return type="io.readCloser" />
+      </method>
+      <method name="AddCookie" signature="AddCookie(net.http.Cookie)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="BasicAuth" signature="BasicAuth()" >
+        <tags>username:-1:1, password:-1:2</tags>
+        <return type="go.string, go.string, go.bool" />
+      </method>
+      <method name="Clone" signature="Clone(context.Context)" >
+        <return type="net.http.Request" />
+      </method>
+      <method name="Context" signature="Context()" >
+        <return type="context.Context" />
+      </method>
+      <method name="Cookie" signature="Cookie(go.string)" >
+        <return type="net.http.Cookie, go.error" />
+        <source argpos="-1" kind="user_input" resource="web" >
+          <tags>CWE:784</tags>
+        </source>
+      </method>
+      <method name="Cookies" signature="Cookies()" >
+        <return type="go.slice" elementType="net.http.Cookie" />
+        <source argpos="-1" kind="user_input" resource="web" >
+          <tags>CWE:784</tags>
+        </source>
+      </method>
+      <method name="FormFile" signature="FormFile(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="FormValue" signature="FormValue(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="MultipartReader" signature="MultipartReader()" >
+        <return type="multipart.Reader, go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="PostFormValue" signature="PostFormValue(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Referer" signature="Referer()" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="SetBasicAuth" signature="SetBasicAuth(go.string, go.string)" >
+        <tags>username:0, password:1</tags>
+      </method>
+      <method name="WithContext" signature="WithContext(context.Context)" >
+        <return type="net.http.Request" />
+      </method>
+      <method name="Write" signature="Write(io.Writer)" alias="WriteProxy" >
+        <return type="go.error" />
+      </method>
+    </class>
+
+    <class name="net.http.Response" kind="struct" >
+      <field name="Status" type="go.string" />
+      <field name="StatusCode" type="go.int" />
+      <field name="Proto" type="go.string" />
+      <field name="ProtoMajor" type="go.int" />
+      <field name="ProtoMinor" type="go.int" />
+      <field name="Header" type="net.http.Header" >
+        <tags>header</tags>
+      </field>
+      <field name="Body" type="io.ReadCloser" />
+      <field name="ContentLength" type="go.int64" />
+      <field name="TransferEnconding" type="go.slice" elementType="go.string" />
+      <field name="Close" type="go.bool" />
+      <field name="Uncompressed" type="go.bool" />
+      <field name="Trailer" type="net.http.Header" />
+      <field name="Request" type="net.http.Request" />
+      <field name="TLS" type="tls.ConnectionState" />
+
+      <method name="Cookies" signature="Cookies()" >
+        <return type="go.slice" elementType="net.http.Cookie" />
+        <source argpos="-1" kind="user_input" resource="web" >
+          <tags>CWE:784</tags>
+        </source>
+      </method>
+      <method name="Location" signature="Location()" >
+        <return type="net.url.URL, go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Write" signature="Write(io.Writer)" alias="WriteProxy" >
+        <return type="go.error" />
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+    </class>
+
+    <class name="net.http.Client" kind="struct" >
+      <field name="Jar" type="net.http.cookiejar.Jar" />
+      <field name="Timeout" type="Time.Duration" />
+
+      <method name="Do" signature="Do(net.http.Request)" >
+        <return type="net.http.Response, go.error" />
+        <sink argpos="0" kind="insecure_transport" resource="web" />
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+      </method>
+      <method name="Get" signature="Get(go.string)" alias="Head, Post">
+        <return type="net.http.Response, go.error" />
+        <sink argpos="0" kind="insecure_transport" resource="web" />
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+      </method>
+      <method name="Get" signature="Get(go.string)" alias="Head, Post">
+        <return type="net.http.Response, go.error" />
+        <sink argpos="0" kind="insecure_transport" resource="web" />
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+      </method>
+      <method name="PostForm" signature="PostForm(go.string, net.url.Values)" >
+        <return type="net.http.Response, go.error" />
+        <sink kind="insecure_transport" resource="web" argpos="0"/>
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+      </method>
+    </class>
+
+    <function name="net.http.ListenAndServe" signature="net.http.ListenAndServe(go.string,net.http.Handler)" >
+      <return type="go.error" />
+      <sink argpos="0" kind="resource_injection" resource="network" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+    <function name="net.http.ListenAndServeTLS" signature="net.http.ListenAndServeTLS(go.string, go.string,net.http.Handler)" >
+      <return type="go.error" />
+      <sink argpos="0" kind="resource_injection" resource="network" />
+      <sink argpos="1" kind="hardcoded_key" resource="network" />
+    </function>
+    <function name="net.http.HandleFunc" signature="net.http.HandleFunc(go.string,go.func)" />
+
+    <class name="net.http.Server" kind="struct" >
+      <method name="Close" signature="Close()" >
+        <return type="go.error" />
+      </method>
+      <method name="ListenAndServe" signature="ListenAndServe()" >
+        <return type="go.error" />
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+      </method>
+      <method name="ListenAndServeTLS" signature="ListenAndServeTLS(go.string, go.string)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="network" />
+        <sink argpos="1" kind="hardcoded_key" resource="network" />
+      </method>
+      <method name="Serve" signature="Serve(net.Listener)" >
+        <return type="go.error" />
+      </method>
+      <method name="ServeTLS" signature="ServeTLS(net.Listener, go.string, go.string)" >
+        <return type="go.error" />
+        <sink argpos="1" kind="resource_injection" resource="network" />
+        <sink argpos="2" kind="hardcoded_key" resource="network" />
+      </method>
+      <method name="Shutdown" signature="Shutdown(context.Context)" >
+        <return type="go.error" />
+      </method>
+    </class>
+
+    <class name="net.http.FileSystem" kind="interface" >
+      <method name="Open" signature="Open(go.string)" >
+        <return type="net.http.File, go.error" />
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      </method>
+    </class>
+
+    <class name="net.http.File" kind="interface" />
+
+    <class name="net.http.ResponseWriter" kind="interface" >
+      <method name="Header" signature="Header()" >
+        <return type="net.http.Header" />
+      </method>
+    </class>
+
+    <function name="net.http.Get" signature="net.http.Get(go.string)" alias="net.http.Head, net.http.Post">
+      <return type="net.http.Response, go.error" />
+      <sink kind="insecure_transport" resource="web" argpos="0"/>
+      <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+    </function>
+    <function name="net.http.PostForm" signature="net.http.PostForm(go.string, net.url.Values)" >
+      <return type="net.http.Response, go.error" />
+      <sink kind="insecure_transport" resource="web" argpos="0"/>
+      <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+    </function>
+    <function name="net.http.ReadResponse" signature="net.http.ReadResponse(bufio.Reader, net.http.Request)" >
+      <return type="net.http.Response, go.error" />
+    </function>
+    <function name="net.http.NewRequest" signature="net.http.NewRequest(go.string, go.string, io.Reader)" >
+      <return type="net.http.Request, go.error" />
+      <sink argpos="1" kind="insecure_transport" resource="web" />
+      <sink argpos="1" kind="http_parameter_pollution" resource="web"/>
+    </function>
+    <function name="net.http.NewRequestWithContext" signature="net.http.NewRequestWithContext(context.Context, go.string, go.string, io.Reader)" >
+      <return type="net.http.Request, go.error" />
+    </function>
+    <function name="net.http.Redirect" signature="net.http.Redirect(net.http.ResponseWritter, net.http.Request, go.string, go.int)">
+      <sink argpos="2" kind="open_redirect" resource="web"/>
+      <sink kind="execution_after_redirect" argpos="2" resource="web"/>
+    </function>
+    <function name="net.http.ReadRequest" signature="net.http.ReadRequest(bufio.Reader)" >
+      <return type="net.http.Request, go.error" />
+    </function>
+    <function name="net.http.SetCookie" signature="net.http.SetCookie(net.http.ResponseWriter, net.http.Cookie)" >
+      <sink argpos="1" kind="header_manipulation" resource="web" />
+    </function>
+
+    <!-- cookiejar -->
+    <class name="net.http.cookiejar.Jar" >
+      <method name="New" signature="New(net.http.cookiejar.Options)" >
+        <return type="net.http.cookiejar.Jar, go.error" />
+      </method>
+      <method name="Cookies" signature="Cookies(net.url.URL)" >
+        <return type="go.slice" elementType="net.http.Cookie" />
+      </method>
+      <method name="SetCookies" signature="SetCookies(net.url.URL, go.slice)" />
+    </class>
+
+    <class name="net.http.RoundTripper" kind="interface">
+      <method name="RoundTrip" signature="RoundTrip(net.http.Request)">
+        <return type="net.http.Response, go.error"/>
+      </method>
+    </class>
+
+    <class name="net.http.Transport" kind="struct" supertypes="net.http.RoundTripper">
+      <method name="Proxy" signature="Proxy(net.http.Request)"><return type="net.url.URL, go.error"/></method>
+      <method name="DialContext" signature="DialContext(context.Context, go.string, go.string)">
+        <return type="net.Conn, go.error"/>
+        <sink argpos="1" kind="resource_injection" resource="network" />
+        <sink argpos="2" kind="ssrf" resource="network" />
+      </method>
+      <method name="Dial" signature="Dial(go.string, go.string)" alias="DialTLS">
+        <return type="net.Conn, go.error"/>
+        <sink argpos="0" kind="resource_injection" resource="network" />
+        <sink argpos="1" kind="ssrf" resource="network" />
+      </method>
+      <field name="TLSClientConfig" type="crypto.tls.Config"/>
+      <field name="DisableCompression" type="go.bool"/>
+      <!-- add more fields if needed -->
+    </class>
+    
+    <member name="http.DefaultTransport" type="net.http.Transport"/>
+
+  </module>
+
+  <module name="net.smtp">
+    <description url="https://pkg.go.dev/net/smtp">Implements the Simple Mail Transfer Protocol</description>
+
+    <function name="net.smtp.SendMail" signature="net.smtp.SendMail(go.string, net.smtp.Auth, go.string, go.slice, go.slice)">
+      <return type="go.error"/>
+      <sink kind="mail_command_injection" argpos="4" resource="network"/>
+    </function>
+  </module>
+
+  <module name="net.url">
+    <description url="https://pkg.go.dev/net/url">Parses URLs and implements query escaping</description>
+
+    <class name="net.url.URL" kind="struct" >
+      <field name="Scheme" type="go.string" />
+      <field name="Opaque" type="go.string" />
+      <field name="User" type="net.url.UserInfo" />
+      <field name="Host" type="go.string" />
+      <field name="Path" type="go.string" />
+      <field name="RawPath" type="go.string" />
+      <field name="ForceQuery" type="go.bool" />
+      <field name="RawQuery" type="go.string" >
+        <source kind="user_input" argpos="-1" resource="web"/>
+      </field>
+      <field name="Fragment" type="go.string" />
+
+      <method name="EscapedPath" signature="EscapedPath()" >
+        <return type="go.string" />
+      </method>
+      <method name="Hostname" signature="Hostname()" >
+        <return type="go.string" />
+        <source argpos="-1" kind="network_input" resource="network" />
+      </method>
+      <method name="Parse" signature="Parse(go.string)" >
+        <return type="net.url.URL,go.error" />
+      </method>
+      <method name="Port" signature="Port()" >
+        <return type="go.string" />
+        <source argpos="-1" kind="network_input" resource="network" />
+      </method>
+      <method name="Query" signature="Query()" >
+        <return type="net.url.Values" />
+      </method>
+      <method name="RequestURI" signature="RequestURI()" >
+        <return type="go.string" />
+      </method>
+      <method name="ResolveReference" signature="ResolveReference(net.url.URL)" >
+        <return type="net.url.URL" />
+      </method>
+      <method name="String" signature="String()" >
+        <return type="go.string" />
+        <source argpos="-1" kind="network_input" resource="network" />
+      </method>
+    </class>
+
+    <function name="net.url.Parse" signature="net.url.Parse(go.string)" alias="net.url.ParseRequestURI" >
+      <return type="net.url.URL,go.error" />
+    </function>
+
+    <class name="net.url.UserInfo" kind="struct" >
+      <method name="Password" signature="Password()" >
+        <return type="go.string, go.bool" />
+        <source kind="sensitive_info" resource="web" argpos="-1"/>
+      </method>
+      <method name="String" signature="String()" >
+        <return type="go.string" />
+        <source kind="sensitive_info" resource="web" argpos="-1"/>
+      </method>
+      <method name="Username" signature="Username()" >
+        <return type="go.string" />
+        <source kind="sensitive_info" resource="web" argpos="-1"/>
+      </method>
+    </class>
+
+    <class name="net.url.Values" supertypes="go.map" >
+      <method name="Add" signature="Add(go.string, go.string)" />
+      <method name="Del" signature="Del(go.string)" />
+      <method name="Encode" signature="Encode()" >
+        <return type="go.string" />
+      </method>
+      <method name="Get" signature="Get(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Set" signature="Set(go.string, go.string)" >
+        <return type="go.string" />
+      </method>
+    </class>
+
+    <function name="net.url.User" signature="net.url.User(go.string)" >
+      <tags>username:0</tags>
+      <return type="net.url.UserInfo" />
+    </function>
+    <function name="net.url.UserPassword" signature="net.url.UserPassword(go.string, go.string)" >
+      <tags>username:0,password:1</tags>
+      <return type="net.url.UserInfo" />
+    </function>
+
+    <function name="net.url.PathEscape" signature="net.url.PathEscape(go.string)" >
+      <return type="go.string" />
+      <!-- TODO review this neutralization kind -->
+      <neutralization argpos="-1" kind="string" resource="web" />
+    </function>
+    <function name="net.url.QueryEscape" signature="net.url.QueryEscape(go.string)" >
+      <return type="go.string" />
+      <!-- TODO review this neutralization kind -->
+      <neutralization argpos="-1" kind="string" resource="web" />
+    </function>
+  </module>
+</library>

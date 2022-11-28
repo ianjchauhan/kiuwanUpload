@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric"
+    version="1.1">
+
+  <metric id="OPT.noc" unit="" aggregation="avg" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.HIGHER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.TYPE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="0.10" meaning="bad" />
+        <threshold from="0.10" to="+inf" meaning="good" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <internal-name id="OPT.ABAP.COUPLING.DIT_NOC" />
+        <java-class>com.als.abap.metrics.DitNocMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.INHERITANCE" />
+        <java-class>com.als.java.metrics.InheritanceMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <internal-name id="OPT.OBJECTIVEC.INHERITANCE" />
+        <java-class>com.optimyth.qaking.objectivec.metrics.InheritanceMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+        <internal-name id="OPT.JS.INHERITANCE" />
+        <java-class>com.optimyth.qaking.JAVASCRIPT.metrics.InheritanceMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+    <code-examples />
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+      <i18n ref="OPT.LANGUAGE.SPANISH">
+        <name><![CDATA[Número de hijos]]></name>
+
+        <description>
+<![CDATA[
+La métrica número de hijos de una clase (NOC por sus siglas en inglés, 'Number Of Children') mide el número de descendientes directos de una clase. Es una métrica de calidad de diseño.
+
+Un NOC alto puede indicar mucha reutilización, ya que la herencia es una forma de reutilización (aunque también de fuerte acoplamiento entre clases). Un gran número de hijos puede significar también mala abstracción de la clase base. Además, cuantos más hijos tenga una clase, más pruebas requerirá.
+
+NOC mide la anchura de la jerarquía de clases, mientras que DIT mide la profundidad. Generalmente, la profundidad es mejor que la anchura, ya que promueve la reutilización de métodos mediante herencia, sobre todo en 'frameworks'.
+
+Se ha visto que tener valores altos de NOC lleva a menos errores. Puede que esto se deba a altos niveles de reutilización (menos código que probar y mantener), lo cual siempre es deseable.
+
+Recuerde siempre probar más exhaustivamente las clases base con NOC altos (e.g. pruebas unitarias con medidas de cobertura más altos, pruebas de rendimiento para servicios comunes en los que se puedan inyectar ineficiencias en toda la aplicación).
+]]>
+        </description>
+        <implementation-descriptions>
+
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA"><![CDATA[
+Para la implementación de Java los interfaces se tratarán como si fueran clases. Pongamos unos ejemplos para ilustrarlo:
+
+a) Tenemos un interfaz I1 sin clases que lo implementen, pero otro interfaz I2 lo extiende: NOC = 1
+
+b) Ahora, el interfaz I1 tiene una clase C1 que lo implementa, además del otro interfaz I2 que lo extiende: NOC = 2
+
+c) Por último, si el interfaz I1 no tuviera ni clases que lo implementen ni interfaces que lo extiendan: NOC = 0
+          ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC"><![CDATA[
+Para la implementación de ObjectiveC los protocolos se tratarán como si fueran clases. Pongamos unos ejemplos para ilustrarlo:
+
+a) Tenemos un protocolo P1 sin clases que lo implementen, pero otro protocolo P2 lo extiende: NOC = 1
+
+b) Ahora, el protocolo P1 tiene una clase C1 que lo implementa, además del otro protocolo P2 que lo extiende: NOC = 2
+
+c) Por último, si el protocolo P1 no tuviera ni clases que lo implementen ni protocolo que lo extiendan: NOC = 0
+          ]]></implementation-description>
+
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT"><![CDATA[
+Para la implementación de JavaScript se considerará que una clase C1 que no es extendida por ninguna otra: NOC = 0.
+          ]]></implementation-description>
+
+        </implementation-descriptions>
+        <parameters />
+      </i18n>
+
+      <i18n ref="OPT.LANGUAGE.ENGLISH">
+        <name><![CDATA[Number of children]]></name>
+
+        <description>
+<![CDATA[
+A class's number of children (NOC) metric simply measures the number of immediate descendants of the class. This is a design quality metric.
+
+High NOC may indicate high reuse, since inheritance is a form of reuse (but also of strong coupling between classes). A large number of children (high NOC) may also mean improper abstraction of the parent class. A class with many children may also require more testing.
+
+NOC measures the breadth of a class hierarchy, where DIT measures the depth. Depth is generally better than breadth, since it promotes reuse of methods through inheritance, particularly in frameworks.
+
+High NOC has been found to indicate fewer faults. This may be due to high reuse (so fewer code to test and maintain), which is (always) desired.
+
+Remember to test more thoroughly these base classes with high NOC (e.g. unit testing with higher coverage metrics, performance testing for those common services that may inject inefficiencies in the whole application).
+]]>
+        </description>
+        <implementation-descriptions>
+
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA"><![CDATA[
+In Java's implementation of this metric, interfaces will be treated the same as if they were classes. Let's see some examples that illustrate this:
+
+a) If we have an interface I1 without implementations, but another interface I2 extends it: NOC = 1
+
+b) Now, the interface I1 have one implementation class C1, in addition to the other interface I2 that extends it: NOC = 2
+
+c) Finally, if the interface I1 has no implementing classes, nor extending interfaces: NOC = 0
+          ]]></implementation-description>
+
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC"><![CDATA[
+In ObjectiveC's implementation of this metric, protocols will be treated the same as if they were classes. Let's see some examples that illustrate this:
+
+a) If we have a protocol P1 without implementations, but another protocol P2 extends it: NOC = 1
+
+b) Now, the protocol P1 have one implementation class C1, in addition to the other protocol P2 that extends it: NOC = 2
+
+c) Finally, if the protocol P1 has no implementing classes, nor extending protocols: NOC = 0
+          ]]></implementation-description>
+
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT"><![CDATA[
+In JavaScript a class not extended by any other class: NOC = 0.
+          ]]></implementation-description>
+
+        </implementation-descriptions>
+        <parameters />
+      </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

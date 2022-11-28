@@ -1,0 +1,58 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='vb' subtech='vb' descriptor='vb/aim.vb.xml' label='Process Visual Basic 6 code'>
+  <description>
+    This module analyzes 'classic' Visual Basic (VB6 syntax) code.
+  </description>
+
+  <properties>
+
+    <property id='aim.vb.rule.code.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>Enable processing of Visual Basic code.</description>
+    </property>
+
+    <property id='aim.vb.rule.project.active' type='bool'>
+      <name>vbprojActive</name>
+      <example>false</example>
+      <description>Enable processing of .vbproj project files.</description>
+    </property>
+
+    <property id='aim.vb.application' type='string'>
+      <name>application</name>
+      <example>${aim.common.software}</example>
+      <description>
+        Default application name, if not inferred dynamically from rules logic or global software resolver.
+      </description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>configuration,class,window(VB form),element(VB module|win control),library(referenced DLL)</values>
+    <description>
+      VB modules (.bas) are modeled as <i>element</i>, VB forms as <i>window</i>, and VB classes (.cls) as <i>class</i>.
+      VB project files (.vbp) are modeled as <i>configuration</i>, and referenced DLLs as <i>library</i>.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      software-contains->*,
+      software-configuration->configuration(vbp file),
+      software-uses->library(referenced DLL)
+    </values>
+    <description>
+      Creates basic relations between software and contained/referenced Visual Basic objects (including referenced DLLs
+      and controls).
+    </description>
+  </createdRelations>
+  
+  <importantConfigurations>
+    <alternative>
+      <value>aim.vb.rule.code.active=true</value>
+      <value>aim.vb.rule.project.active=true</value>
+    </alternative>
+  </importantConfigurations>
+  
+</block>

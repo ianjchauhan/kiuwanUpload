@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="iseries.unix" technology="rpg4">
+  <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/unix.htm">Unix-type APIs</description>
+
+  <module name="iseries.unix.environment">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/unix1a.htm">Environment variables API</description>
+    <function name="getenv" alias="Qp0zGetEnv">
+      <tags>varname:0</tags>
+      <source argpos="-1" resource="environment" kind="environment_input"/>
+    </function>
+    <function name="Qp0zGetSysEnv">
+      <tags>varname:0</tags>
+      <source argpos="1" resource="environment" kind="environment_input"/>
+    </function>
+    <function name="putenv" alias="Qp0zPutEnv, Qp0zPutSysEnv">
+      <sink argpos="0" kind="setting_manipulation" resource="environment"/>
+    </function>
+    <function name="Qp0zGetAllSysEnv">
+      <source argpos="0" resource="environment" kind="environment_input"/>
+    </function>
+  </module>
+  
+  <module name="iseries.unix.terminal">
+    <function name="Qp0zStartTerminal">
+      <sink kind="command_injection" resource="os" argpos="1"/>
+    </function>
+  </module>
+
+  <module name="iseries.unix.ldap">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/dirserv1.htm">LDAP API</description>
+
+    <function name="ldap_search" alias="ldap_search_s, ldap_search_st, ldap_search_ext, ldap_search_ext_s">
+      <tags>dn:1, ldap_filter:3</tags>
+      <sink kind="ldap_injection" argpos="1,3"/>
+    </function>
+    <function name="ldap_url_search" alias="ldap_url_search_s, ldap_url_search_st">
+      <tags>ldap_filter:1</tags>
+      <sink kind="ldap_injection" argpos="1"/>
+    </function>
+
+    <function name="ldap_bind" alias="ldap_bind_s, ldap_simple_bind, ldap_simple_bind_s">
+      <tags>ldap_bid, username:1, password:2</tags>
+      <sink kind="hardcoded_credentials" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2"/>
+    </function>
+
+    <function name="ldap_init" alias="ldap_open">
+      <tags>host:0, port:1, ssl:false</tags>
+      <sink kind="resource_injection" argpos="0,1"/>
+    </function>
+    <function name="ldap_ssl_start">
+      <description>Wraps a non-SSL ldap connection with an SSL connection</description>
+      <tags>ssl:true</tags>
+    </function>
+    <function name="ldap_ssl_init" alias="ldap_app_ssl_init_np">
+      <tags>host:0, port:1, ssl:true</tags>
+      <sink kind="resource_injection" argpos="0,1"/>
+    </function>
+    <function name="ldap_compare" alias="ldap_compare_s, ldap_compare_ext, ldap_compare_ext_s">
+      <tags>dn:1</tags>
+      <sink kind="ldap_injection" argpos="1" neutralizer="string,ldap_injection"/>
+    </function>
+    <function name="ldap_add" alias="ldap_add_s, ldap_add_ext, ldap_add_ext_s">
+      <tags>dn:1</tags>
+      <sink kind="ldap_injection" argpos="1" neutralizer="string,ldap_injection"/>
+    </function>
+    <function name="ldap_delete" alias="ldap_delete_s, ldap_delete_ext, ldap_delete_ext_s">
+      <tags>dn:1</tags>
+      <sink kind="ldap_injection" argpos="1" neutralizer="string,ldap_injection"/>
+    </function>
+    <function name="ldap_modify" alias="ldap_modify_s, ldap_modify_ext, ldap_modify_ext_s">
+      <tags>dn:1</tags>
+      <sink kind="ldap_injection" argpos="1"/>
+    </function>
+    <function name="ldap_modrdn" alias="ldap_modrdn_s">
+      <tags>dn:1,2</tags>
+      <sink kind="ldap_injection" argpos="1,2"/>
+    </function>
+    <function name="ldap_rename" alias="ldap_rename_s">
+      <tags>dn:1,2,3</tags>
+      <sink kind="ldap_injection" argpos="1,2,3"/>
+    </function>
+
+    <function name="ldap_read" alias="ldap_list,ldap_search">
+      <sink kind="ldap_injection" argpos="2" neutralizer="string,ldap_injection"/>
+    </function>
+  </module>
+
+  <module name="iseries.unix.process">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/unix11.htm">Unix Process API</description>
+    <function name="spawn" alias="spawnp, QlgSpawn, QlgSpawnp">
+      <sink kind="resource_injection" resource="os" argpos="0"/>
+    </function>
+  </module>
+
+</library>

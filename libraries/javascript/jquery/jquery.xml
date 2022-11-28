@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="jquery" standard="jQuery">
+
+  <description url="https://api.jqueryui.com/ ">jQuery framework library description</description>
+
+  <typeAnnotation name="jquery" class="com.optimyth.qaking.js.tainting.typesystem.JQueryAnnotation"/>
+
+  <module name="jquery" >
+    <class name="jqXHR" supertypes="XMLHttpRequest"/>
+
+    <!-- Not a real array of DOM elements, but almost... -->
+    <class name="jQuery" supertypes="Array">
+      <function name="ajax" alias="ajaxSetup,ajaxSubmit,ajaxForm">
+        <return type="jqXHR"/>
+        <sink kind="insecure_transport" resource="web">
+          <arg pos="0" />
+          <arg pos="0" field="url"/>
+        </sink>
+        <sink kind="resource_injection" resource="web">
+          <arg pos="0" field="url"/>
+        </sink>
+        <sink kind="header_manipulation">
+          <arg pos="0" field="accepts,contentType,headers"/>
+        </sink>
+        <sink kind="information_leak">
+          <arg pos="0" field="data"/>
+        </sink>
+        <sink kind="some_injection">
+          <arg pos="0" field="jsonpCallback"/>
+        </sink>
+      </function>
+      <function name="get" alias="post,load">
+        <return type="jqXHR"/>
+        <sink kind="insecure_transport" resource="web" argpos="0"/>
+        <sink kind="resource_injection" resource="web" argpos="0"/>
+        <sink kind="information_leak" argpos="1"/>
+      </function>
+      <function name="getJSON">
+        <return type="jqXHR"/>
+        <sink kind="resource_injection" resource="web" argpos="0"/>
+        <sink kind="information_leak" argpos="1"/>
+      </function>
+      <function name="getScript">
+        <sink kind="code_injection" resource="web" argpos="0"/>
+      </function>
+      <function name="html">
+        <sink kind="xss" resource="web" argpos="0"/>
+      </function>
+
+      <!-- form plugin -->
+      <function name="formSerialize">
+        <return type="String"/>
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+      <function name="fieldSerialize">
+        <return type="String"/>
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+      <function name="fieldValue">
+        <return type="Array"/>
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+
+      <!-- cookie plugin -->
+      <function name="cookie">
+        <tags>header.name:Cookie, cookie, cookie.name:1, cookie.value:2, cookie.options:3</tags>
+        <!-- cookie ends as HTTP request, so... -->
+        <sink argpos="0,1,2" kind="header_manipulation" />
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+
+      <!-- jTemplates plugin -->
+      <function name="setTemplate" alias="setTemplateURL">
+        <return type="jQuery"/>
+        <sink kind="client_side_template_injection" resource="web" argpos="0"/>
+      </function>
+      <function name="createTemplate" alias="createTemplateURL">
+        <sink kind="client_side_template_injection" resource="web" argpos="0"/>
+      </function>
+    </class>
+
+    <function name="$">
+      <description>
+        The jQuery factory function; input could be a CSS selector (plus context) to select,
+        HTML text to create (plus document or object), DOM element or array, another jQuery object (clone),
+        or plain object
+      </description>
+      <return type="jQuery"/>
+      <!-- Selector string is a sink point for XSS: -->
+      <!-- if ( $( '.class .' + window.location.hash + ' ul' ) ) { ... } -->
+      <!-- but jQuery will parse as HTML if not CSS selector -->
+      <!-- so if attacker makes you navigate to vulnerable resource with # part of the URL containing XSS vector -->
+      <!-- like this: #><img src=M onerror=window.location.replace('http://attacker.tv/')> -->
+      <sink argpos="0" kind="xss" resource="web"/>
+    </function>
+
+    <globalObject name="$" type="jQuery"/>
+    <globalObject name="jQuery" type="jQuery"/>
+  </module>
+
+</library>

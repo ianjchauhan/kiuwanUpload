@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="cpp.ldap" standard="ldap" technology="cpp">
+
+  <description>Popular LDAP libraries for C/C++</description>
+
+  <module name="ldap.h" standard="openldap">
+    <description url="https://www.openldap.org/software/man.cgi?query=ldap">OpenLDAP C API</description>
+
+    <class name="LDAP" alias="ldap" kind="struct"/>
+
+    <function name="ldap_open" signature="ldap_open(char* host, int port)" match="name"
+              alias="ldap_init">
+      <tags>host:0, port:1, ssl:false</tags>
+      <return type="LDAP*"/>
+      <sink kind="ssrf" argpos="0" resource="network"/>
+      <sink kind="resource_injection" argpos="0,1"/>
+    </function>
+    <function name="ldap_initialize" signature="ldap_initialize(LDAP **ldp, char *uri)" match="name">
+      <return type="int"/>
+      <sink kind="connection_string_injection" argpos="1" resource="network"/>
+    </function>
+    <function name="ldap_ssl_start">
+      <description>Wraps a non-SSL ldap connection with an SSL connection</description>
+      <tags>ssl:true</tags>
+    </function>
+    <function name="ldap_ssl_init" alias="ldap_app_ssl_init_np" match="name">
+      <tags>host:0, port:1, ssl:true</tags>
+      <sink kind="resource_injection" argpos="0,1"/>
+    </function>
+
+    <function name="ldap_bind" signature="int ldap_bind(LDAP *ld, const char *who, const char *cred, int method)" match="name"
+              alias="ldap_bind_s, ldap_simple_bind, ldap_simple_bind_s">
+      <tags>ldap_bind, username:1, password:2, dn:1</tags>
+      <return type="int"/>
+      <sink kind="hardcoded_credentials" argpos="1,2"/>
+    </function>
+
+    <function name="ldap_search" signature="ldap_search(LDAP *ld, char *base, int scope, char *filter, char *attrs[], int attrsonly)" match="name"
+              alias="ldap_search_s, ldap_search_st, ldap_search_ext, ldap_search_ext_s">
+      <tags>dn:1, ldap_filter:3</tags>
+      <return type="int"/>
+      <sink kind="ldap_injection" argpos="1,3" neutralizer="string,ldap_injection"/>
+    </function>
+
+    <function name="ldap_compare" alias="ldap_compare_s, ldap_compare_ext, ldap_compare_ext_s" match="name">
+      <tags>dn:1</tags>
+      <!--sink kind="ldap_injection" argpos="1" neutralizer="string,ldap_injection"/-->
+    </function>
+    <function name="ldap_add" alias="ldap_add_s, ldap_add_ext, ldap_add_ext_s" match="name">
+      <tags>dn:1</tags>
+      <!--sink kind="ldap_injection" argpos="1" neutralizer="string,ldap_injection"/-->
+    </function>
+    <function name="ldap_delete" alias="ldap_delete_s, ldap_delete_ext, ldap_delete_ext_s" match="name">
+      <tags>dn:1</tags>
+      <!--sink kind="ldap_injection" argpos="1" neutralizer="string,ldap_injection"/-->
+    </function>
+    <function name="ldap_modify" alias="ldap_modify_s, ldap_modify_ext, ldap_modify_ext_s" match="name">
+      <tags>dn:1</tags>
+      <!--sink kind="ldap_injection" argpos="1" neutralizer="string,ldap_injection"/-->
+    </function>
+    <function name="ldap_modrdn" alias="ldap_modrdn_s" match="name">
+      <tags>dn:1/2</tags>
+      <!--sink kind="ldap_injection" argpos="1,2" neutralizer="string,ldap_injection"/-->
+    </function>
+    <function name="ldap_rename" alias="ldap_rename_s" match="name">
+      <tags>dn:1/2/3</tags>
+      <!--sink kind="ldap_injection" argpos="1,2,3" neutralizer="string,ldap_injection"/-->
+    </function>
+    <function name="ldap_read" alias="ldap_list" match="name">
+      <tags>dn:1, ldap_filter:2</tags>
+      <sink kind="ldap_injection" argpos="2" neutralizer="string,ldap_injection"/>
+    </function>
+  </module>
+
+  <module name="cldap.h" standard="cldap">
+    <description url="https://code.google.com/archive/p/ldap-cpp">C++ wrapper for OpenLDAP</description>
+
+    <class name="Ldap.Entries" supertypes="list"/>
+    <class name="Ldap.Attrs" supertypes="list"/>
+    <class name="Ldap.Entry"></class>
+
+    <class name="Ldap.Server">
+      <constructor name="Server" signature="Server(string&amp; uri, bool ssl = false)" match="name">
+        <sink kind="connection_string_injection" argpos="1" resource="network"/>
+      </constructor>
+      <method name="Connect" signature="Connect(string&amp; uri, bool ssl = false)" match="name">
+        <sink kind="connection_string_injection" argpos="1" resource="network"/>
+      </method>
+      <method name="Bind" signature="Bind()" match="numargs">
+        <tags>anonymous_ldap_bind</tags>
+        <return type="bool"/>
+      </method>
+      <method name="Bind_2" signature="Bind(String&amp; dn, string&amp; pwd)">
+        <tags>ldap_bind, username:1, password:2, dn:1</tags>
+        <return type="bool"/>
+        <sink kind="hardcoded_credentials" argpos="0,1"/>
+      </method>
+      <method name="Search" signature="Search(string&amp; base, scope_t scope = BASE, string&amp; filter, Attrs *attrs)" match="name">
+        <tags>dn:0, ldap_filter:2</tags>
+        <return type="list" elementType="Ldap.Entry"/>
+        <sink kind="ldap_injection" argpos="0,2" neutralizer="string,ldap_injection"/>
+      </method>
+      <method name="Add" signature="Add(Entry&amp; entry)" alias="Modify,Delete">
+        <return type="bool"/>
+      </method>
+      <method name="Compare" signature="Compare(string&amp; attr, string&amp; val)"></method>
+      <method name="ModDN" signature="ModDN(string&amp; attr, string&amp; val)"></method>
+    </class>
+
+  </module>
+
+</library>  

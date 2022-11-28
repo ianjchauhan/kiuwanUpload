@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for SOA (Service Oriented Architecture)</description>
+
+  <!--
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="soa/aim.soa.properties"/>
+    <property name="properties">
+      <props></props>
+    </property>
+  </bean>
+  -->
+
+  <!-- Rules -->
+
+  <bean id="aim.soa.rule.wsdl" class="com.optimyth.apm.builder.rules.soa.WSDLRule">
+    <description>soa rule</description>
+    <property name="active" value="${aim.soa.rule.wsdl.active}"/>
+    <property name="filter" ref="aim.soa.rule.wsdl.filter"/>
+    <property name="createWebServiceMethods" value="${aim.soa.rule.wsdl.createWebServiceMethods}"/>
+    <property name="softwareName" value="${aim.soa.rule.wsdl.software}"/>
+  </bean>
+
+  <!-- Filters -->
+  <bean id="aim.soa.rule.wsdl.filter" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.soa.rule.wsdl.filter.pattern}"/>
+  </bean>
+
+</beans>

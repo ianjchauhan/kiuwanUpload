@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.dataComplexity" unit="" aggregation="avg" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COMPLEXITY" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COMPLEXITY" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.LOWER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="12.00" meaning="good" />
+        <threshold from="12.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+        <internal-name id="OPT.COBOL.COMPLEXITY.COMPLEXITY" />
+        <java-class>com.als.cobol.metrics.SystemComplexityMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+     <!-- Code examples for each language parser -->
+    <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+        <code-example name="metricCodeExampleCobol" result-value="12.25">
+<![CDATA[
+      ****************************************************************
+      *  A2421-RUTINA-KC8921M.        ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦*
+      *  Se llama la rut KC8921M para obtener el codigo de objeto.   *
+      ****************************************************************
+       A2421-RUTINA-KC8921M.
+
+           INITIALIZE W-MEM-CODOBJET.
+           INITIALIZE  KC8921P.
+
+           SET UNIR OF KC8921P TO TRUE.
+
+           MOVE CODENTID   OF FA7306I    TO  CODENTID   OF KC8921P
+           MOVE TIPPRODUCT OF FA7306I    TO  TIPPRODUCT OF KC8921P
+           MOVE CODCONTRAT OF FA7306I    TO  CODCONTRAT OF KC8921P
+           MOVE W-MEM-TMSTAMP            TO  TSFECHORA  OF KC8921P
+           MOVE W-CTE-1                  TO  SECOPERMUL OF KC8921P
+
+           CALL W-LIT-KC8921M  USING  KC8921P
+
+           IF  CODIRET  OF KC8921P  = W-LIT-OK
+               MOVE REFERENCOR OF KC8921P   TO W-MEM-CODOBJET
+           ELSE
+               $AHERROR(ERROR,W-LIT-KC8921M-2,'RUT_FORMAT_CONCEPT')
+           END-IF.
+
+      ****************************************************************
+      *  A2422-REC-CSB-DIGCON.        ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦*
+      *  Llamada a la rutina BS8087M para formatear el resto         *
+      *  del concepto.                                               *
+      ****************************************************************
+       A2422-REC-CSB-DIGCON.
+
+           INITIALIZE BS8087P.
+           MOVE W-CTE-1                 TO OPERACION OF BS8087P.
+           MOVE CODENTID    OF FA7306I  TO CODENTID  OF BS8087P.
+           MOVE TIPPRODUCT  OF FA7306I  TO PRO-BAS   OF BS8087P.
+           MOVE CODCONTRAT  OF FA7306I  TO NUM-CTN   OF BS8087P.
+
+           CALL W-LIT-BS8087M  USING  BS8087P
+
+           IF  CODIRET  OF BS8087P  NOT = W-LIT-OK
+               $AHERROR(ERROR,W-LIT-ERR-BS8087P,'RESTO_CONCEP')
+           END-IF.
+]]>
+        </code-example>
+      </language-parser>
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Complejidad de datos]]></name>
+      
+      <description>
+<![CDATA[
+Una base de código grande es, por fuerza, compleja. Sin embargo siempre es posible mantener dicha complejidad acotada entre ciertos umbrales a cualquier nivel de agregación.
+
+Esta métrica mide la complejidad "interna" o "local" de cada método. Cuantos más datos (variables IO) lea o escriba el procedimiento, más alta será su complejidad. Por otro lado, cuantas más funciones / procedimientos llame ("fan-out"), menor será la complejidad de datos, ya que parte de dicha complejidad probablemente se esté delegando en otros procedimientos.
+]]>
+      </description>
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+<![CDATA[
+Complejidad de datos de los paragraphs cobol.
+
+El valor de la métrica se calcula dividiendo el sumatorio de las complejidades de datos de cada párrafo entre el número de párrafos del fichero.
+
+   dataComplexity = sum(datComplexParag) / numParagInFile
+
+La complejidad de datos por cada párrafo se calcula dividiendo el número de referencias a variables en el párrafo entre 1+fanout.
+
+   datComplexParag = numVarRefs(parag) / (1+fanout(parag)) ; donde
+
+   - numVarRefs(parag): número de referencias a variables en sentencias move, compute, diplay, call, write y condicionales en el párrafo.
+   - fanout(parag): número de sentencias call en el párrafo.
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Data complexity]]></name>
+      
+      <description>
+<![CDATA[
+A large code-base is necessarily complex. However it is possible to keep this complexity within defined thresholds at any point of compositional breakout.
+
+This metric measures the "internal" or "local" complexity in each method. The more data (IO vars) the procedure reads and writes, the higher data complexity it has. On the other hand, the more other functions/procedures it calls (fan-out), the lower the data complexity, as parts of the complex data processing is likely to have been delegated to the other procedures.
+]]>
+     </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+<![CDATA[
+Data complexity for cobol paragraphs.
+
+Metric value is calculated by dividing the sum of the data complexities per paragraph between the number of paragraphs in the file.
+
+   dataComplexity = sum(datComplexParag) / numParagInFile
+
+Data complexity per paragraph is calculated by dividing the number of variable references in the paragraph between 1+fanout.
+
+   datComplexParag = numVarRefs(parag) / (1+fanout(parag)) ; where
+
+   - numVarRefs(parag): number of variable references in 'move', 'compute', 'display', 'call', 'write' and conditional statements in the paragraph.
+   - fanout(parag): number of 'call' statements in the paragraph.
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

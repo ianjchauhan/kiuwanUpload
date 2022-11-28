@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+
+  <description>AIM rules for SQL code embedded in C# and vb.NET sources.</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="../database/aim.plsql.xml"/>
+  <import resource="../database/aim.transactsql.xml"/>
+  <import resource="aim.dotnet.xml"/>
+  <import resource="classpath:resources/qaking-tech-sql.xml"/>
+  <import resource="classpath:resources/qaking-tech-plsql.xml"/>
+  <import resource="classpath:resources/qaking-tech-transactsql.xml"/>
+  <import resource="classpath:resources/qaking-tech-cobol.xml"/><!-- this is due to the fact that SQL extractors reference Cobol beans -->
+
+  <!-- Rule -->
+  
+  <bean name="aim.adonet.rule.abstract" class="com.optimyth.apm.builder.rules.dotnet.adonet.AbstractAdoNetRule" abstract="true">
+    <description>AIM rule for discovering SQL usages (e.g. via ) in C# or vb.NET code</description>
+    <property name="active" value="${aim.adonet.rule.active}"/>
+    <property name="rules"><map>
+      <entry key="csharp" value-ref="aim.adonet.rule.csharp"/>
+      <entry key="vbnet"  value-ref="aim.adonet.rule.vbnet"/>
+    </map></property>
+    <property name="filter" ref="aim.dotnet.filter"/> <!-- 'aim.dotnet.filter' defined in aim.dontnet.xml -->
+  </bean>
+  
+  <bean id="aim.adonet.rule.csharp" class="com.optimyth.apm.builder.rules.dotnet.adonet.CSharpAdoNetRule" parent="aim.adonet.rule.abstract">
+    <property name="filter" ref="aim.csharp.filter"/> <!-- 'aim.csharp.filter' defined in aim.dontnet.xml -->
+    <property name="extractor" ref="aim.adonet.rule.csharp.extractor" />
+  </bean>
+
+  <bean id="aim.adonet.rule.vbnet" class="com.optimyth.apm.builder.rules.dotnet.adonet.VbNetAdoNetRule" parent="aim.adonet.rule.abstract">
+    <property name="filter" ref="aim.vbnet.filter"/> <!-- 'aim.vbnet.filter' defined in aim.dontnet.xml -->
+    <property name="extractor" ref="aim.adonet.rule.vbnet.extractor" />
+  </bean>
+
+  <!-- Extractors -->
+  
+  <bean id="aim.adonet.rule.csharp.extractor" parent="csharp_sql_extractor"> <!-- 'csharp_sql_extractor' defined in qaking-tech-sql.xml -->
+    <description>Extracts SQL code embedded in C#</description>
+    <property name="listener" ref="aim.dotnet.listener.sql" />  
+    <property name="frameworkExtractorNames"><null /></property>
+    <property name="frameworkExtractors">
+      <list> <!-- ** should update qaking-tech-sql-properties.xml if this beans change ** -->
+        <bean class="com.als.sql.extractor.dotnet.CsharpDataProvidersSqlExtractor">
+          <property name="fallbackSqlExtractor" ref="aim.adonet.rule.csharp.fallbackExtractor" />
+          <property name="maxPaths" value="64"/>
+          <property name="ignoreMethodCalls" value="${aim.adonet.rule.ignoreMethodCalls}"/>
+        </bean>
+        <bean class="com.als.sql.extractor.dotnet.CsharpLinqSqlExtractor">
+          <property name="fallbackSqlExtractor" ref="aim.adonet.rule.csharp.fallbackExtractor" />
+          <property name="maxPaths" value="64"/>
+          <property name="ignoreMethodCalls" value="${aim.adonet.rule.ignoreMethodCalls}"/>
+        </bean>
+      </list>
+    </property>
+  </bean>
+  
+  <bean id="aim.adonet.rule.vbnet.extractor" parent="vbnet_sql_extractor"> <!-- 'vbnet_sql_extractor' defined in qaking-tech-sql.xml -->
+    <description>Extracts SQL code embedded in VB.NET</description>
+    <property name="listener" ref="aim.dotnet.listener.sql" />   
+    <property name="frameworkExtractorNames"><null /></property>
+    <property name="frameworkExtractors">
+      <list> <!-- ** should update qaking-tech-sql-properties.xml if this beans change ** -->
+        <bean class="com.als.sql.extractor.dotnet.VbNetDataProvidersSqlExtractor">
+          <property name="fallbackSqlExtractor" ref="aim.adonet.rule.vbnet.fallbackExtractor" />
+          <property name="maxPaths" value="64"/>
+          <property name="ignoreMethodCalls" value="${aim.adonet.rule.ignoreMethodCalls}"/>
+        </bean>
+        <bean class="com.als.sql.extractor.dotnet.VbNetLinqSqlExtractor">
+          <property name="fallbackSqlExtractor" ref="aim.adonet.rule.vbnet.fallbackExtractor" />
+          <property name="maxPaths" value="64"/>
+          <property name="ignoreMethodCalls" value="${aim.adonet.rule.ignoreMethodCalls}"/>
+        </bean>
+      </list>
+    </property>
+  </bean>
+  
+  <bean name="aim.adonet.rule.csharp.fallbackExtractor" class="com.optimyth.apm.builder.rules.dotnet.adonet.CSharpTextFallbackSqlExtractor">
+    <property name="callback" ref="aim.adonet.rule.callback" />
+    <property name="createSqlComponents" value="${aim.adonet.rule.createSqlComponents}"/>
+  </bean>
+  
+  <bean name="aim.adonet.rule.vbnet.fallbackExtractor" class="com.optimyth.apm.builder.rules.dotnet.adonet.VbNetTextFallbackSqlExtractor">
+    <property name="callback" ref="aim.adonet.rule.callback" />
+    <property name="createSqlComponents" value="${aim.adonet.rule.createSqlComponents}"/>
+  </bean>  
+  
+  <!-- Callback -->
+  
+  <bean id="aim.adonet.rule.callback" class="com.optimyth.apm.builder.rules.dotnet.adonet.DotNetDatabaseCallback">
+    <property name="application" value="${aim.common.software}"/>
+    <property name="language" value="${aim.adonet.dotnet.language}"/>
+    <property name="dbType" value="${aim.adonet.dbsystem}"/>
+    <property name="dbName" value="${aim.adonet.dbname}"/>
+    <property name="addCodeToRelations" value="${aim.common.addCodeToRelations}"/>
+    <property name="ignoreCase" value="${aim.adonet.ignoreCase}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/> <!-- defined in aim.common.xml -->
+    <property name="databaseObjectResolver" ref="aim.global.databaseObjectResolver"/> <!-- defined in aim.common.xml -->
+  </bean>
+  
+  <!-- Listener -->
+  
+  <!-- To support old and new properties configuration -->
+  <bean name="aim.adonet.sqltype.supportConfig" class="com.optimyth.apm.builder.rules.common.FirstNonNullPropertyFactoryBean">
+    <property name="objectType" value="java.lang.String"/>
+    <property name="values">
+      <list>
+        <bean class="java.lang.String"><constructor-arg value="${aim.adonet.sqltype}"/></bean>
+        <bean class="java.lang.String"><constructor-arg value="${aim.adonet.dbtype}"/></bean>
+      </list>
+    </property>
+  </bean>  
+  
+  <bean id="aim.dotnet.listener.sql" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>
+      Which listener to use for processing SQL code. Process
+      + aim.adonet.dbtype  (old config - deprecated)
+      + aim.adonet.sqltype (new config)
+    </description>
+    <property name="key"  ref="aim.adonet.sqltype.supportConfig"/>  <!-- To support old and new properties configuration -->
+    <property name="objectType" value="com.optimyth.apm.builder.rules.j2ee.jdbc.JdbcSqlListener"/>
+    <property name="defaultValue" ref="aim.dotnet.listener.sql92"/>
+    <property name="map"><map>
+      <entry key="sql92"       value-ref="aim.dotnet.listener.sql92"/>     <!-- deprecated value, kept for retro-compatibility -->
+      <entry key="oracle"      value-ref="aim.dotnet.listener.oracle"/>    <!-- deprecated value, kept for retro-compatibility -->
+      <entry key="sqlserver"   value-ref="aim.dotnet.listener.sqlserver"/> <!-- deprecated value, kept for retro-compatibility -->
+      <entry key="ansisql"     value-ref="aim.dotnet.listener.sql92"/>
+      <entry key="plsql"       value-ref="aim.dotnet.listener.oracle"/>
+      <entry key="transactsql" value-ref="aim.dotnet.listener.sqlserver"/>
+      <entry key="multi"       value-ref="aim.dotnet.listener.multi"/>
+    </map></property>    
+  </bean>
+  
+  <bean id="aim.dotnet.listener.sql92" class="com.optimyth.apm.builder.rules.dotnet.adonet.DotNetSqlListener">
+    <property name="callback" ref="aim.adonet.rule.callback"/>
+    <property name="sqlLanguageSupport" ref="ls_sql"/>
+    <property name="createSqlComponents" value="${aim.adonet.rule.createSqlComponents}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>   <!-- 'aim.common.excludeDatabaseItems' defined in aim.common.xml -->
+  </bean>
+  
+  <bean id="aim.dotnet.listener.oracle" parent="aim.dotnet.listener.sql92" class="com.optimyth.apm.builder.rules.dotnet.adonet.DotNetPlsqlListener">
+    <property name="sqlLanguageSupport" ref="ls_plsql"/>
+  </bean>
+  
+  <bean id="aim.dotnet.listener.sqlserver" parent="aim.dotnet.listener.sql92" class="com.optimyth.apm.builder.rules.dotnet.adonet.DotNetTransactsqlListener">
+    <property name="sqlLanguageSupport" ref="ls_transactsql"/>
+  </bean>
+  
+  <bean id="aim.dotnet.listener.multi" class="com.optimyth.apm.builder.rules.common.CompositeSqlListener">
+    <property name="callback" ref="aim.adonet.rule.callback"/>
+    <property name="createSqlComponents" value="${aim.adonet.rule.createSqlComponents}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>  
+    <property name="sqlListeners"><list>
+      <ref bean="aim.dotnet.listener.sql92"/>
+      <ref bean="aim.dotnet.listener.oracle"/>
+      <ref bean="aim.dotnet.listener.sqlserver"/>
+    </list></property>
+  </bean>    
+     
+</beans>

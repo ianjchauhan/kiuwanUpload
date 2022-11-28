@@ -1,0 +1,746 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="django" technology="python">
+
+  <description url="https://docs.djangoproject.com/en/3.0/ref/">Python Web Framework</description>
+
+  <module name="django">
+
+    <module name="apps">
+      <class name="AppConfig">
+        <field name="name" type="str"/>
+        <field name="label" type="str"/>
+        <field name="verbose_name" type="str"/>
+        <field name="path" type="str"/>
+        <field name="module" type="module"/>
+        <field name="models_module" type="module"/>
+
+        <constructor name="AppConfig" signature="AppConfig(app_name, app_module)"/>
+
+        <method name="get_models" signature="get_models()">
+          <return type="iterable"/>
+        </method>
+        <method name="get_model" signature="get_models(model_name, require_ready=True)">
+          <return type="model"/>
+        </method>
+        <method name="ready" signature="ready()">
+          <return type="bool"/>
+        </method>
+      </class>
+
+      <member name="ready" type="bool"/>
+      <function name="get_app_configs" signature="get_app_configs()">
+        <return type="iterable"/>
+      </function>
+      <function name="get_app_config" signature="get_app_config(app_label)">
+        <return type="AppConfig"/>
+      </function>
+
+
+    </module>
+
+    <module name="core" >
+      <module name="urlresolvers" >
+        <function name="reverse" signature="reverse(str)" >
+          <neutralization argpos="-1" kind="open_redirect" resource="web" />
+        </function>
+      </module>
+
+      <module name="checks.messages">
+        <class name="CheckMessage">
+          <constructor name="CheckMessage" signature="CheckMessage(level, msg, hint=None, obj=None, id=None)"/>
+          <field name="level" type="int"/>
+          <field name="msg" type="str"/>
+          <field name="hint" type="str"/>
+          <field name="obj" type="object"/>
+          <field name="id" type="str"/>
+
+          <!--<class name="Debug">-->
+          <!--<constructor name="Debug" signature=" Debug(msg, hint=None, obj=None, id=None"/>-->
+          <!--</class>-->
+          <!--<class name="Info">-->
+          <!--<constructor name="Info" signature=" Info(msg, hint=None, obj=None, id=None"/>-->
+          <!--</class>-->
+          <!--<class name="Warning">-->
+          <!--<constructor name="Warning" signature=" Warning(msg, hint=None, obj=None, id=None"/>-->
+          <!--</class>-->
+          <!--<class name="Error">-->
+          <!--<constructor name="Error" signature=" Error(msg, hint=None, obj=None, id=None"/>-->
+          <!--</class>-->
+          <!--<class name="Critical">-->
+          <!--<constructor name="Critical" signature=" Critical(msg, hint=None, obj=None, id=None"/>-->
+          <!--</class>-->
+        </class>
+
+      </module>
+    </module>
+
+    <module name="http" >
+      <class name="HttpResponseBase" supertypes="dict" >
+        <tags>open_redirect: -2</tags>
+
+        <field name="_headers" type="dict" alias="*" >
+          <tags>open_redirect: -2</tags>
+          <source argpos="-1" kind="user_input" resource="web"/>
+          <sink argpos="-2" kind="header_manipulation" resource="web"/>
+        </field>
+
+        <method name="items" signature="items()" >
+          <return type="dict" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </method>
+        <method name="get" signature="get(header, alternate=None):" >
+          <return type="str" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </method>
+        <method name="set_cookie" alias="set_signed_cookie"
+                signature="set_cookie(key, value='', max_age=None, expires=None, path='/',domain=None, secure=False, httponly=False, samesite=None)" >
+          <tags>cookieName:0,cookieValue:1,httpOnly:httponly:false,secure:secure:false,maxAge:max_age,expires:expires,path:path:/,domain:domain</tags>
+          <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+          <sink argpos="0,1" kind="cookie_poisoning" resource="web"/>
+          <sink argpos="0" paramNames="key, value" kind="cookie_plaintext_storage" resource="web" />
+        </method>
+        <method name="set_signed_cookie" signature="set_signed_cookie(key,value='',salt='', max_age=None, expires=None, path='/', domain=None, secure=False, httponly=False, samesite=None))">
+          <tags>cookieName:0,cookieValue:1,httpOnly:httponly:true,secure:secure:false,maxAge:max_age,expires:expires,path:path:/,domain:domain</tags>
+          <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+          <sink argpos="0,1" kind="cookie_poisoning" resource="web"/>
+          <sink argpos="0" paramNames="key, value" kind="cookie_plaintext_storage" resource="web" />
+        </method>
+        <method name="delete_cookie" signature="delete_cookie(key, path='/', domain=None)"/>
+        <method name="close" signature="close()"/>
+      </class>
+
+      <class name="HttpResponse" supertypes="django.http.HttpResponseBase" >
+        <tags>open_redirect: -2</tags>
+        <constructor name="HttpResponse" signature="HttpResponse(path)" >
+          <sink argpos="0,1,2" kind="xss" resource="web"/>
+          <sink argpos="-2" kind="missing_access_control" resource="web"/>
+        </constructor>
+
+        <field name="status_code" type="str" />
+        <field name="reason_phrase" type="str" />
+        <field name="content" type="str" />
+
+        <method name="__setitem__" signature="__setitem__(header, value)" >
+          <tags>open_redirect: 0</tags>
+          <return type="NoneType" />
+          <sink argpos="0,1,2" kind="header_manipulation" resource="web"/>
+        </method>
+        <method name="__delitem__" signature="__delitem__(header" >
+          <return type="NoneType" />
+          <sink argpos="0,1,2" kind="header_manipulation" resource="web"/>
+        </method>
+        <method name="writelines" signature="writelines(lines)" >
+          <return type="NoneType" />
+        </method>
+        <method name="__getitem__" signature="__getitem__(header)" >
+          <return type="str" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </method>
+        <method name="has_header" signature="has_header(header" >
+          <return type="bool" />
+        </method>
+        <method name="setdefault" signature="setdefault(header, value)" >
+          <tags>open_redirect: 0</tags>
+          <return type="NoneType" />
+          <sink argpos="0,1,2" kind="header_manipulation" resource="web"/>
+        </method>
+      </class>
+      <class name="StreamingHttpResponse" supertypes="django.http.HttpResponse" />
+
+      <class name="FileResponse" supertypes="django.http.HttpResponse" />
+
+      <class name="HttpResponseRedirectBase" supertypes="django.http.HttpResponse" />
+
+      <class name="HttpResponseRedirect" supertypes="django.http.HttpResponseRedirectBase" >
+        <constructor name="HttpResponseRedirect" signature="HttpResponseRedirect(path)" >
+          <sink argpos="0" kind="open_redirect" resource="web"/>
+          <sink kind="execution_after_redirect" argpos="0" resource="web"/>
+        </constructor>
+      </class>
+
+      <class name="HttpResponsePermanentRedirect" supertypes="django.http.HttpResponseRedirectBase" />
+      <class name="HttpResponseNotModified" supertypes="django.http.HttpResponse" />
+      <class name="HttpResponseBadRequest" supertypes="django.http.HttpResponse" />
+      <class name="HttpResponseNotFound" supertypes="django.http.HttpResponse" />
+      <class name="HttpResponseForbidden" supertypes="django.http.HttpResponse" />
+      <class name="HttpResponseNotAllowed" supertypes="django.http.HttpResponse" />
+      <class name="HttpResponseGone" supertypes="django.http.HttpResponse" />
+      <class name="HttpResponseServerError" supertypes="django.http.HttpResponse" />
+      <class name="Http404" supertypes="Exception" />
+      <class name="JsonResponse" supertypes="django.http.HttpResponse" />
+
+      <class name="HttpRequest" alias="request">
+        <field name="content_type" type="str" >
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </field>
+        <field name="content_params" type="str" >
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </field>
+        <field name="_body" type="str" >
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </field>
+        <field name="session" type="django.contrib.sessions.backends.base.SessionBase" >
+          <sink argpos="0" kind="trust_boundary" resource="web" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </field>
+        <field name="GET" type="django.htpp.QueryDict" >
+          <source argpos="-1" kind="user_input" resource="web"/>
+          <source argpos="-1" kind="missing_access_control" resource="web"/>
+          <sink argpos="0" kind="sensitive_data" resource="web" />
+        </field>
+        <field name="POST" type="django.htpp.QueryDict" >
+          <source argpos="-1" kind="user_input" resource="web"/>
+          <source argpos="-1" kind="insecure_dor" resource="web"/>
+          <sink argpos="0" kind="sensitive_data" resource="web" />
+        </field>
+        <field name="COOKIES" type="dict" >
+          <tags>CWE:784</tags>
+          <source argpos="-1" kind="user_input" resource="web"/>
+          <sink argpos="0" kind="sensitive_data" resource="web" />
+        </field>
+        <field name="META" type="dict" >
+          <tags>open_redirect: -2</tags>
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </field>
+        <field name="user" type="django.contrib.auth.models.User"/>
+        <field name="method" type="str" >
+          <source argpos="-1" kind="insecure_dor" resource="web"/>
+        </field>
+        <field name="query_params" type="dict" >
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </field>
+
+        <method name="get_host" signature="get_host(self)" >
+          <return type="str" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </method>
+        <method name="get_port" signature="get_port(self)" >
+          <return type="int" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </method>
+        <method name="get_full_path" signature="get_full_path(self, force_append_slash=False):" alias="get_full_path_info" >
+          <return type="str" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </method>
+        <method name="get_signed_cookie" signature="get_signed_cookie(self, key, default=RAISE_ERROR, salt='', max_age=None)" >
+          <tags>CWE:784</tags>
+          <return type="str" />
+        </method>
+        <method name="get_raw_uri" signature="get_raw_uri(self)" >
+          <return type="str" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </method>
+        <method name="build_absolute_uri" signature="build_absolute_uri(self, location=None)"/>
+        <method name="body" signature="body(self)" >
+          <return type="str" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </method>
+        <method name="close" signature="close(self)" >
+          <return type="NoneType" />
+        </method>
+        <method name="read" signature="read(self, *args, **kwargs)" >
+          <return type="str" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </method>
+        <method name="readline" signature="readline(self, *args, **kwargs)" >
+          <return type="str" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </method>
+        <method name="xreadlines" signature="xreadlines(self)" >
+          <return type="str" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </method>
+        <method name="readlines" signature="readlines(self)" >
+          <return type="str" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </method>
+      </class>
+
+      <class name="QueryDict" supertypes="django.utils.datastructures.MultiValueDict" >
+        <method name="__getitem__" signature="__getitem__(key)" >
+          <return type="object" />
+          <propagate from="-2" to="-1" />
+        </method>
+        <method name="__setitem__" signature="__setitem__(key, value)" >
+          <return type="object" />
+          <propagate from="-1" to="-2" />
+        </method>
+        <method name="get" signature="get(key, default=None)" >
+          <return type="object" />
+          <propagate from="-2" to="-1" />
+        </method>
+        <method name="update" signature="update(other_dict)" >
+          <return type="object" />
+          <propagate from="0" to="-2" />
+        </method>
+        <method name="items" signature="items()" >
+          <return type="dict" />
+          <propagate from="-2" to="-1" />
+        </method>
+        <method name="values" signature="values()" >
+          <return type="dict" />
+          <propagate from="-2" to="-1" />
+        </method>
+        <method name="setdefault" signature="setdefault(key, default=None)" >
+          <return type="NoneType" />
+          <propagate from="0" to="-2" />
+        </method>
+        <method name="copy" signature="copy()" >
+          <return type="django.utils.datastructures.QueryDict" />
+          <propagate from="-2" to="-1" />
+        </method>
+        <method name="values" signature="values()" >
+          <return type="dict" />
+          <propagate from="-2" to="-1" />
+        </method>
+        <method name="getlist" signature="getlist(key, default=None)" >
+          <return type="list" />
+          <propagate from="-2" to="-1" />
+        </method>
+        <method name="setlist" signature="setlist(key, list_" >
+          <return type="NoneType" />
+          <propagate from="-2" to="-1" />
+        </method>
+        <method name="getlist" signature="getlist(key, default=None)" >
+          <return type="list" />
+          <propagate from="-2" to="-1" />
+        </method>
+        <method name="setlist" signature="setlist(key, list_)" >
+          <return type="NoneType" />
+          <propagate from="0,1" to="-2" />
+        </method>
+        <method name="appendlist" signature="appendlist(key, item)" >
+          <return type="NoneType" />
+          <propagate from="0,1" to="-2" />
+        </method>
+        <method name="setlistdefault" signature="setlistdefault(key, default_list=None" >
+          <return type="NoneType" />
+          <propagate from="0,1" to="-2" />
+        </method>
+        <method name="lists" signature="lists()" >
+          <return type="dict" />
+          <propagate from="-2" to="-1" />
+        </method>
+        <method name="dict" signature="dict()" >
+          <return type="dict" />
+          <propagate from="-2" to="-1" />
+        </method>
+      </class>
+    </module>
+
+    <module name="template" >
+      <class name="SimpleTemplateResponse" supertypes="django.http.HTTPResponse" />
+      <class name="TemplateResponse" supertypes="django.template.SimpleTemplateResponse" />
+    </module>
+
+    <module name="utils" >
+      <module name="datastructures" >
+        <class name="MultiValueDict" supertypes="dict" />
+      </module>
+    </module>
+
+    <module name="contrib" >
+      <module name="sessions" >
+        <module name="backends" >
+          <module name="base" >
+            <class name="SessionBase" >
+              <method name="get" signature="get(self, key, default=None)" >
+                <return type="str" />
+              </method>
+              <method name="keys" signature="keys(self)" >
+                <return type="str" />
+              </method>
+              <method name="values" signature="values(self)" >
+                <return type="str" />
+              </method>
+              <method name="items" signature="items(self)" >
+                <return type="str" />
+              </method>
+              <method name="get_expiry_date" signature="get_expiry_date(**kwargs)" >
+                <return type="str" />
+              </method>
+              <method name="set_expiry" signature="set_expiry(value)" >
+                <tags>session_timeout:0</tags>
+                <return type="NoneType" />
+              </method>
+            </class>
+          </module>
+        </module>
+      </module>
+
+      <module name="contenttypes" >
+        <module name="models" >
+          <class name="ContentType" >
+            <field name="app_label" type="str" />
+            <field name="model" type="str" />
+            <field name="name" type="str" />
+            <field name="objects" type="django.contrib.contenttypes.models.ContentTypeManager" />
+
+            <method name="get_object_for_this_type" signature="get_object_for_this_type(**kwargs)" >
+              <return type="django.db.models.Model" />
+              <source argpos="-1" resource="database" kind="database_input" />
+            </method>
+            <method name="model_class" signature="model_class()" >
+              <return type="django.contrib.auth.models.User" />
+              <source argpos="-1" resource="database" kind="database_input" />
+            </method>
+            <method name="get_object_for_this_type" signature="get_object_for_this_type(**kwargs)" >
+              <return type="django.db.models.Model" />
+              <source argpos="-1" resource="database" kind="database_input" />
+            </method>
+
+          </class>
+
+          <class name="ContentTypeManager" >
+            <field name="app_label" type="str" />
+            <field name="model" type="str" />
+            <field name="name" type="str" />
+
+            <method name="get_for_id" signature="get_for_id(id)" >
+              <return type="django.contrib.contenttypes.models.ContentType" />
+              <source argpos="-1" resource="database" kind="database_input" />
+            </method>
+            <method name="get_for_model" signature="get_for_model(model, for_concrete_model=True)" >
+              <return type="django.contrib.contenttypes.models.ContentType" />
+              <source argpos="-1" resource="database" kind="database_input" />
+            </method>
+            <method name="get_for_models" signature="get_for_models(*models, for_concrete_models=True)" >
+              <return type="dict" />
+              <source argpos="-1" resource="database" kind="database_input" />
+            </method>
+            <method name="get_by_natural_key" signature="get_by_natural_key(app_label, model)" >
+              <return type="django.contrib.contenttypes.models.ContentType" />
+              <source argpos="-1" resource="database" kind="database_input" />
+            </method>
+          </class>
+        </module>
+      </module>
+
+      <module name="auth" >
+        <module name="models" >
+          <class name="User" supertypes="django.db.models.Model" >
+            <field name="is_authenticated" type="builtins.bool" >
+              <neutralization argpos="-2" kind="authorization" resource="other" />
+              <source argpos="-2" kind="missing_access_control" resource="other" />
+              <sink argpos="-1" kind="security_decision" resource="web"/>
+            </field>
+            <field name="is_anonymous" type="builtins.bool" >
+              <neutralization argpos="-2" kind="authorization" resource="other" />
+              <source argpos="-2" kind="missing_access_control" resource="other" />
+              <sink argpos="-1" kind="security_decision" resource="web"/>
+            </field>
+
+            <method name="is_authenticated" signature="is_authenticated()" >
+              <neutralization argpos="-2" kind="authorization" resource="other" />
+              <source argpos="-2" kind="missing_access_control" resource="other" />
+              <sink argpos="-1" kind="security_decision" resource="web"/>
+            </method>
+            <method name="is_anonymous" signature="is_anonymous()" >
+              <neutralization argpos="-2" kind="authorization" resource="other" />
+              <source argpos="-2" kind="missing_access_control" resource="other" />
+              <sink argpos="-1" kind="security_decision" resource="web"/>
+            </method>
+            <method name="has_perm" signature="has_perm(perm, obj=None)" >
+              <neutralization argpos="-2" kind="authorization" resource="other" />
+              <neutralization argpos="-2" kind="missing_access_control" resource="other" />
+              <sink argpos="0" paramNames="obj" kind="security_decision" resource="web"/>
+            </method>
+            <method name="has_perms" signature="has_perms(perm_list, obj=None)" >
+              <neutralization argpos="-2" kind="authorization" resource="other" />
+              <neutralization argpos="-2" kind="missing_access_control" resource="other" />
+              <sink argpos="0" paramNames="obj" kind="security_decision" resource="web"/>
+            </method>
+          </class>
+        </module>
+
+        <function name="authenticate" signature="authenticate(user, password)" >
+          <neutralization argpos="0, -2" paramNames="username, password" kind="authorization" resource="other" />
+          <source argpos="-2" kind="missing_access_control" resource="other" />
+          <sink argpos="-1" kind="security_decision" resource="web"/>
+        </function>
+      </module>
+    </module>
+
+    <module name="conf" >
+      <module name="urls" >
+        <function name="patterns" signature="patterns()" >
+          <return type="" />
+        </function>
+
+        <function name="url" signature="url(regex, view, kwargs=None, name=None)" >
+          <tags>djangoViewArgPos:1</tags>
+          <return type="django.conf.urls.url" />
+        </function>
+      </module>
+    </module>
+
+    <module name="db" >
+
+      <module name="connection" >
+        <function name="cursor" signature="cursor()" >
+          <return type="django.db.connection.cursor" />
+        </function>
+
+        <class name="cursor" >
+          <method name="execute" signature="execute(sql[,params])" >
+            <return type="None" />
+            <sink argpos="0, 1, 2" kind="sql_injection" resource="database"/>
+            <sink argpos="-2" kind="insecure_dor" resource="database"/>
+            <source argpos="-1" resource="database" kind="database_input" />
+            <propagate from="-2" to="-1" />
+          </method>
+        </class>
+
+      </module>
+
+      <module name="models" >
+        <module name="expressions" >
+          <function name="RawSQL" signature="RawSQL(sql, params, output_field=None)" >
+            <tags>requires_source_check:false</tags>
+            <return type="tuple" />
+            <sink argpos="0, 1, 2" kind="sql_injection" resource="database"/>
+          </function>
+        </module>
+
+        <class name="Model" >
+          <field name="objects" type="django.db.models.QuerySet" />
+
+          <method name="delete" signature="delete()" >
+            <tags>requires_source_check:false</tags>
+            <return type="tuple" />
+            <sink argpos="-2"  kind="insecure_dor" resource="other"/>
+          </method>
+          <method name="save" signature="save()" >
+            <tags>requires_source_check:false</tags>
+            <return type="tuple" />
+            <sink argpos="-2"  kind="insecure_dor" resource="other"/>
+          </method>
+        </class>
+
+        <class name="QuerySet" >
+          <method name="extra" signature="extra(select=None, where=None, params=None, tables=None, order_by=None, select_params=None)" match="name" >
+            <return type="django.db.models.QuerySet" />
+            <sink paramNames="select, where, params, tables, order_by, select_params" kind="sql_injection" resource="database"/>
+          </method>
+          <method name="filter" signature="filter()" match="name" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="exclude" signature="exclude()" match="name" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="annotate" signature="annotate()" match="name" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="order_by" signature="order_by()" match="name" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="reverse" signature="reverse()" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="distinct" signature="distinct()" match="name" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="values" signature="values()" match="name" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="values_list" signature="values_list()" match="name" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="dates" signature="dates()" match="name" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="datetimes" signature="datetimes()" match="name" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="none" signature="none()" >
+            <return type="django.db.models.QuerySet" />
+          </method>
+          <method name="all" signature="all()" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="union" signature="union()" match="name" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="intersection" signature="intersection()" match="name" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="difference" signature="difference()" match="name" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="select_related" signature="select_related()" match="name" >
+            <return type="django.db.models.QuerySet" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="prefetch_related" signature="prefetch_related()" match="name" >
+            <return type="django.db.models.QuerySet" />
+          </method>
+          <method name="defer" signature="defer()" match="name" >
+            <return type="django.db.models.QuerySet" />
+          </method>
+          <method name="only" signature="only()" match="name" >
+            <return type="django.db.models.QuerySet" />
+          </method>
+          <method name="using" signature="using()" match="name" >
+            <return type="django.db.models.QuerySet" />
+          </method>
+          <method name="select_for_update" signature="select_for_update()" match="name" >
+            <return type="django.db.models.QuerySet" />
+          </method>
+          <method name="raw" signature="raw(raw_query, params=None, translations=None)" >
+            <return type="django.db.models.QuerySet" />
+            <sink argpos="0, 1, 2" paramNames="raw_query, params, translations"  kind="sql_injection" resource="database"/>
+          </method>
+          <method name="get" signature="get()" match="name" >
+            <return type="django.contrib.auth.models.User" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+          <method name="delete" signature="delete()" >
+            <tags>requires_source_check:false</tags>
+            <return type="tuple" />
+            <sink argpos="-2"  kind="insecure_dor" resource="other"/>
+          </method>
+          <method name="save" signature="save(force_insert=False, force_update=False, using=DEFAULT_DB_ALIAS, update_fields=None)" >
+            <tags>requires_source_check:false</tags>
+            <return type="tuple" />
+            <sink argpos="-2"  kind="insecure_dor" resource="other"/>
+          </method>
+          <method name="create" signature="create()" match="name" >
+            <return type="django.contrib.auth.models.User" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+        </class>
+      </module>
+    </module>
+
+    <module name="shortcuts" >
+      <function name="redirect" signature="redirect(to, permanent=False, *args, **kwargs)" >
+        <return type="django.http.HttpResponseRedirect" />
+        <sink argpos="0" kind="open_redirect" resource="web"/>
+        <sink kind="execution_after_redirect" argpos="0" resource="web"/>
+      </function>
+      <function name="render" signature="render(request, template_name, context=None, content_type=None, status=None, using=None)">
+        <tags>source_open_redirect_check:true</tags>
+        <return type="django.http.HttpResponse"/>
+        <sink argpos="0,1,2" paramNames="context" kind="xss" resource="web"/>
+        <sink argpos="-2" kind="missing_access_control" resource="web"/>
+      </function>
+      <function name="render_to_response" signature="render_to_response(template_name, context=None, content_type=None, status=None, using=None)[">
+        <tags>source_open_redirect_check:true</tags>
+        <return type="django.http.HttpResponse"/>
+        <sink argpos="0,1,2" paramNames="context" kind="xss" resource="web"/>
+        <sink argpos="-2" kind="missing_access_control" resource="web"/>
+      </function>
+    </module>
+
+    <module name="forms" >
+      <class name="ModelForm" >
+        <tags>mass_assigment_attack:true</tags>
+      </class>
+    </module>
+
+    <module name="views" >
+      <module name="decorators" >
+        <module name="csrf" >
+          <annotation name="csrf_exempt" >
+            <sink argpos="-2" kind="csrf" resource="web"/>
+          </annotation>
+        </module>
+      </module>
+      <module name="generic">
+        <module name="base">
+          <class name="View">
+            <field name="http_method_names" type="list"/>
+            <method name="as_view" signature="as_view(**initkwargs)">
+              <return type="function"/>
+            </method>
+            <method name="dispatch" signature="dispatch(request, *args, **kwargs)">
+              <return type="NoneType"/>
+            </method>
+            <method name="http_method_not_allowed" signature="http_method_not_allowed(request, *args, **kwargs)">
+              <return type="NoneType"/>
+            </method>
+            <method name="options" signature="options(request, *args, **kwargs)">
+              <return type="NoneType"/>
+            </method>
+          </class>
+
+          <class name="django.views.generic.base.ContextMixin" >
+            <method name="get_context_data" signature="get_context_data(**kwargs)">
+              <return type="dict"/>
+            </method>
+
+          </class>
+
+          <class name="TemplateView" supertypes="django.views.generic.base.TemplateResponseMixin, django.views.generic.base.ContextMixin, django.views.generic.base.View">
+
+          </class>
+          <class name="RedirectView" supertypes="django.views.generic.base.View">
+            <field name="url" type="str"/>
+            <field name="pattern_name" type="str"/>
+            <field name="permanent" type="bool"/>
+            <field name="query_string" type="bool"/>
+            <method name="get_redirect_url" signature="get_redirect_url(*args, **kwargs)">
+              <return type="str"/>
+            </method>
+          </class>
+        </module>
+
+        <module name="detail">
+          <class name="BaseDetailView" supertypes="django.views.generic.detail.SingleObjectMixin, django.views.generic.base.View"/>
+          <class name="DetailView" supertypes="django.views.generic.detail.SingleObjectTemplateResponseMixin, django.views.generic.base.TemplateResponseMixin, django.views.generic.detail.BaseDetailView, django.views.generic.detail.SingleObjectMixin, django.views.generic.base.View"/>
+        </module>
+
+        <module name="list">
+          <class name="BaseListView" supertypes="django.views.generic.list.MultipleObjectMixin, django.views.generic.base.View">
+            <method name="get" signature="get(request, *args, **kwargs)">
+              <return type="list"/>
+            </method>
+          </class>
+          <class name="ListView" supertypes="django.views.generic.list.MultipleObjectTemplateResponseMixin, django.views.generic.base.TemplateResponseMixin, django.views.generic.list.BaseListView, django.views.generic.list.MultipleObjectMixin, django.views.generic.base.View"/>
+        </module>
+
+        <module name="edit">
+          <class name="django.views.generic.edit.BaseFormView" supertypes="django.views.generic.edit.FormMixin, django.views.generic.edit.ProcessFormView"/>
+          <class name="FormView" supertypes="django.views.generic.base.TemplateResponseMixin, django.views.generic.edit.BaseFormView, django.views.generic.edit.FormMixin, django.views.generic.edit.ProcessFormView, django.views.generic.base.View"/>
+        </module>
+      </module>
+    </module>
+    <class name="View" supertypes="django.views.generic.base.View"/>
+  </module>
+
+  <module name="rest_framework">
+    <module name="decorators" >
+      <annotation name="api_view" >
+        <source argpos="0" kind="user_input" resource="web" />
+      </annotation>
+    </module>
+
+    <module name="fields" >
+      <class name="Field" >
+        <field name="context" elementType="dict" />
+      </class>
+    </module>
+
+    <module name="serializers" >
+      <class name="BaseSerializer" supertypes="rest_framework.fields.Field" />
+      <class name="Serializer" supertypes="rest_framework.serializers.BaseSerializer" />
+    </module>
+  </module>
+
+</library>

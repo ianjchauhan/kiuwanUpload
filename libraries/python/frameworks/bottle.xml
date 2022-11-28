@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="bottle" technology="python">
+
+  <description url="https://bottlepy.org/docs/dev/">Python Web Framework</description>
+
+  <module name="bottle">
+    <annotation name="route">
+      <source argpos="0" kind="user_input" resource="web"/>
+    </annotation>
+
+    <annotation name="get">
+      <source argpos="0" kind="user_input" resource="web"/>
+    </annotation>
+
+    <annotation name="post">
+      <source argpos="0" kind="user_input" resource="web"/>
+    </annotation>
+
+    <function name="static_file" signature="static_file(name, root)">
+      <return type="file"/>
+      <sink argpos="0,1" kind="path_traversal" resource="filesystem"/>
+    </function>
+
+    <function name="redirect" signature="redirect(path)">
+      <return type="bottle.BaseResponse"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+      <sink kind="execution_after_redirect" argpos="0" resource="web"/>
+    </function>
+
+    <class name="LocalRequest"/>
+
+    <class name="BaseRequest" supertypes="bottle.LocalRequest">
+      <field name="headers" type="bottle.WSGIHeaderDict">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </field>
+      <field name="cookies" type="bottle.FormsDict">
+        <tags>CWE:784</tags>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </field>
+      <field name="query" type="bottle.FormsDict">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </field>
+      <field name="forms" type="bottle.FormsDict">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </field>
+      <field name="params" type="bottle.FormsDict">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </field>
+      <field name="files" type="bottle.FormsDict">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </field>
+      <field name="GET" type="bottle.FormsDict">
+        <source argpos="-1" kind="user_input" resource="web"/>
+        <sink argpos="0" kind="sensitive_data" resource="web" />
+      </field>
+      <field name="POST" type="bottle.FormsDict">
+        <source argpos="-1" kind="user_input" resource="web"/>
+        <sink argpos="0" kind="sensitive_data" resource="web" />
+      </field>
+      <field name="content_type" type="str">
+        <sink argpos="-2" kind="header_manipulation" resource="web"/>
+      </field>
+      <field name="content_length" type="int">
+        <sink argpos="-2" kind="header_manipulation" resource="web"/>
+      </field>
+      <field name="status" type="str">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </field>
+      <function name="get_header" signature="get_header(name, default=None)">
+        <return type="str"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </function>
+      <function name="get_cookie" signature="get_cookie(key, default=None, secret=None, digestmod">
+        <tags>CWE:784</tags>
+        <return type="str"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </function>
+    </class>
+
+    <class name="response" supertypes="bottle.BaseResponse"/>
+
+    <class name="BaseResponse" supertypes="bottle.LocalResponse">
+      <field name="headers" type="bottle.HeaderDict">
+        <tags>open_redirect: -1</tags>
+        <sink argpos="-2" kind="header_manipulation" resource="web"/>
+      </field>
+      <field name="status_line" type="str">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </field>
+      <field name="status_code" type="int">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </field>
+      <field name="content_type" type="str">
+        <sink argpos="-2" kind="header_manipulation" resource="web"/>
+      </field>
+      <field name="content_length" type="int">
+        <sink argpos="-2" kind="header_manipulation" resource="web"/>
+      </field>
+      <field name="headerlist" type="list">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </field>
+      <field name="forms" type="int">
+        <sink argpos="-2" kind="header_manipulation" resource="web"/>
+      </field>
+      <function name="get_header" signature="get_header(name, default=None)">
+        <return type="str"/>
+      </function>
+      <function name="set_header" signature="set_header(name,value)">
+        <tags>open_redirect: 0</tags>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </function>
+      <function name="add_header" signature="addheader(name,value)">
+        <tags>open_redirect: 0</tags>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </function>
+      <function name="set_cookie" signature="set_cookie(key,value,secret=None,digestmod=sha256,**options)">
+        <tags>cookieName:0,cookieValue:1,httpOnly:httponly:false,secure:secure:false,maxAge:max_age,expires:expires,path:path,domain:domain</tags>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+        <sink argpos="0,1" kind="cookie_poisoning" resource="web"/>
+        <sink argpos="0" paramNames="key, value" kind="cookie_plaintext_storage" resource="web" />
+      </function>
+      <function name="delete_cookie" signature="delete_cookie(key,**kwargs)"/>
+    </class>
+
+    <class name="LocalResponse"/>
+
+    <class name="request" supertypes="bottle.BaseRequest"/>
+
+    <class name="MultiDic" supertypes="dict">
+      <function name="get" signature="get(key, default=None, index=-1, type=None)">
+        <return type="object"/>
+        <propagate from="-2" to="-1"/>
+      </function>
+      <function name="append" signature="append(key, value)">
+        <tags>open_redirect: 0</tags>
+        <propagate from="-1" to="-2"/>
+      </function>
+      <function name="replace" signature="replace(key, value)">
+        <tags>open_redirect: 0</tags>
+        <propagate from="-1" to="-2"/>
+      </function>
+      <function name="getall" signature="getall(key)">
+        <return type="list"/>
+        <propagate from="-2" to="-1"/>
+      </function>
+      <function name="getone" signature="getone(key, default=None, index=-1, type=None)">
+        <return type="object"/>
+        <propagate from="-2" to="-1"/>
+      </function>
+      <function name="getlist" signature="getlist(key)">
+        <return type="list"/>
+        <propagate from="-2" to="-1"/>
+      </function>
+    </class>
+    <class name="HeaderDict" supertypes="bottle.MultiDic">
+      <field name="*" >
+        <tags>open_redirect: -1</tags>
+      </field>
+    </class>
+    <class name="FormsDict" supertypes="bottle.MultiDic, bottle.WSGIHeaderDict"/>
+  </module>
+</library>

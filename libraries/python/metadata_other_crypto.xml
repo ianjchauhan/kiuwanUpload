@@ -1,0 +1,997 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="other_crypto" technology="python">
+  <description>Popular cryptographic python modules</description>
+
+  <!-- TODO Complete. Behaviour registered here is partial -->
+
+  <module name="Crypto" standard="pycrypto">
+    <description url="https://pypi.org/project/pycrypto/">Python Cryptography Toolkit (pycrypto)</description>
+
+    <module name="Hash">
+      <module name="hashAlgo">
+        <class name="HashAlgo">
+          <method name="new" signature="new(data=None)" match="name">
+            <return type="Crypto.Hash.hashAlgo.HashAlgo"/>
+          </method>
+          <method name="update" signature="update(data)">
+            <tags>hash, data:0</tags>
+          </method>
+          <method name="digest" signature="digest()">
+            <return type="bytes"/>
+            <neutralization argpos="-1" kind="hash" resource="crypto"/>
+          </method>
+          <method name="hexdigest" signature="hexdigest()">
+            <return type="str"/>
+            <neutralization argpos="-1" kind="hash" resource="crypto"/>
+          </method>
+          <method name="copy" signature="copy()">
+            <return type="Crypto.Hash.hashAlgo.HashAlgo"/>
+          </method>
+        </class>
+      </module>
+
+      <module name="MD2">
+        <function name="new" signature="new(data=None)">
+          <tags>hash, algo:md2, unsafe</tags>
+          <return type="Crypto.Hash.hashAlgo.HashAlgo"/>
+        </function>
+      </module>
+      <module name="MD4">
+        <function name="new" signature="new(data=None)">
+          <tags>hash, algo:md4, unsafe</tags>
+          <return type="Crypto.Hash.hashAlgo.HashAlgo"/>
+        </function>
+      </module>
+      <module name="MD5">
+        <function name="new" signature="new(data=None)" match="name">
+          <tags>hash, algo:md5, unsafe</tags>
+          <return type="Crypto.Hash.hashAlgo.HashAlgo"/>
+        </function>
+      </module>
+      <module name="SHA">
+        <function name="new" signature="new(data=None)">
+          <tags>hash, algo:sha1, unsafe</tags>
+          <return type="Crypto.Hash.hashAlgo.HashAlgo"/>
+        </function>
+      </module>
+      <module name="SHA224">
+        <function name="new" signature="new(data=None)">
+          <tags>hash, algo:sha224</tags>
+          <return type="Crypto.Hash.hashAlgo.HashAlgo"/>
+        </function>
+      </module>
+      <module name="SHA256">
+        <function name="new" signature="new(data=None)">
+          <tags>hash, algo:sha256</tags>
+          <return type="Crypto.Hash.hashAlgo.HashAlgo"/>
+        </function>
+      </module>
+      <module name="SHA384">
+        <function name="new" signature="new(data=None)" match="name">
+          <tags>hash, algo:sha384</tags>
+          <return type="Crypto.Hash.hashAlgo.HashAlgo"/>
+        </function>
+      </module>
+      <module name="SHA512">
+        <function name="new" signature="new(data=None)" match="name">
+          <tags>hash, algo:sha512</tags>
+          <return type="Crypto.Hash.hashAlgo.HashAlgo"/>
+        </function>
+      </module>
+      <module name="RIPEMD160">
+        <function name="new" signature="new(data=None)" match="name">
+          <tags>hash, algo:ripemd160</tags>
+          <return type="Crypto.Hash.hashAlgo.HashAlgo"/>
+        </function>
+      </module>
+
+      <module name="HMAC">
+        <function name="new" signature="new(key, msg=None, digestmod=None)" match="name">
+          <tags>hmac, key:0, data:1, algo:2, defaultAlgo:md5</tags>
+          <return type="Crypto.Hash.HMAC.HMAC"/>
+          <sink argpos="0" paramNames="key" kind="hardcoded_key" resource="crypto" />
+        </function>
+        <class name="HMAC">
+          <method name="update" signature="update(data)" match="name">
+            <tags>hmac, data:0</tags>
+          </method>
+          <method name="digest" signature="digest()">
+            <return type="bytes"/>
+            <neutralization argpos="-1" kind="hash" resource="crypto"/>
+          </method>
+          <method name="hexdigest" signature="hexdigest()">
+            <return type="str"/>
+            <neutralization argpos="-1" kind="hash" resource="crypto"/>
+          </method>
+          <method name="copy" signature="copy()">
+            <return type="Crypto.Hash.HMAC.HMAC"/>
+          </method>
+        </class>
+      </module>
+    </module>
+
+    <module name="Cipher">
+      <module name="blockAlgo">
+        <member name="MODE_ECB" type="int" ><tags>ecb</tags></member>
+        <member name="MODE_CBC" type="int" ><tags>cbc</tags></member>
+        <member name="MODE_CFB" type="int" ><tags>cfb</tags></member>
+        <member name="MODE_OFB" type="int" ><tags>ofb</tags></member>
+        <member name="MODE_CTR" type="int" ><tags>ctr</tags></member>
+        <member name="MODE_OPENPGP" type="int" ><tags>openpgp</tags></member>
+        <member name="MODE_CCM" type="int" ><tags>ccm</tags></member>
+        <member name="MODE_EAX" type="int" ><tags>eax</tags></member>
+        <member name="MODE_GCM" type="int" ><tags>gcm</tags></member>
+        <member name="MODE_SIV" type="int" ><tags>siv</tags></member>
+        <member name="MODE_OCB" type="int" ><tags>ocb</tags></member>
+
+        <class name="BlockAlgo">
+          <method name="encrypt" signature="encrypt(plaintext)">
+            <tags>encrypt, plaintext:0, ciphertext:-1</tags>
+            <return type="str"/>
+            <neutralization argpos="-1" paramNames="plaintext" kind="encryption" resource="crypto" />
+          </method>
+          <method name="decrypt" signature="decrypt(ciphertext)">
+            <tags>decrypt, ciphertext:0, plaintext:-1</tags>
+            <return type="str"/>
+            <neutralization argpos="0" paramNames="ciphertext" kind="decryption" resource="crypto" />
+          </method>
+        </class>
+      </module>
+
+      <module name="AES" imports="Crypto.Cipher.blockalgo">
+        <function name="new" signature="new(key,*args,**kwargs)">
+          <tags>cipher,key:0,algo:aes,mode:1:mode,iv:2:IV</tags>
+          <return type="Crypto.Cipher.blockAlgo.BlockAlgo"/>
+          <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+        </function>
+      </module>
+
+      <module name="ARC2" imports="Crypto.Cipher.blockalgo">
+        <function name="new" signature="new(key,*args,**kwargs)">
+          <tags>cipher,key:0,algo:rc2,mode:1:mode,iv:2:IV,keylen:5:effective_keylen</tags>
+          <return type="Crypto.Cipher.blockAlgo.BlockAlgo"/>
+          <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+        </function>
+      </module>
+
+      <module name="ARC4" imports="Crypto.Cipher.blockalgo">
+        <function name="new" signature="new(key,*args,**kwargs)">
+          <tags>cipher,key:0,algo:rc4</tags>
+          <return type="Crypto.Cipher.blockAlgo.BlockAlgo"/>
+          <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+        </function>
+      </module>
+
+      <module name="Blowfish" imports="Crypto.Cipher.blockalgo">
+        <function name="new" signature="new(key,*args,**kwargs)">
+          <tags>cipher,key:0,algo:blowfish,mode:1:mode,iv:2:IV</tags>
+          <return type="Crypto.Cipher.blockAlgo.BlockAlgo"/>
+          <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+        </function>
+      </module>
+
+      <module name="CAST" imports="Crypto.Cipher.blockalgo">
+        <function name="new" signature="new(key,*args,**kwargs)">
+          <tags>cipher,key:0,algo:cast-128,mode:1:mode,iv:2:IV</tags>
+          <return type="Crypto.Cipher.blockAlgo.BlockAlgo"/>
+          <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+        </function>
+      </module>
+
+      <module name="DES" imports="Crypto.Cipher.blockalgo">
+        <function name="new" signature="new(key,*args,**kwargs)">
+          <tags>cipher,key:0,algo:des,mode:1:mode,iv:2:IV</tags>
+          <return type="Crypto.Cipher.blockAlgo.BlockAlgo"/>
+          <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+        </function>
+      </module>
+
+      <module name="DES3" imports="Crypto.Cipher.blockalgo">
+        <function name="new" signature="new(key,*args,**kwargs)">
+          <tags>cipher,key:0,algo:tripledes,mode:1:mode,iv:2:IV</tags>
+          <return type="Crypto.Cipher.blockAlgo.BlockAlgo"/>
+          <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+        </function>
+      </module>
+
+      <module name="XOR" imports="Crypto.Cipher.blockalgo">
+        <function name="new" signature="new(key,*args,**kwargs)">
+          <tags>cipher,key:0,algo:xor</tags>
+          <return type="Crypto.Cipher.blockAlgo.BlockAlgo"/>
+          <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+        </function>
+      </module>
+
+      <module name="PKCS1_OAEP" imports="Crypto.Cipher.blockalgo">
+        <function name="new" signature="new(key,hashAlgo=None,mgfunc=None,label=None)">
+          <tags>cipher, privkey:0, pubkey:0, algo:rsa, hash.algo:1:hashAlgo, defaultHashAlgo:sha1,mode:oaep</tags>
+          <return type="Crypto.Cipher.blockAlgo.BlockAlgo"/>
+          <!--sink argpos="0" kind="hardcoded_key" resource="crypto" /-->
+        </function>
+      </module>
+
+      <module name="PKCS1_v1_5" imports="Crypto.Cipher.blockalgo">
+        <function name="new" signature="new(key)">
+          <tags>cipher,privkey:0,pubkey:0,algo:rsa,defaultHashAlgo:sha1,mode:pkcs1</tags>
+          <return type="Crypto.Cipher.blockAlgo.BlockAlgo"/>
+          <!--sink argpos="0" kind="hardcoded_key" resource="crypto" /-->
+        </function>
+      </module>
+    </module>
+    
+    <module name="Signature">
+      <class name="SigScheme">
+        <method name="sign" signature="sign(mhash)">
+          <tags>sign,data:0</tags>
+          <return type="str"/>
+        </method>
+        <method name="verify" signature="verify(mhash,signature)">
+          <tags>verify,data:0,signature:1</tags>
+          <return type="bool"/>
+        </method>
+      </class>
+      <module name="PKCS1_PSS">
+        <function name="new" signature="new(key,mgfunc=None,saltLen=None)" match="name">
+          <tags>signature,algo:rsa,mode:pss,privkey:0,pubkey:0</tags>
+          <return type="Crypto.Signature.SigScheme"/>
+          <!--sink argpos="0" kind="hardcoded_key" resource="crypto" /-->
+        </function>
+      </module>
+      <module name="PKCS1_v1_5">
+        <function name="new" signature="new(key)" match="name">
+          <tags>signature,algo:rsa,mode:pkcs1,privkey:0,pubkey:0</tags>
+          <return type="Crypto.Signature.SigScheme"/>
+          <!--sink argpos="0" kind="hardcoded_key" resource="crypto" /-->
+        </function>
+      </module>
+    </module>
+    
+    <module name="Protocol">
+      <module name="KDF">
+        <function name="PBKDF1" signature="PBKDF1(password, salt, dkLen, count=1000, hashAlgo=None)" match="name">
+          <tags>keygen, algo:pkcs5, password:0, salt_specific_arg:1, keylen:2:dkLen, iterations:3:count, hash.algo:4:hashAlgo, defaultHashAlgo:sha1</tags>
+          <return type="str"/>
+        </function>
+        <function name="PBKDF2" signature="PBKDF2(password, salt, dkLen=16, count=1000, hmacAlgo=None)" match="name">
+          <tags>keygen, algo:pbkdf2, password:0, salt_specific_arg:1, keylen:2:dkLen, iterations:3:count, hash.algo:4:hashAlgo, defaultHashAlgo:sha1</tags>
+          <return type="str"/>
+        </function>
+      </module>
+    </module>
+
+    <module name="Random">
+
+      <module name="_UserFriendlyRNG">
+        <class name="RNGFile">
+          <method name="read" signature="read(bytes)">
+            <tags>csprng, len:0, unit:bytes</tags>
+          </method>
+        </class>
+      </module>
+
+      <function name="new" signature="new()"><return type="Crypto.Random._UserFriendlyRNG.RNGFile"/></function>
+
+      <function name="get_random_bytes" signature="get_random_bytes(n)">
+        <tags>csprng, len:0, unit:bytes</tags>
+        <return type="bytes" />
+      </function>
+
+      <module name="random">
+        <class name="StrongRandom" supertypes="secrets.SystemRandom">
+          <tags>csprng</tags>
+          <method name="getrandbits" signature="getrandbits(k)"><tags>csprng, len:0, unit:bits</tags><return type="int"/></method>
+          <method name="randrange" signature="randrange([start,] stop[, step])"><return type="int"/></method>
+          <method name="randint" signature="randint(a, b)"><return type="int"/></method>
+          <method name="choice" signature="choice(seq)"></method>
+          <method name="shuffle" signature="shuffle(x)"></method>
+          <method name="sample" signature="sample(population, k)"><return type="array"/></method>
+        </class>
+
+        <function name="getrandbits" signature="getrandbits(k)"><tags>csprng, len:0, unit:bits</tags><return type="int"/></function>
+        <function name="randrange" signature="randrange([start,] stop[, step])"><return type="int"/></function>
+        <function name="randint" signature="randint(a, b)"><return type="int"/></function>
+        <function name="choice" signature="choice(seq)"></function>
+        <function name="shuffle" signature="shuffle(x)"></function>
+        <function name="sample" signature="sample(population, k)"><return type="array"/></function>
+      </module>
+    </module>
+
+    <module name="PublicKey">
+      <class name="_RSAobj">
+        <tags>algo:rsa</tags>
+        <method name="encrypt" signature="encrypt(plaintext)" match="name">
+          <tags>encrypt,algo:rsa,mode:ecb,plaintext:0</tags>
+          <neutralization argpos="0" paramNames="plaintext" kind="encryption" resource="crypto" />
+        </method>
+        <method name="decrypt" signature="decrypt(ciphertext)" match="name">
+          <tags>encrypt,algo:rsa,mode:ecb,ciphertext:0</tags>
+          <neutralization argpos="0" paramNames="ciphertext" kind="decryption" resource="crypto" />
+        </method>
+        <method name="sign" signature="sign(mhash)" match="name">
+          <tags>sign,algo:rsa,mode:ecb,data:0</tags>
+        </method>
+        <method name="verify" signature="sign(mhash,signature)" match="name">
+          <tags>verify,algo:rsa,mode:ecb,data:0,signature:1</tags>
+        </method>
+        <method name="publickey" signature="publickey()">
+          <tags>key_management,algo:rsa</tags>
+          <return type="Crypto.PublicKey._RSAobj"/>
+        </method>
+        <method name="exportKey" signature="exportKey(format='PEM',passphrase=None,pkcs=1)">
+          <tags>key_management,format:0:format,password:1:passphrase</tags>
+          <return type="str"/>
+        </method>
+      </class>
+
+      <module name="RSA">
+        <function name="generate" signature="generate(bits, randfunc=None, progress_func=None, e=65537)" match="name">
+          <tags>keygen, algo:rsa, keylen:0</tags>
+          <return type="Crypto.PublicKey._RSAobj"></return>
+        </function>
+        <function name="importKey" signature="importKey(externKey, passphrase=None)" match="name">
+          <tags>key_management, key:0, password:1</tags>
+          <return type="Crypto.PublicKey._RSAobj"></return>
+          <!--sink argpos="0" kind="hardcoded_key" resource="crypto" /-->
+        </function>
+      </module>
+
+      <module name="DSA">
+        <function name="generate" signature="generate(bits, randfunc=None, progress_func=None, e=65537)" match="name">
+          <tags>keygen,algo:dsa,keylen:0</tags>
+          <return type="Crypto.PublicKey._RSAobj"></return>
+        </function>
+        <function name="importKey" signature="importKey(externKey, passphrase=None)" match="name">
+          <tags>key_management,key:0,password:1</tags>
+          <return type="Crypto.PublicKey._DSAobj"></return>
+          <!--sink argpos="0" kind="hardcoded_key" resource="crypto" /-->
+        </function>
+      </module>
+    </module>
+  </module>
+
+  <module name="cryptography" standard="pyca/cryptography">
+    <description url="https://cryptography.io/">High and low level cryptographic facilities for Python</description>
+
+    <module name="fernet">
+      <description>High-level encryption</description>
+
+      <class name="Fernet">
+        <method name="generate_key" signature="generate_key()" instance="false">
+          <tags>keygen, algo:aes, keylen:fixed=128</tags>
+          <return type="bytes"/>
+        </method>
+        <constructor name="Fernet" signature="Fernet(key)">
+          <tags>algo:aes, keylen:fixed=128</tags>
+          <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+        </constructor>
+        <method name="encrypt" signature="encrypt(data)" match="name" alias="encrypt_at_time">
+          <tags>encrypt, algo:aes, mode:cbc, plaintext:0, ciphertext:-1</tags>
+          <return type="bytes"/>
+          <neutralization argpos="0" paramNames="data" kind="encryption" resource="crypto" />
+        </method>
+        <method name="_encrypt_from_parts" signature="_encrypt_from_parts(data, current_time, iv)">
+          <tags>encrypt, algo:aes, mode:cbc, plaintext:0, ciphertext:-1, iv:2</tags>
+          <return type="bytes"/>
+          <neutralization argpos="0" paramNames="data" kind="encryption" resource="crypto" />
+        </method>
+        <method name="decrypt" signature="decrypt(data)" match="name" alias="decrypt_at_time">
+          <tags>decrypt, algo:aes, mode:cbc, plaintext:-1, ciphertext:0</tags>
+          <return type="bytes"/>
+          <neutralization argpos="0" paramNames="data" kind="decryption" resource="crypto" />
+        </method>
+      </class>
+
+      <class name="MultiFernet">
+        <constructor name="MultiFernet" signature="MultiFernet(fernets)">
+        </constructor>
+        <method name="encrypt" signature="encrypt(data)" match="name" alias="encrypt_at_time">
+          <tags>encrypt, algo:aes, mode:cbc, plaintext:0, ciphertext:-1</tags>
+          <return type="bytes"/>
+        </method>
+        <method name="decrypt" signature="decrypt(data)" match="name" alias="decrypt_at_time">
+          <tags>decrypt, algo:aes, mode:cbc, plaintext:-1, ciphertext:0</tags>
+          <return type="bytes"/>
+          <neutralization argpos="0" paramNames="data" kind="decryption" resource="crypto" />
+        </method>
+        <method name="rotate" signature="rotate(data)">
+          <tags>algo:aes, mode:cbc</tags>
+          <return type="bytes"/>
+        </method>
+      </class>
+    </module>
+
+    <!--module name="x509">
+    </module-->
+
+    <module name="hazmat">
+      <module name="primitives">
+
+        <module name="hashes">
+          <description>cryptography.hazmat.primitives.hashes</description>
+          <class name="HashContext">
+            <method name="update" signature="update(data)">
+              <tags>hash, data:0</tags>
+            </method>
+            <method name="digest" signature="digest()">
+              <return type="bytes"/>
+              <neutralization argpos="-1" kind="hash" resource="crypto"/>
+            </method>
+            <method name="copy" signature="copy()">
+              <return type="cryptography.hazmat.primitives.hashes.HashContext"/>
+            </method>
+          </class>
+          <class name="HashAlgorithm"></class>
+          <class name="Hash" supertypes="cryptography.hazmat.primitives.hashes.HashContext">
+            <constructor name="Hash" signature="Hash(algorithm, backend=None)" match="name">
+              <tags>hash, algo:0</tags>
+            </constructor>
+          </class>
+
+          <class name="MD5" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <tags>unsafe</tags>
+            <constructor name="MD5" signature="MD5()"><tags>hash, algo:md5</tags></constructor>
+          </class>
+          <class name="SHA1" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <tags>unsafe</tags>
+            <constructor name="SHA1" signature="SHA1()"><tags>hash, algo:sha1</tags></constructor>
+          </class>
+          <class name="SHA224" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <constructor name="SHA224" signature="SHA224()"><tags>hash, algo:sha224</tags></constructor>
+          </class>
+          <class name="SHA256" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <constructor name="SHA256" signature="SHA256()"><tags>hash, algo:sha256</tags></constructor>
+          </class>
+          <class name="SHA384" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <constructor name="SHA384" signature="SHA384()"><tags>hash, algo:sha384</tags></constructor>
+          </class>
+          <class name="SHA512" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <constructor name="SHA512" signature="SHA512()"><tags>hash, algo:sha512</tags></constructor>
+          </class>
+          <class name="SHA512_224" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <constructor name="SHA512_224" signature="SHA512_224()"><tags>hash, algo:sha512-224</tags></constructor>
+          </class>
+          <class name="SHA512_256" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <constructor name="SHA512_256" signature="SHA512_256()"><tags>hash, algo:sha512-256</tags></constructor>
+          </class>
+          <class name="BLAKE2b" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <constructor name="BLAKE2b" signature="BLAKE2b(digest_size)"><tags>hash, algo:blake2b</tags></constructor>
+          </class>
+          <class name="BLAKE2s" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <constructor name="BLAKE2s" signature="BLAKE2s(digest_size)"><tags>hash, algo:blake2s</tags></constructor>
+          </class>
+          <class name="SHA3_224" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <constructor name="SHA3_224" signature="SHA3_224()"><tags>hash, algo:sha3-224</tags></constructor>
+          </class>
+          <class name="SHA3_256" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <constructor name="SHA3_256" signature="SHA3_256()"><tags>hash, algo:sha3-256</tags></constructor>
+          </class>
+          <class name="SHA3_384" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <constructor name="SHA3_384" signature="SHA3_384()"><tags>hash, algo:sha3-384</tags></constructor>
+          </class>
+          <class name="SHA3_512" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <constructor name="SHA3_512" signature="SHA3_512()"><tags>hash, algo:sha3-512</tags></constructor>
+          </class>
+          <class name="SHAKE128" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <constructor name="SHAKE128" signature="SHAKE128(digest_size)"><tags>hash, algo:shake128</tags></constructor>
+          </class>
+          <class name="SHAKE256" supertypes="cryptography.hazmat.primitives.hashes.HashAlgorithm">
+            <constructor name="SHAKE256" signature="SHAKE256(digest_size)"><tags>hash, algo:shake256</tags></constructor>
+          </class>
+        </module>
+
+        <module name="hmac">
+          <description>cryptography.hazmat.primitives.hmac</description>
+          <class name="HMAC">
+            <constructor name="HMAC" signature="HMAC(key, algorithm, backend=None)" match="name">
+              <tags>hmac, signature, key:0, algo:1</tags>
+              <sink argpos="0" paramNames="key" kind="hardcoded_key" resource="crypto" />
+            </constructor>
+            <method name="update" signature="update(data)">
+              <tags>hmac, data:0</tags>
+            </method>
+            <method name="finalize" signature="finalize()">
+              <tags>sign, signature:-1</tags>
+              <return type="bytes"/>
+              <neutralization argpos="-1" kind="mac" resource="crypto"/>
+            </method>
+            <method name="verify" signature="verify(signature)">
+              <tags>verify, signature:0</tags>
+            </method>
+            <method name="copy" signature="copy()">
+              <return type="cryptography.hazmat.primitives.hmac.HMAC"/>
+            </method>
+          </class>
+        </module>
+
+        <module name="cmac">
+          <description>cryptography.hazmat.primitives.cmac</description>
+          <!-- CMAC is not HMAC -uses cipher instead of hash-, but acts and quacks as an HMAC -->
+          <class name="CMAC" supertypes="cryptography.hazmat.primitives.hmac.HMAC">
+            <constructor name="CMAC" signature="CMAC(key, algorithm, backend=None)" match="name">
+              <tags>hmac, signature, key:0, algo:1</tags>
+              <sink argpos="0" paramNames="key" kind="hardcoded_key" resource="crypto" />
+            </constructor>
+            <method name="copy" signature="copy()">
+              <return type="cryptography.hazmat.primitives.hmac.CMAC"/>
+            </method>
+          </class>
+        </module>
+
+        <module name="ciphers">
+          <description>cryptography.hazmat.primitives.ciphers</description>
+
+          <class name="CipherContext" kind="interface">
+            <!-- Could be encryption or decryption. Depends on Cipher.encryptor() or Cipher.decryptor() -->
+          </class>
+
+          <class name="_EncCipherContext" kind="interface" supertypes="">
+            <!-- Ficticious, so we discriminate between encryptor() and decryptor() -->
+            <method name="update" signature="update(data)">
+              <tags>encrypt, plaintext:0, ciphertext:-1</tags>
+              <return type="bytes"/>
+              <neutralization argpos="-1" paramNames="plaintext" kind="encryption" resource="crypto" />
+            </method>
+            <method name="update_into" signature="update_into(data, buf)">
+              <tags>plaintext:0, ciphertext:1</tags>
+              <neutralization argpos="-1" paramNames="plaintext" kind="encryption" resource="crypto" />
+            </method>
+            <method name="finalize" signature="finalize()">
+              <!-- Could be encryption or decryption. Depends on Cipher.encryptor() or Cipher.decryptor() -->
+              <tags>ciphertext:-1</tags>
+              <return type="bytes"/>
+              <neutralization argpos="-1" paramNames="plaintext" kind="encryption" resource="crypto" />
+            </method>
+          </class>
+
+          <class name="_DecCipherContext" kind="interface">
+            <method name="update" signature="update(data)">
+              <tags>decrypt, plaintext:-1, ciphertext:0</tags>
+              <return type="bytes"/>
+              <neutralization argpos="-1" paramNames="plaintext" kind="decryption" resource="crypto" />
+            </method>
+            <method name="update_into" signature="update_into(data, buf)">
+              <tags>plaintext:1, ciphertext:0</tags>
+              <neutralization argpos="1" paramNames="plaintext" kind="decryption" resource="crypto" />
+            </method>
+            <method name="finalize" signature="finalize()">
+              <!-- Could be encryption or decryption. Depends on Cipher.encryptor() or Cipher.decryptor() -->
+              <tags>ciphertext:-1</tags>
+              <return type="bytes"/>
+              <neutralization argpos="-1" paramNames="plaintext" kind="encryption" resource="crypto" />
+            </method>
+          </class>
+
+          <class name="AEADCipherContext" kind="interface">
+            <method name="authenticate_additional_data" signature="authenticate_additional_data(data)"></method>
+          </class>
+          <class name="AEADEncryptionContext" kind="interface" supertypes="cryptography.hazmat.primitives.ciphers.AEADCipherContext">
+            <field name="tag" type="bytes"></field>
+          </class>
+          <class name="AEADDecryptionContext" kind="interface" supertypes="cryptography.hazmat.primitives.ciphers.AEADCipherContext">
+            <method name="finalize_with_tag" signature="finalize_with_tag(tag)">
+              <tags>ciphertext:-1</tags>
+              <return type="bytes"/>
+              <neutralization argpos="-1" paramNames="plaintext" kind="encryption" resource="crypto" />
+            </method>
+          </class>
+
+          <class name="CipherAlgorithm" kind="interface">
+            <field name="name" type="str"/>
+            <field name="key_size" type="int"><tags>keylen:-1</tags></field>
+          </class>
+          <class name="BlockCipherAlgorithm" kind="interface" supertypes="cryptography.hazmat.primitives.ciphers.CipherAlgorithm">
+            <field name="block_size" type="int"><tags>blocklen:-1</tags></field>
+          </class>
+
+          <class name="Cipher">
+            <tags>cipher</tags>
+            <constructor name="Cipher" signature="Cipher(algorithm, mode, backend=None)" match="name">
+              <tags>cipher, algo:0, mode:1</tags>
+            </constructor>
+            <method name="encryptor" signature="encryptor()"><return type="cryptography.hazmat.primitives.ciphers._EncCipherContext"/></method>
+            <method name="decryptor" signature="decryptor()"><return type="cryptography.hazmat.primitives.ciphers._DecCipherContext"/></method>
+          </class>
+
+          <module name="algorithms">
+            <class name="AES" supertypes="cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm">
+              <constructor name="AES" signature="AES(key)">
+                <!-- Rijmen&Daemen son. Hey, Rijndael became NIST standard... keylen = 128, 192 or 256 -->
+                <tags>cipher, algo:aes, key:0</tags>
+                <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+              </constructor>
+            </class>
+            <class name="Camellia" supertypes="cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm">
+              <!-- Mitsubishi thing. keylen = 128, 192 or 256. Feistel block cipher -->
+              <constructor name="Camellia" signature="Camellia(key)">
+                <tags>cipher, algo:camellia, key:0</tags>
+                <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+              </constructor>
+            </class>
+            <class name="ChaCha20" supertypes="cryptography.hazmat.primitives.ciphers.CipherAlgorithm">
+              <!-- Bernstein son, variant of Salsa20 -->
+              <constructor name="ChaCha20" signature="ChaCha20(key, nonce)">
+                <tags>cipher, stream, algo:chacha20, key:0, nonce:1, keylen:fixed=256</tags>
+                <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+              </constructor>
+            </class>
+            <class name="TripleDES" supertypes="cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm">
+              <!-- the IBM thing, 56 = 40, 112 = 80 or 192 = 112 key lengths (with 56, DES in disguise!). Legacy, Sweet32 makes it unhopefully broken -->
+              <constructor name="TripleDES" signature="TripleDES(key)">
+                <tags>cipher, algo:3des, key:0</tags>
+                <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+              </constructor>
+            </class>
+            <class name="CAST5" supertypes="cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm">
+              <!-- CArlisle&STafford. Canadians not only play hockey, they also standarize Feistel ciphers... -->
+              <constructor name="CAST5" signature="CAST5(key)">
+                <tags>cipher, algo:cast5, key:0, keylen:fixed=128</tags>
+                <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+              </constructor>
+            </class>
+            <class name="SEED" supertypes="cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm"><!-- the KISA thing -->
+              <constructor name="SEED" signature="SEED(key)">
+                <tags>cipher, algo:seed, key:0, keylen:fixed=128</tags>
+                <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+              </constructor>
+            </class>
+            <class name="Blowfish" supertypes="cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm">
+              <!-- Schneier son, keylen between 48 and 448 -->
+              <constructor name="Blowfish" signature="Blowfish(key)">
+                <tags>cipher, algo:blowfish, key:0</tags>
+                <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+              </constructor>
+            </class>
+            <class name="ARC4" supertypes="cryptography.hazmat.primitives.ciphers.CipherAlgorithm">
+              <!-- keylen between 40 and 256. deeply flawed -->
+              <constructor name="ARC4" signature="ARC4(key)">
+                <tags>cipher, stream, algo:rc4, key:0</tags>
+                <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+              </constructor>
+            </class>
+            <class name="IDEA" supertypes="cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm">
+              <!-- Massey&Lai son, from 1991. Legacy -->
+              <constructor name="IDEA" signature="IDEA(key)">
+                <tags>cipher, algo:, key:0, keylen:fixed=128</tags>
+                <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+              </constructor>
+            </class>
+          </module>
+
+          <module name="aead">
+            <class name="ChaCha20Poly1305">
+              <tags>cipher, algo:chacha20</tags>
+              <constructor name="ChaCha20Poly1305" signature="ChaCha20Poly1305(key)">
+                <!-- chacha20 stream cipher + poly1305 mac -->
+                <tags>cipher, stream, algo:chacha20, key:0, keylen:fixed=256</tags>
+                <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+              </constructor>
+              <method name="generate_key" signature="generate_key()" instance="false">
+                <tags>keygen, algo:chacha20, keylen:fixed=256</tags>
+                <return type="bytes"/>
+              </method>
+              <method name="encrypt" signature="encrypt(nonce, data, associated_data)" match="name">
+                <tags>cipher, encrypt, nonce:0, plaintext:1, ciphertext:-1</tags>
+                <return type="bytes"/>
+                <neutralization argpos="-1" kind="encryption" resource="crypto" />
+              </method>
+              <method name="decrypt" signature="decrypt(nonce, data, associated_data)" match="name">
+                <tags>cipher, decrypt, nonce:0, ciphertext:1, plaintext:-1</tags>
+                <return type="bytes"/>
+                <neutralization argpos="1" paramNames="data" kind="decryption" resource="crypto" />
+              </method>
+            </class>
+            <class name="AESGCM">
+              <tags>cipher, algo:aes, mode:gcm</tags>
+              <constructor name="AESGCM" signature="AESGCM(key)">
+                <!-- chacha20 stream cipher + poly1305 mac -->
+                <tags>cipher, algo:aes, key:0</tags>
+                <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+              </constructor>
+              <method name="generate_key" signature="generate_key(bit_length)" instance="false">
+                <tags>keygen, algo:aes, keylen:0</tags>
+                <return type="bytes"/>
+              </method>
+              <method name="encrypt" signature="encrypt(nonce, data, associated_data)" match="name">
+                <tags>cipher, encrypt, nonce:0, plaintext:1, ciphertext:-1</tags>
+                <return type="bytes"/>
+                <neutralization argpos="-1" kind="encryption" resource="crypto" />
+              </method>
+              <method name="decrypt" signature="decrypt(nonce, data, associated_data)" match="name">
+                <tags>cipher, decrypt, nonce:0, ciphertext:1, plaintext:-1</tags>
+                <return type="bytes"/>
+                <neutralization argpos="1" paramNames="data" kind="decryption" resource="crypto" />
+              </method>
+            </class>
+            <class name="AESCCM">
+              <tags>cipher, algo:aes, mode:ccm</tags>
+              <constructor name="AESCCM" signature="AESCCM(key)">
+                <!-- chacha20 stream cipher + poly1305 mac -->
+                <tags>cipher, algo:aes, key:0</tags>
+                <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+              </constructor>
+              <method name="generate_key" signature="generate_key(bit_length)" instance="false">
+                <tags>keygen, algo:aes, keylen:0</tags>
+                <return type="bytes"/>
+              </method>
+              <method name="encrypt" signature="encrypt(nonce, data, associated_data)" match="name">
+                <tags>cipher, encrypt, nonce:0, plaintext:1, ciphertext:-1</tags>
+                <return type="bytes"/>
+                <neutralization argpos="-1" kind="encryption" resource="crypto" />
+              </method>
+              <method name="decrypt" signature="decrypt(nonce, data, associated_data)" match="name">
+                <tags>cipher, decrypt, nonce:0, ciphertext:1, plaintext:-1</tags>
+                <return type="bytes"/>
+                <neutralization argpos="1" paramNames="data" kind="decryption" resource="crypto" />
+              </method>
+            </class>
+          </module>
+
+          <module name="modes">
+            <class name="Mode" kind="interface">
+              <field name="name" type="str"/>
+              <method name="validate_for_algorithm" signature="validate_for_algorithm(algorithm)"></method>
+            </class>
+            <class name="ModeWithInitializationVector" kind="interface" supertypes="ryptography.hazmat.primitives.ciphers.Mode">
+              <field name="initialization_vector" type="bytes"><tags>iv</tags></field>
+            </class>
+            <class name="ModeWithNonce" kind="interface" supertypes="ryptography.hazmat.primitives.ciphers.Mode">
+              <field name="nonce" type="bytes"><tags>nonce</tags></field>
+            </class>
+            <class name="ModeWithAuthenticationTag" kind="interface" supertypes="ryptography.hazmat.primitives.ciphers.Mode">
+              <field name="tag" type="bytes"><tags>iv</tags></field>
+            </class>
+            <class name="ModeWithTweak" kind="interface" supertypes="ryptography.hazmat.primitives.ciphers.Mode">
+              <field name="tag" type="bytes"><tags>iv</tags></field>
+            </class>
+
+            <class name="ECB">
+              <constructor name="ECB" signature="ECB()">
+                <tags>mode:ecb</tags>
+              </constructor>
+            </class>
+            <class name="CBC">
+              <constructor name="CBC" signature="CBC(initialization_vector)">
+                <tags>mode:cbc, iv:0</tags>
+              </constructor>
+            </class>
+            <class name="CTR">
+              <constructor name="CTR" signature="CBC(nonce)">
+                <tags>mode:ctr, iv:0</tags>
+              </constructor>
+            </class>
+            <class name="OFB">
+              <constructor name="OFB" signature="OFB(initialization_vector)">
+                <tags>mode:ofb, iv:0</tags>
+              </constructor>
+            </class>
+            <class name="CFB">
+              <constructor name="CFB" signature="CFB(initialization_vector)">
+                <tags>mode:cfb, iv:0</tags>
+              </constructor>
+            </class>
+            <class name="GCM">
+              <constructor name="GCM" signature="GCM(initialization_vector, tag=None, min_tag_length=16)" match="name">
+                <tags>mode:gcm, iv:0</tags>
+              </constructor>
+            </class>
+            <class name="XTS">
+              <constructor name="XTS" signature="XTS(tweak)" match="name">
+                <tags>mode:xts, nonce:0</tags>
+              </constructor>
+            </class>
+          </module>
+        </module>
+
+        <module name="asymmetric">
+          <!-- TODO - complete with DH / X25519, DSA and ECDSA / Ed25519 (too lazy...) -->
+          <module name="rsa">
+            <description>cryptography.hazmat.primitives.asymmetric.rsa</description>
+            <function name="generate_private_key" signature="generate_private_key(public_exponent, key_size, backend=None)" match="name">
+              <tags>keygen, algo:rsa, keylen:1:key_size</tags>
+              <return type="cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey"/>
+            </function>
+
+            <class name="RSAPublicKey" alias="cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization">
+              <field name="key_size" type="int"/>
+              <method name="encrypt" signature="encrypt(plaintext, padding)">
+                <tags>cipher, encrypt, algo:rsa, plaintext:0, padding:1, ciphertext:-1</tags>
+                <neutralization argpos="-1" kind="encryption" resource="crypto" />
+              </method>
+              <method name="verify" signature="verify(signature, data, padding, algorithm)">
+                <tags>verify, algo:rsa, signature:0:signature, data:1:data, mode:2:padding, hash.algo:3:algorithm</tags>
+              </method>
+              <method name="recover_data_from_signature" signature="recover_data_from_signature(signature, padding, algorithm)">
+                <tags>algo:rsa, signature:0:signature, mode:1:padding, hash.algo:2:algorithm</tags>
+                <return type="bytes"/>
+              </method>
+              <method name="public_bytes" signature="public_bytes(encoding, format)">
+                <tags>keyexchange, pubkey</tags>
+              </method>
+            </class>
+
+            <class name="RSAPrivateKey" alias="cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization">
+              <method name="decrypt" signature="decrypt(ciphertext, padding)">
+                <tags>cipher, decrypt, algo:rsa, ciphertext:0, padding:1, plaintext:-1</tags>
+                <neutralization argpos="0" paramNames="ciphertext" kind="decryption" resource="crypto" />
+              </method>
+              <method name="sign" signature="sign(data, padding, algorithm)">
+                <tags>sign, algo:rsa, data:0:data, mode:1:padding, hash.algo:2:algorithm, signature:-1</tags>
+              </method>
+              <method name="public_key" signature="public_key()"><return type="cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey"/></method>
+            </class>
+          </module>
+
+          <module name="padding">
+            <class name="AsymmetricPadding"></class>
+            <class name="PSS" supertypes="cryptography.hazmat.primitives.asymmetric.AsymmetricPadding">
+              <description>The recommended padding for RSA signing</description>
+              <constructor name="PSS" signature="PSS(mgf, salt_length)"><tags>algo:rsa, mode:pss</tags></constructor>
+              <field name="MAX_LENGTH" type="int"></field>
+            </class>
+            <class name="OAEP" supertypes="cryptography.hazmat.primitives.asymmetric.AsymmetricPadding">
+              <description>The recommended padding for RSA encryption</description>
+              <constructor name="OAEP" signature="OAEP(mgf, algorithm, label)"><tags>algo:rsa, mode:oaep</tags></constructor>
+            </class>
+            <class name="PKCS1v15" supertypes="cryptography.hazmat.primitives.asymmetric.AsymmetricPadding">
+              <description>legacy padding for RSA signing and encryption</description>
+              <constructor name="" signature=""><tags>algo:rsa, mode:pkcs1</tags></constructor>
+            </class>
+            <class name="MGF1">
+              <description>mask generation for PSS and OAEP</description>
+              <constructor name="MGF1" signature="MGF1(algorithm)"><tags>hash.algo:0</tags></constructor>
+            </class>
+          </module>
+        </module>
+
+        <module name="kdf">
+          <!-- be careful! key lengths arguments here are in bytes, not bits -->
+          <class name="KeyDerivationFunction">
+            <!-- Yeah key derivation, but often used for password hashing, or for creating a cipher/mac key from a user password -->
+            <method name="derive" signature="derive(key_material)">
+              <tags>keyderivation, password:0, key:-1</tags>
+              <return type="bytes"/>
+              <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+              <neutralization kind="hash" resource="crypto" argpos="-1"/>
+            </method>
+            <method name="verify" signature="verify(key_material, expected_key)">
+              <tags>key_check, password:0, key:1</tags>
+            </method>
+          </class>
+
+          <module name="pbkdf2">
+            <class name="PBKDF2HMAC" supertypes="cryptography.hazmat.primitives.kdf.KeyDerivationFunction">
+              <description>Implementation of PBKDF2 (RFC-2898)</description>
+              <tags>password_hash, algo:pbkdf2</tags>
+              <constructor name="PBKDF2HMAC" signature="PBKDF2HMAC(algorithm, length, salt, iterations, backend=None)">
+                <tags>hash.algo:0, keylen:1, salt:2, iterations:3</tags>
+                <sink argpos="2" paramNames="salt" kind="hardcoded_salt" resource="crypto"/>
+              </constructor>
+            </class>
+          </module>
+
+          <module name="scrypt">
+            <class name="Scrypt" supertypes="cryptography.hazmat.primitives.kdf.KeyDerivationFunction">
+              <description>KDF designed for password hashing</description>
+              <tags>password_hash, algo:scrypt</tags>
+              <constructor name="Scrypt" signature="Scrypt(salt, length, n, r, p, backend=None)">
+                <tags>salt:0, keylen:1, strength.cpu:2, strength.mem:3, strength.parallel:4</tags>
+                <sink argpos="0" paramNames="salt" kind="hardcoded_salt" resource="crypto"/>
+              </constructor>
+            </class>
+          </module>
+
+          <module name="concatkdf">
+            <class name="ConcatKDFHash" supertypes="cryptography.hazmat.primitives.kdf.KeyDerivationFunction">
+              <tags>keyderivation, algo:concatkdf</tags>
+              <constructor name="ConcatKDFHash" signature="ConcatKDFHash(algorithm, length, otherinfo, backend=None)">
+                <tags>hash.algo:0, keylen:1</tags>
+              </constructor>
+            </class>
+            <class name="ConcatKDFHMAC" supertypes="cryptography.hazmat.primitives.kdf.KeyDerivationFunction">
+              <tags>keyderivation, algo:concatkdf</tags>
+              <constructor name="ConcatKDFHMAC" signature="ConcatKDFHMAC(algorithm, length, salt, otherinfo, backend=None)">
+                <tags>hash.algo:0, keylen:1, salt:2</tags>
+                <sink argpos="2" paramNames="salt" kind="hardcoded_salt" resource="crypto"/>
+              </constructor>
+            </class>
+          </module>
+
+          <module name="hkdf">
+            <class name="HKDF" supertypes="cryptography.hazmat.primitives.kdf.KeyDerivationFunction">
+              <tags>keyderivation, algo:hkdf</tags>
+              <constructor name="HKDF" signature="HKDF(algorithm, length, salt, otherinfo, backend=None)">
+                <tags>hash.algo:0, keylen:1, salt:1</tags>
+                <sink argpos="2" paramNames="salt" kind="hardcoded_salt" resource="crypto"/>
+              </constructor>
+            </class>
+            <class name="HKDFExpand" supertypes="cryptography.hazmat.primitives.kdf.KeyDerivationFunction">
+              <tags>keyderivation, algo:hkdf</tags>
+              <constructor name="HKDFExpand" signature="HKDFExpand(algorithm, length, salt, otherinfo, backend=None)">
+                <tags>hash.algo:0, keylen:1, salt:1</tags>
+                <sink argpos="2" paramNames="salt" kind="hardcoded_salt" resource="crypto"/>
+              </constructor>
+            </class>
+          </module>
+
+          <module name="kbkdf">
+            <class name="KBKDFHMAC" supertypes="cryptography.hazmat.primitives.kdf.KeyDerivationFunction">
+              <tags>keyderivation, algo:kbkdf</tags>
+              <constructor name="KBKDFHMAC" signature="HKDF(algorithm, mode, length, rlen, llen, location, label, context, fixed, backend=None)" match="name">
+                <tags>hash.algo:0, keylen:2</tags>
+              </constructor>
+            </class>
+          </module>
+
+          <module name="x963kdf">
+            <class name="X963KDF" supertypes="cryptography.hazmat.primitives.kdf.KeyDerivationFunction">
+              <tags>keyderivation, algo:x963kdf</tags>
+              <constructor name="X963KDF" signature="X963KDF(algorithm, length, otherinfo, backend=None)">
+                <tags>hash.algo:0, keylen:1</tags>
+              </constructor>
+            </class>
+          </module>
+        </module>
+      </module>
+    </module>
+  </module>
+
+  <module name="simplecrypt" standard="simple-crypt">
+    <description url="https://pypi.org/project/simple-crypt/">Simple, secure encryption and decryption for Python. Uses Crypto.Cipher.</description>
+    <function name="encrypt" signature="encrypt(str, str)" >
+      <tags>cipher, encrypt, algo:aes, keylen:256, key:0, plaintext:1, ciphertext:-1</tags>
+      <return type="bytes"/>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+      <neutralization argpos="1" paramNames="data" kind="encryption" resource="crypto" />
+    </function>
+    <function name="decrypt" signature="decrypt(password, data)" >
+      <tags>cipher, decrypt, algo:aes, keylen:256, key:0, ciphertext:1, plaintext:-1</tags>
+      <return type="bytes"/>
+      <sink argpos="0" kind="hardcoded_key" paramNames="password" resource="crypto" />
+      <neutralization argpos="-1" paramNames="data" kind="decryption" resource="crypto" />
+    </function>
+  </module>
+
+  <module name="chilkat" standard="CkCrypt2">
+    <description url="https://www.chilkatsoft.com/refdoc/pythonCkCrypt2Ref.html">Chilkat encryption component</description>
+    <class name="CkCrypt2" >
+      <function name="put_PbesPassword" signature="put_PbesPassword(str)" >
+        <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+      </function>
+    </class>
+  </module>
+
+  <module name="rsa" >
+    <description url="https://pypi.org/project/rsa/">Pure Python RSA implementation</description>
+    <function name="newkeys" signature="newkeys(int)">
+      <tags>keygen,algo:rsa,keylen:0</tags>
+    </function>
+  </module>
+  
+  <module name="charm">
+    <description url="https://github.com/JHUISI/charm">Framework for advanced cryptosystems</description>
+    <class name="ECDSA" >
+      <function name="keygen" signature="keygen(object, int)" >
+        <tags>keygen,algo:ec,keylen:1</tags>
+      </function>
+      <function name="sign" signature="sign()" match="name">
+        <tags>sign,algo:ec</tags>
+      </function>
+      <function name="verify" signature="sign(mhash,signature)" match="name">
+        <tags>verify,algo:ec</tags>
+      </function>
+    </class>
+    <class name="DSA" >
+      <function name="keygen" signature="keygen(object, int)" >
+        <tags>keygen,algo:ec,keylen:1</tags>
+      </function>
+      <function name="sign" signature="sign()" match="name">
+        <tags>sign,algo:ec</tags>
+      </function>
+      <function name="verify" signature="sign(mhash,signature)" match="name">
+        <tags>verify,algo:ec</tags>
+      </function>
+    </class>
+  </module>
+</library>

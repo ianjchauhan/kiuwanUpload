@@ -1,0 +1,93 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='legacy' subtech='cl400' descriptor='legacy/aim.cl400.xml' label='Process AS/400 CL scripts'>
+  <description>
+    Process AS/400 Control Language (CL) scripts.
+  </description>
+
+  <properties>
+    <property id='aim.cl400.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>Enables processing of CL scripts.</description>
+    </property>
+
+    <property id='aim.cl400.software.batch' type='string'>
+      <name>batch</name>
+      <example>${aim.common.software}</example>
+      <description>Application/module name for CL/400 scripts</description>
+    </property>
+
+    <property id='aim.cl400.software.backend' type='string'>
+      <name>backend</name>
+      <example>${aim.common.software}</example>
+      <description>Application/module name for called programs (not resolved as CL/400 scripts)</description>
+    </property>
+
+    <property id='aim.cl400.filter' type='enum'>
+      <name>filterType</name>
+      <example>default</example>
+      <description>Filter to use (default: uses language info extensions; pattern: use patterns in aim.cl400.filter.pattern)</description>
+      <possible>
+        <enumval name='default'>Accept language extensions for cl400 technology.</enumval>
+        <enumval name='pattern'>Accept scripts matching patterns in the <code>patterns</code> property</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.cl400.filter.pattern' type='list' subtype='antPattern'>
+      <name>patterns</name>
+      <example>**/*.cl</example>
+      <description>ANT pattern(s) to accept as CL scripts, when <code>filterType=pattern</code>.</description>
+    </property>
+
+    <property id='aim.cl400.ignoreCase' type='bool'>
+      <name>ignoreCase</name>
+      <example>${aim.common.ignoreCase}</example>
+      <description>If true, case is ignored for entity names found in CL/400 scripts.</description>
+    </property>
+
+    <property id="aim.cl400.acceptUnresolved" type="bool">
+      <name>acceptUnresolved</name>
+      <example>${aim.common.acceptUnresolved}</example>
+      <description>If true, target called programs not found in model are created (in batch application). If false, unresolved calls are ignored.</description>
+    </property>
+
+    <property id="aim.cl400.resolver.progcalls.registerUnresolvedCalls" type="bool">
+      <name>progcalls.registerUnresolvedCalls</name>
+      <example>${aim.common.acceptUnresolved}</example>
+      <description>If true, calls to programs that cannot be found are registered without language / artifact properties. If false, such calls are ignored</description>
+    </property>
+
+    <property id="aim.cl400.resolver.file.extensions" type="list" subtype="string">
+      <name>resolver.cl400.extensions</name>
+      <example>cl</example>
+      <description>Extensions to consider for called scripts</description>
+    </property>
+
+    <property id="aim.cl400.resolver.cobol.extensions" type="list" subtype="string">
+      <name>resolver.cobol.extensions</name>
+      <example>cob,cbl,cobol</example>
+      <description>Extensions to consider for called external programs</description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>program,resource</values>
+    <description>
+      Creates CL scripts (and called or included scripts/programs) as <i>program</i> components.
+      Creates referenced data areas and files (display / database / DDS) as <i>resource</i> components.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>program-calls->program, program-uses->resource, program-includes->program</values>
+    <description>
+      Creates <i>calls</i> relation between the calling CL script and the target CL script or program.
+      Creates <i>includes</i> relation between the CL script and included CL script.
+      Creates <i>uses</i> relation between CL script and data area or file resource.
+    </description>
+  </createdRelations>
+  
+  <importantConfigurations activation="aim.cl400.rule.active" />
+  
+</block>

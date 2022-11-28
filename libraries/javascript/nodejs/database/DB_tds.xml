@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/DB_tds" standard="nodejs">
+
+  <module name="nodejs/tds" standard="database/node-tds">
+    <description url="http://cretz.github.io/node-tds/">Implementation of the TDS protocol (MS SQL Server)</description>
+
+    <class name="nodejs/tds">
+      <function name="Connection">
+        <parameters>
+          <param type="Object"/>
+          <param type="function(Error)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/tds.Connection" />
+        <sink kind="sensitive_data" resource="database">
+          <arg pos="0" field="userName,password"/>
+        </sink>
+        <sink kind="resource_injection" resource="database">
+          <arg pos="0" field="database"/>
+        </sink>
+        <sink kind="ssrf" resource="database">
+          <arg pos="0" field="host,port"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/tds.Connection">
+      <tags>hasEvents</tags>
+      <function name="createStatement">
+        <return type="nodejs/tds.Statement"/>
+        <sink kind="sql_injection" resource="database">
+          <arg pos="0" />
+        </sink>
+      </function>
+      <function name="on:error">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/tds.Statement">
+      <tags>hasEvents</tags>
+      <function name="on:row">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Object)">
+            <source kind="database_input" argpos="0" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+      <function name="prepare"/>
+      <function name="cancel"/>
+    </class>
+  </module>
+  
+</library>

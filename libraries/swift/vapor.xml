@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="swift.vapor" standard="swift.vapor" technology="swift">
+  <description url="https://vapor.codes/">Vapor web framework</description>
+
+  <module name="Vapor">
+    <class name="Client" kind="protocol">
+      <description>HTTP client, based on async-http-client</description>
+      <method name="get" signature="get(url: URI, headers: HTTPHeaders, beforeSend: (ClientRequest) -> ())">
+        <parameters>
+          <param type="URI" name="url">
+          </param>
+          <param type="HTTPHeaders" name="headers"/>
+          <param type="(ClientRequest) -> ()" name="beforeSend" last="true" callback="true"/>
+        </parameters>
+        <return type="EventLoopFuture.ClientResponse"/>
+        <sink kind="open_redirect" resource="web" argpos="0" paramNames="url"/>
+      </method>
+    </class>
+
+    <class name="ClientRequest">
+      <description>The request message for HTTP client</description>
+      <field name="method" type="HTTPMethod"/>
+      <field name="url" type="URI"/>
+      <field name="headers" type="HTTPHeaders"/>
+      <field name="body" type="ByteBuffer?"/>
+      <field name="query" type="URLQueryContainer"/>
+      <field name="content" type="ContentContainer"/>
+    </class>
+    <class name="ClientResponse">
+      <description>The response message returned to the HTTP client from server</description>
+      <field name="status" type="HTTPStatus"/>
+      <field name="headers" type="HTTPHeaders"><source argpos="-1" kind="network_input" resource="web"/></field>
+      <field name="body" type="ByteBuffer?"><source argpos="-1" kind="network_input" resource="web"/></field>
+      <field name="content" type="ContentContainer"><source argpos="-1" kind="network_input" resource="web"/></field>
+    </class>
+
+    <class name="EventLoopFuture.ClientResponse">
+      <method name="map" signature="map(res: ClientResponse)" alias="flatMap, flatMapThrowing, flatMapErrorThrowing, flatMapError, flatMapResult">
+        <parameters>
+          <param type="ClientResponse" name="res" callback="true"/>
+        </parameters>
+      </method>
+    </class>
+
+    <class name="Request">
+      <description>The HTTP request for </description>
+      <field name="auth" type="Request.Authentication"/>
+      <field name="cache" type="Cache"/>
+      <field name="client" type="Client"/>
+      <field name="password" type="Password"/>
+      <field name="application" type="Application"/>
+      <field name="method" type="HTTPMethod"/>
+      <field name="url" type="URI"><source argpos="-1" paramNames="path, query, fragment" kind="user_input" resource="web"/></field>
+      <field name="version" type="HTTPVersion"/>
+      <field name="headers" type="HTTPHeaders"><source argpos="-1" kind="user_input" resource="web"/></field>
+      <field name="route" type="Route"/>
+      <field name="query" type="URLQueryContainer"><source argpos="-1" kind="user_input" resource="web"/></field>
+      <field name="body" type="Body"><source argpos="-1" kind="user_input" resource="web"/></field>
+      <field name="content" type="ContentContainer"><source argpos="-1" kind="user_input" resource="web"/></field>
+      <field name="cookies" type="HTTPCookies"><source argpos="-1" kind="user_input" resource="web"/></field>
+      <field name="remoteAddress" type="SocketAddress"/>
+      <field name="parameters" type="Parameters"><source argpos="-1" kind="user_input" resource="web"/></field>
+      <field name="session" type="Session"/>
+
+      <method name="redirect" signature="redirect(to: String, type: RedirectType)">
+        <return type="Response"/>
+        <sink kind="open_redirect" argpos="0" resource="web" paramNames="to,location"/>
+        <sink kind="execution_after_redirect" argpos="-1" resource="web"/>
+      </method>
+    </class>
+
+    <class name="Response">
+
+    </class>
+
+    <class name="RoutesBuilder" kind="protocol">
+      <method name="grouped" signature="grouped(path: PathComponent)" match="name">
+        <return type="RoutesBuilder"/>
+      </method>
+      <method name="group" signature="group(middleware: Middleware..., configure: (RoutesBuilder) -> ())">
+        <parameters>
+          <param type="Middleware" name="middleware"/>
+          <param type="(RoutesBuilder) -> ()" name="configure" last="true" callback="true"/>
+        </parameters>
+      </method>
+      
+      <method name="get" signature="get(path: String, closure: (Request) -> Response)" alias="post, patch, put, delete">
+        <parameters>
+          <param type="String" name="path"/>
+          <param type="(Request) -> Response" name="closure" callback="true" last="true"/>
+        </parameters>
+        <closures>
+          <closure argpos="-1">
+            <!-- source argpos="0" kind="user_input" resource="web"/ -->
+          </closure>
+        </closures>
+        <return type="Route"/>
+      </method>
+      <method name="on" signature="on(method: HTTPMethod, path: PathComponent..., body: HTTPBodyStreamStrategy, closure: (Request) -> Response)" alias="post, patch, put, delete">
+        <parameters>
+          <param type="HTTPMethod" name="method"/>
+          <param type="PathComponent" name="path"/>
+          <param type="(Request) -> Response" name="closure" callback="true" last="true"/>
+        </parameters>
+        <closures>
+          <closure>
+            <!-- source argpos="0" kind="user_input" resource="web"/ -->
+          </closure>
+        </closures>
+        <return type="Route"/>
+      </method>
+    </class>
+
+    <class name="Routes" supertypes="RoutesBuilder"></class>
+
+    <class name="Application" supertypes="RoutesBuilder">
+      <constructor name="Application" signature="Application(environment: Environment, eventLoopGroupProvider: EventLoopGroupProvider)" match="name"></constructor>
+      <field name="client" type="Client"/>
+
+    </class>
+  </module>
+
+</library>  

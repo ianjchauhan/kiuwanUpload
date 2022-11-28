@@ -1,0 +1,637 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="deltaspike" standard="Apache_Deltaspike" technology="java">
+
+  <description url="http://deltaspike.apache.org/javadoc/1.9.3/">Portable CDI extensions</description>
+
+  <module name="org.apache.deltaspike.core.api" >
+    <class name="org.apache.deltaspike.core.api.resourceloader.AbstractResourceProvider" supertypes="java.lang.Object,org.apache.deltaspike.core.api.resourceloader.InjectableResourceProvider" >
+      <method name="isXml" signature="isXml(java.lang.String)" >
+        <return type="boolean" />
+      </method>
+      <method name="getInjectionPoint" signature="getInjectionPoint()" >
+        <return type="javax.enterprise.inject.spi.InjectionPoint" />
+      </method>
+      <method name="getAnnotations" signature="getAnnotations()" >
+        <return type="java.util.Set" elementType="java.lang.annotation.Annotation" />
+      </method>
+      <method name="readProperties" signature="readProperties(org.apache.deltaspike.core.api.resourceloader.InjectableResource)" >
+        <return type="java.util.Properties" />
+      </method>
+      <method name="readStreams" signature="readStreams(org.apache.deltaspike.core.api.resourceloader.InjectableResource)" >
+        <return type="java.util.List" elementType="java.io.InputStream" />
+      </method>
+    </class>
+  </module>
+
+  <module name="org.apache.deltaspike.core.api.crypto" >
+    <class name="org.apache.deltaspike.core.api.crypto.CipherService" >
+      <method name="setMasterHash" signature="setMasterHash(java.lang.String,java.lang.String,boolean)" >
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="crypto" />
+      </method>
+      <method name="encrypt" signature="encrypt(java.lang.String,java.lang.String)" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="decrypt" signature="decrypt(java.lang.String,java.lang.String)" >
+        <return type="java.lang.String" />
+      </method>
+    </class>
+  </module>
+
+  <module name="org.apache.deltaspike.core.util" >
+    <class name="org.apache.deltaspike.core.util.ClassUtils" >
+      <method name="getClassLoader" signature="getClassLoader(java.lang.Object)" >
+        <return type="java.lang.ClassLoader" />
+      </method>
+      <method name="isProxyableClass" signature="isProxyableClass(java.lang.reflect.Type)" >
+        <return type="boolean" />
+      </method>
+      <method name="tryToLoadClassForName" signature="tryToLoadClassForName(java.lang.String)" match="name" >
+        <return type="java.lang.Class" />
+        <sink kind="unsafe_reflection" argpos="0" resource="other"/>
+      </method>
+      <method name="loadClassForName" signature="loadClassForName(java.lang.String)" >
+        <return type="java.lang.Class" />
+        <sink kind="unsafe_reflection" argpos="0" resource="other"/>
+      </method>
+      <method name="tryToInstantiateClassForName" signature="tryToInstantiateClassForName(java.lang.String)" match="name" >
+        <return type="java.lang.Object" />
+        <sink kind="unsafe_reflection" argpos="0" resource="other"/>
+      </method>
+      <method name="instantiateClassForName" signature="instantiateClassForName(java.lang.String)" match="name" >
+        <return type="java.lang.Object" />
+        <sink kind="unsafe_reflection" argpos="0" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="org.apache.deltaspike.data.api" >
+    <class name="org.apache.deltaspike.data.api.EntityCountRepository" >
+      <method name="count" signature="count()" >
+        <return type="java.lang.Long" />
+      </method>
+      <method name="count" signature="count(org.apache.deltaspike.data.api.E,javax.persistence.metamodel.SingularAttribute...)" >
+        <return type="java.lang.Long" />
+      </method>
+      <method name="countLike" signature="countLike(org.apache.deltaspike.data.api.E,javax.persistence.metamodel.SingularAttribute...)" >
+        <return type="java.lang.Long" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.data.api.EntityManagerDelegate" >
+      <method name="persist" signature="persist(org.apache.deltaspike.data.api.E)" />
+      <method name="merge" signature="merge(org.apache.deltaspike.data.api.E)" >
+        <return type="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="find" signature="find(java.lang.Object,java.util.Map)" >
+        <return type="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="find" signature="find(java.lang.Object,javax.persistence.LockModeType)" >
+        <return type="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="find" signature="find(java.lang.Object,javax.persistence.LockModeType,java.util.Map)" >
+        <return type="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="getReference" signature="getReference(java.lang.Object)" >
+        <return type="java.lang.Object" />
+      </method>
+      <method name="getFlushMode" signature="getFlushMode()" >
+        <return type="javax.persistence.FlushModeType" />
+      </method>
+      <method name="contains" signature="contains(org.apache.deltaspike.data.api.E)" >
+        <return type="boolean" />
+      </method>
+      <method name="getLockMode" signature="getLockMode(org.apache.deltaspike.data.api.E)" >
+        <return type="javax.persistence.LockModeType" />
+      </method>
+      <method name="getProperties" signature="getProperties()" >
+        <return type="java.util.Map" />
+      </method>
+      <method name="getTransaction" signature="getTransaction()" >
+        <return type="javax.persistence.EntityTransaction" />
+      </method>
+      <method name="getEntityManagerFactory" signature="getEntityManagerFactory()" >
+        <return type="javax.persistence.EntityManagerFactory" />
+      </method>
+      <method name="getCriteriaBuilder" signature="getCriteriaBuilder()" >
+        <return type="javax.persistence.criteria.CriteriaBuilder" />
+      </method>
+      <method name="getMetamodel" signature="getMetamodel()" >
+        <return type="javax.persistence.metamodel.Metamodel" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.data.api.EntityPersistenceRepository" supertypes="org.apache.deltaspike.core.spi.activation.Deactivatable" >
+      <method name="save" signature="save(org.apache.deltaspike.data.api.E)" >
+        <return type="java.lang.Object" />
+      </method>
+      <method name="saveAndFlush" signature="saveAndFlush(org.apache.deltaspike.data.api.E)" >
+        <return type="java.lang.Object" />
+      </method>
+      <method name="saveAndFlushAndRefresh" signature="saveAndFlushAndRefresh(org.apache.deltaspike.data.api.E)" >
+        <return type="java.lang.Object" />
+      </method>
+      <method name="getPrimaryKey" signature="getPrimaryKey(org.apache.deltaspike.data.api.E)" >
+        <return type="org.apache.deltaspike.data.api.PK" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.data.api.EntityRepository" supertypes="org.apache.deltaspike.data.api.EntityCountRepository,org.apache.deltaspike.data.api.EntityPersistenceRepository" >
+      <method name="findBy" signature="findBy(org.apache.deltaspike.data.api.PK)" >
+        <return type="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="findOptionalBy" signature="findOptionalBy(org.apache.deltaspike.data.api.PK)" >
+        <return type="java.util.Optional" elementType="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="findAll" signature="findAll()" >
+        <return type="java.util.List" elementType="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="findAll" signature="findAll(int,int)" >
+        <return type="java.util.List" elementType="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="findBy" signature="findBy(org.apache.deltaspike.data.api.E,javax.persistence.metamodel.SingularAttribute...)" >
+        <return type="java.util.List" elementType="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="findBy" signature="findBy(org.apache.deltaspike.data.api.E,int,int,javax.persistence.metamodel.SingularAttribute...)" >
+        <return type="java.util.List" elementType="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="findByLike" signature="findByLike(org.apache.deltaspike.data.api.E,javax.persistence.metamodel.SingularAttribute...)" >
+        <return type="java.util.List" elementType="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="findByLike" signature="findByLike(org.apache.deltaspike.data.api.E,int,int,javax.persistence.metamodel.SingularAttribute...)" >
+        <return type="java.util.List" elementType="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.data.api.FullEntityRepository" kind="interface" supertypes="org.apache.deltaspike.data.api.EntityRepository" />
+    <class name="org.apache.deltaspike.data.api.QueryResult" >
+      <method name="orderAsc" signature="orderAsc(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="orderAsc" signature="orderAsc(javax.persistence.metamodel.SingularAttribute,boolean)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="orderAsc" signature="orderAsc(java.lang.String)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="orderAsc" signature="orderAsc(java.lang.String,boolean)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="orderDesc" signature="orderDesc(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="orderDesc" signature="orderDesc(javax.persistence.metamodel.SingularAttribute,boolean)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="orderDesc" signature="orderDesc(java.lang.String)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="orderDesc" signature="orderDesc(java.lang.String,boolean)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="changeOrder" signature="changeOrder(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="clearOrder" signature="clearOrder()" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="changeOrder" signature="changeOrder(java.lang.String)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="maxResults" signature="maxResults(int)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="firstResult" signature="firstResult(int)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="lockMode" signature="lockMode(javax.persistence.LockModeType)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="flushMode" signature="flushMode(javax.persistence.FlushModeType)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="hint" signature="hint(java.lang.String,java.lang.Object)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="getResultList" signature="getResultList()" >
+        <return type="java.util.List" elementType="java.lang.Object" />
+      </method>
+      <method name="getSingleResult" signature="getSingleResult()" >
+        <return type="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="getOptionalResult" signature="getOptionalResult()" >
+        <return type="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="getAnyResult" signature="getAnyResult()" >
+        <return type="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="count" signature="count()" >
+        <return type="long" />
+      </method>
+      <method name="withPageSize" signature="withPageSize(int)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="toPage" signature="toPage(int)" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="nextPage" signature="nextPage()" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="previousPage" signature="previousPage()" >
+        <return type="org.apache.deltaspike.data.api.QueryResult" />
+      </method>
+      <method name="countPages" signature="countPages()" >
+        <return type="int" />
+      </method>
+      <method name="currentPage" signature="currentPage()" >
+        <return type="int" />
+      </method>
+      <method name="pageSize" signature="pageSize()" >
+        <return type="int" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.data.api.AbstractEntityRepository" supertypes="java.lang.Object,org.apache.deltaspike.data.api.EntityCountRepository,org.apache.deltaspike.data.api.EntityPersistenceRepository,org.apache.deltaspike.data.api.EntityRepository" >
+      <method name="entityManager" signature="entityManager()" >
+        <return type="javax.persistence.EntityManager" />
+      </method>
+      <method name="criteriaQuery" signature="criteriaQuery()" >
+        <return type="javax.persistence.criteria.CriteriaQuery" />
+      </method>
+      <method name="typedQuery" signature="typedQuery(java.lang.String)" >
+        <return type="javax.persistence.TypedQuery" />
+      </method>
+      <method name="entityClass" signature="entityClass()" >
+        <return type="java.lang.Class" />
+      </method>
+      <method name="tableName" signature="tableName()" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="entityName" signature="entityName()" >
+        <return type="java.lang.String" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.data.api.AbstractFullEntityRepository" supertypes="org.apache.deltaspike.data.api.AbstractEntityRepository" />
+    <class name="org.apache.deltaspike.data.api.Repository" />
+
+    <class name="org.apache.deltaspike.data.api.criteria.Criteria" >
+      <method name="getResultList" signature="getResultList()" >
+        <return type="java.util.List" elementType="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="getSingleResult" signature="getSingleResult()" >
+        <return type="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="getOptionalResult" signature="getOptionalResult()" >
+        <return type="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="getAnyResult" signature="getAnyResult()" >
+        <return type="java.lang.Object" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="createQuery" signature="createQuery()" >
+        <return type="javax.persistence.TypedQuery" />
+      </method>
+      <method name="or" signature="or(org.apache.deltaspike.data.api.criteria.Criteria...)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="or" signature="or(java.util.Collection)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="join" signature="join(javax.persistence.metamodel.SingularAttribute,org.apache.deltaspike.data.api.criteria.Criteria)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="join" signature="join(javax.persistence.metamodel.ListAttribute,org.apache.deltaspike.data.api.criteria.Criteria)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="join" signature="join(javax.persistence.metamodel.CollectionAttribute,org.apache.deltaspike.data.api.criteria.Criteria)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="join" signature="join(javax.persistence.metamodel.SetAttribute,org.apache.deltaspike.data.api.criteria.Criteria)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="join" signature="join(javax.persistence.metamodel.MapAttribute,org.apache.deltaspike.data.api.criteria.Criteria)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="fetch" signature="fetch(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="fetch" signature="fetch(javax.persistence.metamodel.SingularAttribute,javax.persistence.criteria.JoinType)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="fetch" signature="fetch(javax.persistence.metamodel.PluralAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="fetch" signature="fetch(javax.persistence.metamodel.PluralAttribute,javax.persistence.criteria.JoinType)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="orderAsc" signature="orderAsc(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="orderDesc" signature="orderDesc(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="select" signature="select(java.lang.Class,org.apache.deltaspike.data.api.criteria.QuerySelection...)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="select" signature="select(org.apache.deltaspike.data.api.criteria.QuerySelection...)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="distinct" signature="distinct()" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="eq" signature="eq(javax.persistence.metamodel.SingularAttribute,org.apache.deltaspike.data.api.criteria.P)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="eqIgnoreCase" signature="eqIgnoreCase(javax.persistence.metamodel.SingularAttribute,java.lang.String)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="notEq" signature="notEq(javax.persistence.metamodel.SingularAttribute,org.apache.deltaspike.data.api.criteria.P)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="notEqIgnoreCase" signature="notEqIgnoreCase(javax.persistence.metamodel.SingularAttribute,java.lang.String)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="like" signature="like(javax.persistence.metamodel.SingularAttribute,java.lang.String)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="likeIgnoreCase" signature="likeIgnoreCase(javax.persistence.metamodel.SingularAttribute,java.lang.String)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="notLike" signature="notLike(javax.persistence.metamodel.SingularAttribute,java.lang.String)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="notLikeIgnoreCase" signature="notLikeIgnoreCase(javax.persistence.metamodel.SingularAttribute,java.lang.String)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="lt" signature="lt(javax.persistence.metamodel.SingularAttribute,org.apache.deltaspike.data.api.criteria.P)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="ltOrEq" signature="ltOrEq(javax.persistence.metamodel.SingularAttribute,org.apache.deltaspike.data.api.criteria.P)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="gt" signature="gt(javax.persistence.metamodel.SingularAttribute,org.apache.deltaspike.data.api.criteria.P)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="gtOrEq" signature="gtOrEq(javax.persistence.metamodel.SingularAttribute,org.apache.deltaspike.data.api.criteria.P)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="between" signature="between(javax.persistence.metamodel.SingularAttribute,org.apache.deltaspike.data.api.criteria.P,org.apache.deltaspike.data.api.criteria.P)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="isNull" signature="isNull(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="notNull" signature="notNull(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="empty" signature="empty(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="notEmpty" signature="notEmpty(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="in" signature="in(javax.persistence.metamodel.SingularAttribute,org.apache.deltaspike.data.api.criteria.P...)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="predicates" signature="predicates(javax.persistence.criteria.CriteriaBuilder,javax.persistence.criteria.Path)" >
+        <return type="java.util.List" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.data.api.criteria.CriteriaSupport" >
+      <method name="criteria" signature="criteria()" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="where" signature="where(java.lang.Class)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="where" signature="where(java.lang.Class,javax.persistence.criteria.JoinType)" >
+        <return type="org.apache.deltaspike.data.api.criteria.Criteria" />
+      </method>
+      <method name="attribute" signature="attribute(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="abs" signature="abs(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="avg" signature="avg(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="count" signature="count(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="countDistinct" signature="countDistinct(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="max" signature="max(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="min" signature="min(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="neg" signature="neg(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="sum" signature="sum(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="modulo" signature="modulo(javax.persistence.metamodel.SingularAttribute,java.lang.Integer)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="upper" signature="upper(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="lower" signature="lower(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="substring" signature="substring(javax.persistence.metamodel.SingularAttribute,int)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="substring" signature="substring(javax.persistence.metamodel.SingularAttribute,int,int)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="trim" signature="trim(javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="trim" signature="trim(CriteriaBuilder.Trimspec,javax.persistence.metamodel.SingularAttribute)" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="currDate" signature="currDate()" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="currTime" signature="currTime()" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+      <method name="currTStamp" signature="currTStamp()" >
+        <return type="org.apache.deltaspike.data.api.criteria.QuerySelection" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.data.api.criteria.QuerySelection" >
+      <method name="toSelection" signature="toSelection(javax.persistence.criteria.CriteriaQuery,javax.persistence.criteria.CriteriaBuilder,javax.persistence.criteria.Path)" >
+        <return type="javax.persistence.criteria.Selection" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.data.spi.QueryInvocationContext" >
+      <method name="getEntityManager" signature="getEntityManager()" >
+        <return type="javax.persistence.EntityManager" />
+      </method>
+      <method name="getEntityClass" signature="getEntityClass()" >
+        <return type="java.lang.Class" />
+      </method>
+      <method name="isNew" signature="isNew(java.lang.Object)" >
+        <return type="boolean" />
+      </method>
+      <method name="getRepositoryClass" signature="getRepositoryClass()" >
+        <return type="java.lang.Class" />
+      </method>
+      <method name="getMethod" signature="getMethod()" >
+        <return type="java.lang.reflect.Method" />
+      </method>
+    </class>
+  </module>
+
+  <module name="org.apache.deltaspike.data.spi" >
+    <class name="org.apache.deltaspike.data.spi.QueryInvocationContext" >
+      <method name="getEntityManager" signature="getEntityManager()" >
+        <return type="javax.persistence.EntityManager" />
+      </method>
+      <method name="getEntityClass" signature="getEntityClass()" >
+        <return type="java.lang.Class" />
+      </method>
+      <method name="isNew" signature="isNew(java.lang.Object)" >
+        <return type="boolean" />
+      </method>
+      <method name="getRepositoryClass" signature="getRepositoryClass()" >
+        <return type="java.lang.Class" />
+      </method>
+      <method name="getMethod" signature="getMethod()" >
+        <return type="java.lang.reflect.Method" />
+      </method>
+    </class>
+  </module>
+
+  <module name="org.apache.deltaspike.jpa.api" >
+    <class name="org.apache.deltaspike.jpa.api.entitymanager.EntityManagerResolver" >
+      <method name="resolveEntityManager" signature="resolveEntityManager()" >
+        <return type="javax.persistence.EntityManager" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.jpa.spi.descriptor.xml.Descriptor" >
+      <method name="getDocument" signature="getDocument()" >
+        <return type="org.w3c.dom.Document" />
+      </method>
+      <method name="getUrl" signature="getUrl()" >
+        <return type="java.net.URL" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.jpa.spi.descriptor.xml.EntityMappingsDescriptorParser" supertypes="org.apache.deltaspike.jpa.spi.descriptor.xml.DescriptorReader" >
+      <method name="readAll" signature="readAll(java.lang.String,java.lang.String)" >
+        <return type="org.apache.deltaspike.jpa.spi.descriptor.xml.EntityMappingsDescriptor" />
+      </method>
+      <method name="readDefaultOrm" signature="readDefaultOrm(java.lang.String)" >
+        <return type="org.apache.deltaspike.jpa.spi.descriptor.xml.EntityMappingsDescriptor" />
+      </method>
+      <method name="readFromDocument" signature="readFromDocument(org.w3c.dom.Document)" >
+        <return type="org.apache.deltaspike.jpa.spi.descriptor.xml.EntityMappingsDescriptor" />
+      </method>
+      <method name="extractNodeAttribute" signature="extractNodeAttribute(org.w3c.dom.Element,java.lang.String,java.lang.String)" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="extractAttribute" signature="extractAttribute(org.w3c.dom.Node,java.lang.String)" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="extractNodeAttributes" signature="extractNodeAttributes(org.w3c.dom.Element,java.lang.String,java.lang.String)" >
+        <return type="java.lang.String[]" />
+      </method>
+      <method name="extractAttributes" signature="extractAttributes(org.w3c.dom.NodeList,java.lang.String)" >
+        <return type="java.lang.String[]" />
+      </method>
+      <method name="extractNodeContent" signature="extractNodeContent(org.w3c.dom.Element,java.lang.String)" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="parsePackageName" signature="parsePackageName(org.w3c.dom.Document)" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="parseMappedSuperclassDescriptors" signature="parseMappedSuperclassDescriptors(org.w3c.dom.Document,java.lang.String)" >
+        <return type="java.util.List" elementType="org.apache.deltaspike.jpa.spi.descriptor.xml.MappedSuperclassDescriptor" />
+      </method>
+      <method name="parseEntityDescriptors" signature="parseEntityDescriptors(org.w3c.dom.Document,java.lang.String)" >
+        <return type="java.util.List" elementType="org.apache.deltaspike.jpa.spi.descriptor.xml.EntityDescriptor" />
+      </method>
+      <method name="buildClassName" signature="buildClassName(java.lang.String,java.lang.String)" >
+        <return type="java.lang.String" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.jpa.spi.descriptor.xml.MappedSuperclassDescriptor" supertypes="org.apache.deltaspike.jpa.spi.descriptor.xml.AbstractEntityDescriptor" />
+    <class name="org.apache.deltaspike.jpa.spi.descriptor.xml.PersistenceUnitDescriptor" supertypes="java.lang.Object" >
+      <method name="getEntityDescriptors" signature="getEntityDescriptors()" >
+        <return type="java.util.List" elementType="org.apache.deltaspike.jpa.spi.descriptor.xml.EntityDescriptor" />
+      </method>
+      <method name="getProperties" signature="getProperties()" >
+        <return type="java.util.Map" />
+      </method>
+    </class>
+  </module>
+
+  <module name="org.apache.deltaspike.jpa.spi" >
+    <class name="org.apache.deltaspike.jpa.spi.descriptor.xml.PersistenceUnitDescriptorParser" supertypes="org.apache.deltaspike.jpa.spi.descriptor.xml.DescriptorReader" >
+      <method name="readAll" signature="readAll()" >
+        <return type="java.util.List" />
+      </method>
+      <method name="lookupUnits" signature="lookupUnits(org.apache.deltaspike.jpa.spi.descriptor.xml.Descriptor)" >
+        <return type="java.util.List" />
+      </method>
+      <method name="extractMappings" signature="extractMappings(org.w3c.dom.Element,java.lang.String,java.lang.String)" >
+        <return type="java.util.List" elementType="org.apache.deltaspike.jpa.spi.descriptor.xml.EntityDescriptor" />
+      </method>
+      <method name="extractUnitName" signature="extractUnitName(org.w3c.dom.Node)" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="extractProperties" signature="extractProperties(org.w3c.dom.Element)" >
+        <return type="java.util.Map" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.jpa.spi.descriptor.xml.PersistenceUnitDescriptorProvider" supertypes="java.lang.Object" >
+      <method name="getInstance" signature="getInstance()" >
+        <return type="org.apache.deltaspike.jpa.spi.descriptor.xml.PersistenceUnitDescriptorProvider" />
+      </method>
+      <method name="get" signature="get(java.lang.String)" >
+        <return type="org.apache.deltaspike.jpa.spi.descriptor.xml.PersistenceUnitDescriptor" />
+      </method>
+      <method name="find" signature="find(java.lang.Class)" >
+        <return type="org.apache.deltaspike.jpa.spi.descriptor.xml.EntityDescriptor" />
+      </method>
+      <method name="find" signature="find(java.lang.Class,org.apache.deltaspike.jpa.spi.descriptor.xml.PersistenceUnitDescriptor)" >
+        <return type="org.apache.deltaspike.jpa.spi.descriptor.xml.EntityDescriptor" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.jpa.spi.entitymanager.ActiveEntityManagerHolder" supertypes="java.io.Serializable" >
+      <method name="get" signature="get()" >
+        <return type="javax.persistence.EntityManager" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.jpa.spi.entitymanager.PersistenceConfigurationProvider" >
+      <method name="getEntityManagerFactoryConfiguration" signature="getEntityManagerFactoryConfiguration(java.lang.String)" >
+        <return type="java.util.Properties" />
+      </method>
+    </class>
+    <class name="org.apache.deltaspike.jpa.spi.entitymanager.QualifierBackedEntityManagerResolver" supertypes="java.lang.Object,org.apache.deltaspike.jpa.api.entitymanager.EntityManagerResolver" />
+  </module>
+
+  <module name="org.apache.deltaspike.servlet.api" >
+    <class name="org.apache.deltaspike.servlet.api.resourceloader.WebResourceProvider" supertypes="org.apache.deltaspike.core.api.resourceloader.AbstractResourceProvider" />
+  </module>
+</library>

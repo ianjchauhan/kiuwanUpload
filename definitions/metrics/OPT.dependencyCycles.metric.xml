@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.dependencyCycles" unit="" aggregation="sum">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.LOWER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="20.00" meaning="good" />
+        <threshold from="20.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.DEPENDENCYCYCLES" />
+        <java-class>com.als.cpp.metrics.DependencyCyclesCppMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.DEPENDENCYCYCLES" />
+        <java-class>com.optimyth.csharp.metrics.DependencyCyclesCsharpMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.DEPENDENCYCYCLES" />
+        <java-class>com.als.java.metrics.DependencyCyclesJavaMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <internal-name id="OPT.PHP.DEPENDENCYCYCLES" />
+        <java-class>com.optimyth.qaking.php.metrics.DependencyCyclesMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.DEPENDENCYCYCLES" />
+        <java-class>com.optimyth.vbnet.metrics.DependencyCyclesVBnetMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+      <!-- Code examples for each language parser -->
+    <code-examples>
+          
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <code-example name="metricCodeExampleCpp" result-value="1">
+<![CDATA[
+//FILE: EntityManager.cpp
+
+#include "EntityManager.h"
+#include "EntitySystem.h"
+#include "SystemManager.h"
+#include "BitSize.h"
+#include "World.h"
+#include "Component.h"
+#include "Entity.h"
+
+namespace artemis {
+	using namespace nspace;
+  EntityManager::EntityManager(World& world) : componentsByType(64) {
+    this->world = &world;
+    
+    nextAvailableId = 0;
+    count = 0;
+    uniqueEntityId = 0;
+    totalCreated = 0;
+    totalRemoved = 0;
+  };
+  
+  void EntityManager::addComponent(Entity &e, Component * c) {
+    ComponentType type = ComponentTypeManager::getTypeFor(typeid(*c));
+    
+    if(type.getId() >= componentsByType.getCapacity()) {
+      componentsByType.set(type.getId(), NULL);
+    }
+    
+  };
+}
+
+
+//FILE: ComponentType.c
+
+#include <bitset>
+#include "BitSize.h"
+
+namespace nspace {
+
+	using namespace artemis;
+
+	class ComponentType {
+    
+  public:
+    ComponentType(){};
+    std::bitset<BITSIZE> getBit() {return var;};
+    int getId() {return var;};
+    static void reset() {
+      EntityManager em = EntityManager::get();
+      em.addComponent(e,c);
+    }
+    
+  private:
+    static std::bitset<BITSIZE> nextBit;
+    static int nextId;
+    std::bitset<BITSIZE> bit;
+    int id;
+    void init() {};
+    
+    
+	};
+}
+
+
+]]>
+        </code-example>
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="metricCodeExampleCsharp" result-value="1">
+<![CDATA[
+//FILE: AddTree.cs
+using System;
+using System.Collections;
+using Deepcode.DataTax;
+
+namespace Deepcode.Extensions
+{
+	public class AddTree
+	{
+		private AddTree [] GetSubnodesArray()
+		{
+			DataTaxonomyTree tree = new DataTaxonomyTree();
+			tree.GetPath("paths");
+			AddinTreeNode node = this;
+			int index = node.Children.Count;
+			AddinTreeNode[] sortedNodes = new AddinTreeNode[index];
+			Hashtable  visited   = new Hashtable(index);
+			Hashtable  ancestor = new Hashtable(index);
+			
+			return sortedNodes;
+		}
+	}
+}
+
+//FILE: DataTaxonomyTree.cs
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Data;
+using System.Data.SqlClient;
+using Deepcode.Extensions;
+
+namespace Deepcode.DataTax
+{
+	public class DataTaxonomyTree : Deepcode.Flux.Core.Data.BaseManager
+	{
+		#region Constructors
+		public DataTaxonomyTree() : base() { }
+		public DataTaxonomyTree(SqlConnection CurrentConnection) : base(CurrentConnection) { }
+		public DataTaxonomyTree(SqlConnection CurrentConnection, SqlTransaction CurrentTransaction) : base(CurrentConnection, CurrentTransaction) { }
+		#endregion
+		
+		public DataTaxonomyNode GetPath(string path)
+		{
+			// Process the path - change backslash to forward slash
+			string Path2 = path.Replace('\\', '/');
+			// Split the path on it's elements
+			string [] Elements = Path2.Split('/');
+			
+			// Start searching at the root
+			int CurrentParentID = -1;
+			DataTaxonomyNode CurrentNode = null;
+			
+			AddTree at = new AddTree();
+			at.GetSubnodesArray();
+			
+			// Return the last successful result			
+			return CurrentNode;
+		}
+	}
+}
+]]>
+        </code-example>
+      </language-parser>
+      
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="metricCodeExampleJava" result-value="1">
+<![CDATA[
+//FILE: FanInJava2.java
+
+package com.opt.fanin2;
+
+import com.opt.fanin.FanInJava1;
+
+public class FanInJava2{
+	int j;
+	int i;
+
+	FanInJava2(){
+		FanInJava1 f1 = new FanInJava1();
+		i=f1.geti();
+		j = FanInJava1.suma(i,j);
+	}
+}
+
+
+//FILE: FanInJava1.java
+
+package com.opt.fanin;
+
+import com.opt.fanin2.FanInJava2;
+
+public class FanInJava1{
+	int j;
+	int i;
+
+	FanInJava1(){
+		i=0;
+		j=0;
+	}
+
+	public int geti(){
+		return i;
+	}
+
+	public int getj(){
+		return j;
+	}
+
+	public void seti(){
+		FanInJava2 f2 = new FanInJava2();
+		i=f2.geti();
+	}
+
+	public void setj(int j){
+		this.j = j;
+	}	
+	
+	public static int suma(int i, int j){
+		return i+j;
+	}
+
+}
+]]>
+        </code-example>
+      </language-parser>
+
+	  <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <code-example name="metricCodeExamplePhp" result-value="1">
+<![CDATA[
+//FILE: FanInPhp3.php
+<?php
+
+abstract class FanInClass3
+{
+	
+    public function runJob(FanInClass2 $var , FanInClass1 $result)
+    {
+        $var->runJob(this,$result);
+		
+        if ($result !== NULL) {
+            $result->startTest($test);
+        }
+    }
+}
+
+//FILE: /nspace/FanInPhp1.php
+<?php
+
+abstract class FanInClass1
+{
+	
+    public function startTest(FanInClass3 $var)
+    {
+        $var->runJob(this,$result);
+
+        $this->process($pipes[0], $job);
+        fclose($pipes[0]);
+
+        
+    }
+}
+
+]]>
+        </code-example>
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="metricCodeExampleVbnet" result-value="1"><![CDATA[
+'FILE: file1.vb
+Imports Pac.P.Paquete2
+
+Namespace Pac.P.Paquete1
+
+	Class MyClassOne 
+
+		Private Const PREDICATE_NODE As New NodePredicate()
+
+		 Public Sub Method1()
+			 Dim mc2 As New MyClassTwo();
+			 mc2.doSomething();
+			 doSomething()
+		 End Sub
+
+		 Public Function method2() As Integer
+				doSomething()
+		 End Function
+
+		 Public i As Integer
+
+		 Private Class innerClass
+
+		   Public Sub method()
+				doSomething()
+		   End Sub
+
+		   Function method2() As Boolean
+				Dim predicate As New NodePredicate()
+		   End Function
+		 End Class
+
+	End Class
+
+End Namespace
+
+'FILE: file2.vb
+Imports Pac.P.Paquete1
+
+Namespace Pac.P.Paquete2
+
+	Class MyClassTwo 
+
+		Private Const PREDICATE_NODE As New NodePredicate()
+
+		 Public Sub Method1()
+			 doSomething()
+		 End Sub
+
+		 Public Function method2() As Integer
+		 	 Dim mc1 As New MyClassOne();
+			 mc1.doSomething();
+			 doSomething()
+		 End Function
+
+		 Public i As Integer
+
+		 Private Class innerClass
+
+		   Public Sub method()
+				doSomething()
+		   End Sub
+
+		   Function method2() As Boolean
+				Dim predicate As New NodePredicate()
+		   End Function
+		 End Class
+
+	End Class
+
+End Namespace
+        ]]></code-example>
+      </language-parser>
+
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Ciclos de Dependencia]]></name>
+      
+      <description>
+<![CDATA[
+Calcula el número total de ciclos de dependencia entre paquetes.
+]]>
+      </description>
+
+      <implementation-descriptions></implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Dependency Cycles]]></name>
+      
+      <description>
+<![CDATA[
+Calculate the total number of dependency cycles between namespaces.
+]]>
+      </description>
+
+      <implementation-descriptions></implementation-descriptions>
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

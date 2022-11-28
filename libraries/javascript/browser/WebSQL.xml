@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="browser/WebSQL" standard="javascript">
+
+  <module name="browser/WebSQL" standard="WebSQL">
+    <description url="https://www.w3.org/TR/webdatabase/" >Web SQL Database API</description>
+
+    <class name="WebSQL/SQLError"/>
+
+    <class name="WebSQL/SQLResultSet">
+      <field name="length" type="Number"/>
+      <function name="item">
+        <return type="Object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </function>
+    </class>
+
+    <class name="WebSQL/SQLTransaction">
+      <function name="executeSql">
+        <parameters>
+          <param type="String"/>
+          <param type="Array"/>
+          <param type="function(WebSQL/SQLTransaction, WebSQL/SQLResultSet)"/>
+          <param type="function(WebSQL/SQLTransaction, WebSQL/SQLError)"/>
+        </parameters>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </function>
+    </class>
+
+    <class name="WebSQL/Database">
+      <function name="transaction" alias="readTransaction">
+        <parameters>
+          <param type="function(WebSQL/SQLTransaction)"/>
+          <param type="function(WebSQL/SQLError)"/>
+        </parameters>
+      </function>
+      <function name="changeVersion">
+        <parameters>
+          <param type="String"/>
+          <param type="String"/>
+          <param type="function(WebSQL/SQLTransaction)"/>
+          <param type="function(WebSQL/SQLError)"/>
+        </parameters>
+      </function>
+    </class>
+  </module>
+
+</library>

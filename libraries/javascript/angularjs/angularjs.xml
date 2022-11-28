@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="angularjs" standard="AngularJS">
+
+  <description url="https://docs.angularjs.org/api">AngularJS (Angular 1.x) framework</description>
+
+  <typeAnnotation name="angularjs" class="com.optimyth.qaking.js.frameworks.angularjs.js.AngularAnnotation"/>
+
+  <module name="angularjs" >
+    <class name="angularjs/ng.Angular">
+      <function name="module">
+        <!-- angular.module(name, requires, configFn) -->
+        <return type="angularjs/ng.Module"/>
+      </function>
+      <function name="element">
+        <return type="angular/ng.jQuery"/>
+      </function>
+    </class>
+
+    <globalObject name="angular" type="angularjs/ng.Angular">
+      <checker id="inAngularJS"/>
+    </globalObject>
+
+    <class name="angular/ng.jQuery" supertypes="jQuery" />
+
+    <class name="angularjs/ng.Module">
+      <function name="info">
+        <return type="angularjs/ng.Module"/>
+      </function>
+      <function name="provider" alias="service,factory,value">
+        <return type="angularjs/ng.Module"/>
+      </function>
+      <function name="constant">
+        <return type="angularjs/ng.Module"/>
+      </function>
+      <function name="filter">
+        <return type="angularjs/ng.Module"/>
+      </function>
+      <function name="controller">
+        <return type="angularjs/ng.Module"/>
+      </function>
+      <function name="directive">
+        <return type="angularjs/ng.Module"/>
+      </function>
+      <function name="component">
+        <return type="angularjs/ng.Module"/>
+      </function>
+      <function name="config">
+        <return type="angularjs/ng.Module"/>
+      </function>
+    </class>
+
+    <class name="angularjs/ng.Scope">
+      <function name="$watch" alias="$watchGroup,$watchCollection,$eval,$evalAsync,$apply,$applyAsync">
+        <sink kind="client_side_template_injection" resource="web" argpos="0"/>
+      </function>
+    </class>
+
+    <globalObject name="$scope" type="angularjs/ng.Scope">
+      <checker id="inAngularJS"/>
+    </globalObject>
+
+    <globalObject name="$rootScope" type="angularjs/ng.Scope">
+      <checker id="inAngularJS"/>
+    </globalObject>
+
+    <globalObject name="$window" type="Window">
+      <checker id="inAngularJS"/>
+    </globalObject>
+
+    <globalObject name="$document" type="Document">
+      <checker id="inAngularJS"/>
+    </globalObject>
+
+    <globalObject name="$compileProvider" type="angularjs/ng/CompileProvider">
+      <checker id="inAngularJS"/>
+      <function name="aHrefSanitizationWhitelist" alias="imgSrcSanitizationWhitelist,urlSanitizationWhiteList">
+        <sink kind="unsafe_whitelist" resource="web" argpos="0"/>
+      </function>
+    </globalObject>
+
+    <class name="angularjs/ng/$location">
+      <function name="absUrl"><source argpos="-1" kind="external_input" resource="web"/></function>
+      <function name="url:0" match="numargs"><source argpos="-1" kind="external_input" resource="web"/></function>
+      <function name="url:1" match="numargs"><sink argpos="0" kind="open_redirect" resource="web"/></function>
+      <function name="path:0" match="numargs" alias="hash:0">
+        <return type="String"/>
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+      <function name="path:1" match="numargs" alias="hash:1">
+        <return type="angularjs/ng/$location"/>
+        <sink argpos="0" kind="resource_injection" resource="web"/>
+      </function>
+      <function name="search:0" match="numargs">
+        <return type="Object"/>
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+      <function name="search:1" match="numargs" alias="search:2">
+        <return type="angularjs/ng/$location"/>
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+    </class>
+
+    <globalObject name="$location" type="angularjs/ng/$location">
+      <checker id="inAngularJS"/>
+    </globalObject>
+
+    <class name="angularjs/ng.HttpResponse" supertypes="Object">
+      <field name="data" type="Object">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="headers" type="Object">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="statusText" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+    </class>
+
+    <class name="angularjs/ng.HttpPromise" supertypes="Promise">
+      <function name="then">
+        <parameters>
+          <param type="function(angularjs/ng.HttpResponse)" callback="true"/>
+          <param type="function(angularjs/ng.HttpResponse)" callback="true"/>
+        </parameters>
+      </function>
+      <function name="catch">
+        <parameters>
+          <param type="function(angularjs/ng.HttpResponse)" callback="true"/>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="angularjs/ng/$http">
+      <function name="#module#">
+        <return type="angularjs/ng.HttpPromise"/>
+        <sink kind="resource_injection" resource="web">
+          <arg pos="0" field="method,url"/>
+        </sink>
+      </function>
+      <function name="get" alias="head,post,put,delete,jsonp,patch">
+        <return type="angularjs/ng.HttpPromise"/>
+        <sink kind="resource_injection" resource="web" argpos="0"/>
+      </function>
+    </class>
+
+    <globalObject name="$http" type="angularjs/ng/$http">
+      <checker id="inAngularJS"/>
+    </globalObject>
+
+    <class name="angularjs/ngResource">
+      <field name="*">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="$promise" type="angularjs/ng.HttpPromise"/>
+      <field name="$resolved" type="Boolean"/>
+      <function name="$cancelRequest"/>
+      <function name="toJson"/>
+      <function name="get" alias="$get,query,$query">
+        <tags>method:GET</tags>
+        <parameters>
+          <param type="Object"/>
+          <param type="function(Object,Object,Number,String)">
+            <source argpos="0,1,3" kind="external_input" resource="web"/>
+          </param>
+          <param type="function(angularjs/ng.HttpResponse)"/>
+        </parameters>
+      </function>
+      <function name="save" alias="$save">
+        <tags>method:POST</tags>
+        <parameters>
+          <param type="Object"/>
+          <param type="Object"/>
+          <param type="function(Object,Object,Number,String)">
+            <source argpos="0,1,3" kind="external_input" resource="web"/>
+          </param>
+          <param type="function(angularjs/ng.HttpResponse)"/>
+        </parameters>
+      </function>
+      <function name="remove" alias="$remove,delete,$delete">
+        <tags>method:DELETE</tags>
+        <parameters>
+          <param type="Object"/>
+          <param type="function(Object,Object,Number,String)">
+            <source argpos="0,1,3" kind="external_input" resource="web"/>
+          </param>
+          <param type="function(angularjs/ng.HttpResponse)"/>
+        </parameters>
+      </function>
+    </class>
+
+    <function name="$resource">
+      <parameters>
+        <param type="String">
+          <sink kind="resource_injection" resource="web"/>
+        </param>
+      </parameters>
+      <return type="angularjs/ngResource"/>
+      <checker id="inAngularJS"/>
+    </function>
+
+    <class name="angularjs/ng/service/$sce">
+      <function name="trustAs"></function>
+      <function name="trustAsHtml" alias="trustAsCss,trustAsUrl,trustAsResourceUrl,trustAsJs"></function>
+      <function name="getTrusted">
+        <neutralization argpos="1" kind="*" resource="web"/>
+      </function>
+      <function name="getTrustedHtml" alias="getTrustedCss,getTrustedUrl,getTrustedResourceUrl,getTrustedJs">
+        <neutralization argpos="0" kind="*" resource="web"/>
+      </function>
+    </class>
+
+    <globalObject name="$sce" type="angularjs/ng/service/$sce">
+      <checker id="inAngularJS"/>
+    </globalObject>
+
+    <class name="angularjs/ng/service/$sceDelegate">
+      <function name="trustAs"></function>
+    </class>
+
+    <globalObject name="$sceDelegate" type="angularjs/ng/service/$sceDelegate">
+      <checker id="inAngularJS"/>
+    </globalObject>
+
+    <function name="$interpolate" alias="$parse,$compile">
+      <checker id="inAngularJS"/>
+      <sink kind="client_side_template_injection" resource="web" argpos="0"/>
+    </function>
+  </module>
+
+</library>  

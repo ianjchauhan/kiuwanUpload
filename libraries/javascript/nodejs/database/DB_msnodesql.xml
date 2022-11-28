@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/DB_msnodesql" standard="nodejs">
+
+  <module name="nodejs/DB_msnodesql" standard="database/msnodesql">
+    <description url="https://www.npmjs.com/package/msnodesql">Microsoft Driver for SQL Server</description>
+
+    <class name="nodejs/nodesql-server">
+      <function name="open">
+        <!-- Driver=...;Server=host,pport;Database=...;UID=...;PWD=... -->
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,nodejs/nodesql-server.Connection)"/>
+        </parameters>
+        <return type="nodejs/nodesql-server.Connection"/>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </function>
+
+      <function name="query" alias="queryRaw">
+        <parameters>
+          <param type="String"/>
+          <param type="String"/>
+          <!-- could be query params... -->
+          <param type="function(Error,Array)" last="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="sql_injection" argpos="1" resource="database"/>
+      </function>
+    </class>
+
+    <!-- same codebase, different NPM modules... -->
+    <class name="nodejs/msnodesql" supertypes="nodejs/nodesql-server"/>
+    <class name="nodejs/nodesql-server-unofficial" supertypes="nodejs/nodesql-server"/>
+
+    <class name="nodejs/nodesql-server.Connection">
+      <function name="query" alias="queryRaw">
+        <parameters>
+          <param type="String"/>
+          <!-- query params optional -->
+          <param type="function(Error,Array)" last="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/msnodesqlv8" standard="msnodesqlv8">
+    <description url="https://www.npmjs.com/package/msnodesql">Microsoft Driver for SQL Server</description>
+    <!-- msnodesqlv8 is an V8 module with prepared statements -->
+    <class name="nodejs/msnodesqlv8">
+      <function name="open">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,nodejs/msnodesqlv8.Connection)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <sink kind="connection_string_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="conn_str"/>
+        </sink>
+      </function>
+      <function name="query" alias="queryRaw">
+        <parameters>
+          <param type="String"/>
+          <param type="String"/>
+          <param type="function(Error,Array)"><!-- could be query params... -->
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+          <param type="function(Error,Array)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="sql_injection" argpos="1" resource="database"/>
+      </function>
+    </class>
+
+    <class name="nodejs/msnodesqlv8.Connection">
+      <function name="query" alias="queryRaw">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,Array)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/msnodesqlv8.Query"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </function>
+      <function name="prepare">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,nodejs/msnodesqlv8.PreparedQuery)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </function>
+      <function name="procedureMgr">
+        <return type="nodejs/msnodesqlv8.ProcedureManager"/>
+      </function>
+      <function name="tableMgr">
+        <return type="nodejs/msnodesqlv8.TableManager"/>
+      </function>
+      <function name="close"/>
+    </class>
+
+    <class name="nodejs/msnodesqlv8.Query">
+      <tags>hasEvents</tags>
+      <function name="on:row">
+        <parameters>
+          <param type="function(Object)">
+            <source argpos="0" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+      <function name="on:row">
+        <parameters>
+          <param type="function(Error)">
+            <source kind="sensitive_error_info" resource="database" argpos="0"/>
+          </param>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/msnodesqlv8.PreparedQuery">
+      <function name="preparedQuery">
+        <parameters>
+          <param type="String"/><!-- params are safe for SQL-i -->
+          <param type="function(Error,Array)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/msnodesqlv8.ProcedureManager">
+      <function name="callproc">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,Array,Object)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1,2" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <sink kind="sql_injection" argpos="0" resource="database"/><!-- if attacker can choose SP to run, we are doomed... -->
+      </function>
+    </class>
+
+    <class name="nodejs/msnodesqlv8.TableManager">
+      <function name="bind">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/msnodesqlv8.BulkManager)"/>
+        </parameters>
+        <sink kind="sql_injection" argpos="0" resource="database"/><!-- if attacker can choose table to operate on, we are doomed... -->
+      </function>
+    </class>
+
+    <!-- sql-i possible here ??? -->
+    <class name="nodejs/msnodesqlv8.BulkManager">
+      <function name="insertRows" alias="deleteRows,updateRows"/>
+      <function name="selectRows"/>
+      <function name="setWhereCols"/>
+      <function name="setUpdateCols"/>
+    </class>
+  </module>
+
+</library>

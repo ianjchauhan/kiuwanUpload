@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>Configuration for AIM Discovery Engine</description>
+
+  <import resource="classpath:resources/qaking-tech-aspnet.xml"/>
+  <import resource="classpath:resources/qaking-tech-jsp.xml"/>
+  <import resource="classpath:resources/qaking-tech-html.xml"/>
+
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="ignoreResourceNotFound" value="true"/>
+    <property name="ignoreUnresolvablePlaceholders" value="false"/>
+    <property name="locations"><list>
+      <value>classpath:analyzer.properties</value>
+      
+    </list></property>
+  </bean>
+
+  <bean id="aim.discovery.engine" class="com.optimyth.aim.configdiscovery.engine.ConfigurationDiscoveryEngine">
+    <property name="classifier" ref="aim.discovery.classifier"/>
+    <property name="discoveryRules" ref="aim.discovery.rules"/>
+  </bean>
+
+  <util:list id="aim.discovery.rules">
+
+    <bean class="com.optimyth.aim.configdiscovery.rule.AbapDiscoveryRule" />
+
+    <!-- WSDD -->
+    <bean class="com.optimyth.aim.configdiscovery.rule.AxisWsddDiscoveryRule">
+      <property name="pattern" value="\.wsdd$|\.wsdl$"/>
+    </bean>
+
+    <!-- C/C++ -->
+    <bean class="com.optimyth.aim.configdiscovery.rule.CppDiscoveryRule"/>
+
+    <!-- ActionScript -->
+    <bean class="com.optimyth.aim.configdiscovery.rule.ActionScriptDiscoveryRule"/>
+
+    <!-- database -->
+    <bean class="com.optimyth.aim.configdiscovery.rule.DatabaseDiscoveryRule"/>
+    <bean class="com.optimyth.aim.configdiscovery.rule.PlsqlDiscoveryRule"/>
+    <bean class="com.optimyth.aim.configdiscovery.rule.TransactsqlDiscoveryRule"/>
+    <bean class="com.optimyth.aim.configdiscovery.rule.PowerscriptDiscoveryRule"/>
+    <bean class="com.optimyth.aim.configdiscovery.rule.OracleFormsDiscoveryRule"/>
+
+    <!-- dotnet -->
+    <bean class="com.optimyth.aim.configdiscovery.rule.DotnetDiscoveryRule">
+      <property name="aspnetFilter" ref="ls_aspnet_matcher"/>
+    </bean>
+    <bean class="com.optimyth.aim.configdiscovery.rule.WebConfigDiscoveryRule"/>
+    <bean class="com.optimyth.aim.configdiscovery.rule.DotnetWebserviceDiscoveryRule"/>
+
+    <!-- j2ee -->
+    <bean class="com.optimyth.aim.configdiscovery.rule.EJBDiscoveryRule"/>
+    <bean class="com.optimyth.aim.configdiscovery.rule.HibernateDiscoveryRule"/>
+    <bean class="com.optimyth.aim.configdiscovery.rule.IBatisDiscoveryRule"/>
+    <bean class="com.optimyth.aim.configdiscovery.rule.JavaDiscoveryRule"/>
+    <bean class="com.optimyth.aim.configdiscovery.rule.JspDiscoveryRule">
+      <property name="jspFilter" ref="ls_jsp_matcher"/>
+    </bean>
+    <bean class="com.optimyth.aim.configdiscovery.rule.SpringDiscoveryRule"/>
+    <bean class="com.optimyth.aim.configdiscovery.rule.BytecodeDiscoveryRule"/>
+    <bean class="com.optimyth.aim.configdiscovery.rule.StrutsDiscoveryRule"/>
+    <bean class="com.optimyth.aim.configdiscovery.rule.WeblogicControlsDiscoveryRule"/>
+    <bean class="com.optimyth.aim.configdiscovery.rule.J2eeWebServiceDiscoveryRule"/>
+
+    <!-- javascript -->
+    <bean class="com.optimyth.aim.configdiscovery.rule.TypescriptDiscoveryRule"/>
+    
+    <!-- html -->
+    <bean class="com.optimyth.aim.configdiscovery.rule.HtmlDiscoveryRule">
+      <property name="htmlFilter" ref="ls_html_matcher"/>
+    </bean>
+    <bean class="com.optimyth.aim.configdiscovery.rule.AspDiscoveryRule"/>
+
+    <!-- legacy -->
+    <bean class="com.optimyth.aim.configdiscovery.rule.LegacyDiscoveryRule"/>
+
+    <!-- SOA (WSDL) -->
+    <bean class="com.optimyth.aim.configdiscovery.rule.WsdlDiscoveryRule">
+      <property name="pattern" value="\.wsdl$"/>
+    </bean>
+
+    <bean class="com.optimyth.aim.configdiscovery.rule.PhpDiscoveryRule"/>
+
+    <!-- vb -->
+    <bean class="com.optimyth.aim.configdiscovery.rule.VisualBasicDiscoveryRule"/>
+  </util:list>
+
+  <bean name="language_info" class="es.als.util.LanguageInfo">
+    <property name="resource" value="classpath:LanguageInfo.properties"/>
+  </bean>
+
+  <bean name="aim.discovery.classifier" class="com.als.core.techclassifier.ExtensionFileClassifier">
+    <property name="languageInfo" ref="language_info"/>
+  </bean>
+
+  <bean name="aim.discovery.configuration.dao" class="com.optimyth.aim.configuration.dao.AimConfigurationDao">
+    <description>For loading/storing AIM configurations</description>
+  </bean>
+
+</beans>

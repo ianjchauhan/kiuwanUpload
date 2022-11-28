@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="kotlin.sql" technology="kotlin" standard="SQL">
+
+  <description>Koltin database libraries</description>
+
+  <module name="org.jetbrains.exposed" standard="Exposed">
+    <description url="https://github.com/jetbrains/Exposed">ORM framework for Kotlin</description>
+
+    <function name="org.jetbrains.exposed.sql.Database.connect" signature="org.jetbrains.exposed.sql.Database.connect(kotlin.String, kotlin.String driver, kotlin.String user, String password)" match="name" >
+      <tags>username:2, password:3</tags>
+      <return type="org.jetbrains.exposed.sql.Database" />
+      <sink argpos="0" kind="connection_string_injection" resource="database"/>
+    </function>
+
+    <class name="org.jetbrains.exposed.sql.DdlAware" kind="interface" >
+      <method name="createStatement" signature="createStatement()" >
+        <return type="kotlin.collections.List" />
+      </method>
+      <method name="modifyStatement" signature="modifyStatement()" >
+        <return type="kotlin.collections.List" />
+      </method>
+      <method name="dropStatement" signature="dropStatement()" >
+        <return type="kotlin.collections.List" />
+      </method>
+    </class>
+
+    <class name="org.jetbrains.exposed.sql.Table" supertypes="org.jetbrains.exposed.sql.ColumnSet, org.jetbrains.exposed.sql.DdlAware" />
+
+    <class name="org.jetbrains.exposed.sql.ColumnSet" supertypes="org.jetbrains.exposed.sql.FieldSet" />
+
+    <class name="org.jetbrains.exposed.sql.FieldSet">
+      <method name="selectAll" signature="selectAll()" >
+        <return type="org.jetbrains.exposed.sql.Query" />
+      </method>
+    </class>
+
+    <class name="org.jetbrains.exposed.dao.Entity" kind="abstract_class" >
+      <method name="get" signature="get()" match="name" >
+        <return type="*" />
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="find" signature="find()" match="name" >
+        <return type="*" />
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="findById" signature="findById()" match="name" >
+        <return type="*" />
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="all" signature="all()" match="name" >
+        <return type="org.jetbrains.exposed.sql.SizedIterable" />
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="count" signature="count()" match="name" >
+        <return type="kotlin.Int" />
+      </method>
+      <method name="searchQuery" signature="searchQuery(op Op)" match="name" >
+        <return type="org.jetbrains.exposed.sql.Query" />
+      </method>
+    </class>
+
+    <class name="org.jetbrains.exposed.dao.IntEntity" supertypes="org.jetbrains.exposed.dao.Entity" />
+    <class name="org.jetbrains.exposed.dao.LongEntity" supertypes="org.jetbrains.exposed.dao.Entity" />
+
+    <class name="org.jetbrains.exposed.sql.Query" supertypes="org.jetbrains.exposed.sql.SizedIterable, org.jetbrains.exposed.sql.statements.Statement" />
+
+    <class name="org.jetbrains.exposed.sql.statements.Statement" kind="abstract_class" >
+      <method name="prepareSQL" signature="prepareSQL(transaction org.jetbrains.exposed.sql.Transaction)" >
+        <return type="String" />
+      </method>
+      <method name="prepared" signature="prepared(transaction org.jetbrains.exposed.sql.Transaction, sql kotlin.String)" >
+        <return type="java.sql.PreparedStatement" />
+      </method>
+      <method name="execute" signature="execute(transaction org.jetbrains.exposed.sql.Transaction)" >
+        <return type="*" />
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="executeIn" signature="executeIn(transaction org.jetbrains.exposed.sql.Transaction)" >
+        <return type="Pair" />
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="org.jetbrains.exposed.sql.SizedIterable" kind="interface" supertypes="kotlin.collections.Iterable" />
+
+    <class name="org.jetbrains.exposed.sql.Transaction">
+      <method name="exec" signature="exec(stmt Statement)" match="name">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="org.jetbrains.exposed.sql.transactions.TransactionManager">
+      <field name="connection" type="org.jetbrains.exposed.sql.Database" />
+      <field name="db" type="org.jetbrains.exposed.sql.Database" />
+      <field name="outerTransaction" type="org.jetbrains.exposed.sql.transactions.TransactionManager" />
+
+      <method name="current" signature="current()" match="name">
+        <return type="org.jetbrains.exposed.sql.Transaction"/>
+      </method>
+      <method name="currentOrNew" signature="currentOrNew()" match="name">
+        <return type="org.jetbrains.exposed.sql.Transaction"/>
+      </method>
+      <method name="currentOrNull" signature="currentOrNull()" match="name">
+        <return type="org.jetbrains.exposed.sql.Transaction"/>
+      </method>
+    </class>
+
+    <class name=" org.jetbrains.exposed.spring.SpringTransactionManager" supertypes="org.jetbrains.exposed.sql.transactions.TransactionManager" />
+  </module>
+
+  <module name="org.jetbrains.anko.db" standard="Anko-SQLite">
+    <description url="https://github.com/Kotlin/anko/wiki/Anko-SQLite">Anko extension functions to simplify working with SQLite databases</description>
+
+    <class name="org.jetbrains.anko.db.SelectQueryBuilder">
+      <method name="distinct" signature="distinct()" >
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </method>
+      <method name="column" signature="column(name kotlin.String)" >
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </method>
+      <method name="groupBy" signature="groupBy(name kotlin.String)" >
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </method>
+      <method name="orderBy" signature="orderBy(name kotlin.String, direction org.jetbrains.anko.db.SelectQueryBuilder.SqlOrderDirection)" >
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </method>
+      <method name="limit" signature="limit()" match="name">
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </method>
+      <method name="columns" signature="columns(names kotlin.String)" match="name">
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </method>
+      <method name="having" signature="having(having kotlin.String)" match="name">
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </method>
+      <method name="whereArgs" signature="whereArgs(select kotlin.String, args kotlin.Pair)" match="name">
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </method>
+      <method name="where" signature="where(select kotlin.String)" match="name">
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </method>
+      <method name="whereSimple" signature="whereSimple(select kotlin.String, args kotlin.Pair)" match="name">
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </method>
+      <method name="whereSupport" signature="whereSupport(select kotlin.String, args kotlin.Pair)" match="name">
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </method>
+      <method name="parseSingle" signature="parseSingle(parser org.jetbrains.anko.db.RowParser)" match="name" alias="parseOpt, parseList, parseSingle">
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="exec" signature="exec(f Cursor.()->*)" >
+        <return type="*" />
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="org.jetbrains.anko.db.UpdateQueryBuilder" kind="abstract_class" >
+      <method name="whereArgs" signature="whereArgs(select kotlin.String, args kotlin.Pair)" match="name" >
+        <return type="org.jetbrains.anko.db.UpdateQueryBuilder" />
+      </method>
+      <method name="whereSimple" signature="whereSimple(select kotlin.String, args kotlin.Pair)" match="name" >
+        <return type="org.jetbrains.anko.db.UpdateQueryBuilder" />
+      </method>
+    </class>
+
+    <class name="org.jetbrains.anko.db.ManagedSQLiteOpenHelper" kind="abstract_class" supertypes="android.database.sqlite.SQLiteOpenHelper" >
+      <method name="openDatabase" signature="openDatabase()" >
+        <return type="android.database.sqlite.SQLiteDatabase" />
+      </method>
+      <method name="use" signature="use(f -> android.database.sqlite.SQLiteDatabase.()->T)" />
+    </class>
+  </module>
+
+  <module name="kotliquery" standard="KotliQuery">
+    <description url="https://github.com/seratch/kotliquery">Database access library, based on ScalikeJDBC</description>
+
+    <class name="kotliquery.Session">
+      <constructor name="Session" signature="Session(connection kotliquery.Connection, returnGeneratedKeys kotlin.Boolean, autoGeneratedKeys kotlin.collections.List, transactional kotlin.Boolean)" match="name" />
+
+      <method name="populateParams" signature="populateParams(query kotliquery.Query, stmt java.sql.PreparedStatement)" >
+        <return type="java.sql.PreparedStatement" />
+      </method>
+      <method name="createPreparedStatement" signature="createPreparedStatement(query kotliquery.Query)" >
+        <return type="java.sql.PreparedStatement" />
+      </method>
+      <method name="execute" signature="execute(query kotliquery.Query)" >
+        <return type="kotlin.Boolean" />
+      </method>
+      <method name="update" signature="update(query kotliquery.Query)" alias="updateAndReturnGeneratedKey" >
+        <return type="kotlin.Int" />
+      </method>
+      <method name="forEach" signature="forEach(query kotliquery.Query, operator (kotliquery.Row)->Unit))" >
+        <return type="kotlin.Int" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="run" signature="run(action kotliquery.action.QueryAction)" match="name" >
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+    </class>
+
+    <class name="TransactionalSession" supertypes="kotliquery.Session" >
+      <constructor name="TransactionalSession" signature="TransactionalSession(connection kotliquery.Connection, returnGeneratedKeys kotlin.Boolean, autoGeneratedKeys kotlin.collections.List)" match="name" />
+    </class>
+
+    <class name="kotliquery.Connection">
+      <constructor name="Connection" signature="Connection(underlying java.sql.Connection, driverName kotlin.String, jtaCompatible kotlin.Boolean)" >
+        <sink argpos="1" kind="resource_injection" resource="database" />
+      </constructor>
+    </class>
+
+    <class name="kotliquery.HikariCP">
+      <method name="default" signature="default(name kotlin.String, username kotlin.String, password kotlin.String)" match="name" >
+        <tags>username:1, password:2</tags>
+        <return type="com.zaxxer.hikari.HikariDataSource" />
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="init" signature="init(name kotlin.String, name kotlin.String, username kotlin.String, password kotlin.String)" match="name" >
+        <tags>username:2, password:3</tags>
+        <return type="com.zaxxer.hikari.HikariDataSource" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+        <sink argpos="1" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="dataSource" signature="dataSource(name kotlin.String)" match="name" >
+        <return type="om.zaxxer.hikari.HikariDataSource" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+    </class>
+
+    <class name="kotliquery.Query">
+      <constructor name="Query" signature="Query(statement kotlin.String, params kotlin.colelctions.List, paramMap kotlin.collections.Map)" match="name" >
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </constructor>
+    </class>
+
+    <class name="kotliquery.action.QueryAction" kind="interface" >
+      <method name="runWithSession" signature="runWithSession(session kotliquery.Session)" />
+    </class>
+
+    <class name="kotliquery.action.ExecuteQueryAction" supertypes="kotliquery.action.QueryAction" >
+      <constructor name="ExecuteQueryAction" signature="ExecuteQueryAction(query kotliquery.Query)" />
+    </class>
+    <class name="kotliquery.action.ListResultQueryAction" supertypes="kotliquery.action.QueryAction" >
+      <constructor name="ListResultQueryAction" signature="ListResultQueryAction(query kotliquery.Query, extractor (kotliquery.Row)->A)" />
+    </class>
+    <class name="kotliquery.action.NullableResultQueryAction" supertypes="kotliquery.action.QueryAction" >
+      <constructor name="NullableResultQueryAction" signature="NullableResultQueryAction(query kotliquery.Query, extractor (kotliquery.Row)->A)" />
+    </class>
+    <class name="kotliquery.action.UpdateAndReturnGeneratedKeyQueryAction" supertypes="kotliquery.action.QueryAction" >
+      <constructor name="UpdateAndReturnGeneratedKeyQueryAction" signature="UpdateAndReturnGeneratedKeyQueryAction(query kotliquery.Query)" />
+    </class>
+    <class name="kotliquery.action.UpdateQueryAction" supertypes="kotliquery.action.QueryAction" >
+      <constructor name="UpdateQueryAction" signature="UpdateQueryAction(query kotliquery.Query)" />
+    </class>
+    <class name="kotliquery.action.ResultQueryActionBuilder">
+      <constructor name="ResultQueryActionBuilder" signature="ResultQueryActionBuilder(query kotliquery.Query, extractor (kotliquery.Row)->A)" />
+    </class>
+
+    <function name="kotliquery.queryOf" signature="kotliquery.queryOf(statement kotlin.String, params Any...)" match="name" >
+      <return type="kotliquery.Query" />
+      <sink argpos="0" kind="sql_injection" resource="database" />
+    </function>
+    <function name="kotliquery.sessionOf" signature="kotliquery.sessionOf(url kotlin.String, user kotlin.String, password kotlin.String, returnGeneratedKey kotlin.Boolean)" >
+      <tags>username:1, password:2</tags>
+      <return type="kotliquery.Session" />
+      <sink argpos="0" kind="connection_string_injection" resource="database"/>
+    </function>
+    <function name="kotliquery.sessionOf" signature="kotliquery.sessionOf(dataSource javax.sql.DataSource, returnGeneratedKey kotlin.Boolean)" >
+      <tags>username:1, password:2</tags>
+      <return type="kotliquery.Session" />
+      <sink argpos="0" kind="connection_string_injection" resource="database"/>
+    </function>
+  </module>
+
+  <module name="org.jetbrains.squash" standard="Squash">
+    <description url="https://github.com/orangy/squash">Data access and manipulation DSL library for relational databases</description>
+
+    <function name="org.jetbrains.squash.query.from" signature="org.jetbrains.squash.query.from(element org.jetbrains.squash.query.CompoundElement)" >
+      <return type="org.jetbrains.squash.query.QueryBuilder" />
+    </function>
+    <function name="org.jetbrains.squash.query.select" signature="org.jetbrains.squash.query.select()" match="name" >
+      <return type="org.jetbrains.squash.statements.QueryStatement" />
+    </function>
+
+    <class name="org.jetbrains.squash.query.QueryCompound" supertypes="org.jetbrains.squash.query.CompoundElement" />
+
+    <class name="org.jetbrains.squash.statements.QueryStatement"
+           supertypes="org.jetbrains.squash.query.CompoundElement, org.jetbrains.squash.statements.Statement,org.jetbrains.squash.query.QueryBuilder" >
+      <method name="copy" signature="copy()" >
+        <return type="org.jetbrains.squash.statements.QueryStatement" />
+      </method>
+    </class>
+
+    <class name="org.jetbrains.squash.query.QueryBuilder" supertypes="org.jetbrains.squash.query.Query" >
+      <method name="from" signature="from()" match="name" >
+        <return type="org.jetbrains.squash.query.QueryBuilder" />
+      </method>
+      <method name="select" signature="select()" match="name" >
+        <return type="org.jetbrains.squash.query.QueryBuilder" />
+      </method>
+      <method name="rightJoin" signature="rightJoin()" match="name" >
+        <return type="org.jetbrains.squash.query.QueryBuilder" />
+      </method>
+      <method name="innerJoin" signature="innerJoin()" match="name" >
+        <return type="org.jetbrains.squash.query.QueryBuilder" />
+      </method>
+      <method name="leftJoin" signature="leftJoin()" match="name" >
+        <return type="org.jetbrains.squash.query.QueryBuilder" />
+      </method>
+      <method name="where" signature="where()" match="name" >
+        <return type="org.jetbrains.squash.query.QueryBuilder" />
+      </method>
+      <method name="orderBy" signature="orderBy()" match="name" >
+        <return type="org.jetbrains.squash.query.QueryBuilder" />
+      </method>
+      <method name="orderByDescending" signature="orderByDescending()" match="name" >
+        <return type="org.jetbrains.squash.query.QueryBuilder" />
+      </method>
+      <method name="groupBy" signature="groupBy()" match="name" >
+        <return type="org.jetbrains.squash.query.QueryBuilder" />
+      </method>
+      <method name="having" signature="having()" match="name" >
+        <return type="org.jetbrains.squash.query.QueryBuilder" />
+      </method>
+      <method name="limit" signature="limit()" match="name" >
+        <return type="org.jetbrains.squash.query.QueryBuilder" />
+      </method>
+      <method name="execute" signature="execute()" >
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+    </class>
+
+    <class name="org.jetbrains.squash.query.Query" kind="interface" />
+    <class name="org.jetbrains.squash.statements.Statement" supertypes="org.jetbrains.squash.connection.TransactionExecutable" />
+    <class name="org.jetbrains.squash.connection.TransactionExecutable" kind="interface" >
+      <method name="execute" signature="execute()" >
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="executeOn" signature="executeOn(transaction org.jetbrains.squash.connection.Transaction)" >
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+    </class>
+  </module>
+</library>

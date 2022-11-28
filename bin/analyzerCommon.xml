@@ -1,0 +1,579 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="analysisCommon" default="none" basedir=".">
+  <description>Common ANT paths, macros and properties for analyzer tasks</description>
+  <import file="common.xml"/>
+  <property resource="analyzer.internal.properties" classpathref="engine.classpath"/>
+  <property file="${analyzer.configuration}"/>
+  <property name="excluder" value=" "/>
+  <path id="discovery.classpath">
+    <path refid="engine.classpath"/>
+    <pathelement path="${config.dir.aim}/_DEFAULT_"/>
+  </path>
+  <path id="modelbuilder.classpath">
+    <pathelement path="${config.dir.aim}/${analysis.dir.tempname}"/>
+    <path refid="discovery.classpath"/>
+    <pathelement path="${config.dir}/appmap"/>
+  </path>
+  <taskdef name="static.analysis" classname="com.als.core.ant.QakingTask" classpathref="engine.classpath"/>
+  <taskdef name="clone.detector" classname="com.optimyth.qaking.clone.cpd.CPDTask" classpathref="engine.classpath"/>
+  <taskdef name="aim.discovery" classname="com.optimyth.aim.configdiscovery.ant.ConfigurationDiscoveryEngineTask" classpathref="discovery.classpath" onerror="ignore"/>
+  <taskdef name="aim.modelbuilder" classname="com.optimyth.apm.builder.ConfigurationsApmModelBuilderTask" classpathref="modelbuilder.classpath" onerror="ignore"/>
+  <macrodef name="run.static.analysis" description="Runs static analysis for a particular technology">
+    <attribute name="argsFile" default="${argsFile}"/>
+    <attribute name="paths" default="${sourcePaths}"/>
+    <attribute name="language" default="${language}"/>
+    <attribute name="bomFile" default="${bomFile}"/>
+    <attribute name="bomFormat" default="${bomFormat}"/>
+    <attribute name="ruleset"/>
+    <attribute name="kind"/>
+    <attribute name="reportFormat"/>
+    <attribute name="dumpCode" default="${dump.code}"/>
+    <attribute name="violationCodeMaxCharacters" default="${violation.code.max.characters}"/>
+    <attribute name="licenseToken" default="${licenseToken}"/>
+    <sequential>
+      <if>
+        <not>
+          <contains string="${ignore}" substring="@{kind}" casesensitive="no"/>
+        </not>
+        <then>
+          <if>
+            <available property="has.ruleset.@{kind}.@{language}" file="${model.dir}/@{ruleset}"/>
+            <then>
+              <echo>-----------------------------------------------------</echo>
+              <echo>Executing @{kind} analysis for technology @{language}</echo>
+              <echo>-----------------------------------------------------</echo>
+              <echo>directory: @{paths}</echo>
+              <echo>bill-of-materials: @{bomFile}</echo>
+              <echo>bill-of-materials format: @{bomFormat}</echo>
+              <echo>includes: ${include.patterns}</echo>
+              <echo>excludes: ${exclude.patterns}</echo>
+              <echo>configuration: ${analysis.config.file}</echo>
+              <echo>VM version: ${java.version}</echo>
+              <var name="report.file" value="${results.dir}/@{kind}_@{language}.xml"/>
+              <var name="key.file" value="${results.dir}/@{kind}_@{language}.key"/>
+              <var name="log.file" value="${results.dir}/@{kind}_@{language}.log"/>
+              <var name="listener.diagnosis.outputFile" value="${results.dir}/@{kind}_@{language}.diagnosis.txt"/>
+              <var name="additional.report.config" value="|dumpCode=@{dumpCode}|violationCodeMaxCharacters=@{violationCodeMaxCharacters}"/>
+              <if>
+                <equals arg1="@{kind}" arg2="metrics"/>
+                <then>
+                  <var name="additional.report.config" value="|skipTypes=function"/>
+                </then>
+              </if>
+              <elapsed key="time.analyze.@{kind}.@{language}">
+                <static.analysis technology="@{language}" ruleset="${model.dir}/@{ruleset}" application="${softwareName}" paths="@{paths}" analysisClasspath="" includes="${include.patterns}" excludes="${exclude.patterns}" encoding="${encoding}" ignorelevel="0" reportFormat="@{reportFormat}" report="${report.file}" reportConfig="${report.config}${additional.report.config}" resources="analyzer.properties,analyzer.internal.properties" mode="default" timeout="${timeout}" excluder="${excluder}" licenseToken="${licenseToken}" configuration="${analysis.config.file}" confidence="false" springDescriptor="/com/optimyth/qaking/agent/analyzer/resources/kiuwan-spring.xml" fork="${forked}" classpathRef="engine.classpath" homedir="${AGENT_HOME}" failonerror="true">
+                  <jvmarg value="-XshowSettings:vm"/>
+                  <jvmarg value="-Xms${memory.start}"/>
+                  <jvmarg value="-Xmx${memory.max}"/>
+                  <jvmarg value="-Xss${stack.size}"/>
+                  <jvmarg value="-XX:ErrorFile=${results.dir}/@{kind}.@{language}.fatal.log"/>
+                  <jvmarg value="-Dqaking.findbugs.plugins=${lib.custom.dir}"/>
+                  <jvmarg value="-Dlistener.diagnosis.outputFile=${listener.diagnosis.outputFile}"/>
+                  <jvmarg value="-Dlistener.diagnosis.analysisTimeout=${timeout}"/>
+                  <sysproperty key="AGENT_HOME" value="${AGENT_HOME}"/>
+                  <sysproperty key="JKQA_HOME" value="${AGENT_HOME}"/>
+                  <sysproperty key="CHECKING_DATA" value="${AGENT_HOME}"/>
+                  <sysproperty key="TASK.LOG" value="${log.file}"/>
+                  <sysproperty key="softwareName" value="${softwareName}"/>
+                  <prop name="keyFile" value="${key.file}"/>
+                  <prop name="-argsFile" value="@{argsFile}"/>
+                  <prop name="-bomFile" value="@{bomFile}"/>
+                  <prop name="-bomFormat" value="@{bomFormat}"/>
+                </static.analysis>
+                <available property="ok.@{kind}.@{language}" file="${report.file}"/>
+                <fail unless="ok.@{kind}.@{language}">@{kind} report for technology @{language} was not generated. Aborting...</fail>
+                <move file="${report.file}" tofile="${report.file}.bxml"/>
+                <available property="ok.@{kind}.@{language}" file="${key.file}"/>
+                <fail unless="ok.@{kind}.@{language}">@{kind} report key for technology @{language} was not generated. Aborting...</fail>
+                <loadEncryptionKey keyName="key.@{kind}.@{language}" keyFile="${key.file}"/>
+              </elapsed>
+            </then>
+            <else>
+              <echo>No ruleset ${model.dir}/@{ruleset} in model, for technology @{language}. Ignored.</echo>
+            </else>
+          </if>
+        </then>
+        <else>
+          <echo>-----------------------------------------------------</echo>
+          <echo>Ignoring step @{kind}: specified in command line parameter ignore=${ignore}</echo>
+          <echo>-----------------------------------------------------</echo>
+        </else>
+      </if>
+    </sequential>
+  </macrodef>
+  <macrodef name="run.clone.detector" description="Runs clone detection for a particular technology">
+    <attribute name="paths" default="${sourcePaths}"/>
+    <attribute name="bomFile" default="${bomFile}"/>
+    <attribute name="bomFormat" default="${bomFormat}"/>
+    <attribute name="language"/>
+    <attribute name="extensions"/>
+    <attribute name="licenseToken" default="${licenseToken}"/>
+    <sequential>
+      <if>
+        <not>
+          <contains string="${ignore}" substring="clones" casesensitive="no"/>
+        </not>
+        <then>
+          <propertycopy name="min.tokens" from="@{language}.min.tokens" defval="${default.min.tokens}"/>
+          <propertycopy name="ignore.literals" from="@{language}.ignore.literals" defval="${default.ignore.literals}"/>
+          <propertycopy name="ignore.identifiers" from="@{language}.ignore.identifiers" defval="${default.ignore.identifiers}"/>
+          <propertycopy name="dumpCode" from="dump.code" defval="true"/>
+          <propertycopy name="cloneMaxCharacters" from="clone.max.characters" defval="2048"/>
+          <var name="report.file" value="${results.dir}/clones_@{language}.xml"/>
+          <var name="key.file" value="${results.dir}/clones_@{language}.key"/>
+          <var name="log.file" value="${results.dir}/clones_@{language}.log"/>
+          <var name="unparsed.file" value="${results.dir}/metrics_@{language}.unparsed"/>
+          <elapsed key="time.analyze.clones.@{language}">
+            <echo>----------------------------------------------------</echo>
+            <echo>Executing clone detection for technology @{language}</echo>
+            <echo>----------------------------------------------------</echo>
+            <echo>directory: @{paths}</echo>
+            <echo>bomFile: @{bomFile}</echo>
+            <echo>bomFormat: @{bomFormat}</echo>
+            <echo>extensions: @{extensions}</echo>
+            <echo>min tokens: ${min.tokens}</echo>
+            <echo>ignore identifiers: ${ignore.identifiers}</echo>
+            <echo>ignore literals: ${ignore.literals}</echo>
+            <echo>VM version: ${java.version}</echo>
+            <clone.detector language="@{language}" directories="@{paths}" encoding="${encoding}" extensions="@{extensions}" include="${include.patterns}" exclude="${exclude.patterns}" metricsReport="${unparsed.file}" format="xml" outputFile="${report.file}" minimumTokenCount="${min.tokens}" ignoreLiterals="${ignore.literals}" ignoreIdentifiers="${ignore.identifiers}" skipDuplicateFiles="${skip.duplicate.files}" dumpAllDuplications="true" dumpCode="${dumpCode}" cloneMaxCharacters="${cloneMaxCharacters}" fork="true" timeout="${timeout}" classpathRef="engine.classpath" failonerror="true">
+              <jvmarg value="-XshowSettings:vm"/>
+              <jvmarg value="-Xms${memory.start}"/>
+              <jvmarg value="-Xmx${memory.max}"/>
+              <jvmarg value="-Xss${stack.size}"/>
+              <jvmarg value="-XX:ErrorFile=${results.dir}/clones_@{language}.fatal.log"/>
+              <sysproperty key="AGENT_HOME" value="${AGENT_HOME}"/>
+              <sysproperty key="JKQA_HOME" value="${AGENT_HOME}"/>
+              <sysproperty key="CHECKING_DATA" value="${AGENT_HOME}"/>
+              <sysproperty key="TASK.LOG" value="${log.file}"/>
+              <prop name="keyFile" value="${key.file}"/>
+              <prop name="licenseToken" value="@{licenseToken}"/>
+              <prop name="bomFile" value="@{bomFile}"/>
+              <prop name="bomFormat" value="@{bomFormat}"/>
+            </clone.detector>
+            <delete file="${unparsed.file}" failOnError="false"/> 
+            <available property="ok.clones.@{language}" file="${report.file}"/>
+            <fail unless="ok.clones.@{language}">clones report for technology @{language} was not generated. Aborting...</fail>
+            <move file="${report.file}" tofile="${report.file}.bxml"/>
+            <available property="ok.clones.@{language}" file="${key.file}"/>
+            <fail unless="ok.clones.@{language}">clones report key for technology @{language} was not generated. Aborting...</fail>
+            <loadEncryptionKey keyName="key.clones.@{language}" keyFile="${key.file}"/>
+          </elapsed>
+        </then>
+        <else>
+          <echo>-----------------------------------------------------</echo>
+          <echo>Ignoring step clones: specified in command line parameter ignore=${ignore}</echo>
+          <echo>-----------------------------------------------------</echo>
+        </else>
+      </if>
+    </sequential>
+  </macrodef>
+  <macrodef name="run.parser.check" description="Runs parser in check mode">
+    <attribute name="paths" default="${sourcePaths}"/>
+    <attribute name="argsFile" default="${argsFile}"/>
+    <attribute name="bomFile" default="${bomFile}"/>
+    <attribute name="bomFormat" default="${bomFormat}"/>
+    <attribute name="language" default="${language}"/>
+    <attribute name="licenseToken" default="${licenseToken}"/>
+    <sequential>
+      <var name="parser.check.report" value="${results.dir}/${parser.check.report}"/>
+      <var name="parser.check.report.extra" value=""/>
+      <var name="parser.check.level" value="${parser.check.level}"/>
+      <if>
+        <equals arg1="${parser.check.preproc.dir}" arg2=""/>
+        <then>
+          <var name="parser.check.preproc.dir" value=""/>
+        </then>
+        <else>
+          <var name="parser.check.preproc.dir" value="${results.dir}/${parser.check.preproc.dir}"/>
+        </else>
+      </if>
+      <var name="log.file" value="${results.dir}/parser.check.txt"/>
+      <var name="listener.diagnosis.outputFile" value="${results.dir}/parser.check.diagnosis.txt"/>
+      <static.analysis technology="@{language}" paths="@{paths}" ruleset="" application="${softwareName}" analysisClasspath="" includes="${include.patterns}" excludes="${exclude.patterns}" encoding="${encoding}" resources="analyzer.properties,analyzer.internal.properties" mode="default" timeout="${timeout}" excluder="${excluder}" licenseToken="@{licenseToken}" configuration="${analysis.config.file}" springDescriptor="/com/optimyth/qaking/agent/analyzer/resources/kiuwan-spring.xml" fork="${forked}" classpathRef="engine.classpath" homedir="${AGENT_HOME}" failonerror="true">
+        <jvmarg value="-XshowSettings:vm"/>
+        <jvmarg value="-Xdiag"/>
+        <jvmarg value="-Xms${memory.start}"/>
+        <jvmarg value="-Xmx${memory.max}"/>
+        <jvmarg value="-Xss${stack.size}"/>
+        <jvmarg value="-Dlistener.diagnosis.outputFile=${listener.diagnosis.outputFile}"/>
+        <jvmarg value="-Dlistener.diagnosis.analysisTimeout=${timeout}"/>
+        <sysproperty key="AGENT_HOME" value="${AGENT_HOME}"/>
+        <sysproperty key="JKQA_HOME" value="${AGENT_HOME}"/>
+        <sysproperty key="CHECKING_DATA" value="${AGENT_HOME}"/>
+        <sysproperty key="TASK.LOG" value="${log.file}"/>
+        <sysproperty key="softwareName" value="${softwareName}"/>
+        <prop name="-argsFile" value="@{argsFile}"/>
+        <prop name="-bomFile" value="@{bomFile}"/>
+        <prop name="-bomFormat" value="@{bomFormat}"/>
+        <prop name="parser.check" value="true"/>
+        <prop name="parser.check.report" value="${parser.check.report}"/>
+        <prop name="parser.check.report.extra" value="${parser.check.report.extra}"/>
+        <prop name="parser.check.level" value="${parser.check.level}"/>
+        <prop name="parser.check.preproc.dir" value="${parser.check.preproc.dir}"/>
+      </static.analysis>
+      <echo>Parser logs in: ${log.file}</echo>
+      <echo>Parser results in: ${parser.check.report}</echo>
+      <if>
+        <equals arg1="${parser.check.preproc.dir}" arg2=""/>
+        <then>
+        </then>
+        <else>
+          <echo>Preprocessed files under: ${parser.check.preproc.dir}</echo>
+        </else>
+      </if>
+    </sequential>
+  </macrodef>
+  <macrodef name="run.aim.discovery" description="Runs AIM configuration discovery">
+    <attribute name="configuration" default="${analysis.dir.tempname}"/>
+    <attribute name="directories" default="${sourcePaths}"/>
+    <attribute name="configDir" default="${config.dir.aim}"/>
+    <sequential>
+      <property name="project.config.folder" value="${config.dir}/apps/${softwareName}/arch"/>
+      <if>
+        <not>
+          <contains string="${ignore}" substring="architecture" casesensitive="no"/>
+        </not>
+        <then>
+          <var name="log.file" value="${results.dir}/aim.discovery.log"/>
+          <elapsed key="time.analyze.aim.discovery">
+            <echo>--------------------------------</echo>
+            <echo>Executing Architecture Discovery</echo>
+            <echo>--------------------------------</echo>
+            <echo>configuration: @{configuration}</echo>
+            <echo>directory: @{directories}</echo>
+            <echo>configDir: @{configDir}</echo>
+            <echo>VM version: ${java.version}</echo>
+            <aim.discovery configuration="@{configuration}" directories="@{directories}" configDir="@{configDir}" quiet="false" classpathRef="discovery.classpath" fork="true" timeout="${timeout}" failonerror="true">
+              <jvmarg value="-XshowSettings:vm"/>
+              <jvmarg value="-Xms${memory.start}"/>
+              <jvmarg value="-Xmx${memory.max}"/>
+              <jvmarg value="-Xss${stack.size}"/>
+              <sysproperty key="AGENT_HOME" value="${AGENT_HOME}"/>
+              <sysproperty key="JKQA_HOME" value="${AGENT_HOME}"/>
+              <sysproperty key="CHECKING_DATA" value="${AGENT_HOME}"/>
+              <sysproperty key="TASK.LOG" value="${log.file}"/>
+            </aim.discovery>
+            <available file="${project.config.folder}" property="custom.project.config"/>
+            <if>
+              <equals arg1="${custom.project.config}" arg2="true"/>
+              <then>
+                <echo>Apply custom project config for ${softwareName}</echo>
+                <copy todir="${config.dir.aim}/${analysis.dir.tempname}" overwrite="true">
+                  <fileset dir="${project.config.folder}"/>
+                </copy>
+              </then>
+              <else>
+                <available file="${config.dir}/arch" property="custom.global.config"/>
+                <if>
+                  <equals arg1="${custom.global.config}" arg2="true"/>
+                  <then>
+                    <echo>Apply custom global config for ${softwareName}</echo>
+                    <copy todir="${config.dir.aim}/${analysis.dir.tempname}" overwrite="true">
+                      <fileset dir="${config.dir}/arch"/>
+                    </copy>
+                  </then>
+                </if>
+              </else>
+            </if>
+          </elapsed>
+        </then>
+        <else>
+          <echo>-----------------------------------------------------</echo>
+          <echo>Ignoring Architecture Discovery: specified in command line parameter ignore=${ignore}</echo>
+          <echo>-----------------------------------------------------</echo>
+        </else>
+      </if>
+    </sequential>
+  </macrodef>
+  <macrodef name="run.aim.discovery.base" description="Runs AIM configuration discovery">
+    <attribute name="configuration" default="${analysis.dir.tempname}"/>
+    <attribute name="directories" default="${sourcePaths}"/>
+    <attribute name="configDir" default="${config.dir.aim}"/>
+    <sequential>
+      <property name="project.config.folder" value="${config.dir}/apps/${softwareName}/arch"/>
+      <available file="${project.config.folder}" property="custom.project.config"/>
+      <if>
+        <equals arg1="${custom.project.config}" arg2="true"/>
+        <then>
+          <echo>-----------------------------------------------------------------------</echo>
+          <echo>A custom configuration already exists for the specified application in:</echo>
+          <echo>${project.config.folder}</echo>
+          <echo>Please remove before launching this task again.</echo>
+          <echo>-----------------------------------------------------------------------</echo>
+        </then>
+        <else>
+          <var name="log.file" value="${results.dir}/aim.discovery.log"/>
+          <elapsed key="time.analyze.aim.discovery">
+            <echo>--------------------------------</echo>
+            <echo>Executing Architecture Discovery</echo>
+            <echo>--------------------------------</echo>
+            <echo>configuration: @{configuration}</echo>
+            <echo>directory: @{directories}</echo>
+            <echo>configDir: @{configDir}</echo>
+            <echo>VM version: ${java.version}</echo>
+            <aim.discovery configuration="@{configuration}" directories="@{directories}" configDir="@{configDir}" quiet="false" classpathRef="discovery.classpath" fork="true" timeout="${timeout}" failonerror="true">
+              <jvmarg value="-XshowSettings:vm"/>
+              <jvmarg value="-Xms${memory.start}"/>
+              <jvmarg value="-Xmx${memory.max}"/>
+              <jvmarg value="-Xss${stack.size}"/>
+              <sysproperty key="AGENT_HOME" value="${AGENT_HOME}"/>
+              <sysproperty key="JKQA_HOME" value="${AGENT_HOME}"/>
+              <sysproperty key="CHECKING_DATA" value="${AGENT_HOME}"/>
+              <sysproperty key="TASK.LOG" value="${log.file}"/>
+            </aim.discovery>
+            <mkdir dir="${project.config.folder}"/>
+            <copy todir="${project.config.folder}">
+              <fileset dir="${config.dir.aim}/${analysis.dir.tempname}"/>
+            </copy>
+            <delete dir="${config.dir.aim}/${analysis.dir.tempname}"/>
+          </elapsed>
+          <echo>Base discovery stored in: ${project.config.folder}</echo>
+          <echo>Base discovery finished!</echo>
+        </else>
+      </if>
+    </sequential>
+  </macrodef>
+  <macrodef name="run.aim.modelbuilder">
+    <attribute name="project" default="${softwareName}"/>
+    <attribute name="configuration" default="${analysis.dir.tempname}"/>
+    <attribute name="basedirs" default="${sourcePaths}"/>
+    <attribute name="dirConfiguration" default="${config.dir.aim}"/>
+    <attribute name="outdir" default="${results.dir}/aim"/> 
+    <attribute name="viewDir" default="${resources.dir}/appmap/treeConfig"/>
+    <attribute name="queryServiceManagementUrl" default="localhost:7891"/>
+    <attribute name="initial" default=" "/>
+    <attribute name="environment" default=" "/>
+    <attribute name="modelName" default=" "/>
+    <attribute name="treeView" default="aim.treeview.xml"/>
+    <attribute name="parser.timeout" default="5000"/>
+    <attribute name="dump.model" default="false"/>
+    <attribute name="encoding" default="${encoding}"/>
+    <attribute name="precompile.treeView" default="false"/>
+    <attribute name="try.close.models" default="false"/>
+    <attribute name="compact.on.close" default="false"/>
+    <attribute name="noBackup" default="true"/>
+    <attribute name="delta" default="false"/>
+    <attribute name="scm" default="false"/>
+    <attribute name="licenseToken" default="${licenseToken}"/>
+    <sequential>
+      <if>
+        <not>
+          <contains string="${ignore}" substring="architecture" casesensitive="no"/>
+        </not>
+        <then>
+          <condition property="when.java9.ignoreUnrecognizedVMOptions" value="-XX:+IgnoreUnrecognizedVMOptions" else="">
+            <matches pattern="^(9|\d\d)\..+" string="${java.version}"/>
+          </condition>
+          <condition property="aim.gc.option" value="-XX:+UseG1GC" else="-XX:+UseConcMarkSweepGC">
+            <matches pattern="^1[5-9]\..+" string="${java.version}"/>
+          </condition>
+          <var name="report.file.aim" value="${results.dir.aim}/appmap/appmap.h2.db"/>
+          <var name="view.file.aim" value="${results.dir.aim}/appmap/cache.aim.treeview.h2.db"/>
+          <var name="key.file.aim" value="${results.dir.aim}/aim.session.key.properties"/>
+          <var name="password.file.aim" value="${results.dir.aim}/aim.password.properties"/>
+          <var name="log.file" value="${results.dir}/aim.modelbuilder.log"/>
+          <var name="currentanalysis.config.dir.aim" value="${config.dir.aim}/${analysis.dir.tempname}"/>
+          <elapsed key="time.analyze.aim.modelbuilder">
+            <echo>-------------------------------</echo>
+            <echo>Executing Architecture Analysis</echo>
+            <echo>-------------------------------</echo>
+            <echo>project: @{project}</echo>
+            <echo>configuration: @{configuration}</echo>
+            <echo>directory: @{basedirs}</echo>
+            <echo>dirConfiguration: @{dirConfiguration}</echo>
+            <echo>outdir: @{outdir}</echo>
+            <echo>viewDir: @{viewDir}</echo>
+            <echo>VM version: ${java.version}</echo>
+            <copy file="${config.dir}/analyzer.properties" todir="${currentanalysis.config.dir.aim}"/>
+            <copy file="${config.dir}/apps/${softwareName}.extensions.properties" tofile="${currentanalysis.config.dir.aim}/LanguageInfo.properties" failonerror="false"/>
+            <aim.modelbuilder configuration="@{configuration}" project="@{project}" basedirs="@{basedirs}" modelName="@{modelName}" environment="@{environment}" initial="@{initial}" delta="@{delta}" noBackup="@{noBackup}" scm="@{scm}" dirConfiguration="@{dirConfiguration}" encoding="@{encoding}" classpathRef="modelbuilder.classpath" precompileTreeView="@{precompile.treeView}" tryForceClose="@{try.close.models}" defragOnClose="@{defrag.on.close}" treeView="@{treeView}" parserTimeout="@{parser.timeout}" outdir="@{outdir}" viewDir="@{viewDir}" dumpModel="@{dump.model}" queryServiceManagementUrl="@{queryServiceManagementUrl}" licenseToken="@{licenseToken}" fork="true" timeout="${timeout}" failonerror="true">
+              <jvmarg value="-server"/>
+              <jvmarg value="-XshowSettings:vm"/>
+              <jvmarg value="-Xms${memory.start}"/>
+              <jvmarg value="-Xmx${memory.max}"/>
+              <jvmarg value="-Xss${stack.size}"/>
+              <jvmarg value="-XX:ErrorFile=${results.dir}/aim.modelbuilder.fatal.log"/>
+              <jvmarg line="${when.java9.ignoreUnrecognizedVMOptions}"/>
+              <jvmarg value="${aim.gc.option}"/>
+              <sysproperty key="AGENT_HOME" value="${AGENT_HOME}"/>
+              <sysproperty key="JKQA_HOME" value="${AGENT_HOME}"/>
+              <sysproperty key="CHECKING_DATA" value="${AGENT_HOME}"/>
+              <sysproperty key="TASK.LOG" value="${log.file}"/>
+            </aim.modelbuilder>
+            <available file="${report.file.aim}" property="ok.aim.report"/>
+            <fail unless="ok.aim.report">AIM report was not generated. Aborting...</fail>
+            <available file="${key.file.aim}" property="ok.aim.key"/>
+            <fail unless="ok.aim.key">AIM key was not generated. Aborting...</fail>
+            <available file="${password.file.aim}" property="ok.aim.password"/>
+            <fail unless="ok.aim.password">AIM password was not generated. Aborting...</fail>
+            <loadEncryptionKey keyName="aim.session.key" keyFile="${key.file.aim}"/>
+            <loadEncryptionKey keyName="aim.pwd.h2" keyFile="${password.file.aim}"/>
+            <move todir="${results.dir}">
+              <fileset dir="${results.dir.aim}/appmap" includes="*.h2.db"/>
+            </move>
+            <delete dir="${results.dir.aim}" failOnError="false"/>
+          </elapsed>
+        </then>
+        <else>
+          <echo>-----------------------------------------------------</echo>
+          <echo>Ignoring Architecture Analysis: specified in command line parameter ignore=${ignore}</echo>
+          <echo>-----------------------------------------------------</echo>
+        </else>
+      </if>
+    </sequential>
+  </macrodef>
+  <target name="insight" description="Insight Analysis">
+    <condition property="when.java9" value="--add-opens=java.base/java.lang=ALL-UNNAMED" else="">
+      <matches pattern="^(9|\d\d)\..+" string="${java.version}"/>
+    </condition>
+    <if>
+      <not>
+        <contains string="${ignore}" substring="insight" casesensitive="no"/>
+      </not>
+      <then>
+        <if>
+          <equals arg1="${include.patterns}" arg2=""/>
+          <then>
+            <property name="includes.insight" value="**/*.*"/>
+          </then>
+          <else>
+            <property name="includes.insight" value="${include.patterns}"/>
+          </else>
+        </if>
+        <var name="key.file.insight" value="${results.dir}/insight/insight.session.key.properties"/>
+        <var name="report.file.insight" value="${results.dir}/insight/insight.xml"/>
+        <echo>---------------------------</echo>
+        <echo>Executing Insights Analysis</echo>
+        <echo>---------------------------</echo>
+        <echo>project: ${softwareName}</echo>
+        <echo>directory: ${sourcePaths}</echo>
+        <echo>outdir: ${results.dir}/insight</echo>
+        <echo>includes: ${include.patterns}</echo>
+        <echo>excludes: ${exclude.patterns}</echo>
+        <echo>VM version: ${java.version}</echo>
+        <escapearg property="softwareNameMod" input="${softwareName}" override="true"/>
+        <escapearg property="usernameMod" input="${username}" override="true"/>
+        <escapearg property="passwordMod" input="${password}" override="true"/>
+        <escapearg property="proxy.usernameMod" input="${proxy.username}" override="true"/>
+        <escapearg property="proxy.passwordMod" input="${proxy.password}" override="true"/>
+        <java classname="org.apache.tools.ant.launch.Launcher" fork="true" failonerror="true" dir="${basedir}" timeout="${timeout}" taskname="insight">
+          <classpath>
+            <pathelement location="${config.dir}"/>
+            <fileset dir="${AGENT_HOME}/lib.engine/insight">
+              <include name="optimyth-insight.jar"/>
+            </fileset>
+            <fileset dir="${AGENT_HOME}/lib.engine/insight">
+              <include name="*.jar"/>
+            </fileset>
+            <fileset dir="${AGENT_HOME}/lib.engine">
+              <exclude name="analyzer.jar"/>
+              <exclude name="saxon9-xpath-9.1.0.8.jar"/>
+              <include name="*.jar"/>
+            </fileset>
+            <fileset dir="${AGENT_HOME}/lib.custom/insight">
+              <include name="*.jar"/>
+            </fileset>
+          </classpath>
+          <jvmarg value="-XshowSettings:vm"/>
+          <jvmarg value="-Xms${memory.start}"/>
+          <jvmarg value="-Xmx${memory.max}"/>
+          <jvmarg value="-Xss${stack.size}"/>
+          <jvmarg value="-XX:ErrorFile=${results.dir}/insight.fatal.log"/>
+          <jvmarg line="${when.java9}"/>
+          <sysproperty key="TASK.LOG" value="${results.dir}/insight.log"/>
+          <sysproperty key="AGENT_HOME" value="${AGENT_HOME}"/>
+          <arg value="-f"/>
+          <arg file="insight-exec.xml"/>
+          <arg value="exec-insight"/>
+          <arg value="-Dproject=${softwareNameMod}"/>
+          <arg value="-Dreport.output.dir=${results.dir}/insight"/>
+          <arg value="-Danalysis.dir=${sourcePaths}"/>
+          <arg value="-Dincludes=${includes.insight}"/>
+          <arg value="-Dexcludes=${exclude.patterns}"/>
+          <arg value="-Dkiuwan.url=${rest.services.url}"/>
+          <arg value="-Dinsight.cache.url=${insight.static.url}"/>
+          <arg value="-Dusername=${usernameMod}"/>
+          <arg value="-Dpassword=${passwordMod}"/>
+          <arg value="-Ddomain.id=${domain.id}"/>
+          <arg value="-Dsso.idp.hostname=${sso.idp.hostname}"/>
+          <arg value="-Dsso.trustedHosts=${sso.trustedHosts}"/>
+          <arg value="-Dsso.noProxyHosts=${sso.noProxyHosts}"/>
+          <arg value="-Dsso.useWIA=${sso.useWIA}"/>
+          <arg value="-Dsso.useHTTPAuthentication=${sso.useHTTPAuthentication}"/>
+          <arg value="-Dsso.httpAuthUserAgent=${sso.httpAuthUserAgent}"/>
+          <arg value="-Dsso.useFormAuthentication=${sso.useFormAuthentication}"/>
+          <arg value="-Dsso.formAuth.usernameInputFieldName=${sso.formAuth.usernameInputFieldName}"/>
+          <arg value="-Dsso.formAuth.passwordInputFieldName=${sso.formAuth.passwordInputFieldName}"/>
+          <arg value="-Dsso.idp.username=${sso.idp.username}"/>
+          <arg value="-Dsso.idp.password=${sso.idp.password}"/>
+          <arg value="-Dtemporal.directory=${temp.dir}/${analysis.dir.tempname}/insight"/>
+          <arg value="-Dproxy.host=${proxy.host}"/>
+          <arg value="-Dproxy.port=${proxy.port}"/>
+          <arg value="-Dproxy.protocol=${proxy.protocol}"/>
+          <arg value="-Dproxy.timeout=${proxy.timeout}"/>
+          <arg value="-Dproxy.authentication=${proxy.authentication}"/>
+          <arg value="-Dproxy.username=${proxy.usernameMod}"/>
+          <arg value="-Dproxy.password=${proxy.passwordMod}"/>
+          <arg value="-Dagent.configuration=${agent.configuration}"/>
+          <arg value="-Dlicense.token=${licenseToken}"/>
+          <arg value="-S"/>
+        </java>
+        <available file="${report.file.insight}" property="ok.insight.report"/>
+        <fail unless="ok.insight.report">Insight report was not generated. Aborting...</fail>
+        <available file="${key.file.insight}" property="ok.insight.key"/>
+        <fail unless="ok.insight.key">Insight key was not generated. Aborting...</fail>
+        <loadEncryptionKey keyName="insight.session.key" keyFile="${key.file.insight}"/>
+        <move file="${report.file.insight}" tofile="${results.dir}/insight.xml.bxml"/>
+        <move todir="${results.dir}">
+          <fileset dir="${results.dir}/insight" includes="*.*"/>
+        </move>
+        <delete dir="${results.dir}/insight" failOnError="false"/>
+      </then>
+      <else>
+        <echo>-----------------------------------------------------</echo>
+        <echo>Ignoring Insights Analysis: specified in command line parameter ignore=${ignore}</echo>
+        <echo>-----------------------------------------------------</echo>
+      </else>
+    </if>
+  </target>
+  <target name="none"/>
+  <target name="run.rules">
+    <run.static.analysis argsFile="${argsFile}" bomFile="${bomFile}" bomFormat="${bomFormat}" language="${language}" ruleset="qaking_${language}.xml" kind="rules" reportFormat="xml"/>
+  </target>
+  <target name="run.metrics">
+    <run.static.analysis argsFile="${argsFile}" bomFile="${bomFile}" bomFormat="${bomFormat}" language="${language}" ruleset="qaking_metrics_${language}.xml" kind="metrics" reportFormat="xml_metrics"/>
+  </target>
+  <target name="run.clones">
+    <language.info property="extensions" softwareName="${softwareName}" technology="${language}"/>
+    <run.clone.detector language="${language}" paths="${sourcePaths}" bomFile="${bomFile}" bomFormat="${bomFormat}" extensions="${extensions}"/>
+  </target>
+  <target name="run.aim.discovery">
+    <run.aim.discovery/>
+  </target>
+  <target name="run.aim.modelbuilder">
+    <run.aim.modelbuilder/>
+  </target>
+  <target name="run.parser.check">
+    <run.parser.check language="${language}" paths="${sourcePaths}" argsFile="${argsFile}" bomFile="${bomFile}" bomFormat="${bomFormat}"/>
+  </target>
+  <macrodef name="loadEncryptionKey" description="Copy encryption key to global report">
+    <attribute name="keyName"/>
+    <attribute name="keyFile"/>
+    <sequential>
+      <loadfile property="@{keyName}" srcFile="@{keyFile}"/>
+      <delete file="@{keyFile}" failOnError="false"/>
+      <globalReport reportfile="${global.report}">
+        <prop key="@{keyName}" value="${@{keyName}}"/>
+      </globalReport>
+    </sequential>
+  </macrodef>
+  <macrodef name="log.config">
+    <attribute name="action"/>
+    <attribute name="name" default="agent.log"/>
+    <attribute name="dir" default="${results.dir}"/>
+    <attribute name="append" default="false"/>
+    <sequential>
+      <record action="@{action}" name="@{dir}/@{name}" append="@{append}"/>
+    </sequential>
+  </macrodef>
+</project>

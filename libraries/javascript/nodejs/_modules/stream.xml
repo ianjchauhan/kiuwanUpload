@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/stream" standard="nodejs">
+
+  <module name="nodejs/stream" standard="stream">
+    <description url="https://nodejs.org/api/stream.html">stream module</description>
+
+    <class name="nodejs/stream.Readable" supertypes="nodejs/EventEmitter">
+      <tags>hasEvents</tags>
+      <function name="read">
+        <tags>stream_read</tags>
+        <source argpos="-1" kind="external_input" resource="network"/>
+      </function>
+      <function name="pipe" alias="unpipe">
+        <parameters><param type="nodejs/stream.Writeable"/></parameters>
+      </function>
+      <function name="unshift"/>
+
+      <function name="on:close"/>
+      <function name="on:data">
+        <tags>stream_read</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/Buffer)" callback="true">
+            <source argpos="0" kind="external_input" resource="network"/>
+          </param>
+        </parameters>
+      </function>
+      <function name="on:end"/>
+      <function name="on:error">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error)" callback="true"/>
+        </parameters>
+      </function>
+      <function name="on:readable"/>
+    </class>
+
+    <class name="nodejs/stream.Writeable" supertypes="nodejs/EventEmitter">
+      <tags>hasEvents</tags>
+      <function name="write" alias="end">
+        <tags>stream_write</tags>
+        <parameters>
+          <param type="String"/>
+        </parameters>
+      </function>
+      <function name="on:close"/>
+      <function name="on:drain"/>
+      <function name="on:error">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error)" callback="true"/>
+        </parameters>
+      </function>
+      <function name="on:finish"/>
+      <function name="on:pipe"/>
+      <function name="on:unpipe"/>
+    </class>
+
+    <class name="nodejs/stream.Duplex" supertypes="nodejs/stream.Readable,nodejs/stream.Writeable" />
+    <class name="nodejs/stream.Transform" supertypes="nodejs/stream.Duplex" />
+  </module>
+
+</library>

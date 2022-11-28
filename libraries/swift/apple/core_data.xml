@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="swift" name="core_data" standard="swift">
+
+  <description url="https://developer.apple.com/documentation/coredata" >Persist or cache data and support undo on a single device</description>
+
+  <module name="CoreData">
+    <class name="NSFetchRequest" supertypes="NSPersistentStoreRequest">
+      <constructor name="NSFetchRequest" signature="NSFetchRequest()"/>
+      <constructor name="NSFetchRequest" signature="NSFetchRequest(entityName: String)">
+        <parameters>
+          <param name="entityName" type="String"/>
+        </parameters>
+      </constructor>
+      <field name="affectedStores" type="[NSPersistentStore]?"/>
+      <field name="entity" type="NSEntityDescription?"/>
+      <field name="entityName" type="String?"/>
+      <method name="execute" signature="execute()"/>
+      <field name="fetchBatchSize" type="Int"/>
+      <field name="fetchLimit" type="Int"/>
+      <field name="fetchOffset" type="Int"/>
+      <field name="havingPredicate" type="NSPredicate?"/>
+      <field name="includesPendingChanges" type="Bool"/>
+      <field name="includesPropertyValues" type="Bool"/>
+      <field name="includesSubentities" type="Bool"/>
+      <field name="predicate" type="Foundation.NSPredicate" >
+        <sink argpos="-1" kind="primary_controlled_key" resource="database" />
+      </field>
+      <field name="propertiesToFetch" type="[Any]?"/>
+      <field name="propertiesToGroupBy" type="[Any]?"/>
+      <field name="relationshipKeyPathsForPrefetching" type="[String]?"/>
+      <field name="resultType" type="NSFetchRequestResultType"/>
+      <field name="returnsDistinctResults" type="Bool"/>
+      <field name="returnsObjectsAsFaults" type="Bool"/>
+      <field name="shouldRefreshRefetchedObjects" type="Bool"/>
+      <field name="sortDescriptors" type="[NSSortDescriptor]?"/>
+    </class>
+
+    <class name="NSEntityDescription" supertypes="NSObject">
+      <description>Describes describes an entity in Core Data.</description>
+      <method name="entity" signature="entity(entityName: String, context: NSManagedObjectContext) -> NSEntityDescription">
+        <parameters>
+          <param type="String" name="entityName" />
+          <param type="NSManagedObjectContext" name="context" />
+        </parameters>
+        <return type="NSEntityDescription"/>
+        <propagate from="1" to="-2"/>
+        <source argpos="-1" kind="database_input" />
+      </method>
+      <method name="insertNewObject" signature="insertNewObject(entityName: String, context: NSManagedObjectContext) -> NSManagedObject">
+        <parameters>
+          <param type="String" name="entityName" />
+          <param type="NSManagedObjectContext" name="context" />
+        </parameters>
+        <return type="NSEntityDescription"/>
+        <propagate from="1" to="-2"/>
+        <sink argpos="-1" kind="sensitive_core_data" />
+      </method>
+    </class>
+
+  </module>
+</library>

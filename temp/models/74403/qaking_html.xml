@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_html" updated="">
+  <description>EdcastModel</description>
+  <rule name="OPT.HTML.AutocompleteOnForSensitiveFields" message="AutocompleteOnForSensitiveFields: Autocomplete enabled for sensitive form fields" class="com.optimyth.html.rules.html5.security.AutocompleteOnForSensitiveFields" technology="HTML" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:8.2.1,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[By default, browsers remember information that users submit through form input fields. This enables the browser to offer
+autocomplete (suggesting possible completions for fields that the user starts typing in) or autofill (pre-populate
+certain fields upon load).
+
+Autocomplete/autofill could be a privacy concern for users. Browsers could be configured to disable autocomplete,
+but it is typically enabled by default. Past values for some fields are either not useful (like a one-time pin),
+or contain sensitive/private information (government identifier, credit card security code, or simply a password).
+Forms in a web application should be configured to avoid remembering past values for some sensitive fields (or all fields in
+a critical form), even if the browser's autocomplete feature is disabled.
+
+That strategy limits information leakages, when a browser shows past submitted values for another person (in a shared device).
+This rule will report any sensitive field (password, or fields with a name/id matching a configurable pattern).
+
+Rule checks input fields into form tags but and also input fields outside from a form tag but specifying a form into their
+form attribute.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid information leakage.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<form method="post" action="/form" id="form1">
+  <div>
+    <input type="password" id="auth" name="auth"/><!-- VIOLATION -->
+    <input type="text" id="creditCard" name="creditCard"/><!-- VIOLATION -->
+  </div>
+</form>
+
+<input type="password" id="input3" name="auth" form="form1"/><!-- VIOLATION -->]]></example>
+    <repair><![CDATA[<form method="post" action="/form" id="form1" autocomplete="off">
+  <div>
+    <input type="password" id="auth" name="auth"/>
+    <input type="text" id="creditCard" name="creditCard"/>
+  </div>
+</form>
+
+<input type="password" id="input3" name="auth" form="form1"/>
+
+Alternatively, disable autocomplete for sensitive fields only:
+
+<form method="post" action="/form" autocomplete="on">
+  <div>
+    <input type="password" id="auth" name="auth" autocomplete="off"/>
+    <input type="text" id="creditCard" name="creditCard" autocomplete="off"/>
+  </div>
+</form>
+
+<input type="password" id="input3" name="auth" form="form1" autocomplete="off"/>]]></repair>
+    <reference><![CDATA[https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:525,OWASP:2021:A4,PCI-DSS:3.2,WASC:13]]></security>
+    </normatives>
+    <properties>
+      <property name="acceptBrowserPasswordManagers" descname="If true, accept autocomplete behaviour for password fields, when it is assumed that browser password managers are safer than memorized passwords." value="false"/>
+      <property name="sensitiveFieldsPattern" descname="Regular expression for detecting, by name, potentially sensitive fields." value="password|pass|username|user_name|creditcard|credit_card|cardnum|card_num"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.HTML.CORDOVA.ShouldUseContentSecurityPolicy" message="ShouldUseContentSecurityPolicy: Add a CSP to every page" class="com.optimyth.html.rules.cordova.ShouldUseContentSecurityPolicy" technology="HTML" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,Framework:Cordova]]></tags>
+    <description><![CDATA[Content Security Policy (CSP) controls which network requests (images, XHRs, etc) are
+allowed to be made (via webview directly).
+
+On Android and iOS, the network request whitelist is not able to filter all types of requests (e.g. <video> & WebSockets
+are not blocked). So, in addition to the whitelist, you should use a Content Security Policy <meta> tag on all of your pages.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<html> <!-- VIOLATION -->
+</html>]]></example>
+    <repair><![CDATA[<html>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' foo.com">
+</html>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/358.html,https://cordova.apache.org/docs/en/8.x/reference/cordova-plugin-whitelist/#content-security-policy]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:358,OWASP:2021:A5]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.HTML.FileUploadEnabled" message="FileUploadEnabled: File upload enabled" class="com.optimyth.html.rules.html5.security.FileUploadEnabled" technology="HTML" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.2.1,ASVS-v4.0.2:12.5.2,ASVS-v4.0.2:13.1.5,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[By allowing file uploads, an attacker may inject dangerous content, for example code that could be executed
+in the server, if the uploaded content is not carefully validated.
+
+This rule simply reports any file input control in HTML code.]]></description>
+    <priority>4</priority>
+    <effort>3</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<!-- VIOLATION, file upload -->
+<input id="filename" type="file"/>]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[http://www.scanit.be/uploads/php-file-upload.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:434,CWETOP25:2021:10,OWASP-M:2016:M8,OWASP:2021:A4,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.HTML.FormValidationOff" message="FormValidationOff: Form validation disabled" class="com.optimyth.html.rules.html5.security.FormValidationOff" technology="HTML" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.2,ASVS-v4.0.2:13.3.1,ASVS-v4.0.2:5.1.3,ASVS-v4.0.2:5.1.4,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[HTML5 offers a facility for simple (browser-side) input form validation. Input fields could be validated with certain
+validation attributes (required, pattern...). Both the novalidate attribute in <form> tag, or the formnovalidate attribute
+in the submit <input> element, deactivate form validation.
+
+The rule reports any HTML5 form with validation disabled.
+
+Please note that client-side validation is not enough to protect the web application against injection attacks, but is a convenient
+mechanism for end-users to provide valid data.]]></description>
+    <priority>5</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<form name="my_form" action="myform.php" novalidate="novalidate"><!-- VIOLATION -->
+  Username: <input type="text" name="user_name" />
+  E-mail: <input type="email" name="user_email" />
+  <input type="submit" />
+</form>
+
+<form name="my_form" action="myform.php">
+  Username: <input type="text" name="user_name" />
+  E-mail: <input type="email" name="user_email" />
+  <input type="submit" formnovalidate="formnovalidate"/><!-- VIOLATION -->
+</form>]]></example>
+    <repair><![CDATA[<!-- FIXED -->
+<form name="my_form" action="myform.php">
+  Username: <input type="text" name="user_name" required maxlength="16" pattern="[a-zA-Z][a-zA-Z0-9_]" />
+  E-mail: <input type="email" name="user_email" required />
+  <input type="submit" />
+</form>]]></repair>
+    <reference><![CDATA[http://www.w3schools.com/html5/att_form_novalidate.asp]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:20,CWETOP25:2021:4,PCI-DSS:6.5.6]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.HTML.FormWithoutCaptcha" message="FormWithoutCaptcha: Form without CAPTCHA" class="com.optimyth.html.rules.html5.security.FormWithoutCaptcha" technology="HTML" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.3,ASVS-v4.0.2:4.2.2,CWEScope:Access-Control,CWEScope:Non-Repudiation,csrf]]></tags>
+    <description><![CDATA[A form could be a target for a Cross-Site Request Forgery attack (CSRF), but lacks of a known CAPTCHA control
+ensuring that the form is posted by the legitimate authenticated user and it is not controlled by an attacker.
+
+A CAPTCHA ("Completely Automated Public Turing test to tell Computers and Humans Apart") is a challenge-response test
+used to determine whether or not the user is human, for example by identifying deformed text difficult for a computer,
+or a simple puzzle, mathematical, logical or trivia question.
+
+CAPTCHAs are typically used to stop bots used for spamming, posting links or misinformation, generating ad-click revenue,
+creating new accounts, scraping content, or even performing fraudulent transactions like purchases made with stolen credit cards.
+
+CAPTCHAs have issues for disabled people (or even users without visual or other disabilities) and are often under
+attack, either by automated bots equipped with specific captcha-solvers (even using anti-captcha APIs available),
+or even by relying on "a sweatshop of human operators" known as CAPTCHA farms. But they are widely used when
+it is important to ensure that a human is behind a sensitive form post.
+
+This rule reports a defect when a POST form, matching the URL pattern, does not contain a CAPTCHA control.
+Its intended use is to flag forms that could either need some form of CAPTCHA or an assessment for other anti-CSRF measures.
+This rule should be considered a complement to the CSRF-targeted rules.
+
+Note: The rule considers some popular CAPTCHA systems like BotDetect, Google reCAPTCHA or Captcheck, but the 'customCaptchaAttributes'
+configuration property may be used to register additional or custom systems.]]></description>
+    <priority>4</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+  </head>
+  <body>
+    <h2>Password recovery</h2>
+    <!-- VIOLATION, form that may be protected with CAPTCHA -->
+    <form id="password_recovery" action="/users/password_recovery" method="post">
+      <label for="email">Email:</label><br>
+      <input type="text" id="email" name="email" value="" placeholder="Enter your configured email"><br>
+      <button type="submit">Submit</button>
+    </form>
+  </body>
+</html]]></example>
+    <repair><![CDATA[<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+  <h2>Password recovery</h2>
+  <form id="password_recovery" action="/users/password_recovery" method="post">
+    <!-- FIXED using reCAPTCHA v2 checkbox, but there are many other CAPTCHA tools out there -->
+    <div class="g-recaptcha" data-sitekey="your_recaptcha_ket_here"></div>
+    <label for="email">Email:</label><br>
+    <input type="text" id="email" name="email" value="" placeholder="Enter your configured email"><br>
+    <button type="submit">Submit</button>
+  </form>
+  </body>
+</html>]]></repair>
+    <reference><![CDATA[]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:352,CWETOP25:2021:9,OWASP:2013:A8,PCI-DSS:6.5.1,WASC:9]]></security>
+    </normatives>
+    <properties>
+      <property name="onlyPost" descname="If true, only forms with POST method are considered: if false, both GET and POST forms are considered." value="true"/>
+      <property name="customCaptchaAttributes" descname="Comma-separated list of the values to look for recognizing custom CAPTCHA controls. Elements inside the target form will be examined, and the values will be looked for in their id|name|class attributes." value="captcha, captcha_image, jcaptcha, captcha_code, botdetect-captcha"/>
+      <property name="formPattern" descname="Regular expression pattern for matching forms to consider. The id|name|action|class attributes of the FORM element will be looked for matches. If blank, no filtering will be done." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.HTML.PasswordInHttpGet" message="PasswordInHttpGet: Password in GET FORM" class="com.optimyth.html.rules.html5.security.PasswordInHttpGet" technology="HTML" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.3,ASVS-v4.0.2:3.1.1,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[When GET form contains a password input field, when the form is submitted, the password is sent as a parameter,
+in the query-string part of the URL in the HTTP message.
+
+Parameters associated with HTTP GET requests are not treated as sensitive data, and web servers and intermediate proxies
+may cache them or write them to a log file, and web browsers make no effort to protect such parameters.
+
+Sending passwords (or any other sensitive information) a part of an HTTP GET request is a privacy violation
+and unsafe password management.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<!-- GET by default -->
+<form id="renew_pass">
+  <!-- VIOLATION -->
+  Password: <input name="user_password" type="password"/>
+  <!-- VIOLATION -->
+  Confirm:  <input name="confirm_password" type="password"/>
+  <input type="submit" name="action" value="Renew password">
+</form>]]></example>
+    <repair><![CDATA[<!-- FIXED -->
+<form id="renew_pass" method="post">
+  Password: <input name="user_password" type="password"/>
+  Confirm:  <input name="confirm_password" type="password"/>
+  <input type="submit" name="action" value="Renew password">
+</form>]]></repair>
+    <reference><![CDATA[https://www.vanimpe.eu/2013/10/06/password-attacks-against-http-web-forms/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:598,OWASP:2021:A7,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.HTML.SandboxAllowScriptsAndSameOrigin" message="SandboxAllowScriptsAndSameOrigin: Unsafe sandbox with allow-scripts and allow-same-origin" class="com.optimyth.html.rules.html5.security.SandboxAllowScriptsAndSameOrigin" technology="HTML" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.6,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[In HTML5, iframe content could be sandboxed, and the developer may give the capabilities it requires
+(a whitelist of capabilities that the framed content needs, specified in the iframe's sandbox attribute).
+If you need to include external content in your application, sandboxing is an excelent measure (when properly set).
+For example, plugins are blocked in sandbox, and that restriction cannot be lifted.
+
+As the framed content needs certain capabilities enabled to be useful, developers must exercise due care
+when choosing which sandbox restrictions to be lifted, and that the lifted restrictions are really the minimum
+needed by the framed content ('principle of least-privilege').
+
+Setting both the allow-scripts and allow-same-origin keywords together, when the embedded page
+has the same origin as the page containing the iframe, allows the embedded page to simply remove
+the sandbox attribute and then reload itself, effectively breaking out of the sandbox altogether.
+
+Remember, allow-same-origin typically permits the sandboxed content to access its own DOM and originating site
+(typical same-origin policy). But if the content origin is the same as your application's, and you add the
+allow-scripts permission, an attacker may remove sandbox attribute and reload the content.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<!-- VIOLATION, uploaded content may include JavaScript which is allowed to remove the sandbox attribute -->
+<iframe id = 'sandboxed' sandbox = 'allow-scripts allow-same-origin' src = 'uploads/evil.html'></iframe>]]></example>
+    <repair><![CDATA[<!-- option #1: place untrusted content in another domain -->
+<iframe id = 'sandboxed' sandbox = 'allow-scripts allow-same-origin' src = 'https://uploads.my.org/evil.html'></iframe>
+
+<!-- option #2: remove one of the problematic capabilities -->
+<iframe id = 'sandboxed' sandbox = 'allow-scripts' src = 'uploads/evil.html'></iframe>]]></repair>
+    <reference><![CDATA[https://html.spec.whatwg.org/multipage/embedded-content.html#the-iframe-element,https://www.html5rocks.com/en/tutorials/security/sandboxed-iframes/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:830,OWASP:2021:A8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.HTML.TargetBlankVulnerability" message="TargetBlankVulnerability: Improper Neutralization of links to external sites" class="com.optimyth.html.rules.html5.security.TargetBlankVulnerability" technology="HTML" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When an user clicks a link to an external site, and that link has the target="_blank" attribute,
+then the new site will be opened into a new tab or window, but will share its process with the original tab or window.
+
+The window.opener object stores information from the original window, so if a malicious attacker achieves to run code into
+the target site then he/she might read or modify the properties included into the window.opener object, even when the
+original and the target sites have different origin.
+
+After that, the attacker might change the original windows for a malicious copy of it, where the user can be tricked
+to login, or to input his/her bank account information or some other sensitive information.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid malicious redirections to sites controlled by the attacker]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<a href="http://attacker-site.example.com/useful-page.html" target="_blank">    <!-- VIOLATION -->]]></example>
+    <repair><![CDATA[<a href="http://attacker-site.example.com/useful-page.html" target="_blank" rel="noopener noreferrer">]]></repair>
+    <reference><![CDATA[https://dev.to/ben/the-targetblank-vulnerability-by-example,https://owasp.org/www-community/attacks/Reverse_Tabnabbing,https://cwe.mitre.org/data/definitions/1022.html,https://mathiasbynens.github.io/rel-noopener/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:1022,OWASP:2021:A5]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedHref" descname="Separated comma list of allowed href values which, when used, exclude that element from
+            being reported" value="#,javascript:void(0);"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="HTML" technology="HTML" active="true" weight="1.0">
+      <description><![CDATA[HTML rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="HTML" active="true" weight="8.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="HTML" active="true" weight="10.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="HTML" active="true" weight="5.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="HTML" active="true" weight="10.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="HTML" active="true" weight="4.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

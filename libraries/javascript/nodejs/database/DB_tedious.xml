@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/DB_tedious" standard="nodejs">
+
+  <module name="nodejs/tedious" standard="database/tedious">
+    <description url="https://tediousjs.github.io/tedious/">Implementation of the TDS protocol (MS SQL Server)</description>
+
+    <class name="nodejs/tedious">
+      <field name="Connection" type="nodejs/tedious.Connection"/>
+      <field name="Request" type="nodejs/tedious.Request"/>
+    </class>
+
+    <class name="nodejs/tedious.Connection">
+      <tags>hasEvents</tags>
+      <function name="Connection">
+        <return type="nodejs/tedious.Connection"/>
+        <sink kind="sensitive_data" resource="database">
+          <arg pos="0" field="userName,password"/>
+        </sink>
+        <sink kind="resource_injection" resource="database">
+          <arg pos="0" field="options.database"/>
+          <arg pos="0" field="options.instanceName"/>
+        </sink>
+        <sink kind="ssrf" resource="database">
+          <arg pos="0" field="server"/>
+          <arg pos="0" field="options.port"/>
+        </sink>
+      </function>
+
+      <function name="beginTransaction" alias="saveTransaction,rollbackTransaction,reset">
+        <parameters>
+          <param type="function(Error)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+
+      <function name="transaction">
+        <parameters>
+          <param type="function(String,Function)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+          <param type="String"/>
+          <param type="Number"/>
+        </parameters>
+      </function>
+
+      <function name="callProcedure" alias="execSql,execSqlBatch,execute,prepare,unprepare">
+        <parameters>
+          <param type="nodejs/tedious.Request"/>
+        </parameters>
+      </function>
+
+      <function name="newBulkLoad">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,Number)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/tedious.BulkLoad"/>
+        <!-- attacker controlling the table name is an obvious injection issue -->
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </function>
+
+      <function name="execBulkLoad">
+        <parameters>
+          <param type="nodejs/tedious.BulkLoad"/>
+        </parameters>
+      </function>
+
+      <function name="on:connect" alias="on:errorMessage">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/tedious.Request">
+      <tags>hasEvents</tags>
+      <function name="Request">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,Number)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </function>
+
+      <function name="addParameter" alias="addOutputparameter">
+        <neutralization argpos="2" kind="sql_injection" resource="database"/>
+      </function>
+
+      <function name="on:row">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/tedious.ColumnsArray)"/>
+        </parameters>
+      </function>
+      <function name="on:done" alias="on:doneInProc">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/tedious.ColumnsArray)">
+            <source argpos="0" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+      <function name="on:doneProc">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Number,Boolean,Object,nodejs/tedious.ColumnsArray)">
+            <source argpos="2" kind="database_input" resource="database"/>
+            <source argpos="3" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+      <function name="on:returnValue">
+        <parameters>
+          <param type="String"/>
+          <param type="function(String,Object,Object)">
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/tedious.BulkLoad">
+      <function name="addColumn" alias="addRow"/>
+    </class>
+
+    <class name="nodejs/tedious.ColumnsArray" itemType="nodejs/tedious.Column" supertypes="Array" />
+
+    <class name="nodejs/tedious.Column">
+      <field name="metadata" type="Object"/>
+      <field name="value" type="Object">
+        <source kind="database_input" resource="database"/>
+      </field>
+    </class>
+  </module>
+  
+</library>

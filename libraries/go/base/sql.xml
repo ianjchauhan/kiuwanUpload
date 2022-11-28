@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="sql">
+
+  <module name="database.sql">
+    <description url="https://pkg.go.dev/database/sql">SQL interface</description>
+
+    <member name="ErrConnDone" type="go.error" />
+    <member name="ErrNoRows" type="go.error" />
+    <member name="ErrTxDone" type="go.error" />
+
+    <function name="database.sql.Drivers" signature="database.sql.Drivers()" >
+      <return type="go.slice" elementType="go.string" />
+    </function>
+
+    <function name="database.sql.Register"
+              signature="database.sql.Register(go.string, database.sql.driver.Driver)" />
+
+    <class name="database.sql.ColumnType" kind="struct" >
+      <method name="DatabaseTypeName" signature="DatabaseTypeName()"><return type="go.string" /></method>
+      <method name="DecimalSize" signature="DecimalSize()"><return type="go.int64,go.int64,go.bool" /></method>
+      <method name="Length" signature="Length()" ><return type="go.int64,go.bool" /></method>
+      <method name="Name" signature="Name()" ><return type="go.string" /></method>
+      <method name="Nullable" signature="Nullable()" ><return type="go.bool,go.bool" /></method>
+      <method name="ScanType" signature="ScanType()" ><return type="reflect.Type" /></method>
+    </class>
+
+    <class name="database.sql.DBStats" kind="struct" >
+      <field name="MaxOpenConnections" type="go.int" />
+      <field name="OpenConnections" type="go.int" />
+      <field name="InUse" type="go.int" />
+      <field name="Idle" type="go.int" />
+      <field name="WaitCount" type="go.int64" />
+      <field name="WaitDuration" type="time.Duration" />
+      <field name="MaxIdleClosed" type="go.int64" />
+      <field name="MaxLifetimeClosed" type="go.int64" />
+    </class>
+
+    <class name="database.sql.IsolationLevel" kind="struct" supertypes="go.int" >
+      <method name="String" signature="String()"><return type="go.string" /></method>
+    </class>
+
+    <class name="database.sql.NamedArg" kind="struct" />
+
+    <function name="database.sql.Named" signature="sql.Named(go.string,go.interface)" >
+      <return type="database.sql.NamedArg" />
+    </function>
+
+    <class name="database.sql.NullBool" kind="struct" supertypes="database.sql.Scanner,database.sql.driver.Valuer" >
+      <field name="Bool" type="go.bool" />
+      <field name="Valid" type="go.bool" />
+    </class>
+    <class name="database.sql.NullFloat64" kind="struct" supertypes="database.sql.Scanner,sdatabase.ql.driver.Valuer" >
+      <field name="Float64" type="go.float64" />
+      <field name="Valid" type="go.bool" />
+    </class>
+    <class name="database.sql.NullInt32" kind="struct" supertypes="database.sql.Scanner,database.sql.driver.Valuer" >
+      <field name="Int32" type="go.int32" />
+      <field name="Valid" type="go.bool" />
+    </class>
+    <class name="database.sql.NullInt64" kind="struct" supertypes="database.sql.Scanner,database.sql.driver.Valuer" >
+      <field name="Int64" type="go.int64" />
+      <field name="Valid" type="go.bool" />
+    </class>
+    <class name="database.sql.NullString" kind="struct" supertypes="database.sql.Scanner,database.sql.driver.Valuer" >
+      <field name="String" type="go.string" />
+      <field name="Valid" type="go.bool" />
+    </class>
+    <class name="database.sql.NullTime" kind="struct" supertypes="database.sql.Scanner,database.sql.driver.Valuer" >
+      <field name="Time" type="time.time" />
+      <field name="Valid" type="go.bool" />
+    </class>
+
+    <class name="database.sql.Result" kind="interface">
+      <method name="LastInsertId" signature="LastInsertId()"><return type="go.int64, go.error"/></method>
+      <method name="RowsAffected" signature="RowsAffected()"><return type="go.int64, go.error"/></method>
+    </class>
+
+    <class name="database.sql.Out" kind="struct" >
+      <field name="Dest" type="go.interface" />
+      <field name="In" type="go.bool" />
+    </class>
+    <class name="database.sql.RawBytes" kind="struct" supertypes="go.slice" />
+
+    <class name="database.sql.Scanner" kind="interface" >
+      <method name="Scan" signature="Scan(...go.interface)" >
+        <return type="go.error" />
+        <source argpos="0" kind="database_input" resource="database" />
+      </method>
+    </class>
+
+    <class name="database.sql.Row" kind="struct" supertypes="database.sql.Scanner" />
+    <class name="database.sql.Rows" kind="struct" supertypes="database.sql.Scanner" >
+      <method name="Close" signature="Close()" >
+        <return type="go.error" />
+      </method>
+      <method name="Close" signature="Close()" >
+        <return type="go.error" />
+      </method>
+      <method name="ColumnTypes" signature="ColumnTypes()" >
+        <return type="go.slice,go.error" elementType="database.sql.ColumnType"/>
+      </method>
+      <method name="Columns" signature="Columns()" >
+        <return type="go.slice,go.error" elementType="go.string"/>
+      </method>
+      <method name="Err" signature="Err()" >
+        <return type="go.error" />
+      </method>
+      <method name="Next" signature="Next()" >
+        <return type="go.bool" />
+      </method>
+      <method name="NextResultSet" signature="NextResultSet()" >
+        <return type="go.bool" />
+      </method>
+    </class>
+
+    <!-- Stmt -->
+    <class name="database.sql.Stmt" kind="struct"
+           supertypes="database.sql.driver.StmtQueryContext, database.sql.driver.StmtExecContext" >
+      <method name="Close" signature="Close()">
+        <return type="go.error" />
+      </method>
+      <method name="Exec" signature="Exec(...go.interface)" >
+        <tags>potentialPk:0;...</tags>
+        <return type="database.sql.Result,go.error" />
+      </method>
+      <method name="ExecContext" signature="ExecContext(context.Context, ...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.Result,go.error" />
+      </method>
+      <method name="Query" signature="Query(go.interface)" >
+        <return type="*database.sql.Rows,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="QueryRow" signature="QueryRow(...go.interface)" >
+        <tags>potentialPk:0;...</tags>
+        <return type="*database.sql.Row" />
+      </method>
+      <method name="QueryRowContext" signature="QueryRowContext(context.Context, ...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="*database.sql.Row" />
+      </method>
+    </class>
+
+    <!-- Transactions -->
+    <class name="database.sql.TxOptions" kind="struct" >
+      <field name="Isolation" type="database.sql.IsolationLevel" />
+      <field name="ReadOnly" type="go.bool" />
+    </class>
+
+    <class name="database.sql.Tx" alias="sql.Tx">
+      <description>Facade for transaction-oriented operations</description>
+      <method name="Commit" signature="Commit()">
+        <return type="go.error" />
+      </method>
+
+      <method name="Exec" signature="Exec(go.string, ...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.Result, go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="ExecContext" signature="ExecContext(context.Context, go.string, ...go.interface)" >
+        <tags>potentialPk:2;...</tags>
+        <return type="database.sql.Result, go.error" />
+        <sink argpos="1" kind="sql_injection" resource="database" />
+      </method>
+
+      <method name="Prepare" signature="Prepare(go.string)" >
+        <return type="*database.sql.Stmt, go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="PrepareContext" signature="PrepareContext(context.Context, go.string)" >
+        <return type="*database.sql.Stmt, go.error" />
+        <sink argpos="1" kind="sql_injection" resource="database" />
+      </method>
+
+      <method name="QueryRow" signature="QueryRow(go.string, ...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="*database.sql.Row" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryRowContext" signature="QueryRowContext(context.Context, go.string, go.interface)" >
+        <tags>potentialPk:2;...</tags>
+        <return type="*database.sql.Row" />
+        <sink argpos="1" kind="sql_injection" resource="database" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Query" signature="Query(go.string, ...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="*database.sql.Rows, go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryContext" signature="QueryContext(context.Context, go.string, ...go.interface)" >
+        <tags>potentialPk:2;...</tags>
+        <return type="*database.sql.Rows, go.error" />
+        <sink argpos="1" kind="sql_injection" resource="database" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+
+      <method name="Rollback" signature="Rollback()" >
+        <return type="database.go.error" />
+      </method>
+
+      <method name="Stmt" signature="Stmt(database.sql.Stmt)" >
+        <return type="database.sql.Stmt" />
+      </method>
+      <method name="StmtContext" signature="StmtContext(context.Context,database.sql.Stmt)" >
+        <return type="database.sql.Stmt" />
+      </method>
+    </class>
+
+    <!-- DB -->
+    <class name="database.sql.DB" kind="struct"
+           supertypes="database.sql.driver.StmtQueryContext, database.sql.driver.StmtExecContext, database.sql.driver.Execer" >
+      <description>The facade for database operations</description>
+      <method name="Begin" signature="Begin()" >
+        <return type="*database.sql.Tx, go.error" />
+      </method>
+      <method name="BeginTx" signature="BeginTx(context.Context,*database.sql.TxOptions)" >
+        <return type="*database.sql.Tx, go.error" />
+      </method>
+      <method name="Close" signature="Close()" >
+        <return type="go.error" />
+      </method>
+      <method name="Conn" signature="Conn(context.Context)" >
+        <return type="*database.sql.Conn,go.error" />
+      </method>
+      <method name="Driver" signature="Driver()" >
+        <return type="database.sql.driver.Driver" />
+      </method>
+      <method name="Ping" signature="Ping()">
+        <return type="go.error" />
+      </method>
+      <method name="PingContext" signature="PingContext(context.Context)" >
+        <return type="go.error" />
+      </method>
+      <method name="Prepare" signature="Prepare(go.string)" >
+        <return type="*database.sql.Stmt,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="PrepareContext" signature="PrepareContext(context.Context,go.string)" >
+        <return type="*database.sql.Stmt,go.error" />
+        <sink argpos="1" kind="sql_injection" resource="database" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Query" signature="Query(go.string, ...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="*database.sql.Rows,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryRow" signature="QueryRow(go.string, ...go.interface)"  >
+        <tags>potentialPk:1;...</tags>
+        <return type="*database.sql.Row" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryRowContext" signature="QueryRowContext(context.Context,go.string,...go.interface)" >
+        <tags>potentialPk:2;...</tags>
+        <return type="*database.sql.Row" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SetConnMaxLifetime" signature="SetConnMaxLifetime(time.Duration)" />
+      <method name="SetMaxIdleConns" signature="SetMaxIdleConns(go.int)" />
+      <method name="SetMaxOpenConns" signature="SetMaxOpenConns(go.int)" />
+      <method name="Stats" signature="Stats()" >
+        <return type="database.sql.DBStats" />
+      </method>
+    </class>
+
+    <!-- User-oriented factories -->
+    <function name="database.sql.Open" signature="database.sql.Open(go.string, go.string)">
+      <return type="*database.sql.DB, go.error" />
+      <sink argpos="0" kind="resource_injection" resource="database"/><!--driver-->
+      <sink argpos="1" kind="connection_string_injection" resource="database"/><!-- conn string -->
+    </function>
+
+    <function name="database.sql.OpenDB" signature="database.sql.OpenDB(database.sql.driver.Connector)" >
+      <return type="*database.sql.DB" />
+    </function>
+
+  </module>
+
+  <module name="database.sql.driver">
+    <!--description url="https://pkg.go.dev/database/sql/driver" >Defines interfaces to be implemented by database drivers as used by package sql</description-->
+
+    <function name="database.sql.driver.IsScanValue" signature="database.sql.driver.IsScanValue(go.interface)" >
+      <return type="go.bool" />
+    </function>
+    <function name="database.sql.driver.IsValue" signature="database.sql.driver.IsValue(go.interface)" >
+      <return type="go.bool" />
+    </function>
+
+    <class name="database.sql.driver.ColumnConverter" kind="interface" >
+      <method name="ColumnConverter" signature="ColumnConverter(go.int)" >
+        <return type="database.sql.driver.ValueConverter" />
+      </method>
+    </class>
+    
+    <class name="database.sql.driver.Conn" kind="interface" >
+      <method name="Prepare" signature="Prepare(go.string)" >
+        <return type="database.sql.Stmt,go.error" />
+      </method>
+      <method name="Close" signature="Close()" >
+        <return type="go.error" />
+      </method>
+      <method name="Begin" signature="Begin()" >
+        <return type="database.sql.Tx,go.error" />
+      </method>
+    </class>
+
+    <class name="database.sql.driver.Connector" kind="interface">
+      <method name="Connect" signature="Connect(context.Context)">
+        <return type="database.sql.driver.Conn, go.error"/>
+      </method>
+      <method name="Driver" signature="Driver()"><return type="database.sql.driver.Driver"/></method>
+    </class>
+    
+    <class name="database.sql.driver.TxOptions" kind="struct" supertypes="database.sql.TxOptions"/>
+    
+    <class name="database.sql.driver.ConnBeginTx" kind="interface">
+      <method name="BeginTx" signature="BeginTx(context.Context, database.sql.driver.TxOptions)">
+        <return type="database.sql.Tx,go.error"/>
+      </method>
+    </class>
+    
+    <class name="database.sql.driver.Execer" kind="interface" >
+      <method name="Exec" signature="Exec(go.string,go.slice)" >
+        <return type="database.sql.Result,go.error" />
+      </method>
+    </class>
+    
+    <class name="database.sql.driver.ExecerContext" kind="interface" >
+      <method name="ExecContext" signature="ExecContext(context.Context, go.string, ...go.interface)">
+        <tags>potentialPk:2;...</tags>
+        <return type="database.sql.Result, go.error" />
+        <sink argpos="1" kind="sql_injection" resource="database" />
+      </method>
+    </class>
+    
+    <class name="database.sql.driver.StmtExecContext" kind="interface"
+           supertypes="database.sql.driver.ExecerContext" />
+    
+    <class name="database.sql.driver.StmtQueryContext" kind="interface" >
+      <method name="QueryContext" signature="QueryContext(context.Context, go.string, ...go.interface)" >
+        <tags>potentialPk:2;...</tags>
+        <return type="*database.sql.Rows,go.error" />
+        <sink argpos="1" kind="sql_injection" resource="database" />
+      </method>
+    </class>
+    
+    <class name="database.sql.driver.Value" kind="interface" />
+    
+    <class name="database.sql.driver.Valuer" kind="interface" >
+      <method name="Value" signature="Value()" >
+        <return type="database.sql.driver.Value,go.error" />
+      </method>
+    </class>
+
+    <class name="database.sql.driver.Driver" kind="interface">
+      <method name="Open" signature="Open(go.string)">
+        <return type="database.sql.driver.Conn, go.error"/>
+        <sink argpos="0" kind="connection_string_injection" resource="database"/><!-- conn string -->
+      </method>
+    </class>
+    <class name="database.sql.driver.DriverContext" kind="interface">
+      <method name="OpenConnector" signature="OpenConnector(go.string)">
+        <return type="database.sql.driver.Connector,go.error"/>
+        <sink argpos="0" kind="connection_string_injection" resource="database"/><!-- conn string -->
+      </method>
+    </class>
+  </module>
+
+</library>

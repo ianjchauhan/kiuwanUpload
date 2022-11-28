@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.execCics" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds />
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+        <internal-name id="OPT.COBOL.COUPLING.EXECS" />
+        <java-class>com.als.cobol.metrics.ExecsMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+     <!-- Code examples for each language parser -->
+    <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+        <code-example name="metricCodeExampleCobol" result-value="2">
+<![CDATA[
+
+       1620-GETMAIN-LONGER-BUFFER.                                              
+      *---------------------------------------------------------------*         
+      * Our input message is too big for our existing buffer, so we   *         
+      * need to get a longer one.                                     *         
+      * If we're already working with a GETMAINed buffer, then we     *         
+      * must release that storage.                                    *         
+      * Getmain a buffer big enough to hold our input message (rounded*         
+      * to the higher or equal doubleword boundary).                  *         
+      *---------------------------------------------------------------*         
+                                                                                
+           IF W170-GETMAINED-BUFFER                                             
+                                                                                
+               EXEC CICS FREEMAIN                                               
+                         DATAPOINTER (W600-ADDRESS)                             
+                         RESP        (W040-RESP)                                
+               END-EXEC                                                         
+                                                                                
+               IF W040-RESP NOT = DFHRESP(NORMAL)                               
+                   MOVE WN-CICS-ERROR TO NUMBATCH OF KAETOLT                    
+                   PERFORM 9150-WRITE-OPERATIONS-LOG                            
+               END-IF                                                           
+           END-IF                                                               
+                                                                                
+           DIVIDE W000-MESSAGE-LENGTH BY 8 GIVING W030-FW                       
+                                        REMAINDER W035-FW                       
+           IF W035-FW > 0                                                       
+               ADD 1 TO W030-FW                                                 
+           END-IF                                                               
+                                                                                
+           MULTIPLY 8 BY W030-FW                                                
+                                                                                
+           EXEC CICS GETMAIN                                                    
+                     SET     (W600-ADDRESS)                                     
+                     FLENGTH (W030-FW)                                          
+                     INITIMG (W230-LV)                                          
+                     RESP    (W040-RESP)                                        
+           END-EXEC                                                             
+                                                                                
+           IF W040-RESP = DFHRESP(NORMAL)                                       
+               SET ADDRESS OF L000-IN-OUT-BUFFER TO W600-ADDRESS                
+               MOVE W030-FW TO W000-CURRENT-BUFFER-LENGTH                       
+               SET W170-GETMAINED-BUFFER TO TRUE                                
+           ELSE                                                                 
+               MOVE WN-CICS-ERROR TO NUMBATCH OF KAETOLT                        
+               PERFORM 9150-WRITE-OPERATIONS-LOG                                
+               PERFORM 9900-END-PROGRAM                                         
+           END-IF                                                               
+           .                                                                    
+                                                                                
+       1630-ADDRESS-INPUT-MESSAGE.                                              
+                                                                                
+           IF  L000-IN-OUT-BUFFER(1:5) = WN-XML-TAG                             
+               SET W180-XML TO TRUE                                             
+           ELSE                                                                 
+               SET W180-COBOL TO TRUE                                           
+               SET ADDRESS OF L020-MSG-RECEIVED TO W600-ADDRESS                 
+           END-IF                                                               
+                                                                                
+           .                                                                    
+
+]]>
+        </code-example>
+      </language-parser>
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Operaciones 'EXEC CICS']]></name>
+      
+      <description>
+<![CDATA[
+Número de exec CICS por programa. Una métrica que da una idea de qué programas están referenciando más bloques de operaciones CICS (la métrica no mide el comportamiento "dinámico" en lo que respecta a comandos CICS lanzados en tiempo de ejecución).
+
+Una práctica convencional es modularizar el acceso a monitores de transacción como CICS en "programas de transacción", y dejar que la capa de negocio invoque a los programas de transacción mediante sentencias CALL, pero la mejor estrategia para desacoplar la lógica de negocio del monitor de transacción pertenece a la arquitectura del sistema.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+<![CDATA[
+Contabiliza EXEC CICS en un programa.
+NOTA: cuenta tanto declaraciones INCLUDE (sentencias EXEC en la WORKING-STORAGE SECTION) como sentencias EXEC (en la PROCEDURE DIVISION).
+            ]]>
+            </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Operations 'EXEC CICS']]></name>
+      
+      <description>
+<![CDATA[
+Number of exec CICS per program. A metric that gives an indication of which programs are referencing more CICS operation blocks (the metric does not measure the "dynamic" behaviour of the program with respect to CICS commands executed at runtime).
+
+A conventional practice is to modularize access to transaction monitors like CICS in "transaction programs", and let the business programs invoke the transaction programs via CALL statements, but the best strategy to decouple business logic from transaction monitor logic belongs to system architecture.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+<![CDATA[
+Counts EXEC CICS in a program.
+NOTE: counts both INCLUDED declarations (EXEC statements in WORKING-STORAGE SECTION) and real EXEC statements (in PROCEDURE DIVISION)
+]]>
+            </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

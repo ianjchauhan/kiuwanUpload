@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="bsp_library" technology="abap" standard="BSP_library">
+
+  <description url="https://help.sap.com/viewer/0884fb55479542b38fb676e8f5b250a1/7.51.10/en-US/4c56854fe8530d6ae10000000a15822b.html">Business Server Page (BSP) library</description>
+
+  <globalObject name="request" type="IF_HTTP_REQUEST" standard="bsp"></globalObject>
+  <globalObject name="response" type="IF_HTTP_RESPONSE" standard="bsp"></globalObject>
+  <globalObject name="server" type="IF_HTTP_SERVER" standard="bsp"></globalObject>
+  <globalObject name="application" type="IF_BSP_APPLICATION" standard="bsp"></globalObject>
+  <globalObject name="navigation" type="IF_BSP_NAVIGATION" standard="bsp"></globalObject>
+
+  <class kind="interface" name="IF_HTTP_ENTITY">
+    <description>IF_HTTP_ENTITY</description>
+    <!-- Header fields -->
+    <function name="GET_HEADER_FIELD" signature="GET_HEADER_FIELD" kind="method">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </function>
+    <function name="GET_HEADER_FIELDS" signature="GET_HEADER_FIELDS" kind="method">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </function>
+    <function name="SET_HEADER_FIELD" signature="SET_HEADER_FIELD" kind="method">
+      <sink paramNames="value" kind="header_manipulation" resource="web"/>
+    </function>
+    <function name="SET_HEADER_FIELDS" signature="SET_HEADER_FIELDS" kind="method">
+      <sink argpos="1" kind="header_manipulation" resource="web"/>
+    </function>
+    <!-- Form fields -->
+    <function name="GET_FORM_FIELD" signature="GET_FORM_FIELD" kind="method" alias="GET_FORM_FIELD_CS">
+      <source argpos="-1" paramNames="value" kind="user_input" resource="web"/>
+    </function>
+    <function name="GET_FORM_FIELDS" signature="GET_FORM_FIELDS_CS" kind="method" alias="GET_FORM_FIELD_CS">
+      <source argpos="-1" paramNames="fields" kind="user_input" resource="web"/>
+    </function>
+    <function name="SET_FORM_FIELD" signature="SET_FORM_FIELD" kind="method">
+      <sink paramNames="value" kind="header_manipulation" resource="web"/>
+    </function>
+    <function name="SET_FORM_FIELDS" signature="SET_FORM_FIELDS" kind="method">
+      <sink argpos="1" kind="header_manipulation" resource="web"/>
+    </function>
+    <!-- cookies -->
+    <function name="SET_COOKIE" signature="SET_COOKIE" kind="method">
+      <sink paramNames="name,value,path,domain,expires" kind="header_manipulation" resource="web"/>
+    </function>
+    <function name="ADD_COOKIE_FIELD" signature="ADD_COOKIE_FIELD" kind="method">
+      <sink paramNames="cookie_name,cookie_path,field_name,field_value" kind="header_manipulation" resource="web"/>
+    </function>
+    <function name="GET_COOKIE" signature="GET_COOKIE" kind="method">
+      <source paramNames="domain,expires,value" kind="user_input" resource="web"/>
+    </function>
+    <function name="GET_COOKIE_FIELD" signature="GET_COOKIE_FIELD" kind="method">
+      <source argpos="-1" paramNames="field_value" kind="user_input" resource="web"/>
+    </function>
+    <function name="GET_COOKIES" signature="GET_COOKIES" kind="method">
+      <source argpos="-1" paramNames="cookies" kind="user_input" resource="web"/>
+    </function>
+    <!-- HTTP body -->
+    <function name="APPEND_CDATA" signature="APPEND_CDATA" alias="APPEND_DATA" kind="method">
+      <sink argpos="1" paramNames="data" kind="xss" resource="web"/>
+      <!--neutralization argpos="encoding" kind="xss" resource="web"/-->
+    </function>
+    <function name="APPEND_CDATA2" signature="APPEND_CDATA2" kind="method">
+      <sink argpos="1" paramNames="data" kind="xss" resource="web"/>
+      <!--neutralization argpos="encoding" kind="xss" resource="web"/-->
+    </function>
+    <function name="SET_CDATA" signature="SET_CDATA" alias="SET_DATA" kind="method">
+      <sink argpos="1" paramNames="data" kind="xss" resource="web"/>
+    </function>
+    <function name="FROM_STRING" signature="FROM_STRING" kind="method">
+      <propagate from="1" fromNames="data" to="0"/>
+      <source argpos="1" paramNames="data" kind="user_input" resource="web"/>
+    </function>
+    <function name="GET_CDATA" signature="GET_CDATA" alias="GET_DATA" kind="method">
+      <source argpos="-1" paramNames="data" kind="user_input" resource="web"/>
+    </function>
+    <function name="TO_XSTRING" signature="TO_XSTRING" kind="method">
+      <propagate from="0" to="-1" toNames="data"/>
+      <source argpos="-1" paramNames="data" kind="user_input" resource="web"/>
+    </function>
+    <function name="GET_MULTIPART" signature="GET_MULTIPART" kind="method">
+      <return type="IF_HTTP_REQUEST" from="-1"/>
+      <propagate from="0" to="-1"></propagate>
+      <source argpos="-1" paramNames="entity" kind="user_input" resource="web"/>
+    </function>
+  </class>
+
+  <class kind="interface" name="IF_HTTP_REQUEST" supertypes="IF_HTTP_ENTITY">
+    <description>IF_HTTP_REQUEST</description>
+    <function name="GET_FORM_DATA" signature="GET_FORM_DATA" kind="method">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </function>
+    <function name="GET_RAW_MESSAGE" signature="GET_RAW_MESSAGE" kind="method">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </function>
+    <function name="GET_URI_PARAMETER" signature="GET_URI_PARAMETER" kind="method">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </function>
+  </class>
+  <class name="CL_HTTP_REQUEST" supertypes="IF_HTTP_REQUEST">
+    <description>CL_HTTP_REQUEST</description>
+  </class>
+
+  <class kind="interface" name="IF_HTTP_RESPONSE" supertypes="IF_HTTP_ENTITY">
+    <description>IF_HTTP_RESPONSE</description>
+    <function name="GET_STATUS" signature="SET_STATUS" kind="method">
+      <source paramNames="reason" kind="user_input" resource="web"/>
+    </function>
+    <function name="SET_STATUS" signature="SET_STATUS" kind="method">
+      <sink paramNames="reason" kind="header_manipulation" resource="web"/>
+    </function>
+    <function name="SET_CONTENT_TYPE" signature="SET_CONTENT_TYPE" kind="method">
+      <sink argpos="1" kind="header_manipulation" resource="web"/>
+    </function>
+    <function name="REDIRECT" signature="REDIRECT" kind="method">
+      <sink argpos="1" paramNames="url" kind="open_redirect" resource="web"/>
+    </function>
+    <function name="COPY" signature="COPY" kind="method">
+      <return type="IF_HTTP_RESPONSE" from="0"/>
+      <propagate from="0" to="-1"/>
+    </function>
+  </class>
+  <class name="CL_HTTP_RESPONSE" supertypes="IF_HTTP_RESPONSE">
+    <description>CL_HTTP_RESPONSE</description>
+  </class>
+
+  <class kind="interface" name="IF_HTTP_SERVER">
+    <description>IF_HTTP_SERVER</description>
+    <field name="request" type="IF_HTTP_REQUEST"/>
+    <field name="response" type="IF_HTTP_RESPONSE"/>
+    <field name="session_id" type="xstring"/>
+    <field name="external_session_id" type="xstring"/>
+    <function name="CREATE_ABS_URL" signature="CREATE_ABS_URL" kind="method">
+      <propagate fromNames="protocol,host,port,path,querystring" to="-1" toNames="url"/>
+    </function>
+    <function name="CREATE_REL_URL" signature="CREATE_ABS_URL" kind="method">
+      <propagate fromNames="protocol,host,port,path,querystring" to="-1" toNames="url"/>
+    </function>
+  </class>
+
+  <class kind="interface" name="IF_BSP_APPLICATION">
+    <description>IF_BSP_APPLICATION</description>
+    <function name="GET_REQUEST" signature="GET_REQUEST" kind="method">
+      <return type="IF_HTTP_REQUEST" from="-1"/>
+      <source argpos="-1" paramNames="request" kind="user_input" resource="web"/>
+    </function>
+    <function name="GET_RESPONSE" signature="GET_RESPONSE" kind="method">
+      <return type="IF_HTTP_RESPONSE" from="-1"/>
+      <source argpos="-1" paramNames="response" kind="user_input" resource="web"/>
+    </function>
+  </class>
+  <class name="CL_BSP_APPLICATION" supertypes="IF_BSP_APPLICATION">
+    <description>CL_BSP_APPLICATION</description>
+  </class>
+
+  <class kind="interface" name="IF_BSP_NAVIGATION">
+    <description>IF_BSP_NAVIGATION</description>
+    <function name="NEXT_PAGE" signature="NEXT_PAGE" kind="method">
+      <sink argpos="1" kind="open_redirect" resource="web" />
+    </function>
+    <function name="GOTO_PAGE" signature="GOTO_PAGE" kind="method">
+      <sink argpos="1" kind="open_redirect" resource="web" />
+    </function>
+    <function name="EXIT" signature="EXIT" kind="method">
+      <sink argpos="1" paramNames="exit_url" kind="open_redirect" resource="web" />
+    </function>
+    <function name="SET_PARAMETER" signature="SET_PARAMETER" kind="method">
+      <sink paramNames="value" kind="header_manipulation" resource="web"/>
+    </function>
+    <function name="GET_PARAMETER" signature="GET_PARAMETER" kind="method">
+      <source argpos="-1" paramNames="value" kind="user_input" resource="web"/>
+    </function>
+  </class>
+
+  <class kind="interface" name="IF_HTTP_UTILITY">
+    <description>IF_HTTP_UTILITY</description>
+    <function name="ESCAPE_HTML" signature="ESCAPE_HTML" kind="method">
+      <neutralization argpos="1" paramNames="escaped" kind="xss" resource="web"/>
+    </function>
+    <function name="ESCAPE_URL" signature="ESCAPE_URL" kind="method">
+      <neutralization argpos="1" paramNames="escaped" kind="xss" resource="web"/>
+    </function>
+    <function name="IS_VALID_URL" signature="IS_VALID_URL" kind="method">
+      <neutralization argpos="1" paramNames="url" kind="xss" resource="web"/>
+    </function>
+    <function name="CHECK_HTTP_WHITELIST" signature="CHECK_HTTP_WHITELIST" kind="method">
+      <neutralization argpos="1" paramNames="url" kind="open_redirect" resource="web"/>
+    </function>
+  </class>
+  <class name="CL_HTTP_UTILITY" supertypes="IF_HTTP_UTILITY">
+    <description>CL_HTTP_UTILITY</description>
+  </class>
+
+  <class name="CL_HTTP_ENTITY" supertypes="IF_HTTP_REQUEST,IF_HTTP_RESPONSE"/>
+  <class name="CL_HTTP_REQUEST" supertypes="CL_HTTP_ENTITY"/>
+  <class name="CL_HTTP_RESPONSE" supertypes="CL_HTTP_ENTITY"/>
+  <class name="CL_BSP_APPLICATION" supertypes="IF_BSP_APPLICATION"/>
+  <class name="CL_BSP_NAVIGATION" supertypes="IF_BSP_NAVIGATION"/>
+  <class name="CL_HTTP_UTILITY" supertypes="IF_HTTP_UTILITY"/>
+
+  <class name="CL_BSP_UTILITY">
+    <function name="ENCODE_STRING" signature="ENCODE_STRING" kind="method">
+      <neutralization paramNames="in" kind="xss" resource="web"/><!-- note: encoding=IF_BSP_WRITER=>RAW does not encode! -->
+    </function>
+  </class>
+
+</library>

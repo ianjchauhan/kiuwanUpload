@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="apache.struts1" standard="Apache_Struts_1" technology="java">
+
+  <description url="https://github.com/apache/struts1">Struts1 API (end-of-life)</description>
+
+  <class name="org.apache.struts.action.ActionServlet" supertypes="java.io.Serializable,javax.servlet.Servlet,javax.servlet.ServletConfig">
+  </class>
+
+  <class name="org.apache.struts.config.ForwardConfig" supertypes="java.io.Serializable">
+    <constructor name="ForwardConfig" signature="ForwardConfig(java.lang.String,java.lang.String,boolean,boolean)" match="name">
+      <sink argpos="1" kind="open_redirect" resource="web"/>
+    </constructor>
+  </class>
+  
+  <class name="org.apache.struts.action.ActionForward" supertypes="org.apache.struts.config.ForwardConfig">
+    <constructor name="ActionForward" signature="ActionForward(java.lang.String,java.lang.String,boolean,boolean)" match="name">
+      <sink argpos="1" kind="open_redirect" resource="web"/>
+    </constructor>
+  </class>
+
+  <class name="org.apache.struts.action.ForwardingActionForward" supertypes="org.apache.struts.action.ActionForward">
+    <constructor name="ForwardingActionForward" signature="ForwardingActionForward(java.lang.String)" match="name">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </constructor>
+  </class>
+  <class name="org.apache.struts.action.RedirectingActionForward" supertypes="org.apache.struts.action.ActionForward">
+    <constructor name="RedirectingActionForward" signature="RedirectingActionForward(java.lang.String)" match="name">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </constructor>
+  </class>
+
+  <class name="org.apache.struts.config.ActionConfig" supertypes="java.io.Serializable">
+  </class>
+  
+  <class name="org.apache.struts.action.ActionMapping" supertypes="org.apache.struts.config.ActionConfig">
+    <method name="getInputForward" signature="getInputForward()" match="name" alias="findForward">
+      <return type="org.apache.struts.action.ActionForward"/>
+    </method>
+  </class>
+
+  <!-- ActionForm hierarchy -->
+  <class name="org.apache.struts.action.ActionForm">
+    <method name="getServlet" signature="getServlet()"><return type="org.apache.struts.action.ActionServlet"/></method>
+    <method name="getMultipartRequestHandler" signature="getMultipartRequestHandler()">
+      <return type="org.apache.struts.upload.MultipartRequestHandler"/>
+    </method>
+    <method name="reset" signature="reset(org.apache.struts.action.ActionMapping,javax.servlet.http.HttpServletRequest)"></method>
+    <method name="validate" signature="validate(org.apache.struts.action.ActionMapping,javax.servlet.http.HttpServletRequest)">
+      <return type="org.apache.struts.action.ActionErrors"/>
+    </method>
+    <!-- most derived classes provide this as source for the form data -->
+    <method name="get" signature="get(java.lang.String)" match="name">
+      <return type="java.lang.Object"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="org.apache.struts.action.DynaActionForm" supertypes="org.apache.struts.action.ActionForm"/>
+  <class name="org.apache.struts.action.validator.DynaValidatorForm" supertypes="org.apache.struts.action.DynaActionForm"/>
+  <class name="org.apache.struts.action.validator.DynaValidatorActionForm" supertypes="org.apache.struts.action.validator.DynaValidatorForm"/>
+  <class name="org.apache.struts.action.validator.ValidatorForm" supertypes="org.apache.struts.action.ActionForm"/>
+  <class name="org.apache.struts.action.validator.BeanValidatorForm" supertypes="org.apache.struts.action.validator.ValidatorForm"/>
+  <class name="org.apache.struts.action.validator.LazyValidatorForm" supertypes="org.apache.struts.action.validator.BeanValidatorForm"/>
+  <class name="org.apache.struts.action.validator.ValidatorActionForm" supertypes="org.apache.struts.action.validator.ValidatorForm"/>
+
+  <!-- Action hierarchy -->
+  <class name="org.apache.struts.action.Action">
+    <method name="execute" signature="execute(org.apache.struts.action.ActionMapping,org.apache.struts.action.ActionForm,javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)" alias="perform">
+      <return type="org.apache.struts.action.ActionForward"/>
+    </method>
+    <method name="generateToken" signature="generateToken(javax.servlet.http.HttpServletRequest)">
+      <return type="java.lang.String"/>
+    </method>
+    <method name="getDataSource" signature="getDataSource(javax.servlet.http.HttpServletRequest,java.lang.String" match="name">
+      <return type="javax.sql.DataSource"/>
+    </method>
+    <method name="getLocale" signature="getLocale(javax.servlet.http.HttpServletRequest)">
+      <return type="java.util.Locale"/>
+    </method>
+    <method name="getResources" signature="getResources()" match="name">
+      <return type="org.apache.struts.util.MessageResources"/>
+    </method>
+    <method name="getServlet" signature="getServlet()">
+      <return type="org.apache.struts.action.ActionServlet"/>
+    </method>
+  </class>
+  
+  <class name="org.apache.struts.actions.DispatchAction" supertypes="org.apache.struts.action.Action"/>
+  <class name="org.apache.struts.actions.EventsDispatchAction" supertypes="org.apache.struts.action.Action"/>
+  <class name="org.apache.struts.actions.LookupDispatchAction" supertypes="org.apache.struts.action.Action"/>
+  <class name="org.apache.struts.actions.MappingDispatchAction" supertypes="org.apache.struts.action.Action"/>
+  <class name="org.apache.struts.actions.DownloadAction" supertypes="org.apache.struts.action.Action"/>
+  <class name="org.apache.struts.actions.LocaleAction" supertypes="org.apache.struts.action.Action"/>
+  <class name="org.apache.struts.actions.ForwardAction" supertypes="org.apache.struts.action.Action"/>
+  <class name="org.apache.struts.actions.IncludeAction" supertypes="org.apache.struts.action.Action"/>
+  <class name="org.apache.struts.actions.SwitchAction" supertypes="org.apache.struts.action.Action"/>
+
+  <class name="org.apache.struts.tiles.actions.DefinitionDispatcherAction" supertypes="org.apache.struts.action.Action"/>
+  <class name="org.apache.struts.tiles.actions.NoOpAction" supertypes="org.apache.struts.action.Action"/>
+  <class name="org.apache.struts.tiles.actions.ReloadDefinitionsAction" supertypes="org.apache.struts.action.Action"/>
+  <class name="org.apache.struts.tiles.actions.TilesAction" supertypes="org.apache.struts.action.Action"/>
+  <class name="org.apache.struts.tiles.actions.ViewDefinitionsAction" supertypes="org.apache.struts.action.Action"/>
+
+</library>  

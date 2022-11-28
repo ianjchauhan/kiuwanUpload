@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for web service declarations in J2EE environment.</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="../j2ee/aim.java.xml"/>
+
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="j2ee/aim.java.properties"/>
+  </bean-->
+
+  <!-- Rules -->
+  
+  <bean id="aim.j2ee.webservice.rule.jaxws" class="com.optimyth.apm.builder.rules.j2ee.webservice.JaxwsRule" parent="aim.j2ee.rule.abstractRule">
+    <description>Creates web services and web service proxies based on JAX-WS annotations in Java classes (JSR-181)</description>
+    <property name="active" value="${aim.j2ee.webservice.rule.jaxws.active}"/>
+    <property name="filter" ref="aim.j2ee.filter.javaSource"/>
+    <property name="callback" ref="aim.j2ee.rule.java.callback"/>
+    <property name="processWebServiceClient" value="${aim.j2ee.webservice.rule.jaxws.processWebServiceClient}"/>
+    <property name="processWebServiceServer" value="${aim.j2ee.webservice.rule.jaxws.processWebServiceServer}"/>
+    <property name="createWebServiceMethods" value="${aim.j2ee.webservice.rule.jaxws.createWebServiceMethods}"/>
+    <property name="createUnresolvedWebServices" value="${aim.j2ee.webservice.rule.jaxws.createUnresolvedWebServices}"/>
+  </bean>
+
+  <bean id="aim.j2ee.webservice.rule.jbuilder" class="com.optimyth.apm.builder.rules.j2ee.webservice.JBuilderWebServiceRule">
+    <description>Creates referenced web service and related classes, defined in &lt;wsdl2java> element in axis.wsdu files in JBuilder WebServicesDesigner</description>
+    <property name="active" value="${aim.j2ee.webservice.rule.jbuilder.active}"/>
+    <property name="filter" ref="aim.j2ee.webservice.filter.jbuilder"/>
+    <property name="classCallback" ref="aim.j2ee.rule.java.callback"/>
+    <property name="createUnresolvedWebServices" value="${aim.j2ee.webservice.rule.jbuilder.createUnresolvedWebServices}"/>
+  </bean>
+  
+  <bean id="aim.j2ee.webservice.rule.axisWsdd" class="com.optimyth.apm.builder.rules.j2ee.webservice.AxisWsddRule">
+    <property name="active" value="${aim.j2ee.webservice.rule.axisWsdd.active}"/>
+    <property name="filter" ref="aim.j2ee.webservice.filter.axisWsdd"/>
+    <property name="createWebServiceMethods" value="${aim.j2ee.webservice.rule.axisWsdd.createWebServiceMethods}"/>
+    <property name="softwareName" value="${aim.j2ee.webservice.rule.axisWsdd.software}"/>
+  </bean>
+  
+  <!-- Filters -->
+  <bean id="aim.j2ee.webservice.filter.jbuilder" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.j2ee.webservice.filter.jbuilder}"/>
+  </bean>
+
+  <bean id="aim.j2ee.webservice.filter.axisWsdd" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.j2ee.webservice.filter.axisWsdd}"/>
+  </bean>
+
+</beans>                                  

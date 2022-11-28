@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.reactive" standard="Reactive" technology="java">
+
+  <description>Reactive libraries for Java</description>
+
+  <module name="java.util.concurrent.Flow" standard="java.flow">
+    <description url="https://docs.oracle.com/javase/9/docs/api/java/util/concurrent/Flow.html">Java Flow API (JEP-266)</description>
+    <class name="java.util.concurrent.Flow.Subscriber" kind="interface">
+      <method name="onComplete" signature="onComplete()"></method>
+      <method name="onError" signature="onError(java.lang.Throwable)"></method>
+      <method name="onNext" signature="onNext(T)"></method>
+      <method name="onSubscribe" signature="onSubscribe(java.util.concurrent.Flow.Subscription)"></method>
+    </class>
+    <class name="java.util.concurrent.Flow.Publisher" kind="interface">
+      <method name="subscribe" signature="subscribe(java.util.concurrent.Flow.Subscriber)"></method>
+    </class>
+    <class name="java.util.concurrent.Flow.Subscription" kind="interface">
+      <method name="cancel" signature="cancel()"></method>
+      <method name="request" signature="request(long)"></method>
+    </class>
+    <class name="java.util.concurrent.Flow.Processor" kind="interface" supertypes="java.util.concurrent.Flow.Subscriber, java.util.concurrent.Flow.Publisher"></class>
+
+    <class name="java.util.concurrent.SubmissionPublisher" supertypes="java.util.concurrent.Flow.Publisher, java.lang.AutoCloseable">
+      <constructor name="SubmissionPublisher" signature="SubmissionPublisher()"></constructor>
+      <constructor name="SubmissionPublisher_2" signature="SubmissionPublisher(java.util.concurrent.Executor, int)"></constructor>
+      <constructor name="SubmissionPublisher_3" signature="SubmissionPublisher(java.util.concurrent.Executor, int, java.util.function.BiConsumer)"></constructor>
+      <method name="close" signature="close()"></method>
+      <method name="closeExceptionally" signature="closeExceptionally(java.lang.Throwable"></method>
+      <method name="submit" signature="submit(T)"><return type="int"/></method>
+      <method name="offer" signature="offer(T, java.util.function.BiPredicate)"><return type="int"/></method>
+      <method name="offer" signature="offer(T, long, java.util.concurrent.TimeUnit, java.util.function.BiPredicate)"><return type="int"/></method>
+      <method name="consume" signature="consume(java.util.function.Consumer)"><return type="java.util.concurrent.CompletableFuture"/></method>
+    </class>
+  </module>
+
+  <module name="org.reactivestreams" standard="reactive.streams">
+    <description url="http://www.reactive-streams.org/">Reactive Streams - Async stream processing</description>
+    
+    <class name="org.reactivestreams.Subscriber" kind="interface">
+      <method name="onComplete" signature="onComplete()"></method>
+      <method name="onError" signature="onError(java.lang.Throwable)"></method>
+      <method name="onNext" signature="onNext(T)"></method>
+      <method name="onSubscribe" signature="onSubscribe(org.reactivestreams.Subscription)"></method>
+    </class>
+    <class name="org.reactivestreams.Subscription" kind="interface">
+      <method name="cancel" signature="cancel()"></method>
+      <method name="request" signature="request(long)"></method>
+    </class>
+    
+    <class name="org.reactivestreams.Publisher" kind="interface">
+      <method name="subscribe" signature="subscribe(org.reactivestreams.Subscriber)"></method>
+    </class>
+
+    <class name="org.reactivestreams.Processor" kind="interface" supertypes="org.reactivestreams.Subscriber, org.reactivestreams.Publisher"/>
+
+    <class name="org.reactivestreams.FlowAdapters">
+      <method name="toFlowProcessor" signature="toFlowProcessor(org.reactivestreams.Processor)" instance="false"><return type="java.util.concurrent.Flow.Processor"/></method>
+      <method name="toFlowPublisher" signature="toFlowPublisher(org.reactivestreams.Publisher)" instance="false"><return type="java.util.concurrent.Flow.Publisher"/></method>
+      <method name="toFlowSubscriber" signature="toFlowSubscriber(org.reactivestreams.Subscriber)" instance="false"><return type="java.util.concurrent.Flow.Subscriber"/></method>
+      <method name="toProcessor" signature="toProcessor(java.util.concurrent.Flow.Processor)" instance="false"><return type="org.reactivestreams.Processor"/></method>
+      <method name="toPublisher" signature="toPublisher(java.util.concurrent.Flow.Publisher)" instance="false"><return type="org.reactivestreams.Publisher"/></method>
+      <method name="toSubscriber" signature="to(java.util.concurrent.Flow.Subscriber)" instance="false"><return type="org.reactivestreams.Subscriber"/></method>
+    </class>
+  </module>
+
+</library>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/restify" standard="nodejs">
+
+  <module name="nodejs/restify" standard="restify">
+    <description url="http://restify.com/docs/home/">Framework similar to Express for building REST APIs</description>
+
+    <class name="nodejs/restify.ServerConfig">
+      <field name="name" type="String"/>
+      <field name="certificate" type="String">
+        <sink argpos="-1" kind="hardcoded_key" resource="network"/>
+      </field>
+      <field name="key" type="String">
+        <sink kind="hardcoded_key" resource="network"/>
+      </field>
+      <field name="formatters" type="Object"/>
+      <field name="spdy" type="Object"/>
+      <field name="handleUpgrades" type="Boolean"/>
+      <field name="httpsServerOptions" type="Object">
+        <sink kind="hardcoded_key" resource="network">
+          <arg pos="0" field="pfx,key,cert,dhparam,ca,crl"/>
+        </sink>
+        <sink kind="sensitive_data" resource="crypto">
+          <arg pos="0" field="passphrase"/>
+        </sink>
+      </field>
+    </class>
+
+    <!-- documentation says that this extends http.IncomingMessage, but really it is more similar to express.Request -->
+    <class name="nodejs/restify.Request" supertypes="nodejs/express.Request">
+      <function name="getQuery">
+        <source kind="external_input" resource="web" argpos="-1"/>
+      </function>
+    </class>
+
+    <!-- documentation says that this extends http.ServerResponse, but really it is more similar to express.Response -->
+    <class name="nodejs/restify.Response" supertypes="nodejs/express.Response">
+      <function name="header">
+        <tags>header.name:0, header.value:1</tags>
+        <sink kind="header_manipulation" argpos="0,1" resource="web"/>
+      </function>
+      <function name="charSet">
+        <sink kind="header_manipulation" argpos="0" resource="web"/>
+      </function>
+      <function name="json"/>
+    </class>
+
+    <class name="nodejs/restify.Server" supertypes="nodejs/http.Server"><!-- could be https.Server, when key or httpsServerOptions provided -->
+      <tags>hasEvents</tags>
+
+      <function name="listen">
+        <tags>server.listen</tags>
+        <return type="nodejs/restify.Server"/>
+        <sink kind="configuration_setting_injection" argpos="0,1"/>
+      </function>
+
+      <!-- middleware registration, similar to express.Application -->
+      <function name="use" alias="handle">
+        <tags>middleware</tags>
+        <parameters>
+          <!-- first (optional) param is path, we cannot control such dynamism here... -->
+          <param type="function(nodejs/restify.Request, nodejs/restify.Response, Function)"/>
+          <param type="function(nodejs/restify.Request, nodejs/restify.Response, Function)"/>
+          <param type="function(nodejs/restify.Request, nodejs/restify.Response, Function)"/>
+        </parameters>
+        <return type="nodejs/restify.Server"/>
+      </function>
+
+      <function name="all"
+                alias="checkout,copy,delete,get,head,lock,merge,mkactivity,mkcol,move,notify,options,patch,post,purge,put,report,search,subscribe,trace,unlock,unsubscribe">
+        <tags>middleware</tags>
+        <parameters>
+          <param type="String"/><!-- route -->
+          <param type="function(nodejs/restify.Request, nodejs/restify.Response, Function)"/>
+          <param type="function(nodejs/restify.Request, nodejs/restify.Response, Function)"/>
+          <param type="function(nodejs/restify.Request, nodejs/restify.Response, Function)"/>
+        </parameters>
+        <return type="nodejs/restify.Server"/>
+      </function>
+
+      <!-- events added to http.Server -->
+      <function name="on:NotFound" alias="on:MethodNotAllowed,on:VersionNotAllowed,on:UnsupportedMediaType">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/restify.Request, nodejs/restify.Response, Error, Function)" callback="true"/>
+        </parameters>
+      </function>
+      <function name="on:after" alias="on:uncaughtException">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/restify.Request, nodejs/restify.Response, String, Error)" callback="true"/>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/restify">
+      <field name="defaultResponseHeaders" type="function(String)"/>
+
+      <function name="createServer">
+        <tags>server.new</tags>
+        <parameters>
+          <param type="nodejs/restify.ServerConfig"/>
+        </parameters>
+        <return type="nodejs/restify.Server"/>
+      </function>
+
+      <!-- standard middlewares -->
+      <function name="acceptParser"
+                alias="auditLogger,authorizationParser,CORS,dateParser,queryParser,jsonp,requestLogger,gzipResponse,bodyParser,requestExpiry,conditionalRequest">
+      </function>
+
+      <function name="serveStatic">
+        <sink kind="path_traversal" resource="filesystem">
+          <arg pos="0" field="directory,file"/>
+        </sink>
+      </function>
+
+      <function name="throttle">
+        <tags>dos_mitigation</tags>
+      </function>
+    </class>
+  </module>
+
+</library>

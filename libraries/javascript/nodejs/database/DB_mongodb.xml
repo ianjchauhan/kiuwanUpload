@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/DB_mongodb" standard="nodejs">
+
+  <module name="nodejs/DB_mongodb" standard="database/mongodb">
+    <description url="https://mongodb.github.io/node-mongodb-native/3.6/api/">MongoDB Driver API</description>
+
+    <class name="nodejs/mongodb.CoreCursor">
+      <tags>hasEvents</tags>
+      <function name="each" alias="next">
+        <parameters><param type="function(Error,Object)">
+          <source argpos="1" kind="database_input" resource="database"/>
+        </param></parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="hasNext">
+        <return type="Promise"/>
+      </function>
+      <function name="toArray">
+        <parameters><param type="function(Error,Array)">
+          <source argpos="1" kind="database_input" resource="database"/>
+        </param></parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="on:data">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Object)">
+            <source argpos="0" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/mongodb.Cursor" supertypes="nodejs/mongodb.CoreCursor,nodejs/stream.Readable">
+      <function name="batchSize"
+                alias="clone,hint,limit,max,maxAwaitTimeMS,maxScan,maxTimeMS,min,project,returnKey,setCursorOption,setReadPreference,showRecordId,skip,snapshot,transform">
+        <return type="nodejs/mongodb.Cursor"/>
+      </function>
+      <function name="filter">
+        <return type="nodejs/mongodb.Cursor"/>
+        <sink kind="nosql_injection" argpos="0" resource="database"/>
+      </function>
+      <function name="forEach">
+        <parameters>
+          <param type="function(Object)">
+            <source kind="database_input" resource="database" argpos="0"/>
+          </param>
+          <param type="function(Error)"/>
+        </parameters>
+      </function>
+      <function name="map">
+        <return type="nodejs/mongodb.Cursor"/>
+      </function>
+      <function name="nextObject">
+        <tags>deprecated</tags>
+        <parameters><param type="function(Error,Object)">
+          <source argpos="1" kind="database_input" resource="database"/>
+        </param></parameters>
+        <return type="Promise"/>
+      </function>
+    </class>
+
+    <class name="nodejs/mongodb.Collection">
+      <function name="deleteMany" alias="deleteOne">
+        <sink kind="nosql_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="$where"/>
+        </sink>
+      </function>
+      <function name="find">
+        <return type="nodejs/mongodb.Cursor"/>
+        <sink kind="nosql_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="$where"/>
+        </sink>
+      </function>
+      <function name="findAndModify">
+        <return type="Promise"/>
+        <sink kind="nosql_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="$where"/>
+        </sink>
+      </function>
+      <function name="findOne">
+        <parameters>
+          <param type="Object"/><param type="Object"/>
+          <param type="function(Error,Object)">
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <return type="Promise"/>
+        <sink kind="nosql_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="$where"/>
+        </sink>
+      </function>
+      <function name="findOneAndUpdate" alias="findOneAndReplace,findOneAndDelete">
+        <sink kind="nosql_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="$where"/>
+        </sink>
+      </function>
+      <function name="insert"></function>
+      <function name="insertMany"></function>
+      <function name="insertOne"></function>
+      <function name="mapReduce"></function>
+      <function name="options"></function>
+      <function name="parallelCollectionScan"></function>
+      <function name="remove">
+        <sink kind="nosql_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="$where"/>
+        </sink>
+      </function>
+      <function name="replaceOne">
+        <sink kind="nosql_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="$where"/>
+        </sink>
+      </function>
+      <function name="save"></function>
+      <function name="update">
+        <sink kind="nosql_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="$where"/>
+        </sink>
+      </function>
+      <function name="updateMany" alias="updateOne">
+        <sink kind="nosql_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="$where"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/mongodb.CommandCursor" supertypes="nodejs/mongodb.CoreCursor,nodejs/stream.Readable">
+      <function name="batchSize" alias="clone,maxTimeMS">
+        <return type="nodejs/mongodb.CommandCursor"/>
+      </function>
+    </class>
+
+    <class name="nodejs/mongodb.Admin">
+      <function name="addUser" alias="authenticate">
+        <tags>user:0,password:1</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="String"/>
+          <param type="Object"/>
+          <param type="function(Error,Object)" last="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="command">
+        <return type="Promise"/>
+        <sink kind="nosql_injection" argpos="0"/>
+      </function>
+      <function name="removeUser">
+        <tags>user:0</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="Object"/>
+          <param type="function(Error,Object)" last="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/mongodb.Db" supertypes="nodejs/mongodb.Admin">
+      <function name="admin"><return type="nodejs/mongodb.Admin"/></function>
+      <function name="collection">
+        <parameters>
+          <param type="String"/>
+          <param type="Object"/>
+          <param type="function(Error,nodejs/mongodb.Collection)" last="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/mongodb.Collection"/>
+        <sink kind="resource_injection" argpos="0" resource="database"/>
+      </function>
+      <function name="collections">
+        <parameters><param type="function(Error,Array)"/></parameters>
+      </function>
+      <function name="createCollection" alias="dropCollection">
+        <parameters>
+          <param type="String"/>
+          <param type="Object"/>
+          <param type="function(Error,nodejs/mongodb.Collection)" last="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="Promise"/>
+        <sink kind="resource_injection" argpos="0" resource="database"/>
+      </function>
+      <function name="db">
+        <return type="nodejs/mongodb.Db"/>
+        <sink kind="resource_injection" argpos="0" resource="database"/>
+      </function>
+      <function name="dropDatabase"/>
+      <function name="eval">
+        <tags>deprecated</tags>
+        <sink kind="code_injection" resource="database" argpos="0"><checker id="ignoreCallbacks"/></sink>
+      </function>
+      <function name="executeDbAdminCommand">
+        <sink kind="nosql_injection" argpos="0"/>
+      </function>
+      <function name="listCollections">
+        <return type="nodejs/mongodb.CommandCursor"/>
+        <sink kind="nosql_injection" resource="database" argpos="0"/>
+      </function>
+      <function name="open">
+        <parameters>
+          <param type="function(Error,nodejs/mongodb.Db)"/>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="renameCollection">
+        <parameters>
+          <param type="String"/><param type="String"/><param type="Object"/>
+          <param type="function(Error,nodejs/mongodb.Collection)" last="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="Promise"/>
+        <sink kind="resource_injection" argpos="0,1" resource="database"/>
+      </function>
+    </class>
+
+    <class name="nodejs/mongodb.MongoClient">
+      <function name="connect">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,nodejs/mongodb.Db)" callback="true" last="true"/>
+        </parameters>
+        <return type="Promise"/>
+        <sink kind="connection_string_injection" resource="database" argpos="0"/>
+        <sink kind="sensitive_info" resource="crypto">
+          <arg pos="1" field="sslPass"/>
+        </sink>
+        <sink kind="hardcoded_key" resource="crypto">
+          <arg pos="1" field="sslCA,sslCert,sslKey"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/mongodb">
+      <field name="Admin" type="nodejs/mongodb.Admin"/>
+      <field name="MongoClient" type="nodejs/mongodb.MongoClient"/>
+      <field name="Db" type="nodejs/mongodb.Db"/>
+      <field name="Collection" type="nodejs/mongodb.Collection"/>
+      <field name="Server" type="nodejs/mongodb.Server"/>
+      <field name="ReplSet" type="nodejs/mongodb.ReplSet"/>
+      <field name="Mongos" type="nodejs/mongodb.Mongos"/>
+      <field name="ReadPreference" type="nodejs/mongodb.ReadPreference"/>
+      <field name="GridStore" type="nodejs/mongodb.GridStore"/>
+      <field name="Chunk" type="nodejs/mongodb.Chunk"/>
+      <field name="Logger" type="nodejs/mongodb.Logger"/>
+      <field name="GridFSBucket" type="nodejs/mongodb.GridFSBucket"/>
+      <field name="CoreServer" type="nodejs/mongodb.CoreServer"/>
+      <field name="CoreConnection" type="nodejs/mongodb.CoreConnection"/>
+
+      <function name="connect">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,nodejs/mongodb.Db)" callback="true" last="true"/>
+        </parameters>
+        <return type="Promise"/>
+        <sink kind="connection_string_injection" resource="database" argpos="0"/>
+        <sink kind="sensitive_info" resource="crypto">
+          <arg pos="1" field="sslPass"/>
+        </sink>
+        <sink kind="hardcoded_key" resource="crypto">
+          <arg pos="1" field="sslCA,sslCert,sslKey"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/mongo-sanitize">
+      <function name="#module#">
+        <neutralization argpos="0" kind="nosql_injection" resource="database"/>
+      </function>
+    </class>
+  </module>
+
+</library>

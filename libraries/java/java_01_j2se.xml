@@ -1,0 +1,3845 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.j2se" standard="Java_SE" technology="java">
+
+  <description url="https://jdk.java.net/">APIs in Java Standard Edition (Java SE)</description>
+
+  <!-- NOTE: pos=-1 = returned method value, pos=-2 = object target -->
+
+  <module name="jdk.base">
+    <description>Base JDK types</description>
+
+    <!-- Base interfaces -->
+    <class name="java.lang.CharSequence" kind="interface">
+      <method name="length" signature="length()"><return type="int"/></method>
+      <method name="charAt" signature="charAt(int)"><return type="char"/></method>
+      <method name="subSequence" signature="subSequence(int,int)">
+        <return type="java.lang.CharSequence"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="toString" signature="toString()">
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.lang.AutoCloseable" kind="interface">
+      <method name="close" signature="close()">
+        <tags>close</tags>
+      </method>
+    </class>
+
+    <class name="java.lang.Readable">
+      <tags>readable</tags>
+      <method name="read" signature="read(java.nio.CharBuffer)">
+        <tags>read</tags>
+        <return type="int"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+    </class>
+
+    <class name="java.lang.Runnable">
+      <method name="run" signature="run()"/>
+    </class>
+
+    <class name="java.lang.Appendable">
+      <method name="append" signature="append(java.lang.CharSequence)" match="name">
+        <return type="java.lang.Appendable"/>
+        <propagate from="0" to="-2"/>
+      </method>
+    </class>
+
+    <!-- Base types and utilities -->
+    <class name="java.lang.Object">
+      <method name="getClass" signature="getClass()">
+        <return type="java.lang.Class" />
+      </method>
+    </class>
+
+    <class name="java.lang.String" supertypes="java.lang.CharSequence">
+      <description>String</description>
+      <tags>immutable</tags>
+      <!-- String constructors, propagate tainting from first arg to the returned immutable string -->
+      <constructor name="String" signature="String(java.lang.String)" match="other">
+        <matcher kind="method" function="String" args="1"/>
+        <propagate from="0" to="-1"/>
+      </constructor>
+      <method name="concat" signature="concat(java.lang.String)">
+        <return type="java.lang.String"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="copyValueOf" signature="copyValueOf(char[])">
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="copyValueOf_2" signature="copyValueOf(char[], int, int)">
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="equals" signature="equals(java.lang.String)" alias="equalsIgnoreCase">
+        <return type="boolean"/>
+        <neutralization argpos="-2,0" kind="string"/>
+      </method>
+      <method name="format" signature="format(java.util.Locale, java.lang.String, java.lang.Object...)" match="fullsignature">
+        <return type="java.lang.String"/>
+        <propagate from="1,2" to="-1"/>
+        <sink argpos="1" kind="format_injection" resource="formatstr"/>
+      </method>
+      <method name="format_2" signature="format(java.lang.String, java.lang.Object...)" match="fullsignature">
+        <return type="java.lang.String"/>
+        <propagate from="0,1" to="-1"/>
+        <sink argpos="0" kind="format_injection" resource="formatstr"/>
+      </method>
+      <method name="getBytes" signature="getBytes()" match="name">
+        <return type="byte[]"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getChars" signature="getChars(int,int,char[],int)">
+        <return type="char[]"/>
+        <propagate from="-2" to="2"/>
+      </method>
+      <method name="intern" signature="intern()">
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="replace" signature="replace(java.lang.String,java.lang.String)">
+        <return type="java.lang.String"/>
+        <propagate from="-2,1" to="-1"/>
+        <neutralization argpos="-1" kind="string"/>
+      </method>
+      <method name="trim" signature="trim()">
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="toUpperCase" signature="toUpperCase()" match="name">
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="toLowerCase" signature="toLowerCase()" match="name">
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="toCharArray" signature="toCharArray()">
+        <return type="char[]"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="split" signature="split(java.lang.String,int)" match="name">
+        <return type="java.lang.String[]"/>
+        <propagate from="-2" to="-1"/>
+        <sink argpos="0" kind="regex_dos" resource="other"/>
+      </method>
+      <method name="substring" signature="substring()" match="name">
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="subSequence" signature="subSequence()" match="name">
+        <return type="java.lang.CharSequence"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="toString" signature="toString()">
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="valueOf" signature="valueOf(java.lang.Object)">
+        <return type="java.lang.String"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="replaceFirst" signature="replaceFirst(java.lang.String,java.lang.String)" match="name">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-2" kind="string"/>
+        <sink argpos="0" kind="regex_dos" resource="other"/>
+      </method>
+      <method name="replaceAll" signature="replaceAll(java.lang.String,java.lang.String)" match="name">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-2" kind="string"/>
+        <sink argpos="0" kind="regex_dos" resource="other"/>
+      </method>
+      <method name="matches" signature="matches(java.lang.String)" match="name">
+        <return type="boolean"/>
+        <neutralization argpos="-2" kind="string"/>
+        <sink argpos="0" kind="regex_dos" resource="other"/>
+      </method>
+      <method name="startsWith" signature="startsWith(java.lang.String)">
+        <return type="boolean"/>
+        <neutralization argpos="-2" kind="path_traversal" >
+          <checker id="j2se.normalizationChecker" />
+        </neutralization>
+        <neutralization argpos="-2" kind="http_parameter_pollution" />
+        <neutralization argpos="-2" kind="ssrf" />
+      </method>
+      <method name="endsWith" signature="endsWith(java.lang.String)">
+        <return type="boolean"/>
+        <!--neutralization argpos="-2" kind="string"/-->
+      </method>
+      <method name="contains" signature="contains(java.lang.CharSequence)">
+        <return type="boolean"/>
+        <neutralization argpos="-2,0" kind="path_traversal">
+          <checker id="j2se.normalizationChecker" />
+        </neutralization>
+      </method>
+      <method name="lastIndexOf" signature="lastIndexOf(char c)">
+        <return type="int"/>
+        <neutralization argpos="-2" kind="path_traversal"/>
+      </method>
+    </class>
+
+    <class name="java.lang.Thread">
+      <method name="currentThread" signature="currentThread()">
+        <return type="java.lang.Thread"/>
+      </method>
+    </class>
+
+    <class name="java.math.BigInteger" supertypes="java.lang.Number, java.io.Serializable, java.lang.Comparable">
+      <tags>immutable</tags>
+
+      <field name="ONE" instance="false" type="java.math.BigInteger" alias="ZERO,TEN"/>
+
+      <constructor name="BigInteger" signature="BigInteger(int,java.lang.Random)" match="fullsignature">
+        <source argpos="1" kind="insecure_random" resource="crypto"/>
+      </constructor>
+      <constructor name="BigInteger" signature="BigInteger(int,int,java.lang.Random)">
+        <source argpos="2" kind="insecure_random" resource="crypto"/>
+      </constructor>
+
+      <method name="probablePrime" signature="probablePrime(int,java.lang.Random)" instance="false">
+        <return type="java.math.BigInteger"/>
+        <source argpos="1" kind="insecure_random" resource="crypto"/>
+      </method>
+      <method name="valueOf" signature="valueOf(long)" instance="false">
+        <return type="java.math.BigInteger"/>
+      </method>
+
+      <method name="abs" signature="abs()" alias="negate,not,nextProbablePrime">
+        <tags>unary-op</tags>
+        <return type="java.math.BigInteger"/>
+      </method>
+      <method name="add" signature="add(java.math.BigInteger)"
+              alias="and,andNot,divide,gcd,max,min,mod,modInverse,multiply,or,remainder,substract,xor">
+        <tags>binary-op</tags>
+        <return type="java.math.BigInteger"/>
+      </method>
+      <method name="divideAndRemainder" signature="divideAndRemainder(java.math.BigInteger)">
+        <return type="java.math.BigInteger[]"/>
+      </method>
+      <method name="clearBit" signature="clearBit(int)" alias="flipBit,pow,setBit,shiftLeft,shiftRight">
+        <tags>binary-op</tags>
+        <return type="java.math.BigInteger"/>
+      </method>
+      <method name="toByteArray" signature="toByteArray()">
+        <return type="byte[]"/>
+      </method>
+      <method name="toString" signature="toString()" match="name">
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.math.BigDecinal" supertypes="java.lang.Number, java.io.Serializable, java.lang.Comparable" >
+      <tags>immutable</tags>
+      <field name="ONE" instance="false" type="java.math.BigInteger" alias="ZERO,TEN"/>
+
+      <method name="valueOf" signature="valueOf(long)" instance="false" match="name">
+        <return type="java.math.BigDecimal"/>
+      </method>
+
+      <method name="abs" signature="abs()" match="name" alias="negate,plus,stripTrailingZeros,ulp">
+        <tags>unary-op</tags>
+        <return type="java.math.BigDecimal"/>
+      </method>
+      <method name="add" signature="add(java.math.BigDecimal)" match="name"
+              alias="divide,divideToIntegralValue,max,min,multiply,remainder,substract">
+        <tags>binary-op</tags>
+        <return type="java.math.BigDecimal"/>
+      </method>
+      <method name="divideAndRemainder" match="name"
+              signature="divideAndRemainder(java.math.BigInteger)">
+        <return type="java.math.BigDecimal[]"/>
+      </method>
+      <method name="movePointLeft" signature="movePointLeft(int)" match="name" alias="movePointRight,pow,scaleByPowerOfTen,setScale">
+        <tags>binary-op</tags>
+        <return type="java.math.BigInteger"/>
+      </method>
+      <method name="toBigInteger" signature="toBigInteger()" alias="toBigIntegerExact,unscaledValue">
+        <return type="java.math.BigInteger"/>
+      </method>
+      <method name="toString" signature="toString()" alias="toEngineeringString,toPlainString">
+        <return type="java.lang.String"/>
+      </method>
+    </class>
+
+    <class name="java.lang.Boolean">
+      <tags>immutable</tags>
+
+      <constructor name="Boolean" signature="Boolean()" match="name">
+        <neutralization argpos="0" kind="string"/>
+      </constructor>
+      <method name="parseBoolean" signature="parseBoolean(java.lang.String)" match="name" alias="booleanValue,getBoolean,valueOf,toString">
+        <neutralization argpos="-1" kind="string"/>
+      </method>
+    </class>
+
+    <class name="java.lang.Number">
+      <method name="byteValue" signature="byteValue()">
+        <return type="byte"/>
+        <neutralization argpos="-1" kind="numeric2numeric"/>
+      </method>
+      <method name="doubleValue" signature="doubleValue()">
+        <return type="double"/>
+        <neutralization argpos="-1" kind="numeric2numeric"/>
+      </method>
+      <method name="floatValue" signature="floatValue()">
+        <return type="float"/>
+        <neutralization argpos="-1" kind="numeric2numeric"/>
+      </method>
+      <method name="intValue" signature="intValue()">
+        <return type="int"/>
+        <neutralization argpos="-1" kind="numeric2numeric"/>
+      </method>
+      <method name="longValue" signature="longValue()">
+        <return type="long"/>
+        <neutralization argpos="-1" kind="numeric2numeric"/>
+      </method>
+      <method name="shortValue" signature="shortValue()">
+        <return type="short"/>
+        <neutralization argpos="-1" kind="numeric2numeric"/>
+      </method>
+    </class>
+
+    <class name="java.lang.Integer" supertypes="java.lang.Number">
+      <tags>immutable</tags>
+
+      <constructor name="Integer" signature="Integer()" match="name">
+        <neutralization argpos="0" kind="string2numeric"/>
+      </constructor>
+      <method name="parseInt" signature="parseInt(java.lang.String)" match="name" instance="false"
+              alias="decode, valueOf, getInteger">
+        <return type="java.lang.Integer" />
+        <neutralization argpos="-1" kind="string2numeric"/>
+      </method>
+      <method name="toString" signature="toString()" alias="toBinaryString,toHexString,toOctalString" match="name">
+        <return type="java.lang.String" />
+        <neutralization argpos="-1" kind="numeric2string"/>
+      </method>
+    </class>
+
+    <class name="java.lang.Long" supertypes="java.lang.Number">
+      <tags>immutable</tags>
+
+      <constructor name="Long" signature="Long()" match="name">
+        <neutralization argpos="0" kind="string2numeric"/>
+      </constructor>
+      <method name="parseLong" signature="parseLong(java.lang.String)" match="name" alias="decode,valueOf,getLong">
+        <neutralization argpos="-1" kind="string2numeric"/>
+      </method>
+      <method name="toString" signature="toString()" alias="toBinaryString,toHexString,toOctalString" match="name">
+        <neutralization argpos="-1" kind="numeric2string"/>
+      </method>
+    </class>
+
+    <class name="java.lang.Byte" supertypes="java.lang.Number">
+      <tags>immutable</tags>
+    </class>
+
+    <class name="java.lang.Character" >
+      <tags>immutable</tags>
+    </class>
+
+    <class name="java.lang.Short" supertypes="java.lang.Number">
+      <tags>immutable</tags>
+    </class>
+
+    <class name="java.lang.Double" supertypes="java.lang.Number">
+      <tags>immutable</tags>
+    </class>
+
+    <class name="java.lang.Float" supertypes="java.lang.Number">
+      <tags>immutable</tags>
+    </class>
+
+    <class name="java.util.concurrent.AtomicInteger" supertypes="java.lang.Number"/>
+    <class name="java.util.concurrent.AtomicLong" supertypes="java.lang.Number"/>
+
+    <class name="java.util.ResourceBundle" >
+      <method name="getObject" signature="getObject(String key)" >
+        <return type="java.lang.Object" />
+        <source argpos="-1" kind="other_input" resource="other" />
+      </method>
+      <method name="getString" signature="getString(String key)" >
+        <return type="java.lang.String" />
+        <source argpos="-1" kind="other_input" resource="other" />
+      </method>
+      <method name="getStringArray" signature="getStringArray(String key)" >
+        <return type="java.lang.String[]" />
+        <source argpos="-1" kind="other_input" resource="other" />
+      </method>
+    </class>
+
+    <class name="java.util.Locale" >
+      <tags>immutable</tags>
+      <field name="CANADA" type="java.util.Locale" alias="CANADA_FRENCH, CHINA, CHINESE, ENGLISH, FRANCE, FRENCH, GERMAN,
+      GERMANY, ITALIAN, ITALY, JAPAN, JAPANESE, KOREA, KOREAN, PRC, ROOT, SIMPLIFIED_CHINESE, TAIWAN, TRADITIONAL_CHINESE,
+       UK, US" />
+    </class>
+
+    <class name="java.util.UUID " >
+      <tags>immutable</tags>
+    </class>
+
+  </module>
+
+  <!-- EXCEPTIONS -->
+  <module name="jdk.exceptions">
+    <class name="java.lang.Throwable" >
+      <method name="printStackTrace" signature="printStackTrace()">
+        <tags>sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0" kind="detail_error" resource="other"/>
+      </method>
+      <method name="printStackTrace_2" signature="printStackTrace(java.io.PrintStream)">
+        <tags>sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0" kind="detail_error" resource="other"/>
+      </method>
+      <method name="printStackTrace_3" signature="printStackTrace(java.io.PrintWriter)">
+        <tags>sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0" kind="detail_error" resource="other"/>
+      </method>
+      <method name="getMessage" signature="getMessage()" alias="getLocalizedMessage()">
+        <return type="java.lang.String" />
+      </method>
+      <method name="getStackTrace" signature="getStackTrace()" >
+        <tags>sensitive_error_message:needs_sensitiveness_check</tags>
+        <return type="java.lang.StackTraceElement[]" elementType="java.lang.StackTraceElement" />
+      </method>
+    </class>
+    <class name="java.lang.Exception" supertypes="java.lang.Throwable">
+      <description>Exception</description>
+    </class>
+    <class name="java.lang.Error" supertypes="java.lang.Throwable" />
+
+    <class name="java.lang.ArithmeticException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.ArrayIndexOutOfBoundsException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.ArrayStoreException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.ClassCastException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.ClassNotFoundException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.CloneNotSupportedException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.EnumConstantNotPresentException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.IllegalAccessException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.IllegalArgumentException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.IllegalMonitorStateException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.IllegalStateException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.IllegalThreadStateException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.IndexOutOfBoundsException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.InstantiationException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.InterruptedException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.NegativeArraySizeException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.NoSuchFieldException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.NoSuchMethodException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.NullPointerException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.NumberFormatException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.ReflectiveOperationException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.RuntimeException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.SecurityException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.StringIndexOutOfBoundsException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.TypeNotPresentException" supertypes="java.lang.Exception"/>
+    <class name="java.lang.UnsupportedOperationException" supertypes="java.lang.Exception"/>
+
+    <class name="java.lang.AbstractMethodError" supertypes="java.lang.IncompatibleClassChangeError"/>
+    <class name="java.lang.AssertionError" supertypes="java.lang.Error"/>
+    <class name="java.lang.BootstrapMethodError" supertypes="java.lang.LinkageError"/>
+    <class name="java.lang.ClassCircularityError" supertypes="java.lang.LinkageError"/>
+    <class name="java.lang.ClassFormatError" supertypes="java.lang.LinkageError"/>
+    <class name="java.lang.ExceptionInInitializerError" supertypes="java.lang.LinkageError"/>
+    <class name="java.lang.IncompatibleClassChangeError" supertypes="java.lang.LinkageError"/>
+    <class name="java.lang.InstantiationError" supertypes="java.lang.IncompatibleClassChangeError"/>
+    <class name="java.lang.InternalError" supertypes="java.lang.VirtualMachineError"/>
+    <class name="java.lang.LinkageError" supertypes="java.lang.Error"/>
+    <class name="java.lang.NoClassDefFoundError" supertypes="java.lang.LinkageError"/>
+    <class name="java.lang.NoSuchFieldError" supertypes="java.lang.IncompatibleClassChangeError"/>
+    <class name="java.lang.NoSuchMethodError" supertypes="java.lang.IncompatibleClassChangeError"/>
+    <class name="java.lang.OutOfMemoryError" supertypes="java.lang.VirtualMachineError"/>
+    <class name="java.lang.StackOverflowError" supertypes="java.lang.VirtualMachineError"/>
+    <class name="java.lang.ThreadDeath" supertypes="java.lang.Error"/>
+    <class name="java.lang.UnknownError" supertypes="java.lang.VirtualMachineError"/>
+    <class name="java.lang.UnsatisfiedLinkError" supertypes="java.lang.LinkageError"/>
+    <class name="java.lang.UnsupportedClassVersionError" supertypes="java.lang.ClassFormatError"/>
+    <class name="java.lang.VerifyError" supertypes="java.lang.LinkageError"/>
+    <class name="java.lang.VirtualMachineError" supertypes="java.lang.Error"/>
+
+    <class name="java.io.IOException" supertypes="java.lang.Exception" />
+    <class name="java.io.FileNotFoundException" supertypes="java.io.IOException" />
+    <class name="java.sql.SQLException" supertypes="java.lang.Exception, java.lang.Iterable">
+      <method name="getErrorCode" signature="getErrorCode()"><return type="int"/></method>
+      <method name="getNextException" signature="getNextException()"><return type="java.sql.SQLException"/></method>
+      <method name="iterator" signature="iterator()"><return type="java.util.Iterator" elementType="java.lang.Throwable"/></method>
+      <method name="getSQLState" signature="getSQLState()">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+    </class>
+    <class name="java.sql.SQLWarning" supertypes="java.sql.SQLException"/>
+    <class name="java.net.BindException" supertypes="java.net.SocketException" />
+    <class name="java.net.SocketException" supertypes="java.io.IOException" />
+    <class name="java.util.ConcurrentModificationException" supertypes="java.lang.RuntimeException" />
+    <class name="javax.naming.InsufficientResourcesException" supertypes="javax.naming.NamingException" />
+    <class name="javax.naming.NamingException" supertypes="java.lang.Exception" />
+    <class name="java.util.MissingResourceException" supertypes="java.lang.RuntimeException" />
+    <class name="java.util.jar.JarException" supertypes="java.util.zip.ZipException" />
+    <class name="java.util.zip.ZipException" supertypes="java.io.IOException" />
+    <class name="java.security.acl.NotOwnerException" supertypes="java.lang.Exception" />
+
+    <class name="java.lang.StackTraceElement" >
+      <tags>immutable</tags>
+    </class>
+  </module>
+
+  <!--  COLLECTIONS -->
+  <module name="jdk.collections">
+    <description>JDK collections</description>
+
+    <class name="java.util.Collection" kind="interface">
+      <description></description>
+      <method name="add" signature="add(E)" match="name">
+        <tags>setter: true</tags>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="addAll" signature="addAll(java.util.Collection)" match="name">
+        <tags>setter: true</tags>
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="clear" signature="clear()" match="name">
+        <neutralization argpos="-2" kind="*"/>
+      </method>
+      <method name="remove" signature="remove(java.lang.Object)" match="name">
+        <neutralization argpos="-1" kind="*"/><!-- ??? -->
+      </method>
+      <method name="removeAll" signature="removeAll(java.util.Collection)" match="name">
+        <neutralization argpos="-1" kind="*"/><!-- ??? -->
+      </method>
+      <method name="size" signature="size()" match="name">
+        <tags>potential_infinite_loop_neutralizer</tags>
+        <return type="int"/>
+      </method>
+      <method name="toArray" signature="toArray()" match="name">
+        <return type="java.lang.Object[]"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="iterator" signature="iterator()" match="name">
+        <return type="java.util.Iterator"/>
+      </method>
+      <method name="stream" signature="stream()" alias="parallelStream">
+        <return type="java.util.stream.Stream" />
+      </method>
+      <method name="toString" signature="toString()">
+        <return type="java.lang.String" />
+        <propagate from="-2" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.util.Enumeration" kind="interface">
+      <description></description>
+      <method name="nextElement" signature="nextElement()" match="name">
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="hasMoreElements" signature="hasMoreElements()" match="name">
+        <tags>potential_infinite_loop_neutralizer</tags>
+        <propagate from="-2" to="-1"/>
+      </method>
+    </class>
+    <class name="java.util.Iterator" kind="interface">
+      <description></description>
+      <method name="next" signature="next()" match="name">
+        <tags>potential_infinite_loop_neutralizer</tags>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="hasNext" signature="hasNext()" match="name">
+        <tags>potential_infinite_loop_neutralizer</tags>
+        <propagate from="-2" to="-1"/>
+        <neutralization argpos="-2" kind="loop-condition" resource="other" />
+      </method>
+    </class>
+
+    <class name="java.util.List" kind="interface" supertypes="java.util.Collection">
+      <tags>collection:true</tags>
+      <method name="get" signature="get(java.lang.Integer)"  match="name">
+        <tags>getter: true</tags>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="add" signature="add(E)" match="name">
+        <tags>setter: true</tags>
+        <propagate from="0" to="-2,-1"/>
+      </method>
+      <method name="addAll" signature="addAll(java.util.Collection)" match="name">
+        <tags>setter: true</tags>
+        <propagate from="0,1" to="-2"/>
+      </method>
+      <method name="of" signature="of(Elements...)" match="name">
+        <tags>setter: true</tags>
+        <return type="java.util.List"/>
+        <propagate from="0,1" to="-2"/>
+      </method>
+    </class>
+
+    <class name="java.util.ArrayList" supertypes="java.util.List"/>
+    <class name="java.util.LinkedList" supertypes="java.util.List">
+      <method name="add" signature="add(int, E)" match="name">
+        <propagate from="0,1" to="-1"/>
+      </method>
+      <method name="remove" signature="remove(java.lang.Object)" match="name">
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="removeAll" signature="removeAll(java.util.Collection)" match="name">
+        <propagate from="-2" to="-1"/>
+      </method>
+    </class>
+    <class name="java.util.Set" kind="interface" supertypes="java.util.Collection">
+      <method name="add" signature="add(E)" match="name">
+        <tags>setter: true</tags>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="addAll" signature="addAll(java.util.Collection)" match="name">
+        <tags>setter: true</tags>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="of" signature="of(Elements...)" match="name">
+        <tags>setter: true</tags>
+        <return type="java.util.Set"/>
+        <propagate from="0,1" to="-2"/>
+      </method>
+    </class>
+    <class name="java.util.EnumSet" supertypes="java.util.Set"/>
+    <class name="java.util.HashSet" supertypes="java.util.Set"/>
+    <class name="java.util.LinkedHashSet" supertypes="java.util.Set"/>
+    <class name="java.util.TreeSet" supertypes="java.util.Set"/>
+
+    <class name="java.util.Map" kind="interface">
+      <tags>collection:true</tags>
+      <method name="get" signature="get(K)" match="name">
+        <tags>getter: true, map.key:0, map.value:-1</tags>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="put" signature="put(K,V)" match="name">
+        <tags>setter: true, map.key:0, map.value:1</tags>
+        <propagate from="0,1" to="-1,-2"/>
+      </method>
+      <method name="of" signature="of(Elements...)" match="name">
+        <tags>setter: true</tags>
+        <return type="java.util.Map"/>
+        <propagate from="0,1" to="-2"/>
+      </method>
+      <method name="putAll" signature="putAll(java.util.Map)" match="name">
+        <tags>setter: true</tags>
+        <propagate from="0,1" to="-2"/>
+      </method>
+      <method name="entrySet" signature="entrySet()" match="name">
+        <return type="java.util.Set"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="keySet" signature="keySet()" match="name">
+        <return type="java.util.Set"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="values" signature="values()" match="name">
+        <return type="java.util.Collection"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.util.concurrent.ConcurrentHashMap" supertypes="java.util.Map"/>
+    <class name="java.util.concurrent.ConcurrentSkipListSet" supertypes="java.util.Set" />
+    <class name="java.util.EnumMap" supertypes="java.util.Map"/>
+    <class name="java.util.HashMap" supertypes="java.util.Map"/>
+    <class name="java.util.Hashtable" supertypes="java.util.Map"/>
+    <class name="java.util.LinkedHashMap" supertypes="java.util.Map"/>
+
+    <class name="java.util.Vector" supertypes="java.util.Collection" />
+
+    <class name="java.util.Properties" supertypes="java.util.Map">
+      <method name="getProperty" signature="getProperty(String key)" >
+        <tags>property_source: true</tags>
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getProperty" signature="getProperty(String key, String defaultValue)" >
+        <tags>property_source: true</tags>
+        <return type="java.lang.String"/>
+        <propagate from="-2,1" to="-1"/>
+      </method>
+      <method name="load" signature="load(java.io.InputStream inStream)" >
+        <tags>property_loader: true</tags>
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="list" signature="list(java.io.PrintStream)">
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="propertyNames" signature="propertyNames()">
+        <return type="java.util.Enumeration"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="stringPropertyNames" signature="stringPropertyNames()">
+        <return type="java.util.Set"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="save" signature="save(java.io.OutputStream,java.lang.String)">
+        <tags>deprecated,write</tags>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="store" signature="save(java.io.OutputStream,java.lang.String)" alias="storeToXML">
+        <tags>write</tags>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="setProperty" signature="setProperty(java.lang.String,java.lang.String)">
+        <return type="java.lang.Object"/>
+        <propagate from="0,1" to="-2,-1"/>
+      </method>
+
+    </class>
+    <class name="java.util.TreeMap" supertypes="java.util.Map"/>
+  </module>
+
+  <!-- Java8 functional interfaces -->
+  <module name="java.util.function">
+    <class name="java.util.function.Predicate" kind="interface">
+      <method name="test" signature="test(java.lang.Object)" match="name">
+        <return type="boolean"/>
+      </method>
+      <method name="and" signature="and(java.util.function.Predicate)" alias="or">
+        <return type="java.util.function.Predicate"/>
+      </method>
+      <method name="negate" signature="negate()">
+        <return type="java.util.function.Predicate"/>
+      </method>
+      <method name="isEqual" signature="isEqual(java.lang.Object)" instance="false">
+        <return type="java.util.function.Predicate"/>
+      </method>
+    </class>
+
+    <class name="java.util.function.Function" kind="interface">
+      <method name="apply" signature="apply(java.lang.Object)">
+        <return type="java.lang.Object"/>
+      </method>
+      <method name="compose" signature="compose(java.util.function.Function)" alias="andThen">
+        <return type="java.util.function.Function"/>
+      </method>
+      <method name="identity" signature="identity()" instance="false">
+        <return type="java.util.function.Function"/>
+      </method>
+    </class>
+
+    <class name="java.util.function.UnaryOperator" kind="interface" supertypes="java.util.function.Function"/>
+
+    <class name="java.util.function.BiFunction" kind="interface">
+      <method name="apply" signature="apply(java.lang.Object,java.lang.Object)">
+        <return type="java.lang.Object"/>
+      </method>
+      <method name="andThen" signature="andThen(java.util.function.Function)">
+        <return type="java.util.function.BiFunction"/>
+      </method>
+    </class>
+
+    <class name="java.util.function.BinaryOperator" supertypes="java.util.function.BiFunction">
+      <method name="minBy" signature="minBy(java.util.Comparator)" instance="false" alias="maxBy">
+        <return type="java.util.function.BinaryOperator"/>
+      </method>
+    </class>
+
+    <class name="java.util.function.Consumer" kind="interface">
+      <method name="accept" signature="accept(java.lang.Object)"/>
+      <method name="andThen" signature="andThen(java.util.function.Consumer)">
+        <return type="java.util.function.Consumer"/>
+      </method>
+    </class>
+
+    <class name="java.util.function.BiConsumer" kind="interface">
+      <method name="accept" signature="accept(java.lang.Object,java.lang.Object)"/>
+      <method name="andThen" signature="andThen(java.util.function.BiConsumer)">
+        <return type="java.util.function.BiConsumer"/>
+      </method>
+    </class>
+
+    <class name="java.util.function.Supplier" kind="interface">
+      <method name="get" signature="get()"><return type="java.lang.Object"/></method>
+    </class>
+
+  </module>
+
+  <!-- Java8 Streams -->
+  <module name="java.util.stream">
+    <class name="java.util.stream.Collector">
+      <method name="supplier" signature="supplier()"><return type="java.util.function.Supplier"/></method>
+      <method name="accumulator" signature="accumulator()"><return type="java.util.function.BiConsumer"/></method>
+      <method name="combiner" signature="combiner()"><return type="java.util.function.BinaryOperator"/></method>
+      <method name="finisher" signature="finisher()"><return type="java.util.function.Function"/></method>
+      <method name="characteristics" signature="characteristics()"><return type="java.util.Set"/></method>
+      <method name="of" signature="of(java.util.function.Supplier,java.util.function.BiConsumer,java.util.function.BinaryOperator,java.util.function.Function,java.util.stream.Collector.Characteristics...)">
+        <return type="java.util.stream.Collector"/>
+      </method>
+    </class>
+
+    <class name="java.util.stream.Collectors">
+      <method name="toList" signature="toList()" alias="toSet">
+        <return type="java.util.stream.Collector"/>
+      </method>
+      <method name="joining" signature="joining(java.lang.CharSequence,java.lang.CharSequence,java.lang.CharSequence)" alias="name">
+        <return type="java.util.stream.Collector"/>
+      </method>
+      <method name="mapMerger" signature="mapMerger(java.util.function.BinaryOperator)">
+        <return type="java.util.function.BinaryOperator"/>
+      </method>
+      <method name="mapping" signature="mapping(java.util.function.Function,java.util.stream.Collector)">
+        <return type="java.util.stream.Collector"/>
+      </method>
+      <method name="collectingAndThen" signature="collectingAndThen(java.util.stream.Collector,java.util.function.Function)">
+        <return type="java.util.stream.Collector"/>
+      </method>
+      <method name="counting" signature="counting()">
+        <return type="java.util.stream.Collector"/>
+      </method>
+      <method name="minBy" signature="minBy(java.util.Comparator)" alias="maxBy">
+        <return type="java.util.stream.Collector"/>
+      </method>
+      <method name="summingInt" signature="summingInt(java.util.function.Function)"
+              alias="summingLong,summingDouble,averagingInt,averagingLong,averagingDouble,summarizingInt,summarizingLong,summarizingDouble">
+        <return type="java.util.stream.Collector"/>
+      </method>
+      <method name="reducing" signature="reducing(java.util.function.BinaryOperator)">
+        <return type="java.util.stream.Collector"/>
+      </method>
+      <method name="reducing_2" signature="reducing(java.lang.Object,java.util.function.BinaryOperator)">
+        <return type="java.util.stream.Collector"/>
+      </method>
+      <method name="reducing_3" signature="reducing(java.lang.Object,java.util.function.Function,java.util.function.BinaryOperator)">
+        <return type="java.util.stream.Collector"/>
+      </method>
+      <method name="groupingBy" signature="groupingBy(java.util.function.Function)" alias="groupingByConcurrent" match="name">
+        <return type="java.util.stream.Collector"/>
+      </method>
+      <method name="partitioningBy" signature="partitioningBy(java.util.function.Predicate)" match="name">
+        <return type="java.util.stream.Collector"/>
+      </method>
+      <method name="toMap" signature="toMap(java.util.function.Function)" match="name" alias="toConcurrentMap">
+        <return type="java.util.stream.Collector"/>
+      </method>
+    </class>
+
+    <class name="java.util.stream.Stream" kind="interface">
+      <method name="filter" signature="filter(java.util.function.Function)">
+        <return type="java.util.stream.Stream"/>
+      </method>
+      <method name="map" signature="map(java.util.function.Function)" alias="mapToInt,mapToLong,mapToDouble">
+        <return type="java.util.stream.Stream"/>
+      </method>
+      <method name="flatMap" signature="map(java.util.function.Function)" alias="flatMapToInt,flatMapToLong,flatMapToDouble">
+        <return type="java.util.stream.Stream"/>
+      </method>
+      <method name="distinct" signature="distinct()">
+        <return type="java.util.stream.Stream"/>
+      </method>
+      <method name="sorted" signature="sorted(java.util.Comparator)" match="name">
+        <return type="java.util.stream.Stream"/>
+      </method>
+      <method name="peek" signature="peek(java.util.function.Consumer)">
+        <return type="java.util.stream.Stream"/>
+      </method>
+      <method name="limit" signature="limit(long)">
+        <return type="java.util.stream.Stream"/>
+      </method>
+      <method name="skip" signature="skip(long)">
+        <return type="java.util.stream.Stream"/>
+      </method>
+      <method name="forEach" signature="forEach(java.util.function.Consumer)" alias="forEachOrdered">
+        <return type="java.util.stream.Stream"/>
+      </method>
+
+      <method name="toArray" signature="toArray()" match="name"><return type="java.lang.Object[]"/></method>
+      <method name="reduce" signature="reduce(java.util.function.BinaryOperator)">
+        <return type="java.util.Optional"/>
+      </method>
+      <method name="reduce_2" signature="reduce(java.lang.Object,java.util.function.BinaryOperator)">
+        <return type="java.lang.Object"/>
+      </method>
+      <method name="reduce_3" signature="reduce(java.lang.Object,java.util.function.BiFunction,java.util.function.BinaryOperator)">
+        <return type="java.lang.Object"/>
+      </method>
+      <method name="collect" signature="collect(java.util.function.Supplier,java.util.function.BiConsumer,java.util.function.BiConsumer)">
+        <return type="java.lang.Object"/>
+      </method>
+      <method name="collect_2" signature="collect(java.util.stream.Collector)">
+        <return type="java.lang.Object"/>
+        <propagate from="-1" to="-2"/>
+      </method>
+      <method name="min" signature="min(java.util.Comparator)" alias="max">
+        <return type="java.util.Optional"/>
+      </method>
+      <method name="count" signature="count()"><return type="long"/></method>
+      <method name="anyMatch" signature="anyMatch(java.util.function.Predicate)" alias="allMatch,noneMatch"></method>
+      <method name="findFirst" signature="findFirst()" alias="findAny"><return type="java.util.Optional"/></method>
+
+      <method name="builder" signature="builder()" instance="false"><return type="java.util.stream.Stream.Builder"/></method>
+      <method name="empty" signature="empty()" instance="false"><return type="java.util.stream.Stream"/></method>
+      <method name="of" signature="of(java.lang.Object...)" instance="false" match="name"><return type="java.util.stream.Stream"/></method>
+      <method name="iterate" signature="iterate(java.lang.Object,java.util.function.UnaryOperator)" instance="false">
+        <return type="java.util.stream.Stream"/>
+      </method>
+      <method name="generate" signature="generate(java.util.function.Supplier)" instance="false"><return type="java.util.stream.Stream"/></method>
+      <method name="concat" signature="concat(java.util.stream.Stream,java.util.stream.Stream)" instance="false">
+        <return type="java.util.stream.Stream"/>
+      </method>
+    </class>
+
+    <class name="java.util.stream.Stream.Builder" supertypes="java.util.function.Consumer">
+      <method name="accept" signature="accept(java.lang.Object)"/>
+      <method name="add" signature="add(java.lang.Object)">
+        <return type="java.util.stream.Stream.Builder"/>
+      </method>
+      <method name="build" signature="build()"><return type="java.util.stream.Stream"/></method>
+    </class>
+
+    <class name="java.util.stream.StreamSupport">
+      <method name="stream" signature="stream(java.util.Spliterator,boolean)" instance="false" alias="intStream,longStream,doubleStream">
+        <return type="java.util.stream.Stream"/>
+      </method>
+      <method name="stream" signature="stream(java.util.function.Supplier,int,boolean)" instance="false">
+        <return type="java.util.stream.Stream"/>
+      </method>
+    </class>
+
+    <class name="java.util.Spliterator" kind="interface">
+      <method name="tryAdvance" signature="tryAdvance(java.util.function.Consumer)">
+        <return type="boolean"/>
+      </method>
+      <method name="forEachRemaining" signature="forEachRemaining(java.util.function.Consumer)"/>
+      <method name="trySplit" signature="trySplit()">
+        <return type="java.util.Spliterator"/>
+      </method>
+      <method name="estimateSize" signature="estimateSize()" alias="getExactSizeIfKnown">
+        <return type="long"/>
+      </method>
+      <method name="characteristics" signature="characteristics()"><return type="int"/></method>
+      <method name="hasCharacteristics" signature="hasCharacteristics(int)"><return type="boolean"/></method>
+      <method name="getComparator" signature="getComparator()"><return type="java.util.Comparator"/></method>
+    </class>
+
+  </module>
+
+  <module name="jdk.math">
+    <class name="java.lang.Math">
+      <method name="random" signature="random()">
+        <return type="double"/>
+        <source argpos="-1" kind="insecure_random" resource="crypto"/>
+      </method>
+    </class>
+
+    <!-- normal (non-crypto) random -->
+    <class name="java.util.Random">
+      <description>Bad random source for security</description>
+      <constructor name="Random" signature="Random()" match="name">
+        <!--<source argpos="-1" kind="insecure_random" resource="crypto"/>-->
+      </constructor>
+      <method name="nextBytes" signature="nextBytes(byte[])">
+        <source argpos="-1" kind="insecure_random" resource="crypto"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="next" signature="next()" match="other">
+        <matcher kind="method" function="next.+" args="0"/>
+        <source argpos="-1" kind="insecure_random" resource="crypto"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="nextBoolean" signature="nextBoolean()" match="name">
+        <source argpos="-1" kind="insecure_random" resource="crypto"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="nextDouble" signature="nextDouble()" match="name">
+        <source argpos="-1" kind="insecure_random" resource="crypto"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="nextGaussian" signature="nextGaussian()" match="name">
+        <source argpos="-1" kind="insecure_random" resource="crypto"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="nextInt" signature="nextInt()" match="other">
+        <matcher kind="method" function="nextInt.+" args="0"/>
+        <source argpos="-1" kind="insecure_random" resource="crypto"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="nextLong" signature="nextLong()" match="name">
+        <source argpos="-1" kind="insecure_random" resource="crypto"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="doubles" signature="doubles()" match="other">
+        <matcher kind="method" function="doubles.+" args="0"/>
+        <source argpos="-1" kind="insecure_random" resource="crypto"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="ints" signature="ints()" match="other">
+        <matcher kind="method" function="ints.+" args="0"/>
+        <source argpos="-1" kind="insecure_random" resource="crypto"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="longs" signature="longs()" match="other">
+        <matcher kind="method" function="longs.+" args="0"/>
+        <source argpos="-1" kind="insecure_random" resource="crypto"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.util.concurrent.ThreadLocalRandom" supertypes="java.util.Random">
+      <description>Bad random source for security</description>
+      <method name="current" signature="current()">
+        <return type="java.util.concurrent.ThreadLocalRandom"/>
+        <source argpos="-1" kind="insecure_random" resource="crypto"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="jdk.text">
+    <description>Text types and text processing</description>
+
+    <class name="java.lang.StringBuffer" supertypes="java.lang.CharSequence,java.lang.Appendable">
+      <description>StringBuffer</description>
+      <constructor name="StringBuffer" signature="StringBuffer(java.lang.String)" match="other">
+        <matcher kind="method" function="StringBuffer" args="1"/>
+        <propagate from="0" to="-1"/>
+      </constructor>
+      <method name="append" signature="append(java.lang.String)" match="name">
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="insert" signature="insert(int,java.lang.String)" match="name">
+        <propagate from="1" to="-2"/>
+      </method>
+      <method name="substring" signature="substring(int, int)" match="name">
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="subSequence" signature="subSequence(int, int)" match="name">
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="toString" signature="toString()">
+        <propagate from="-2" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.lang.StringBuilder" supertypes="java.lang.StringBuffer">
+      <description>StringBuilder</description>
+      <constructor name="StringBuilder" signature="StringBuilder(java.lang.String)" match="name">
+        <propagate from="0" to="-1"/>
+      </constructor>
+      <method name="append" signature="append(java.lang.String)">
+        <return type="java.lang.StringBuilder" />
+        <propagate from="0" to="-1,-2"/>
+      </method>
+      <method name="toString" signature="toString()">
+        <return type="java.lang.String" />
+        <propagate from="-2" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.util.StringTokenizer">
+      <description>StringTokenizer</description>
+      <constructor name="StringTokenizer" signature="StringTokenizer(java.lang.String)" match="name">
+        <propagate from="0" to="-1"/>
+      </constructor>
+      <method name="nextElement" signature="nextElement()">
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="nextToken" signature="nextToken()">
+        <tags>potential_infinite_loop_neutralizer</tags>
+        <propagate from="-2" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.util.regex.Pattern">
+      <description>Regular expression pattern</description>
+      <method name="matcher" signature="matcher(java.lang.String)" match="name">
+        <return type="java.util.regex.Matcher"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="split" signature="split(java.lang.String)" match="name">
+        <return type="java.lang.String[]"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="matches" signature="matches(java.lang.String,java.lang.String)" match="name">
+        <return type="boolean"/>
+        <neutralization argpos="1" kind="string"/>
+        <sink argpos="0" kind="regex_dos" resource="other"/>
+      </method>
+      <method name="compile" signature="compile(java.lang.String,int)" match="name">
+        <return type="java.util.regex.Pattern"/>
+        <sink argpos="0" kind="regex_dos" resource="other"/>
+      </method>
+    </class>
+
+    <class name="java.util.regex.Matcher">
+      <description>Regular expression matcher</description>
+      <method name="find" signature="find()" match="name">
+        <tags>potential_infinite_loop_neutralizer</tags>
+        <return type="boolean"/>
+        <neutralization argpos="-2" kind="string"/>
+      </method>
+      <method name="lookingAt" signature="lookingAt()">
+        <return type="boolean"/>
+        <neutralization argpos="-2" kind="string"/>
+      </method>
+      <method name="matches" signature="matches()">
+        <return type="boolean"/>
+        <neutralization argpos="-2" kind="string"/>
+      </method>
+      <method name="replaceAll" signature="replaceAll(java.lang.String)">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-2" kind="string"/>
+      </method>
+      <method name="replaceFirst" signature="replaceFirst(java.lang.String)">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-2" kind="string"/>
+      </method>
+      <method name="reset" signature="reset(java.lang.String)" match="other">
+        <return type="java.util.regex.Matcher"/>
+        <matcher kind="method" function="reset" args="1"/>
+        <propagate from="0" to="-1" />
+      </method>
+    </class>
+
+    <class name="java.text.Normalizer">
+      <description>Transforms Unicode text into an equivalent composed or decomposed form</description>
+      <method name="normalize" signature="normalize(CharSequence src, Normalizer.Form form)" match="name">
+        <tags>normalization:0</tags>
+        <return type="java.lang.String"/>
+      </method>
+      <method name="isNormalized" signature="normalize(CharSequence src, Normalizer.Form form)" match="name">
+        <return type="boolean"/>
+      </method>
+    </class>
+
+    <class name="java.util.Formatter">
+      <method name="format" signature="format(java.util.Locale, java.lang.String, Object...)" match="fullsignature">
+        <propagate from="1,2" to="-2"/>
+        <sink argpos="1" kind="format_injection" resource="formatstr"/>
+      </method>
+      <method name="format_2" signature="format(java.lang.String, Object...)" match="fullsignature">
+        <propagate from="0,1" to="-2"/>
+        <sink argpos="0" kind="format_injection" resource="formatstr"/>
+      </method>
+    </class>
+
+    <class name="java.text.Format" kind="abstract_class">
+      <method name="parseObject" signature="parseObject(java.lang.String)" match="name">
+        <tags>non-thread-safe</tags>
+        <propagate from="0" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.text.DateFormat" kind="abstract_class" supertypes="java.text.Format">
+      <method name="getInstance" signature="getInstance()" match="name"
+              alias="getDateInstance,getDateTimeInstance,getTimeInstance">
+        <return type="java.text.DateFormat"/>
+      </method>
+      <method name="getNumberFormat" signature="getNumberFormat()">
+        <return type="java.text.NumberFormat"/>
+      </method>
+      <method name="format" signature="format(java.lang.Object)" match="name">
+        <tags>non-thread-safe</tags>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="parse" signature="parse(java.lang.String)" match="name">
+        <tags>non-thread-safe</tags>
+        <propagate from="0" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.text.SimpleDateFormat" supertypes="java.text.DateFormat">
+    </class>
+
+    <class name="java.text.NumberFormat" kind="abstract_class" supertypes="java.text.Format">
+      <method name="getInstance" signature="getInstance()" match="name"
+              alias="getInstance,getCurrencyInstance,getIntegerInstance,getNumberInstance,getPercentInstance">
+        <return type="java.text.DateFormat"/>
+      </method>
+      <method name="format" signature="format(*)" match="name">
+        <tags>non-thread-safe</tags>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="parse" signature="parse(java.lang.String)" match="name">
+        <tags>non-thread-safe</tags>
+        <propagate from="0" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.text.DecimalFormat" supertypes="java.text.NumberFormat">
+    </class>
+
+    <class name="java.text.ChoiceFormat" supertypes="java.text.NumberFormat">
+    </class>
+
+    <class name="java.text.MessageFormat" supertypes="java.text.Format">
+      <constructor name="MessageFormat" signature="MessageFormat(java.lang.String)">
+        <sink argpos="0" kind="format_injection" resource="formatstr"/>
+      </constructor>
+      <constructor name="MessageFormat_2" signature="MessageFormat(java.lang.String,java.util.Locale)">
+        <sink argpos="0" kind="format_injection" resource="formatstr"/>
+      </constructor>
+      <method name="applyPattern" signature="applyPattern(java.lang.String)">
+        <sink argpos="0" kind="format_injection" resource="formatstr"/>
+      </method>
+      <method name="format" signature="format(java.lang.String, java.lang.Object...)" instance="false">
+        <tags>non-thread-safe</tags>
+        <return type="java.lang.String" />
+        <sink argpos="0" kind="format_injection" resource="formatstr"/>
+      </method>
+    </class>
+
+    <!-- Encoders -->
+    <class name="java.util.Base64.Encoder">
+      <method name="encode" signature="encode(byte[])">
+        <return type="byte[]"/>
+        <neutralization argpos="0" kind="encoding" resource="other"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="encode_2" signature="encode(java.nio.ByteBuffer)">
+        <return type="java.nio.ByteBuffer"/>
+        <neutralization argpos="0" kind="encoding" resource="other"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="encode_3" signature="encode(byte[], byte[])">
+        <return type="int"/>
+        <neutralization argpos="0" kind="encoding" resource="other"/>
+        <propagate from="0" to="1"/>
+      </method>
+      <method name="encodeToString" signature="encodeToString(byte[])">
+        <return type="java.lang.String"/>
+        <neutralization argpos="0" kind="encoding" resource="other"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="withoutPadding" signature="withoutPadding()">
+        <return type="java.util.Base64.Encoder"/>
+      </method>
+      <method name="wrap" signature="wrap(java.io.OutputStream)">
+        <tags>filter:0</tags>
+        <return type="java.io.OutputStream"/>
+        <neutralization argpos="0" kind="encoding" resource="other"/>
+        <propagate from="0" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.util.Base64.Decoder">
+      <method name="decode" signature="decode(byte[])">
+        <return type="byte[]"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="decode_2" signature="decode(java.lang.String)">
+        <return type="java.lang.String"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="decode_3" signature="decode(java.nio.ByteBuffer)">
+        <return type="java.nio.ByteBuffer"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="decode_4" signature="decode(byte[], byte[])">
+        <return type="int"/>
+        <propagate from="0" to="1"/>
+      </method>
+      <method name="wrap" signature="wrap(java.io.InputStream)">
+        <tags>filter:0</tags>
+        <return type="java.io.InputStream"/>
+        <propagate from="0" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.util.Base64">
+      <method name="getEncoder" signature="getEncoder()" alias="getUrlEncoder,getMimeEncoder" instance="false">
+        <return type="java.util.Base64.Encoder"/>
+      </method>
+      <method name="getDecoder" signature="getDecoder()" alias="getUrlDecoder,getMimeDecoder" instance="false">
+        <return type="java.util.Base64.Decoder"/>
+      </method>
+    </class>
+  </module>
+
+  <!-- IO -->
+  <module name="java.io" standard="java.io">
+    <class name="java.io.Closeable" kind="interface" supertypes="java.lang.AutoCloseable"/>
+
+    <class name="java.io.Flushable" kind="interface">
+      <method name="flush" signature="flush()"/>
+    </class>
+
+    <class name="java.io.File">
+      <description>File</description>
+      <tags>immutable</tags>
+      <constructor name="File" signature="File(java.lang.String)">
+        <tags>CWE:73,file</tags>
+        <sink argpos="0" kind="path_traversal" resource="filesystem">
+          <checker id="j2se.fileAllocationVerifier" />
+        </sink>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+        <propagate from="0" to="-1"/>
+      </constructor>
+      <constructor name="File_2" signature="File(java.io.File, java.lang.String)">
+        <tags>CWE:73,file</tags>
+        <sink argpos="0,1" kind="path_traversal" resource="filesystem">
+          <checker id="j2se.fileAllocationVerifier" />
+        </sink>
+        <sink argpos="0,1" kind="canonicalization" resource="filesystem">
+          <checker id="j2se.fileAllocationVerifier" />
+        </sink>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+        <propagate from="0,1" to="-1"/>
+      </constructor>
+      <constructor name="File_3" signature="File(java.lang.String, java.lang.String)">
+        <tags>CWE:73,file</tags>
+        <sink argpos="0,1" kind="path_traversal" resource="filesystem">
+          <checker id="j2se.fileAllocationVerifier" />
+        </sink>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+        <propagate from="0,1" to="-1"/>
+      </constructor>
+      <constructor name="File_4" signature="File(java.net.URI)">
+        <tags>CWE:73,file</tags>
+        <sink argpos="0" kind="path_traversal" resource="filesystem">
+          <checker id="j2se.fileAllocationVerifier" />
+        </sink>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+        <propagate from="0" to="-1"/>
+      </constructor>
+      <method name="getName" signature="getName()">
+        <return type="java.lang.String" />
+        <neutralization argpos="-1" kind="path_traversal" resource="filesystem" />
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getParent" signature="getParent()">
+        <return type="java.lang.String" />
+      </method>
+      <method name="getPath" signature="getPath()">
+        <return type="java.lang.String" />
+      </method>
+      <method name="getAbsolutePath" signature="getAbsolutePath()">
+        <return type="java.lang.String" />
+      </method>
+      <method name="getCanonicalPath" signature="getCanonicalPath()">
+        <tags>path-canonicalization:-2</tags>
+        <return type="java.lang.String" />
+      </method>
+      <method name="getCanonicalFile" signature="getCanonicalFile()">
+        <return type="java.io.File" />
+      </method>
+      <method name="getAbsoluteFile" signature="getAbsoluteFile()">
+        <return type="java.io.File" />
+      </method>
+      <method name="delete" signature="delete()">
+        <tags>write,file</tags>
+      </method>
+      <method name="length" signature="length()" >
+        <return type="long" />
+      </method>
+      <method name="getTotalSpace" signature="getTotalSpace()" >
+        <return type="long" />
+      </method>
+      <method name="getUsableSpace" signature="getUsableSpace()" >
+        <return type="long" />
+      </method>
+      <method name="hashcode" signature="hashcode()" >
+        <return type="long" />
+      </method>
+      <method name="lastModified" signature="lastModified()" >
+        <return type="long" />
+      </method>
+      <method name="isAbsolute" signature="isAbsolute()" >
+        <return type="boolean" />
+      </method>
+      <method name="isDirectory" signature="isDirectory()" >
+        <return type="boolean" />
+      </method>
+      <method name="isFile" signature="isFile()" >
+        <return type="boolean" />
+      </method>
+      <method name="isHidden" signature="isHidden()" >
+        <return type="boolean" />
+      </method>
+      <method name="exist" signature="exist()" >
+        <return type="boolean" />
+      </method>
+      <method name="mkdir" signature="mkdir()" >
+        <return type="boolean" />
+      </method>
+      <method name="mkdirs" signature="mkdirs()" >
+        <return type="boolean" />
+      </method>
+      <method name="renameTo" signature="renameTo(java.io.File)" >
+        <return type="boolean" />
+      </method>
+      <method name="lastModified" signature="lastModified()" >
+        <return type="boolean" />
+      </method>
+      <method name="setExecutable" signature="setExecutable(boolean)" >
+        <return type="boolean" />
+      </method>
+      <method name="setExecutable" signature="setExecutable(boolean, boolean)" >
+        <return type="boolean" />
+      </method>
+      <method name="setLastModified" signature="setLastModified(long)" >
+        <return type="boolean" />
+      </method>
+      <method name="setReadable" signature="setReadable(boolean)" >
+        <return type="boolean" />
+      </method>
+      <method name="setReadable" signature="setReadable(boolean, boolean)" >
+        <return type="boolean" />
+      </method>
+      <method name="setReadOnly" signature="setReadOnly()" >
+        <return type="boolean" />
+      </method>
+      <method name="setWritable" signature="setWritable(boolean)" >
+        <return type="boolean" />
+      </method>
+      <method name="setWritable" signature="setWritable(boolean, boolean)" >
+        <return type="boolean" />
+      </method>
+    </class>
+
+    <class name="java.util.zip.ZipFile" supertypes="java.io.Closeable">
+      <tags>readable</tags>
+      <constructor name="ZipFile" signature="ZipFile(java.lang.String)" match="name">
+        <tags>CWE:73,file</tags>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+        <propagate from="0" to="-1"/>
+      </constructor>
+      <method name="getEntry" signature="getEntry(java.lang.String)">
+        <return type="java.util.zip.ZipEntry"/>
+      </method>
+      <method name="getInputStream" signature="getInputStream(java.util.zip.ZipEntry)">
+        <return type="java.io.InputStream"/>
+      </method>
+      <method name="stream" signature="stream()">
+        <return type="java.util.stream.Stream" elementType="java.util.zip.ZipEntry"/>
+      </method>
+    </class>
+
+    <class name="java.util.jar.JarFile" supertypes="java.util.zip.ZipFile">
+      <tags>readable</tags>
+      <constructor name="JarFile" signature="JarFile(java.lang.String)" match="name">
+        <tags>CWE:73,file</tags>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+        <propagate from="0" to="-1"/>
+      </constructor>
+    </class>
+
+    <class name="java.io.DataInput" kind="interface">
+      <tags>readable</tags>
+      <method name="readFully" signature="readFully(byte[]))" match="name">
+        <tags>read</tags>
+        <propagate from="-2" to="0"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="readBoolean" signature="readBoolean()">
+        <tags>read</tags>
+        <return type="boolean"/>
+        <propagate from="-2" to="-1"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="readByte" signature="readByte()">
+        <tags>read</tags>
+        <return type="byte"/>
+        <propagate from="-2" to="-1"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="readUnsignedByte" signature="readUnsignedByte()">
+        <tags>read</tags>
+        <return type="int"/>
+        <propagate from="-2" to="-1"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="readShort" signature="readShort()">
+        <tags>read</tags>
+        <return type="short"/>
+        <propagate from="-2" to="-1"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="readUnsignedShort" signature="readUnsignedShort()">
+        <tags>read</tags>
+        <return type="int"/>
+        <propagate from="-2" to="-1"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="readChar" signature="readChar()">
+        <tags>read</tags>
+        <return type="char"/>
+        <propagate from="-2" to="-1"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="readInt" signature="readInt()">
+        <tags>read</tags>
+        <return type="int"/>
+        <propagate from="-2" to="-1"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="readLong" signature="readLong()">
+        <tags>read</tags>
+        <return type="long"/>
+        <propagate from="-2" to="-1"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="readFloat" signature="readFloat()">
+        <tags>read</tags>
+        <return type="float"/>
+        <propagate from="-2" to="-1"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="readDouble" signature="readDouble()">
+        <tags>read</tags>
+        <return type="float"/>
+        <propagate from="-2" to="-1"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="readLine" signature="readLine()">
+        <tags>read</tags>
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="skipBytes" signature="skipBytes(int)">
+        <return type="int"/>
+      </method>
+    </class>
+
+    <class name="java.io.ObjectInput" kind="interface" supertypes="java.io.DataInput, java.lang.AutoCloseable">
+      <method name="readObject" signature="readObject()">
+        <return type="java.lang.Object"/>
+        <sink argpos="-2" kind="code_injection_deserialization" resource="other"/>
+      </method>
+    </class>
+
+    <class name="java.io.Reader" kind="abstract_class" supertypes="java.lang.Readable, java.io.Closeable">
+      <method name="read" signature="read()">
+        <tags>read</tags>
+        <return type="int"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="read_2" signature="read(char[])">
+        <tags>read</tags>
+        <return type="int"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="read_3" signature="read(char[], int, int)">
+        <tags>read</tags>
+        <return type="int"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="skip" signature="skip(long)">
+        <return type="long"/>
+      </method>
+      <method name="ready" signature="ready()"><return type="boolean"/></method>
+      <method name="markSupported" signature="markSupported()"><return type="boolean"/></method>
+      <method name="mark" signature="mark(int)"></method>
+      <method name="reset" signature="reset()"/>
+    </class>
+
+    <class name="java.io.BufferedReader" supertypes="java.io.Reader">
+      <tags>readable,filter</tags>
+      <constructor name="BufferedReader" signature="BufferedReader(java.io.Reader,int)" match="name">
+        <tags>filter:0</tags>
+      </constructor>
+      <method name="readLine" signature="readLine()">
+        <tags>read</tags>
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="lines" signature="lines()">
+        <tags>read</tags>
+        <return type="java.util.stream.Stream"/>
+        <propagate from="-2" to="-1"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+    </class>
+
+    <class name="java.io.LineNumberReader" supertypes="java.io.BufferedReader">
+      <tags>readable,filter</tags>
+      <constructor name="LineNumberReader" signature="LineNumberReader(java.io.Reader)" match="name">
+        <tags>filter:0</tags>
+      </constructor>
+    </class>
+
+    <class name="java.io.FilterReader" kind="abstract_class" supertypes="java.io.Reader">
+      <tags>readable, filter</tags>
+      <constructor name="FilterReader" signature="FilterReader(java.io.Reader)">
+        <tags>filter:0</tags>
+      </constructor>
+    </class>
+
+    <class name="java.io.PushbackReader" supertypes="java.io.FilterReader">
+      <tags>readable, filter</tags>
+      <constructor name="PushbackReader" signature="PushbackReader(java.io.Reader,int)" match="name">
+        <tags>filter:0</tags>
+      </constructor>
+      <method name="unread" signature="unread(char[])">
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="unread" signature="unread(char[],int,int)">
+        <propagate from="0" to="-2"/>
+      </method>
+    </class>
+
+    <class name="java.io.FileReader" supertypes="java.io.InputStreamReader">
+      <tags>readable, file</tags>
+      <constructor name="FileReader" signature="FileReader(java.lang.String)">
+        <tags>CWE:73, readable,file</tags>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <sink argpos="0" kind="canonicalization" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </constructor>
+    </class>
+
+    <class name="java.io.StringReader" supertypes="java.lang.Readable">
+      <tags>readable</tags>
+      <constructor name="StringReader" signature="StringReader(java.lang.String)">
+        <tags>readable</tags>
+      </constructor>
+    </class>
+
+    <class name="java.io.InputStream" kind="abstract_class" supertypes="java.io.Closeable">
+      <tags>readable</tags>
+      <method name="read" signature="read()">
+        <tags>read,potential_infinite_loop_neutralizer</tags>
+        <return type="int"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="read_2" signature="read(byte[])">
+        <tags>read</tags>
+        <return type="int"/>
+        <propagate from="-2" to="0"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="read_3" signature="read(byte[],int,int)">
+        <tags>read</tags>
+        <return type="int"/>
+        <propagate from="-2" to="0"/>
+        <source argpos="-1" kind="file_input" resource="filesystem">
+          <checker id="j2se.fileInput"/>
+        </source>
+      </method>
+      <method name="skip" signature="skip(long)">
+        <return type="long"/>
+      </method>
+      <method name="available" signature="available()"><return type="boolean"/></method>
+      <method name="markSupported" signature="markSupported()"><return type="boolean"/></method>
+      <method name="mark" signature="mark(int)"></method>
+      <method name="reset" signature="reset()"/>
+    </class>
+
+    <class name="java.io.InputStreamReader" supertypes="java.io.Reader">
+      <tags>readable,filter</tags>
+      <constructor name="InputStreamReader" signature="InputStreamReader(java.io.InputStream)">
+        <tags>filter:0</tags>
+      </constructor>
+      <constructor name="InputStreamReader_2" signature="InputStreamReader(java.io.InputStream, java.lang.String)">
+        <tags>filter:0</tags>
+      </constructor>
+    </class>
+
+    <class name="java.io.ByteArrayInputStream" supertypes="java.io.InputStream">
+      <tags>readable</tags>
+      <constructor name="ByteArrayInputStream" signature="ByteArrayInputStream(byte[])" match="name">
+      </constructor>
+    </class>
+
+    <!--suppress DeprecatedClassUsageInspection -->
+    <class name="java.io.StringBufferInputStream" supertypes="java.io.InputStream">
+      <tags>readable,deprecated</tags>
+      <constructor name="StringBufferInputStream" signature="StringBufferInputStream(java.lang.String)">
+      </constructor>
+    </class>
+
+    <class name="java.io.BufferedInputStream" supertypes="java.io.InputStream">
+      <constructor name="BufferedInputStream" signature="BufferedInputStream(java.io.InputStream)">
+      </constructor>
+      <constructor name="BufferedInputStream" signature="BufferedInputStream(java.io.InputStream, int)">
+      </constructor>
+    </class>
+
+    <class name="java.io.FileInputStream" supertypes="java.io.InputStream">
+      <tags>readable, file</tags>
+      <constructor name="FileInputStream" signature="FileInputStream(java.lang.String)">
+        <tags>CWE:73, readable,file,sensitive_error_message:needs_error_handling,exception:java.io.FileNotFoundException</tags>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <sink argpos="0" kind="canonicalization" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </constructor>
+    </class>
+
+    <class name="java.io.FilterInputStream" supertypes="java.io.InputStream">
+      <tags>readable, filter</tags>
+      <constructor name="FilterInputStream" signature="FilterInputStream(java.io.InputStream)">
+        <tags>filter:0</tags>
+      </constructor>
+    </class>
+
+    <class name="java.io.DataInputStream" supertypes="java.io.FilterInputStream,java.io.DataInput">
+      <tags>readable, filter</tags>
+      <constructor name="DataInputStream" signature="DataInputStream(java.io.InputStream)">
+        <tags>filter:0</tags>
+      </constructor>
+    </class>
+
+    <class name="java.io.ObjectInputStream" supertypes="java.io.Closeable, java.io.DataInput, java.io.ObjectInput, java.io.ObjectStreamConstants, java.lang.AutoCloseable">
+      <constructor name="ObjectInputStream" signature="ObjectInputStream()"></constructor>
+      <constructor name="ObjectInputStream_2" signature="ObjectInputStream(java.io.InputStream)">
+        <tags>filter:0</tags>
+      </constructor>
+    </class>
+
+    <!-- out -->
+
+    <class name="java.io.OutputStream" kind="abstract_class" supertypes="java.io.Closeable,java.io.Flushable">
+      <tags>writeable</tags>
+      <method name="write" signature="write(byte[])" match="name">
+        <tags>write</tags>
+        <propagate from="0" to="-2"/>
+        <sink argpos="0" kind="file_output" resource="filesystem">
+          <checker id="j2se.fileOutput"/>
+        </sink>
+      </method>
+    </class>
+
+    <class name="java.io.DataOutput" kind="interface">
+      <tags>writeable</tags>
+      <method name="write" signature="write(byte[])" alias="name">
+        <tags>write</tags>
+        <propagate from="0" to="-2"/>
+        <sink argpos="0" kind="file_output" resource="filesystem">
+          <checker id="j2se.fileOutput"/>
+        </sink>
+      </method>
+      <method name="writeBoolean" signature="writeBoolean(boolean)"
+              alias="writeShort,writeChar,writeInt,writeLong,writeFloat,writeDouble,writeBytes,writeChars,writeUTF">
+        <tags>write</tags>
+        <propagate from="0" to="-2"/>
+        <sink argpos="0" kind="file_output" resource="filesystem">
+          <checker id="j2se.fileOutput"/>
+        </sink>
+      </method>
+    </class>
+
+    <class name="java.io.FilterOutputStream" supertypes="java.io.OutputStream">
+      <tags>writeable,filter</tags>
+      <constructor name="FilterOutputStream" signature="FilterOutputStream(java.io.OutputStream)">
+        <tags>filter:0</tags>
+      </constructor>
+    </class>
+
+    <class name="java.io.Writer" kind="abstract_class" supertypes="java.lang.Appendable,java.io.Closeable,java.io.Flushable">
+      <tags>writeable</tags>
+      <method name="append" signature="append()" match="name">
+        <tags>write</tags>
+        <return type="java.io.Writer"/>
+        <sink argpos="0" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="0" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+      <method name="write" signature="write(java.lang.String)">
+        <tags>write</tags>
+        <sink argpos="0" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <propagate from="0" to="-2"/>
+        <sink argpos="0" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+      <method name="write_2" signature="write(java.lang.String, int, int)">
+        <tags>write</tags>
+        <propagate from="0" to="-2"/>
+        <sink argpos="0" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="0" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+    </class>
+
+    <class name="java.io.BufferedWriter" supertypes="java.io.Writer">
+      <tags>writeable,filter</tags>
+      <constructor name="BufferedWriter" signature="BufferedWriter(java.io.Writer,int)" match="name">
+        <tags>filter:0</tags>
+      </constructor>
+      <method name="newLine" signature="newLine()">
+        <tags>write</tags>
+      </method>
+    </class>
+
+    <class name="java.io.OutputStreamWriter" supertypes="java.io.Writer">
+      <tags>writeable,filter</tags>
+      <constructor name="OutputStreamWriter" signature="OutputStreamWriter(java.io.OutputStream)">
+        <tags>filter:0</tags>
+      </constructor>
+      <constructor name="OutputStreamWriter_2" signature="OutputStreamWriter(java.io.OutputStream,java.lang.String)">
+        <tags>filter:0</tags>
+      </constructor>
+    </class>
+
+    <class name="java.io.DataOutputStream" supertypes="java.io.FilterOutputStream,java.io.DataOutput">
+      <tags>writeable,filter</tags>
+      <constructor name="DataOutputStream" signature="DataOutputStream(java.io.OutputStream)">
+        <tags>filter:0</tags>
+      </constructor>
+    </class>
+
+    <class name="java.io.FileOutputStream" supertypes="java.io.OutputStream">
+      <tags>writeable,file</tags>
+      <constructor name="FileOutputStream" signature="FileOutputStream(java.lang.String)">
+        <tags>CWE:73, writeable,file,sensitive_error_message:needs_error_handling,exception:java.io.FileNotFoundException</tags>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <sink argpos="0" kind="canonicalization" resource="filesystem"/>
+        <sink argpos="0" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </constructor>
+      <constructor name="FileOutputStream_2" signature="FileOutputStream(java.lang.String,boolean)">
+        <tags>CWE:73, writeable,file,sensitive_error_message:needs_error_handling,exception:java.io.FileNotFoundException</tags>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <sink argpos="0" kind="canonicalization" resource="filesystem"/>
+        <sink argpos="0" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </constructor>
+    </class>
+
+    <class name="java.io.FileWriter" supertypes="java.io.OutputStreamWriter">
+      <tags>writeable,file</tags>
+      <constructor name="FileWriter" signature="FileWriter(java.lang.String)">
+        <tags>CWE:73, writeable,file</tags>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <sink argpos="0" kind="canonicalization" resource="filesystem"/>
+        <sink argpos="0" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </constructor>
+      <constructor name="FileWriter_2" signature="FileWriter(java.lang.String,boolean)">
+        <tags>CWE:73, writeable,file</tags>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <sink argpos="0" kind="canonicalization" resource="filesystem"/>
+        <sink argpos="0" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </constructor>
+    </class>
+
+    <class name="java.io.PrintWriter" supertypes="java.io.Writer">
+      <tags>writeable,filter</tags>
+
+      <constructor name="PrintWriter" signature="PrintWriter(java.io.OutputStream)" match="fullsignature">
+        <tags>filter:0</tags>
+      </constructor>
+      <constructor name="PrintWriter" signature="PrintWriter(java.io.OutputStream,boolean)" match="fullsignature">
+        <tags>filter:0</tags>
+      </constructor>
+      <constructor name="PrintWriter" signature="PrintWriter(java.io.File)" match="fullsignature" />
+      <constructor name="PrintWriter" signature="PrintWriter(java.io.File,java.lang.String)" match="fullsignature"/>
+      <constructor name="PrintWriter" signature="PrintWriter(java.lang.String)" match="fullsignature"/>
+      <constructor name="PrintWriter" signature="PrintWriter(java.lang.String,java.lang.String)" match="fullsignature"/>
+      <constructor name="PrintWriter" signature="PrintWriter(java.io.Writer,boolean)" match="fullsignature" />
+
+      <method name="print" signature="print(java.lang.String)">
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="0" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+      <method name="println" signature="println(java.lang.String)">
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="0" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+      <method name="printf" signature="printf(java.util.Locale, java.lang.String, java.lang.Object...)" match="fullsignature" >
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="1,2" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="1" kind="format_injection" resource="formatstr"/>
+        <sink argpos="1,2" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+      <method name="printf" signature="printf(java.lang.String, java.lang.Object...)" match="numargs" >
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0,1" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="0" kind="format_injection" resource="formatstr"/>
+        <sink argpos="0,1" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+      <method name="format" signature="format(java.util.Locale, java.lang.String, java.lang.Object...)" match="fullsignature" >
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="1,2" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="1" kind="format_injection" resource="formatstr"/>
+        <sink argpos="1,2" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+      <method name="format" signature="format(java.lang.String, java.lang.Object...)"  match="numargs" >
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0,1" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="0" kind="format_injection" resource="formatstr"/>
+        <sink argpos="0,1" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+    </class>
+
+    <class name="java.io.PrintStream" supertypes="java.io.FilterOutputStream,java.lang.Appendable">
+      <tags>writeable,filter</tags>
+      <constructor name="PrintStream" signature="PrintStream(java.io.OutputStream)" match="fullsignature">
+        <tags>filter:0</tags>
+      </constructor>
+      <constructor name="PrintStream" signature="PrintStream(java.io.OutputStream,boolean)" match="fullsignature">
+        <tags>filter:0</tags>
+      </constructor>
+      <constructor name="PrintStream" signature="PrintStream(java.io.File)" match="fullsignature" />
+      <constructor name="PrintStream" signature="PrintStream(java.io.File,java.lang.String)" match="fullsignature"/>
+      <constructor name="PrintStream" signature="PrintStream(java.lang.String)" match="fullsignature"/>
+      <constructor name="PrintStream" signature="PrintStream(java.lang.String,java.lang.String)" match="fullsignature"/>
+
+      <method name="print" signature="print(java.lang.String)">
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="0" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+      <method name="write" signature="write(java.lang.String)">
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="0" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+      <method name="write_2" signature="write(java.lang.String, int, int)">
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="0" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+      <method name="println" signature="println(java.lang.String)">
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="0" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+      <method name="printf" signature="printf(java.lang.String, java.lang.Object...)" match="fullsignature">
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0,1" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="0" kind="format_injection" resource="formatstr"/>
+        <sink argpos="0,1" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+      <method name="printf" signature="printf(java.util.Locale, java.lang.String, java.lang.Object...)" match="fullsignature">
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="1,2" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="1" kind="format_injection" resource="formatstr"/>
+        <sink argpos="1,2" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+      <method name="format" signature="format(java.lang.String, java.lang.Object...)" match="fullsignature">
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="0,1" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="0" kind="format_injection" resource="formatstr"/>
+        <sink argpos="0,1" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+      <method name="format" signature="format(java.util.Locale, java.lang.String, java.lang.Object...)" match="fullsignature">
+        <tags>write,sensitive_error_message:needs_sensitiveness_check</tags>
+        <sink argpos="1,2" kind="xss" resource="web"><checker id="j2se.xss"/></sink>
+        <sink argpos="1" kind="format_injection" resource="formatstr"/>
+        <sink argpos="1,2" kind="file_output" resource="filesystem"><checker id="j2se.fileOutput"/></sink>
+      </method>
+    </class>
+
+    <class name="java.io.ObjectOutput" kind="interface" supertypes="java.io.DataOutput, java.lang.AutoCloseable" />
+
+    <class name="java.io.ObjectOutputStream" supertypes="java.io.Closeable, java.io.DataOutput, java.io.Flushable, java.io.ObjectOutput, java.io.ObjectStreamConstants, java.lang.AutoCloseable" >
+      <constructor name="ObjectOutputStream" signature="ObjectOutputStream()" >
+        <tags>checkUsages</tags>
+      </constructor>
+      <constructor name="ObjectOutputStream" signature="ObjectOutputStream(OutputStream)" >
+        <tags>checkUsages,filter:0</tags>
+      </constructor>
+    </class>
+
+    <!-- inout -->
+    <class name="java.io.RandomAccessFile" supertypes="java.io.DataInput, java.io.DataOutput, java.io.Closeable">
+      <description>RandomAccessFile</description>
+      <tags>readable, writeable, file</tags>
+      <constructor name="RandomAccessFile" signature="RandomAccessFile(java.lang.String, java.lang.String)">
+        <tags>CWE:73,file,sensitive_error_message:needs_error_handling,exception:java.io.FileNotFoundException</tags>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </constructor>
+    </class>
+  </module>
+
+  <!-- NIO -->
+  <module name="java.nio">
+    <class name="java.nio.file.Paths" >
+      <method name="get" signature="get(java.lang.String, java.lang.String...)" match="name" >
+        <return type="java.nio.file.Path" />
+        <sink argpos="0,1,2" kind="path_traversal" resource="filesystem">
+          <checker id="j2se.pathsVerifier" />
+        </sink>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="get" signature="get(java.net.URI)" match="name" >
+        <return type="java.nio.file.Path" />
+        <sink argpos="0" kind="path_traversal" resource="filesystem">
+          <checker id="j2se.pathsVerifier" />
+        </sink>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+    </class>
+
+    <class name="java.nio.file.Path" >
+      <method name="getFileName" signature="getFileName()" match="name" >
+        <return type="java.nio.file.Path" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="getName" signature="getName(int)" match="name" >
+        <return type="java.nio.file.Path" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="getParent" signature="getParent()" match="name" >
+        <return type="java.nio.file.Path" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="getRoot" signature="getRoot()" match="name" >
+        <return type="java.nio.file.Path" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="normalize" signature="normalize()" match="name" >
+        <tags>path-canonicalization:-2</tags>
+        <return type="java.nio.file.Path" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="toUri" signature="toURI()" match="name" >
+        <return type="java.net.URI" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="toAbsolutePath" signature="toAbsolutePath()" match="name" >
+        <return type="java.nio.file.Path" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="subpath" signature="subpath(int beginIndex, int endIndex)" match="name" >
+        <return type="java.nio.file.Path" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="resolve" signature="resolve(Path other)" match="name" >
+        <return type="java.nio.file.Path" />
+        <propagate from="-2, 0" to="-1" />
+      </method>
+      <method name="resolve" signature="resolve(String other)" match="name" >
+        <return type="java.nio.file.Path" />
+        <propagate from="-2, 0" to="-1" />
+      </method>
+      <method name="resolveSibling" signature="resolveSibling(Path other)" match="name" >
+        <return type="java.nio.file.Path" />
+        <propagate from="-2, 0" to="-1" />
+      </method>
+      <method name="resolveSibling" signature="resolveSibling(String other)" match="name" >
+        <return type="java.nio.file.Path" />
+        <propagate from="-2, 0" to="-1" />
+      </method>
+      <method name="relativize" signature="relativize(Path other)" match="name" >
+        <return type="java.nio.file.Path" />
+        <propagate from="-2, 0" to="-1" />
+      </method>
+    </class>
+
+    <class name="java.nio.file.DirectoryStream" kind="interface" supertypes="java.io.Closeable,java.lang.Iterable">
+    </class>
+
+    <class name="java.nio.file.Files">
+      <method name="copy" signature="copy(java.nio.file.Path,java.nio.file.Path)" match="name"
+              instance="false" alias="createSymbolicLink,move">
+        <tags>stateChange</tags>
+        <!--sink argpos="0,1" kind="path_traversal" resource="filesystem"/-->
+      </method>
+      <method name="creteDirectories" signature="createDirectories(java.nio.file.Path)" match="name"
+              instance="false" alias="createDirectory,createFile,createLink">
+        <tags>stateChange</tags>
+        <return type="java.nio.file.Path"/>
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+      </method>
+      <method name="createTempDirectory" signature="createTempDirectory(java.nio.file.Path,java.lang.String)" match="name"
+              instance="false" alias="createTempFile">
+        <!--sink argpos="0,1,2" kind="path_traversal" resource="filesystem"/-->
+      </method>
+      <method name="delete" signature="delete(java.nio.file.Path)" alias="deleteIfExists" instance="false">
+        <tags>stateChange</tags>
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+      </method>
+      <method name="find" signature="find(java.nio.file.Path)" match="name" instance="false">
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+      </method>
+      <method name="lines" signature="lines(java.nio.file.Path)" match="name" instance="false">
+        <return type="java.util.stream.Stream" elementType="java.lang.String"/>
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+        <source argpos="-1" kind="file_input" resource="filesystem"/>
+      </method>
+      <method name="newBufferedReader" signature="newBufferedReader(java.nio.file.Path)" match="name" instance="false">
+        <tags>readable,file</tags>
+        <return type="java.io.BufferedReader"/>
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+      </method>
+      <method name="newBufferedWriter" signature="newBufferedWriter(java.nio.file.Path)" match="name" instance="false">
+        <tags>writeable,file</tags>
+        <return type="java.io.BufferedWriter"/>
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+      </method>
+      <method name="newInputStream" signature="newInputStream(java.nio.file.Path)" match="name" instance="false">
+        <tags>readable,file</tags>
+        <return type="java.io.InputStream"/>
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+      </method>
+      <method name="newOutputStream" signature="newOutputStream(java.nio.file.Path)" match="name" instance="false">
+        <tags>writeable,file</tags>
+        <return type="java.io.OutputStream"/>
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+      </method>
+      <method name="newByteChannel" signature="newByteChannel(java.nio.file.Path)" match="name" instance="false">
+        <tags>readable,writeable,file</tags>
+        <return type="java.nio.channels.SeekableByteChannel"/>
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+      </method>
+      <method name="newDirectoryStream" signature="newDirectoryStream(java.nio.file.Path)" match="name" instance="false">
+        <return type="java.nio.file.DirectoryStream" elementType="java.nio.file.Path"/>
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+      </method>
+      <method name="readAllBytes" signature="readAllBytes(java.nio.file.Path)" instance="false">
+        <return type="byte[]"/>
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+        <source argpos="-1" kind="file_input" resource="filesystem"/>
+      </method>
+      <method name="readAllLines" signature="readAllLines(java.nio.file.Path)" match="name" instance="false">
+        <return type="java.util.List" elementType="java.lang.String"/>
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+        <source argpos="-1" kind="file_input" resource="filesystem"/>
+      </method>
+      <method name="walk" signature="walk(java.nio.file.Path)" match="name" instance="false">
+        <return type="java.util.stream.Stream" elementType="java.nio.file.Path"/>
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+      </method>
+      <method name="walkFileTree" signature="walkFileTree(java.nio.file.Path)" match="name" instance="false">
+        <return type="java.nio.file.Path"/>
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+      </method>
+      <method name="write" signature="write(java.nio.file.Path,byte[])" match="name" instance="false">
+        <return type="java.nio.file.Path"/>
+        <!--sink argpos="0" kind="path_traversal" resource="filesystem"/-->
+        <sink argpos="1" kind="file_output" resource="filesystem"/>
+      </method>
+    </class>
+
+    <class name="java.nio.channels.Channel" kind="interface" supertypes="java.io.Closeable">
+      <method name="isOpen" signature="isOpen()"><return type="boolean"/></method>
+    </class>
+
+    <class name="java.nio.channels.InterruptibleChannel" kind="interface" supertypes="java.nio.channels.Channel"/>
+    <class name="java.nio.channels.AsynchronousChannel" kind="interface" supertypes="java.nio.channels.Channel"/>
+    <class name="java.nio.channels.spi.AbstractInterruptibleChannel" kind="abstract_class" supertypes="java.nio.channels.InterruptibleChannel"/>
+
+    <class name="java.nio.channels.SelectableChannel" kind="interface" supertypes="java.nio.channels.spi.AbstractInterruptibleChannel">
+      <method name="provider" signature="provider()"><return type="java.nio.channels.spi.SelectorProvider"/></method>
+      <method name="isRegistered" signature="isRegistered()" alias="isBlocking"><return type="boolean"/></method>
+      <method name="configureBlocking" signature="configureBlocking(boolean)"><return type="@self"/></method>
+    </class>
+    <class name="java.nio.channels.AbstractSelectableChannel" kind="abstract_class" supertypes="java.nio.channels.SelectableChannel"/>
+
+    <class name="java.nio.channels.ReadableByteChannel" kind="interface" supertypes="java.nio.channels.Channel">
+      <method name="read" signature="read(java.nio.ByteBuffer)">
+        <tags>read, data:0</tags>
+        <return type="int"/>
+        <source kind="external_input" argpos="0" resource="other"/>
+      </method>
+    </class>
+    <class name="java.nio.channels.ScatteringByteChannel" kind="interface" supertypes="java.nio.channels.ReadableByteChannel">
+      <method name="read" signature="read(java.nio.ByteBuffer[])">
+        <tags>read, data:0</tags>
+        <return type="int"/>
+        <source kind="external_input" argpos="0" resource="other"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="read" signature="read(java.nio.ByteBuffer, int, int)">
+        <tags>read, data:0, offset:1, size:2</tags>
+        <return type="int"/>
+        <source kind="external_input" argpos="0" resource="other"/>
+        <propagate from="-2" to="0"/>
+      </method>
+    </class>
+    <class name="java.nio.channels.WritableByteChannel" kind="interface" supertypes="java.nio.channels.Channel">
+      <method name="write" signature="write(java.nio.ByteBuffer)">
+        <tags>write, data:0</tags>
+        <return type="int"/>
+        <propagate from="0" to="-2"/>
+      </method>
+    </class>
+    <class name="java.nio.channels.GatheringByteChannel" kind="interface" supertypes="java.nio.channels.WritableByteChannel">
+      <method name="write" signature="write(java.nio.ByteBuffer[])">
+        <tags>write, data:0</tags>
+        <return type="int"/>
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="write" signature="write(java.nio.ByteBuffer, int, int)">
+        <tags>write, data:0, offset:1, size:2</tags>
+        <return type="int"/>
+        <propagate from="0" to="-2"/>
+      </method>
+    </class>
+
+    <class name="java.nio.channels.ByteChannel" kind="interface" supertypes="java.nio.channels.ReadableByteChannel, java.nio.channels.WritableByteChannel">
+    </class>
+
+    <class name="java.nio.channels.SeekableByteChannel" kind="interface" supertypes="java.nio.channels.ByteChannel">
+      <method name="position" signature="position()"><return type="long"/></method>
+      <method name="position" signature="position(long)"><return type="@self"/></method>
+      <method name="size" signature="size()"><return type="long"/></method>
+      <method name="truncate" signature="truncate(long)"><return type="@self"/></method>
+    </class>
+
+    <class name="java.nio.channels.AsynchronousByteChannel" supertypes="java.nio.channels.AsynchronousChannel">
+      <method name="read" signature="read(java.nio.ByteBuffer, java.lang.Object, java.nio.channels.CompletionHandler)" match="numargs">
+        <tags>read, data:0</tags>
+        <source kind="external_input" argpos="0" resource="other"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="read" signature="read(java.nio.ByteBuffer)" match="numargs">
+        <tags>read, data:0</tags>
+        <return type="java.util.concurrent.Future" elementType="java.lang.Integer"/>
+        <source kind="external_input" argpos="0" resource="other"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="write" signature="write(java.nio.ByteBuffer, java.lang.Object, java.nio.channels.CompletionHandler)" match="numargs">
+        <tags>write, data:0</tags>
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="write" signature="write(java.nio.ByteBuffer)" match="numargs">
+        <tags>write, data:0</tags>
+        <return type="java.util.concurrent.Future" elementType="java.lang.Integer"/>
+        <propagate from="0" to="-2"/>
+      </method>
+    </class>
+
+    <class name="java.nio.channels.NetworkChannel" kind="interface" supertypes="java.nio.channels.Channel">
+      <method name="bind" signature="bind(java.net.SocketAddress)"><return type="@self"/></method>
+      <method name="getLocalAddress" signature="getLocalAddress()"><return type="java.net.SocketAddress"/></method>
+      <method name="setOption" signature="bind(java.net.SocketOption, java.lang.Object)"><return type="@self"/></method>
+      <method name="getOption" signature="getOption(java.net.SocketOption)"><return type="java.lang.Object"/></method>
+      <method name="supportedOptions" signature="supportedOptions()"><return type="java.lang.Set" elementType="java.net.SocketOption"/></method>
+    </class>
+
+    <class name="java.nio.channels.MulticastChannel" kind="interface" supertypes="java.nio.channels.NetworkChannel">
+      <method name="join" signature=" join(java.net.InetAddress, java.net.NetworkInterface, java.net.InetAddress)" match="name">
+        <return type="java.nio.channels.MembershipKey"/>
+      </method>
+    </class>
+
+    <class name="java.nio.channels.AsynchronousSocketChannel" supertypes="java.nio.channels.AsynchronousByteChannel, java.nio.channels.NetworkChannel">
+      <method name="open" signature="open()" match="name" instance="false"><return type="@self"/></method>
+      <method name="connect" signature="connect(java.net.SocketAddress, java.lang.Object, java.nio.channels.CompletionHandler)" instance="false" match="name"></method>
+      <method name="shutdownInput" signature="shutdownInput()" alias="shutdownOutput"><return type="@self"/></method>
+      <method name="socket" signature="socket()"><return type="java.net.Socket"/></method>
+      <method name="isConnected" signature="isConnected()" alias="isConnectionPending, finishConnect"><return type="boolean"/></method>
+      <method name="getRemoteAddress" signature="getRemoteAddress()"><return type="java.net.SocketAddress"/></method>
+
+      <method name="read" signature="read(java.nio.ByteBuffer, java.lang.Object, java.nio.channels.CompletionHandler)" match="numargs">
+        <tags>read, data:0</tags>
+        <source kind="network_input" argpos="0" resource="network"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="read" signature="read(java.nio.ByteBuffer, long, java.util.concurrent.TimeUnit, java.lang.Object, java.nio.channels.CompletionHandler)" match="numargs">
+        <tags>read, data:0</tags>
+        <source kind="network_input" argpos="0" resource="network"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="read" signature="read(java.nio.ByteBuffer[], int, int, long, java.util.concurrent.TimeUnit, java.lang.Object, java.nio.channels.CompletionHandler)" match="numargs">
+        <tags>read, data:0</tags>
+        <source kind="network_input" argpos="0" resource="network"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="read" signature="read(java.nio.ByteBuffer)" match="numargs">
+        <tags>read, data:0</tags>
+        <return type="java.util.concurrent.Future" elementType="java.lang.Integer"/>
+        <source kind="network_input" argpos="0" resource="network"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="write" signature="write(java.nio.ByteBuffer)" match="numargs">
+        <tags>write, data:0</tags>
+        <return type="java.util.concurrent.Future" elementType="java.lang.Integer"/>
+        <sink kind="network_output" argpos="0" resource="network"/>
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="write" signature="write(java.nio.ByteBuffer, java.lang.Object, java.nio.channels.CompletionHandler)" match="numargs">
+        <tags>write, data:0</tags>
+        <sink kind="network_output" argpos="0" resource="network"/>
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="write" signature="write(java.nio.ByteBuffer, long, java.util.concurrent.TimeUnit, java.lang.Object, java.nio.channels.CompletionHandler)" match="numargs">
+        <tags>write, data:0</tags>
+        <sink kind="network_output" argpos="0" resource="network"/>
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="write" signature="write(java.nio.ByteBuffer[], int, int, long, java.util.concurrent.TimeUnit, java.lang.Object, java.nio.channels.CompletionHandler)" match="numargs">
+        <tags>write, data:0, offset:1, size:2</tags>
+        <sink kind="network_output" argpos="0" resource="network"/>
+        <propagate from="0" to="-2"/>
+      </method>
+    </class>
+    <class name="java.nio.channels.SocketChannel"
+           supertypes="java.nio.channels.AbstractSelectableChannel, java.nio.channels.ByteChannel, java.nio.channels.ScatteringByteChannel, java.nio.channels.GatheringByteChannel, java.nio.channels.NetworkChannel">
+      <method name="open" signature="open()" instance="false"><return type="@self"/></method>
+      <method name="open" signature="open(java.net.SocketAddress)" instance="false"><return type="@self"/></method>
+      <method name="connect" signature="connect(java.net.SocketAddress)" instance="false"><return type="boolean"/></method>
+      <method name="shutdownInput" signature="shutdownInput()" alias="shutdownOutput"><return type="@self"/></method>
+      <method name="socket" signature="socket()"><return type="java.net.Socket"/></method>
+      <method name="isConnected" signature="isConnected()" alias="isConnectionPending, finishConnect"><return type="boolean"/></method>
+      <method name="getRemoteAddress" signature="getRemoteAddress()"><return type="java.net.SocketAddress"/></method>
+
+      <method name="read" signature="read(java.nio.ByteBuffer)">
+        <tags>read, data:0</tags>
+        <return type="int"/>
+        <source kind="network_input" argpos="0" resource="network"/>
+      </method>
+      <method name="read" signature="read(java.nio.ByteBuffer[])">
+        <tags>read, data:0</tags>
+        <return type="int"/>
+        <source kind="network_input" argpos="0" resource="network"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="read" signature="read(java.nio.ByteBuffer, int, int)">
+        <tags>read, data:0, offset:1, size:2</tags>
+        <return type="int"/>
+        <source kind="network_input" argpos="0" resource="network"/>
+        <propagate from="-2" to="0"/>
+      </method>
+    </class>
+    <class name="java.nio.channels.ServerSocketChannel" supertypes="java.nio.channels.spi.AbstractSelectableChannel, java.nio.channels.NetworkChannel">
+      <method name="bind" signature="bind(java.net.SocketAddress, int)"><return type="@self"/></method>
+      <method name="socket" signature="socket()"><return type="java.net.ServerSocket"/></method>
+      <method name="accept" signature="accept()"><return type="java.nio.channels.SocketChannel"/></method>
+    </class>
+    <class name="java.nio.channels.AsynchronousServerSocketChannel" supertypes="java.nio.channels.AsynchronousChannel, java.nio.channels.NetworkChannel">
+      <method name="open" signature="open()" instance="false" match="name"><return type="@self"/></method>
+      <method name="bind" signature="bind(java.net.SocketAddress, int)"><return type="@self"/></method>
+      <method name="accept" signature="accept(java.lang.Object, java.nio.channels.CompletionHandler)" match="numargs"/>
+      <method name="accept" signature="accept()"><return type="java.util.concurrent.Future"/></method>
+    </class>
+
+    <class name="java.nio.channels.DatagramChannel"
+           supertypes="java.nio.channels.spi.AbstractSelectableChannel, java.nio.channels.ByteChannel, java.nio.channels.ScatteringByteChannel, java.nio.channels.GatheringByteChannel, java.nio.channels.MulticastChannel">
+      <method name="open" signature="open()" instance="false"><return type="@self"/></method>
+      <method name="open" signature="open(java.net.ProtocolFamily)" instance="false"><return type="@self"/></method>
+      <method name="connect" signature="connect(java.net.SocketAddress)" instance="false"><return type="@self"/></method>
+      <method name="disconnect" signature="disconnect()"><return type="@self"/></method>
+
+      <method name="socket" signature="socket()"><return type="java.net.DatagramSocket"/></method>
+      <method name="isConnected" signature="isConnected()"><return type="boolean"/></method>
+      <method name="getRemoteAddress" signature="getRemoteAddress()"><return type="java.net.SocketAddress"/></method>
+
+      <method name="receive" signature="receive(java.nio.ByteBuffer)">
+        <tags>read, data:0</tags>
+        <return type="java.net.SocketAddress"/>
+        <source kind="network_input" argpos="0" resource="network"/>
+      </method>
+      <method name="send" signature="send(java.nio.ByteBuffer, java.net.SocketAddress)">
+        <tags>write, data:0, destination:1</tags>
+        <return type="int"/>
+      </method>
+    </class>
+
+    <class name="java.net.ProtocolFamily" kind="enum" alias="java.net.StandardProtocolFamily">
+      <field name="INET"></field>
+      <field name="INET6"></field>
+    </class>
+
+    <class name="java.nio.channels.FileChannel" kind="abstract_class"
+           supertypes="java.nio.channels.spi.AbstractInterruptibleChannel, java.nio.channels.SeekableByteChannel, java.nio.channels.GatheringByteChannel, java.nio.channels.ScatteringByteChannel">
+      <method name="open" signature="open(java.nio.file.Path, java.util.Set, java.nio.file.attribute.FileAttribute...)" match="name" instance="false">
+        <return type="@self"/>
+        <sink kind="path_traversal" resource="filesystem" argpos="0"/>
+      </method>
+
+      <method name="read" signature="read(java.nio.ByteBuffer)">
+        <tags>read, data:0</tags>
+        <source kind="file_input" argpos="0" resource="filesystem"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="read" signature="read(java.nio.ByteBuffer[])">
+        <tags>read, data:0</tags>
+        <return type="int"/>
+        <source kind="file_input" argpos="0" resource="filesystem"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="read" signature="read(java.nio.ByteBuffer[], int, int)">
+        <tags>read, data:0, offset:1, size:2</tags>
+        <return type="int"/>
+        <source kind="file_input" argpos="0" resource="filesystem"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="read" signature="read(java.nio.ByteBuffer, long)">
+        <tags>read, data:0, offset:1</tags>
+        <return type="int"/>
+        <source kind="file_input" argpos="0" resource="filesystem"/>
+        <propagate from="-2" to="0"/>
+      </method>
+
+      <method name="write" signature="write(java.nio.ByteBuffer)">
+        <tags>write, data:0</tags>
+        <return type="int"/>
+        <sink kind="file_output" argpos="0" resource="filesystem"/>
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="write" signature="write(java.nio.ByteBuffer[])">
+        <tags>write, data:0</tags>
+        <return type="int"/>
+        <sink kind="file_output" argpos="0" resource="filesystem"/>
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="write" signature="write(java.nio.ByteBuffer[], int, int)">
+        <tags>write, data:0, offset:1, size:2</tags>
+        <return type="int"/>
+        <sink kind="file_output" argpos="0" resource="filesystem"/>
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="write" signature="write(java.nio.ByteBuffer, long)">
+        <tags>write, data:0, offset:1</tags>
+        <return type="int"/>
+        <sink kind="file_output" argpos="0" resource="filesystem"/>
+        <propagate from="0" to="-2"/>
+      </method>
+
+      <method name="force" signature="force(boolean)"></method>
+      <method name="transferTo" signature="transferTo(long, long, java.nio.channels.WritableByteChannel)">
+        <tags>read, write, offset:0, size:1</tags>
+        <return type="long"/>
+        <propagate from="-2" to="2"/>
+      </method>
+      <method name="transferFrom" signature="transferFrom(java.nio.channels.ReadableByteChannel, long, long)">
+        <tags>read, write, offset:1, size:2</tags>
+        <return type="long"/>
+        <propagate from="0" to="-2"/>
+      </method>
+
+      <method name="map" signature="map(java.nio.channels.FileChannel.MapMode, long, long)">
+        <return type="java.nio.MappedByteBuffer"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="lock" signature="lock(long, long, boolean)" alias="tryLock" match="name">
+        <return type="java.nio.channels.FileLock"/>
+      </method>
+    </class>
+
+    <class name="java.nio.channels.FileLock" kind="abstract_class" supertypes="java.lang.AutoCloseable">
+      <method name="channel" signature="channel()"><return type="java.nio.channels.FileChannel"/></method>
+      <method name="acquiredBy" signature="acquiredBy()"><return type="java.nio.channels.FileChannel"/></method>
+      <method name="position" signature="position()"><return type="long"/></method>
+      <method name="size" signature="size()"><return type="long"/></method>
+      <method name="isShared" signature="isShared()" alias="isValid"><return type="boolean"/></method>
+      <method name="overlaps" signature="overlaps(long, long)"><return type="boolean"/></method>
+      <method name="release" signature="release()"></method>
+    </class>
+
+    <class name="java.nio.channels.Pipe.SourceChannel" kind="abstract_class"
+           supertypes="java.nio.channels.spi.AbstractSelectableChannel, java.nio.channels.ReadableByteChannel, java.nio.channels.ScatteringByteChannel"></class>
+    <class name="java.nio.channels.Pipe.SinkChannel" kind="abstract_class"
+           supertypes="java.nio.channels.spi.AbstractSelectableChannel, java.nio.channels.WritableByteChannel, java.nio.channels.GatheringByteChannel"></class>
+
+    <class name="java.nio.channels.Pipe" kind="abstract_class">
+      <method name="open" signature="open()" instance="false"><return type="@self"/></method>
+      <method name="source" signature="source()"><return type="java.nio.channels.Pipe.SourceChannel"/></method>
+      <method name="sink" signature="sink()"><return type="java.nio.channels.Pipe.SinkChannel"/></method>
+    </class>
+
+    <class name="java.nio.channels.spi.SelectorProvider" kind="abstract_class">
+      <method name="provider" signature="provider()" instance="false"><return type="@self"/></method>
+      <method name="openDatagramChannel" signature="openDatagramChannel()"><return type="java.nio.channels.DatagramChannel"/></method>
+      <method name="openDatagramChannel" signature="openDatagramChannel(java.net.ProtocolFamily)"><return type="java.nio.channels.DatagramChannel"/></method>
+      <method name="openPipe" signature="openPipe()"><return type="java.nio.channels.Pipe"/></method>
+      <method name="openSelector" signature="openSelector()"><return type="java.nio.channels.spi.AbstractSelector"/></method>
+      <method name="openServerSocketChannel" signature="openServerSocketChannel()"><return type="java.nio.channels.ServerSocketChannel"/></method>
+      <method name="openSocketChannel" signature="openSocketChannel()"><return type="java.nio.channels.SocketChannel"/></method>
+      <method name="inheritedChannel" signature="inheritedChannel()"><return type="java.nio.channels.Channel"/></method>
+    </class>
+
+    <class name="java.nio.channels.Channels">
+      <method name="newInputStream" signature="newInputStream(java.nio.channels.ReadableByteChannel)" match="numargs" instance="false">
+        <return type="java.io.InputStream"/>
+      </method>
+      <method name="newOutputStream" signature="newOutputStream(java.nio.channels.WritableByteChannel)" match="numargs" instance="false">
+        <return type="java.io.OutputStream"/>
+      </method>
+      <method name="newChannel" signature="newChannel(java.io.InputStream)" match="fullsignature" instance="false">
+        <return type="java.nio.channels.ReadableByteChannel"/>
+      </method>
+      <method name="newChannel_2" signature="newChannel(java.io.OutputStream" match="fullsignature" instance="false">
+        <return type="java.nio.channels.WritableByteChannel"/>
+      </method>
+      <method name="newReader" signature="newReader(java.nio.channels.ReadableByteChannel, java.lang.String)" match="name" instance="false">
+        <return type="java.io.Reader"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="newWriter" signature="newWriter(java.nio.channels.WritableByteChannel, java.lang.String)" match="name" instance="false">
+        <return type="java.io.Writer"/>
+        <propagate from="0" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.nio.Buffer" kind="abstract_class">
+      <method name="capacity" signature="capacity()"><return type="int"/></method>
+      <method name="position" signature="position()"><return type="int"/></method>
+      <method name="position" signature="position(int)"><return type="java.nio.Buffer"/></method>
+      <method name="limit" signature="limit()"><return type="int"/></method>
+      <method name="limit" signature="limit(int)"><return type="java.nio.Buffer"/></method>
+      <method name="remaining" signature="remaining()"><return type="int"/></method>
+      <method name="hasRemaining" signature="hasRemaining()"><return type="boolean"/></method>
+      <method name="isDirect" signature="isDirect()"><return type="boolean"/></method>
+      <method name="isReadOnly" signature="isReadOnly()"><return type="boolean"/></method>
+      <method name="hasArray" signature="hasRemaining()"><return type="boolean"/></method>
+      <method name="array" signature="array()"><return type="java.lang.Object"/></method>
+      <method name="arrayOffset" signature="arrayOffset()"><return type="int"/></method>
+
+      <method name="mark" signature="mark()" alias="reset, flip, rewind"><return type="java.nio.Buffer"/></method>
+      <method name="clear" signature="clear()" alias="reset">
+        <description>This does not erase data, but it acts as it  </description>
+        <return type="java.nio.Buffer"/>
+        <neutralization kind="memory-set" resource="memory" argpos="-1, -2"/>
+      </method>
+
+      <method name="capacity" signature="capacity()"><return type="int"/></method>
+    </class>
+
+    <class name="java.nio.ByteBuffer" kind="abstract_class" supertypes="java.nio.Buffer, java.lang.Comparable">
+      <method name="allocateDirect" signature="allocateDirect(int)" instance="false">
+        <tags>memory allocation, off-heap, memsize:0</tags>
+        <return type="java.nio.DirectByteBuffer"/>
+        <source kind="memory_allocation" argpos="-1" resource="memory"/>
+      </method>
+      <method name="allocate" signature="allocate(int)" instance="false">
+        <tags>memory allocation, on-heap, memsize:0</tags>
+        <return type="java.nio.HeapByteBuffer"/>
+        <source kind="memory_allocation" argpos="-1" resource="memory"/>
+      </method>
+      <method name="wrap" signature="wrap(byte[], int, int)" instance="false" match="name">
+        <return type="java.nio.HeapByteBuffer"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="slice" signature="slice()" alias="duplicate, asReadOnlyBuffer">
+        <return type="@self"/>
+      </method>
+      <method name="array" signature="array()"><return type="byte[]"/></method>
+      <method name="get" signature="get()" match="numargs"><tags>read, data:-1</tags><return type="byte"/></method>
+      <method name="get" signature="get(int)" match="fullsignature"><tags>read, offset:0, data:-1</tags><return type="byte"/></method>
+      <method name="get" signature="get(byte[])" match="fullsignature">
+        <tags>read, data:0</tags>
+        <return type="@self"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="get" signature="get(byte[], int, int)" match="numargs">
+        <tags>read, data:0, offset:1, size:2</tags>
+        <return type="@self"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="put" signature="put(byte)" match="fullsignature"><tags>write, data:0</tags><return type="@self"/></method>
+      <method name="put" signature="put(java.nio.ByteBuffer)" match="fullsignature"><tags>write, data:0</tags><return type="@self"/><propagate from="0" to="-1,-2"/></method>
+      <method name="put" signature="put(byte[])" match="fullsignature"><tags>write, data:0</tags><return type="@self"/><propagate from="0" to="-1,-2"/></method>
+      <method name="put" signature="put(int, byte)" match="numargs"><tags>write, offset:0, data:1</tags><return type="@self"/><propagate from="1" to="-1,-2"/></method>
+      <method name="put" signature="put(byte[], int, int)" match="numargs">
+        <tags>write, data:0, offset:1, size:2</tags>
+        <return type="@self"/>
+        <propagate from="0" to="-2"/>
+      </method>
+
+      <method name="asCharBuffer" signature="asCharBuffer()"><return type="java.nio.CharBuffer"/></method>
+      <method name="getChar" signature="getChar(int)" match="name"><tags>read, index:0, data:-1</tags><return type="char"/></method>
+      <method name="putChar" signature="putChar(char)" match="numargs"><tags>write, data:0</tags><return type="@self"/></method>
+      <method name="putChar" signature="putChar(int, char)" match="numargs"><tags>write, index:0, data:1</tags><return type="@self"/></method>
+
+      <method name="asShortBuffer" signature="asShortBuffer()"><return type="java.nio.ShortBuffer"/></method>
+      <method name="getShort" signature="getShort(int)" match="name"><tags>read, index:0, data:-1</tags><return type="short"/></method>
+      <method name="putShort" signature="putShort(short)" match="numargs"><tags>write, data:0</tags><return type="@self"/></method>
+      <method name="putShort" signature="putShort(int, short)" match="numargs"><tags>write, index:0, data:1</tags><return type="j@self"/></method>
+
+      <method name="asIntBuffer" signature="asIntBuffer()"><return type="java.nio.IntBuffer"/></method>
+      <method name="getInt" signature="getInt(int)" match="name"><tags>read, index:0, data:-1</tags><return type="int"/></method>
+      <method name="putInt" signature="putInt(int)" match="numargs"><tags>write, data:0</tags><return type="@self"/></method>
+      <method name="putInt" signature="putInt(int, int)" match="numargs"><tags>write, index:0, data:1</tags><return type="@self"/></method>
+
+      <method name="asLongBuffer" signature="asLongBuffer()"><return type="java.nio.LongBuffer"/></method>
+      <method name="getLong" signature="getLong(int)" match="name"><tags>read, index:0, data:-1</tags><return type="long"/></method>
+      <method name="putLong" signature="putLong(long)" match="numargs"><tags>write, data:0</tags><return type="@self"/></method>
+      <method name="putLong" signature="putLong(int, long)" match="numargs"><tags>write, index:0, data:1</tags><return type="@self"/></method>
+
+      <method name="asFloatBuffer" signature="asFloatBuffer()"><return type="java.nio.FloatBuffer"/></method>
+      <method name="getFloat" signature="getFloat(int)" match="name"><tags>read, index:0, data:-1</tags><return type="float"/></method>
+      <method name="putFloat" signature="putFloat(float)" match="numargs"><tags>write, data:0</tags><return type="@self"/></method>
+      <method name="putFloat" signature="putFloat(int, float)" match="numargs"><tags>write, index:0, data:1</tags><return type="@self"/></method>
+
+      <method name="asDoubleBuffer" signature="asDoubleBuffer()"><return type="java.nio.DoubleBuffer"/></method>
+      <method name="getDouble" signature="getDouble(int)" match="name"><tags>read, index:0, data:-1</tags><return type="double"/></method>
+      <method name="putDouble" signature="putDouble(double)" match="numargs"><tags>write, data:0</tags><return type="@self"/></method>
+      <method name="putDouble" signature="putDouble(int, double)" match="numargs"><tags>write, index:0, data:1</tags><return type="@self"/></method>
+
+    </class>
+
+    <class name="java.nio.HeapByteBuffer" supertypes="java.nio.ByteBuffer, sun.nio.ch.DirectBuffer">
+    </class>
+    <class name="java.nio.MappedByteBuffer" supertypes="java.nio.ByteBuffer">
+      <method name="isLoaded" signature="isLoaded()"><return type="boolean"/></method>
+      <method name="load" signature="load()"><return type="@self"/></method>
+      <method name="force" signature="force()"><return type="@self"/></method>
+    </class>
+    <class name="java.nio.DirectByteBuffer" supertypes="java.nio.MappedByteBuffer">
+    </class>
+
+    <class name="java.nio.CharBuffer" supertypes="java.nio.Buffer, java.lang.CharSequence, java.lang.Readable, java.lang.Comparable, java.lang.Appendable">
+      <method name="allocate" signature="allocate(int)" instance="false">
+        <tags>memory allocation, on-heap, memsize:0</tags>
+        <return type="java.nio.HeapCharBuffer"/>
+        <source kind="memory_allocation" argpos="-1" resource="memory"/>
+      </method>
+      <method name="wrap" signature="wrap(char[], int, int)" instance="false" match="name">
+        <return type="java.nio.HeapCharBuffer"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="slice" signature="slice()" alias="duplicate, asReadOnlyBuffer, compact">
+        <return type="java.nio.CharBuffer"/>
+      </method>
+      <method name="array" signature="array()"><return type="char[]"/></method>
+      <method name="get" signature="get()" match="numargs"><tags>read, data:-1</tags><return type="char"/></method>
+      <method name="get" signature="get(int)" match="fullsignature"><tags>read, offset:0, data:-1</tags><return type="byte"/></method>
+      <method name="get" signature="get(char[])" match="fullsignature">
+        <tags>read, data:0</tags>
+        <return type="java.nio.CharBuffer"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="get" signature="get(char[], int, int)" match="numargs">
+        <tags>read, data:0, offset:1, size:2</tags>
+        <return type="java.nio.CharBuffer"/>
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="put" signature="put(char)" match="fullsignature"><tags>write, data:0</tags><return type="java.nio.CharBuffer"/></method>
+      <method name="put" signature="put(java.nio.CharBuffer)" match="fullsignature"><tags>write, data:0</tags><return type="java.nio.CharBuffer"/><propagate from="0" to="-1,-2"/></method>
+      <method name="put" signature="put(int, char)" match="numargs"><tags>write, offset:0, data:1</tags><return type="java.nio.CharBuffer"/><propagate from="1" to="-1,-2"/></method>
+      <method name="put" signature="put(char[], int, int)" match="numargs">
+        <tags>write, data:0, offset:1, size:2</tags>
+        <return type="java.nio.CharBuffer"/>
+        <propagate from="0" to="-2"/>
+      </method>
+    </class>
+
+  </module>
+
+  <!-- System / Runtime and command execution -->
+  <module name="jdk.system">
+    <class name="java.lang.System">
+      <field name="err" instance="false" type="java.io.PrintStream"/>
+      <field name="out" instance="false" type="java.io.PrintStream"/>
+      <field name="in" instance="false" type="java.io.InputStream">
+        <source argpos="0" kind="user_input" resource="environment"/>
+      </field>
+      <method name="arrayCopy" signature="arrayCopy(java.lang.Object,int,java.lang.Object,int,int)">
+        <propagate from="0" to="2"/>
+      </method>
+      <method name="console" signature="console()">
+        <return type="java.io.Console"/>
+      </method>
+      <method name="exit" signature="exit(int)" />
+      <method name="gc" signature="gc()" />
+
+      <method name="getenv" signature="getenv()">
+        <return type="java.util.Map"/>
+        <source argpos="-1" kind="environment_input" resource="environment"/>
+      </method>
+      <method name="getenv" signature="getenv(java.lang.String)">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="environment_input" resource="environment"/>
+      </method>
+      <method name="getProperties" signature="getProperties(java.lang.String)">
+        <return type="java.util.Properties"/>
+        <source argpos="-1" kind="system_input" resource="environment"/>
+      </method>
+      <method name="getProperty" signature="getProperty(java.lang.String,java.lang.String)" match="name">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="system_input" resource="environment"/>
+      </method>
+      <method name="getSecurityManager" signature="getSecurityManager()">
+        <return type="java.lang.SecurityManager"/>
+      </method>
+      <method name="load" signature="load(java.lang.String)">
+        <sink argpos="0" kind="process_control" resource="environment"/>
+      </method>
+      <method name="loadLibrary" signature="loadLibrary(java.lang.String)">
+        <sink argpos="0" kind="process_control" resource="environment"/>
+      </method>
+      <method name="setProperties" signature="setProperties(java.util.Properties)">
+        <sink argpos="0" kind="configuration_setting_injection"/>
+      </method>
+      <method name="setProperty" signature="setProperty(java.lang.String,java.lang.String)">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="system_input" resource="environment"/>
+        <sink argpos="0,1" kind="configuration_setting_injection"/>
+      </method>
+      <method name="setSecurityManager" signature="setSecurityManager(java.lang.SecurityManager)">
+      </method>
+    </class>
+
+    <class name="java.lang.Runtime">
+      <description>Runtime</description>
+      <method name="getRuntime" signature="getRuntime()">
+        <return type="java.lang.Runtime"/>
+      </method>
+      <method name="exec" signature="exec(java.lang.String)">
+        <tags>CWE:78</tags>
+        <return type="java.lang.Process" />
+        <sink argpos="0" kind="command_injection" resource="environment"/>
+      </method>
+      <method name="exec_1" signature="exec(java.lang.String[])">
+        <tags>CWE:78</tags>
+        <return type="java.lang.Process" />
+        <sink argpos="0" kind="command_injection" resource="environment"/>
+      </method>
+      <method name="exec_2" signature="exec(java.lang.String, java.lang.String[])">
+        <tags>CWE:78</tags>
+        <return type="java.lang.Process" />
+        <sink argpos="0,1" kind="command_injection" resource="environment"/>
+      </method>
+      <method name="exec_3" signature="exec(java.lang.String[], java.lang.String[])">
+        <tags>CWE:78</tags>
+        <return type="java.lang.Process" />
+        <sink argpos="0,1" kind="command_injection" resource="environment"/>
+      </method>
+      <method name="exec_4" signature="exec(java.lang.String[], java.lang.String[], java.io.File)">
+        <tags>CWE:78</tags>
+        <return type="java.lang.Process" />
+        <sink argpos="0,1" kind="command_injection" resource="environment"/>
+        <!-- sink argpos="2" kind="path_traversal" resource="filesystem"/ -->
+      </method>
+      <method name="load" signature="load(java.lang.String)">
+        <sink argpos="0" kind="process_control" resource="environment"/>
+      </method>
+      <method name="loadLibrary" signature="loadLibrary(java.lang.String)">
+        <sink argpos="0" kind="process_control" resource="environment"/>
+      </method>
+    </class>
+
+    <class name="java.lang.ProcessBuilder">
+      <description>Creates operating system processes</description>
+      <constructor name="ProcessBuilder" signature="ProcessBuilder(java.util.List)">
+        <tags>CWE:78</tags>
+        <sink argpos="0" kind="command_injection" resource="environment"/>
+      </constructor>
+      <method name="command" signature="command(java.lang.String...)" match="name">
+        <tags>CWE:78</tags>
+        <sink argpos="0" kind="command_injection" resource="environment"/>
+      </method>
+      <method name="start" signature="start()" >
+        <return type="java.lang.Process" />
+      </method>
+    </class>
+
+    <class name="java.lang.Process">
+      <method name="getErrorStream" signature="getErrorStream()" >
+        <return type="java.io.InputStream" />
+        <source argpos="-1" kind="system_input" resource="os" />
+      </method>
+      <method name="getInputStream" signature="getInputStream()" >
+        <return type="java.io.InputStream" />
+        <source argpos="-1" kind="system_input" resource="os" />
+      </method>
+      <method name="getOutputStream" signature="getOutputStream()" >
+        <return type="java.io.OutputStream" />
+        <source argpos="-1" kind="system_input" resource="os" />
+      </method>
+    </class>
+  </module>
+
+  <module name="java.net">
+    <class name="java.net.InetAddress">
+      <method name="getAddress" signature="getAddress()">
+        <return type="byte[]"/>
+        <source argpos="-1" kind="sensitive_info" resource="web"/>
+      </method>
+      <method name="getAllByName" signature="getAllByName(String)" instance="false">
+        <return type="java.net.InetAddress[]"/>
+      </method>
+      <method name="getByAddress" signature="getByAddress(byte[])" instance="false">
+        <return type="java.net.InetAddress"/>
+      </method>
+      <method name="getByAddress" signature="getByAddress(String,byte[])" instance="false">
+        <return type="java.net.InetAddress"/>
+      </method>
+      <method name="getByName" signature="getByName(String)" instance="false">
+        <return type="java.net.InetAddress"/>
+        <sink argpos="0" kind="host_name_check" resource="web" />
+      </method>
+      <method name="getCanonicalHostName" signature="getCanonicalHostName()">
+        <return type="java.lang.String"/>
+      </method>
+      <method name="getHostAddress" signature="getHostAddress()">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="web"/>
+      </method>
+      <method name="getHostName" signature="getHostName()" match="name">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="web"/>
+      </method>
+      <method name="getLocalHost" signature="getLocalHost()" instance="false">
+        <return type="java.net.InetAddress"/>
+      </method>
+      <method name="getLoopbackAddress" signature="getLoopbackAddress()" instance="false">
+        <return type="java.net.InetAddress"/>
+      </method>
+      <method name="toString" signature="toString()">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="web"/>
+      </method>
+    </class>
+
+    <class name="java.net.Inet4Address" supertypes="java.net.InetAddress">
+      <tags>immutable</tags>
+    </class>
+
+    <class name="java.net.Inet6Address" supertypes="java.net.InetAddress">
+      <tags>immutable</tags>
+    </class>
+
+    <class name="java.net.SocketAddress" >
+      <tags>immutable</tags>
+    </class>
+
+    <class name="java.net.InetSocketAddress" supertypes="java.net.SocketAddress" >
+      <tags>immutable</tags>
+    </class>
+
+    <class name="java.net.URI">
+      <constructor name="URI" signature="URI(java.lang.String)">
+        <tags>url</tags>
+        <sink argpos="0" kind="ssrf"/>
+        <sink argpos="0" kind="http_parameter_pollution"/>
+      </constructor>
+      <constructor name="URI_2" signature="URI(java.lang.String,java.lang.String,java.lang.String)">
+        <tags>url</tags>
+        <sink argpos="0,1" kind="ssrf"/>
+        <sink argpos="1,2" kind="http_parameter_pollution"/>
+      </constructor>
+      <constructor name="URI_3" signature="URI(java.lang.String,java.lang.String,java.lang.String,java.lang.String)">
+        <tags>url</tags>
+        <sink argpos="0,1,2" kind="ssrf"/>
+        <sink argpos="3" kind="http_parameter_pollution"/>
+      </constructor>
+      <constructor name="URI_4" signature="URI(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)">
+        <tags>url</tags>
+        <sink argpos="0,1" kind="ssrf"/>
+        <sink argpos="2,3,4" kind="http_parameter_pollution"/>
+      </constructor>
+      <constructor name="URI_5" signature="URI(java.lang.String,java.lang.String,java.lang.String,int,java.lang.String,java.lang.String,java.lang.String)">
+        <tags>url, username:1</tags>
+        <sink argpos="0,1,2,3" kind="ssrf"/>
+        <sink argpos="4,5,6" kind="http_parameter_pollution"/>
+        <sink argpos="1" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+      <method name="create" signature="create(java.lang.String)">
+        <return type="java.net.URI"/>
+        <sink argpos="0" kind="ssrf"/>
+        <sink argpos="0" kind="http_parameter_pollution"/>
+      </method>
+      <method name="toURL" signature="toURL()">
+        <return type="java.net.URL"/>
+      </method>
+      <!-- TODO what is the effect of relativize(), resolve(), normalize() ? -->
+    </class>
+
+    <class name="java.net.URL">
+      <tags>immutable</tags>
+
+      <constructor name="URL" signature="URL(java.lang.String)">
+        <tags>url</tags>
+        <sink argpos="0" kind="ssrf"/>
+        <sink argpos="0" kind="http_parameter_pollution"/>
+        <sink argpos="0" kind="insecure_transport" resource="network" />
+      </constructor>
+      <constructor name="URL" signature="URL(java.lang.String,java.lang.String,java.lang.String)">
+        <tags>url</tags>
+        <sink argpos="0,1" kind="ssrf"/>
+        <sink argpos="2" kind="http_parameter_pollution"/>
+        <sink argpos="0" kind="insecure_transport" resource="network" />
+      </constructor>
+      <constructor name="URL" signature="URL(java.lang.String,java.lang.String,int,java.lang.String)">
+        <tags>url</tags>
+        <sink argpos="0,1,2" kind="ssrf"/>
+        <sink argpos="3" kind="http_parameter_pollution"/>
+        <sink argpos="0" kind="insecure_transport" resource="network" />
+      </constructor>
+      <constructor name="URL" signature="URL(java.lang.String,java.lang.String,int,java.lang.String,java.net.URLStreamHandler)">
+        <tags>url</tags>
+        <sink argpos="0,1,2" kind="ssrf"/>
+        <sink argpos="3" kind="http_parameter_pollution"/>
+        <sink argpos="0" kind="insecure_transport" resource="network" />
+      </constructor>
+
+      <method name="getContent" signature="getContent()" match="name">
+        <tags>comm</tags>
+        <return type="java.lang.Object"/>
+        <source argpos="-1" kind="user_input" resource="network"/>
+      </method>
+      <method name="openConnection" signature="openConnection()" match="name">
+        <tags>comm</tags>
+        <return type="java.net.URLConnection"/>
+      </method>
+      <method name="openStream" signature="openStream()" match="name">
+        <tags>comm</tags>
+        <return type="java.io.InputStream"/>
+      </method>
+    </class>
+
+    <class name="java.net.URLConnection">
+      <constructor name="URLConnection" signature="URLConnection(java.net.URL)">
+        <sink argpos="0" kind="ssrf" resource="network"/>
+      </constructor>
+      <method name="connect" signature="connect()">
+        <tags>comm</tags>
+      </method>
+      <method name="getContent" signature="getContent()" match="name">
+        <tags>comm</tags>
+        <source argpos="-1" kind="user_input" resource="network"/>
+      </method>
+      <method name="getInputStream" signature="getInputStream()">
+        <tags>comm</tags>
+        <return type="java.io.InputStream"/>
+        <!-- sink argpos="-2" kind="ssrf" resource="network"/ -->
+        <source argpos="-1" kind="user_input" resource="network"/>
+      </method>
+      <method name="getOutputStream" signature="getOutputStream()">
+        <tags>comm</tags>
+        <return type="java.io.getOutputStream"/>
+        <sink argpos="-1" kind="user_output" resource="network"/>
+      </method>
+      <method name="getHeaderField" signature="getHeaderField(int)">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="user_input" resource="network"/>
+      </method>
+      <method name="getHeaderFieldKey" signature="getHeaderFieldKey(int)">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="user_input" resource="network"/>
+      </method>
+      <method name="getHeaderFields" signature="getHeaderFields()">
+        <return type="java.util.Map"/>
+        <source argpos="-1" kind="user_input" resource="network"/>
+      </method>
+      <method name="setRequestProperty" signature="setRequestProperty(java.lang.String,java.lang.String)" alias="addRequestProperty">
+        <sink argpos="0,1" kind="user_output" resource="network"/>
+      </method>
+    </class>
+
+    <class name="java.net.HttpURLConnection" supertypes="java.net.URLConnection">
+      <constructor name="HttpURLConnection" signature="HttpURLConnection(java.net.URL)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </constructor>
+      <method name="getOutputStream" signature="getOutputStream()">
+        <tags>comm</tags>
+        <return type="java.io.getOutputStream"/>
+        <sink argpos="-1" kind="http_parameter_pollution" resource="web"/>
+      </method>
+    </class>
+
+    <class name="java.net.HttpsURLConnection" supertypes="java.net.HttpURLConnection">
+    </class>
+
+    <class name="java.net.HttpCookie">
+    </class>
+
+    <class name="java.net.URLEncoder">
+      <method name="encode" signature="encode(java.lang.String)" match="name">
+        <return type="java.lang.String"/>
+        <neutralization argpos="0" kind="xss" resource="web"/>
+        <neutralization argpos="0" kind="header_manipulation" resource="web"/>
+        <neutralization argpos="0" kind="http_parameter_pollution" resource="web"/>
+        <propagate from="0" to="-1" />
+      </method>
+    </class>
+
+    <class name="java.net.URLDecoder">
+      <method name="decode" signature="decode(java.lang.String)" match="name">
+        <return type="java.lang.String"/>
+        <propagate from="0" to="-1"/>
+      </method>
+    </class>
+
+    <class name="java.net.PasswordAuthentication">
+      <constructor name="PasswordAuthentication" signature="PasswordAuthentication(java.lang.String,char[])">
+        <tags>username:0, password:1</tags>
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+    </class>
+
+    <class name="javax.net.ssl.KeyManagerFactory">
+      <method name="getInstance" signature="getInstance(java.lang.String)" match="name">
+        <return type="javax.net.ssl.KeyManagerFactory"/>
+      </method>
+      <method name="init" signature="java.security.KeyStore,char[])">
+        <tags>password:1</tags>
+        <sink argpos="1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="getKeyManagers" signature="getKeyManagers()">
+        <return type="javax.net.ssl.KeyManager[]"/>
+      </method>
+    </class>
+
+    <!-- Socket -->
+    <class name="java.net.Socket">
+      <constructor name="Socket" signature="Socket(java.lang.String,int)">
+        <sink argpos="0,1" kind="ssrf" resource="network"/>
+      </constructor>
+      <constructor name="Socket_2" signature="Socket(java.lang.String,int,boolean)">
+        <tags>deprecated</tags>
+        <sink argpos="0,1" kind="ssrf" resource="network"/>
+      </constructor>
+      <constructor name="Socket_3" signature="Socket(java.lang.String,int,java.net.InetAddress,int)">
+        <sink argpos="0,1" kind="ssrf" resource="network"/>
+        <sink argpos="2,3" kind="resource_injection" resource="network"/>
+      </constructor>
+      <method name="bind" signature="bind(java.net.SocketAddress)">
+        <sink argpos="0" kind="resource_injection" resource="network"/>
+      </method>
+      <method name="connect" signature="connect(java.net.SocketAddress,int)" match="name">
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink argpos="1" kind="resource_injection" resource="network"/>
+      </method>
+      <method name="setSoTimeout" signature="setSoTimeout(int)">
+        <sink argpos="0,1" kind="resource_injection" resource="network"/>
+      </method>
+      <method name="getInputStream()" signature="getInputStream()">
+        <return type="java.io.InputStream" />
+        <propagate from="-2" to="-1" />
+        <source argpos="-1" kind="user_input" resource="network"/>
+      </method>
+    </class>
+
+    <class name="javax.net.ssl.SSLSocket" supertypes="java.net.Socket">
+      <constructor name="SSLSocket" signature="SSLSocket(java.lang.String,int)">
+        <sink argpos="0,1" kind="ssrf" resource="network"/>
+      </constructor>
+      <constructor name="SSLSocket_2" signature="SSLSocket(java.lang.String,int,java.net.InetAddress,int)">
+        <sink argpos="0,1" kind="ssrf" resource="network"/>
+        <sink argpos="2,3" kind="resource_injection" resource="network"/>
+      </constructor>
+      <method name="setEnabledCipherSuites" signature="setEnabledCipherSuites(java.lang.String[])" alias="setSupportedProtocols">
+        <sink argpos="0" kind="resource_injection" resource="network"/>
+      </method>
+      <method name="setNeedClientAuth" signature="setNeedClientAuth(boolean)" alias="setWantClientAuth">
+        <sink argpos="0" kind="resource_injection" resource="network"/>
+      </method>
+      <method name="setSSLParameters" signature="setSSLParameters(javax.net.ssl.SSLParameters)">
+        <sink argpos="0" kind="resource_injection" resource="network"/>
+      </method>
+    </class>
+
+    <class name="sun.security.ssl.SSLSocketImpl" supertypes="javax.net.ssl.SSLSocket"/>
+
+    <class name="java.net.ServerSocket">
+      <constructor name="ServerSocket" signature="ServerSocket(int,int,java.net.InetAddress)" match="name">
+        <sink argpos="0,1,2" kind="resource_injection" resource="network"/>
+      </constructor>
+      <method name="bind" signature="bind(java.net.SocketAddress,int)" match="name">
+        <sink argpos="0,1" kind="resource_injection" resource="network"/>
+      </method>
+      <method name="accept" signature="accept()">
+        <return type="java.net.Socket"/>
+      </method>
+      <method name="setSoTimeout" signature="setSoTimeout(int)">
+        <sink argpos="0,1" kind="resource_injection" resource="network"/>
+      </method>
+    </class>
+
+    <class name="javax.net.ssl.SSLServerSocket" supertypes="java.net.ServerSocket">
+      <constructor name="SSLServerSocket" signature="SSLServerSocket(int,int,java.net.InetAddress)" match="name">
+        <sink argpos="0,1,2" kind="resource_injection" resource="network"/>
+      </constructor>
+      <method name="setEnabledCipherSuites" signature="setEnabledCipherSuites(java.lang.String[])" alias="setSupportedProtocols">
+        <sink argpos="0" kind="resource_injection" resource="network"/>
+      </method>
+      <method name="setNeedClientAuth" signature="setNeedClientAuth(boolean)" alias="setWantClientAuth">
+        <sink argpos="0" kind="resource_injection" resource="network"/>
+      </method>
+      <method name="setSSLParameters" signature="setSSLParameters(javax.net.ssl.SSLParameters)">
+        <sink argpos="0" kind="resource_injection" resource="network"/>
+      </method>
+    </class>
+
+    <!-- java.net.http jdk11 package -->
+    <class name="java.net.http.HttpRequest.Builder" kind="interface">
+      <method name="build" signature="build()">
+        <return type="java.net.http.HttpRequest"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="copy" signature="copy()">
+        <return type="java.net.http.HttpRequest.Builder"/>
+      </method>
+      <method name="DELETE" signature="DELETE()">
+        <return type="java.net.http.HttpRequest.Builder"/>
+      </method>
+      <method name="expectedContinue" signature="expectedContinue(boolean enable)">
+        <return type="java.net.http.HttpRequest.Builder"/>
+      </method>
+      <method name="GET" signature="GET()">
+        <return type="java.net.http.HttpRequest.Builder"/>
+      </method>
+      <method name="header" signature="header(String name, String value)" match="name">
+        <return type="java.net.http.HttpRequest.Builder"/>
+      </method>
+      <method name="method" signature="method(String method, HttpRequest.BodyPublisher bodyPublisher)">
+        <return type="java.net.http.HttpRequest.Builder"/>
+      </method>
+      <method name="POST​" signature="POST​(HttpRequest.BodyPublisher bodyPublisher)">
+        <return type="java.net.http.HttpRequest.Builder"/>
+      </method>
+      <method name="PUT" signature="PUT​(HttpRequest.BodyPublisher bodyPublisher)">
+        <return type="java.net.http.HttpRequest.Builder"/>
+      </method>
+      <method name="setHeader​" signature="setHeader​(String name, String value)">
+        <return type="java.net.http.HttpRequest.Builder"/>
+      </method>
+      <method name="timeout​" signature="timeout​(Duration duration)">
+        <return type="java.net.http.HttpRequest.Builder"/>
+      </method>
+      <method name="uri" signature="uri​(java.net.URI uri)">
+        <return type="java.net.http.HttpRequest.Builder"/>
+      </method>
+      <method name="version​" signature="version​(HttpClient.Version version))">
+        <return type="java.net.http.HttpRequest.Builder"/>
+      </method>
+    </class>
+
+    <class name="java.net.http.HttpRequest" kind="abstract_class">
+      <method name="header" signature="header()" match="name">
+        <return type="java.net.http.HttpRequest.Builder"/>
+      </method>
+      <method name="uri" signature="uri()">
+        <return type="java.net.URI"/>
+      </method>
+    </class>
+  </module>
+
+  <!-- reflection -->
+  <module name="jdk.reflection">
+
+    <class name="java.lang.Class">
+      <method name="forName" signature="forName(java.lang.String)">
+        <return type="java.lang.Class"/>
+        <sink argpos="0" kind="unsafe_reflection" resource="other"/>
+        <sink argpos="0" kind="code_injection" resource="environment"/>
+      </method>
+      <method name="forName_2" signature="forName(java.lang.String,boolean,java.lang.ClassLoader)">
+        <return type="java.lang.Class"/>
+        <sink argpos="0" kind="unsafe_reflection" resource="other"/>
+        <sink argpos="0" kind="code_injection" resource="environment"/>
+      </method>
+      <method name="asSubclass" signature="asSubclass(java.lang.Class)">
+        <return type="java.lang.Class"/>
+      </method>
+      <method name="getAnnotation" signature="getAnnotation(java.lang.Class)">
+        <return type="java.lang.annotation.Annotation"/>
+      </method>
+      <method name="getAnnotations" signature="getAnnotations()" alias="getDeclaredAnnotations">
+        <return type="java.lang.annotation.Annotation[]"/>
+      </method>
+      <method name="getClasses" signature="getClasses()" alias="getDeclaredClasses">
+        <return type="java.lang.Class[]"/>
+      </method>
+      <method name="getClassLoader" signature="getClassLoader()">
+        <return type="java.lang.ClassLoader"/>
+      </method>
+      <method name="getComponentType" signature="getComponentType()">
+        <return type="java.lang.Class"/>
+      </method>
+      <method name="getConstructor" signature="getConstructor(java.lang.Class...)" alias="getDeclaredConstructor">
+        <return type="java.lang.reflect.Constructor"/>
+      </method>
+      <method name="getConstructors" signature="getConstructors()" alias="getDeclaredConstructors">
+        <return type="java.lang.reflect.Constructor[]"/>
+      </method>
+      <method name="getDeclaringClass" signature="getDeclaringClass()" alias="getEnclosingClass">
+        <return type="java.lang.Class"/>
+      </method>
+      <method name="getEnclosingMethod" signature="getEnclosingMethod()">
+        <return type="java.lang.reflect.Method"/>
+      </method>
+      <method name="getEnumConstants" signature="getEnumConstants()">
+        <return type="java.lang.Object[]"/>
+      </method>
+      <method name="getField" signature="getField(java.lang.String)" alias="getDeclaredField">
+        <return type="java.lang.reflect.Field"/>
+        <sink argpos="0" kind="unsafe_reflection" resource="other"/>
+      </method>
+      <method name="getFields" signature="getFields()" alias="getDeclaredFields">
+        <return type="java.lang.reflect.Field[]"/>
+      </method>
+      <method name="getInterfaces" signature="getInterfaces()">
+        <return type="java.lang.Class[]"/>
+      </method>
+      <method name="getMethod" signature="getMethod(java.lang.String,java.lang.Class...)" alias="getDeclaredMethod">
+        <return type="java.lang.reflect.Method"/>
+        <sink argpos="0" kind="unsafe_reflection" resource="other"/>
+        <sink argpos="0" kind="code_injection" resource="environment"/>
+      </method>
+      <method name="getMethods" signature="getMethods()" alias="getDeclaredMethods">
+        <return type="java.lang.reflect.Method[]"/>
+      </method>
+      <method name="getSuperClass" signature="getSuperClass()">
+        <return type="java.lang.Class"/>
+      </method>
+      <method name="newInstance" signature="newInstance()">
+        <return type="java.lang.Object"/>
+      </method>
+      <method name="getName" signature="getName()" >
+        <return type="java.lang.String" />
+      </method>
+
+      <!-- Extension for Kotlin -->
+      <field name="kotlin" type="kotlin.reflect.KClass" />
+    </class>
+
+  </module>
+
+  <!-- Scripting API -->
+  <module name="javax.script">
+    <class name="javax.script.ScriptEngineManager" standard="script">
+      <method name="getEngineByName" signature="getEngineByName(java.lang.String)">
+        <return type="javax.script.ScriptEngine"/>
+      </method>
+      <method name="getEngineByExtension" signature="getEngineByExtension(java.lang.String)">
+        <return type="javax.script.ScriptEngine"/>
+      </method>
+      <method name="getEngineByMimeType" signature="getEngineByMimeType(java.lang.String)">
+        <return type="javax.script.ScriptEngine"/>
+      </method>
+    </class>
+
+    <class name="javax.script.ScriptEngine" kind="interface" standard="script">
+      <method name="eval" signature="eval(java.lang.String)" match="name">
+        <sink argpos="0" kind="code_injection" resource="environment"/>
+      </method>
+    </class>
+  </module>
+
+  <!-- XML libraries -->
+  <module name="javax.xml">
+    <description>XML-related libraries</description>
+
+    <class name="javax.xml.parsers.DocumentBuilderFactory" kind="abstract_class" standard="jaxp">
+      <method name="newInstance" signature="newInstance()" match="name">
+        <return type="javax.xml.parsers.DocumentBuilderFactory"/>
+      </method>
+      <method name="newDocumentBuilder" signature="newDocumentBuilder()">
+        <return type="javax.xml.parsers.DocumentBuilder"/>
+      </method>
+    </class>
+
+    <class name="javax.xml.parsers.DocumentBuilder" kind="abstract_class" standard="jaxp">
+      <method name="parse" signature="parse(java.lang.String)" match="name">
+        <return type="org.w3c.dom.Document"/>
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="javax.xml.parsers.SAXParserFactory" kind="abstract_class" standard="jaxp">
+      <method name="newInstance" signature="newInstance()" match="name">
+        <return type="javax.xml.parsers.SAXParserFactory"/>
+      </method>
+      <method name="newSAXParser" signature="newSAXParser()">
+        <return type="javax.xml.parsers.SAXParser"/>
+      </method>
+    </class>
+
+    <class name="javax.xml.parsers.SAXParser" kind="abstract_class" standard="jaxp">
+      <method name="parse" signature="parse(java.lang.String,?)" match="name">
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+        <propagate from="0" to="1"/>
+      </method>
+    </class>
+
+    <class name="javax.xml.stream.XMLInputFactory" kind="abstract_class" standard="stax">
+      <method name="newInstance" signature="newInstance()" match="name" alias="newFactory">
+        <return type="javax.xml.stream.XMLInputFactory"/>
+      </method>
+      <method name="createFilteredReader" signature="createFilteredReader(javax.xml.stream.XMLEventReader,javax.xml.stream.EventFilter)"
+              match="fullsignature">
+        <return type="javax.xml.stream.XMLEventReader"/>
+      </method>
+      <method name="createFilteredReader" signature="createFilteredReader(javax.xml.stream.XMLStreamReader,javax.xml.stream.StreamFilter)"
+              match="fullsignature">
+        <return type="javax.xml.stream.XMLStreamReader"/>
+      </method>
+      <method name="createXMLEventReader" signature="createXMLEventReader(java.io.InputStream)" match="name">
+        <return type="javax.xml.stream.XMLEventReader"/>
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+      <method name="createXMLStreamReader" signature="createXMLStreamReader(java.io.InputStream)" match="name">
+        <return type="javax.xml.stream.XMLStreamReader"/>
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+      <method name="setXMLResolver" signature="setXMLResolver(javax.xml.stream.XMLResolver)"/>
+      <method name="setProperty" signature="setProperty(java.lang.String,java.lang.Object)"/>
+    </class>
+
+    <class name="javax.xml.stream.XMLEventReader" kind="interface" standard="stax">
+    </class>
+
+    <class name="javax.xml.stream.XMLStreamReader" kind="interface" standard="stax">
+    </class>
+
+    <class name="javax.xml.stream.XMLResolver" kind="interface" standard="stax">
+    </class>
+
+    <class name="org.xml.sax.helpers.XMLReaderFactory" standard="xml">
+      <method name="createXMLReader" signature="createXMLReader()" match="name">
+        <return type="org.xml.sax.XMLReader"/>
+      </method>
+    </class>
+
+    <class name="org.xml.sax.XMLReader" kind="interface" standard="xml">
+      <method name="parse" signature="parse(org.xml.sax.InputSource)" match="name">
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="javax.xml.validation.SchemaFactory" standard="xml">
+      <method name="newInstance" signature="newInstance()" match="name" instance="false">
+        <return type="javax.xml.validation.SchemaFactory"/>
+      </method>
+      <method name="newSchema" signature="newSchema(java.net.URL)" match="name">
+        <return type="javax.xml.validation.Schema"/>
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="javax.xml.validation.Schema" standard="xml">
+      <method name="newValidator" signature="newValidator()">
+        <return type="javax.xml.validation.Validator"/>
+      </method>
+    </class>
+
+    <class name="javax.xml.validation.Validator" standard="xml">
+      <method name="validate" signature="validate(javax.xml.transform.Source)" match="name">
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="javax.xml.xpath.XPathExpression" kind="interface">
+      <method name="evaluate" signature="evaluate(org.xml.sax.InputSource)">
+        <return type="java.lang.String"/>
+      </method>
+      <method name="evaluate_2" signature="evaluate(org.xml.sax.InputSource, javax.xml.namespace.QName)">
+        <return type="java.lang.String"/>
+      </method>
+    </class>
+
+    <class name="javax.xml.xpath.XPath" kind="interface" standard="xml">
+      <description>XPath</description>
+      <method name="compile" signature="compile(java.lang.String)" >
+        <return type="javax.xml.xpath.XPathExpression"/>
+        <sink argpos="0" kind="xpath_injection" resource="other"/>
+      </method>
+      <method name="evaluate" signature="evaluate(java.lang.String)" match="name">
+        <sink argpos="0" kind="xpath_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="javax.xml.xpath.XPathFunction">
+      <method name="evaluate" signature="evaluate(java.lang.List)"><return type="java.lang.Object"/></method>
+    </class>
+
+    <class name="javax.xml.xpath.XPathFunctionResolver" kind="interface">
+      <method name="resolveFunction" signature="resolveFunction(javax.xml.namespace.QName, int)">
+        <return type="javax.xml.xpath.XPathFunction"/>
+      </method>
+    </class>
+
+    <class name="javax.xml.xpath.XPathFactory" kind="abstract_class">
+      <method name="newInstance" signature="newInstance()" match="name">
+        <return type="@self"/>
+      </method>
+      <method name="newXPath" signature="newXPath()">
+        <return type="javax.xml.xpath.XPath"/>
+      </method>
+    </class>
+
+    <class name="org.xml.sax.InputSource" standard="xml">
+      <constructor name="InputSource" signature="InputSource()"/>
+      <constructor name="InputSource" signature="InputSource(java.io.Reader)"/>
+      <constructor name="InputSource" signature="InputSource(java.io.InputStream)"/>
+      <constructor name="InputSource" signature="InputSource(java.lang.String)"/>
+      <method name="setSystemId" signature="setSystemId(java.lang.String)">
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="setByteStream" signature="setByteStream(java.io.InputStream)">
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="setCharacterStream" signature="setCharacterStream(java.io.Reader)">
+        <propagate from="0" to="-2"/>
+      </method>
+    </class>
+
+    <class name="java.beans.XMLDecoder" standard="beans">
+      <constructor name="XMLDecoder" signature="XMLDecoder(org.xml.sax.InputSource)">
+        <sink argpos="0" kind="code_injection_deserialization" resource="other"/>
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </constructor>
+      <constructor name="XMLDecoder" signature="XMLDecoder(java.io.InputStream)" match="name">
+        <sink argpos="0" kind="code_injection_deserialization" resource="other"/>
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </constructor>
+    </class>
+
+    <!-- TrAX XSLT -->
+
+    <class name="javax.xml.transform.Source" kind="interface">
+      <method name="getSystemId" signature="getSystemId()"><return type="java.lang.String"/></method>
+      <method name="setSystemId" signature="setSystemId(java.lang.String)"></method>
+    </class>
+
+    <class name="javax.xml.transform.dom.DOMSource" kind="class" supertypes="javax.xml.transform.Source">
+      <method name="getNode" signature="getNode()"><return type="org.w3c.dom.Node"/></method>
+    </class>
+    <class name="javax.xml.transform.sax.SAXSource" supertypes="javax.xml.transform.Source">
+    </class>
+    <class name="javax.xml.transform.stream.StreamSource" supertypes="javax.xml.transform.Source">
+      <constructor name="StreamSource" signature="StreamSource()"></constructor>
+      <constructor name="StreamSource_2" signature="StreamSource(java.io.File)"></constructor>
+      <constructor name="StreamSource_3" signature="StreamSource(java.io.InputStream)"></constructor>
+      <constructor name="StreamSource_4" signature="StreamSource(java.io.Reader)"></constructor>
+      <constructor name="StreamSource_5" signature="StreamSource(java.lang.String)"></constructor>
+      <constructor name="StreamSource_6" signature="StreamSource(java.io.InputStream, java.lang.String)"></constructor>
+      <constructor name="StreamSource_7" signature="StreamSource(java.io.Reader, java.lang.String)"></constructor>
+      <method name="getInputStream" signature="getInputStream()"><return type="java.io.InputStream"/></method>
+      <method name="getReader" signature="getReader()"><return type="java.io.Reader"/></method>
+      <method name="getPublicId" signature="getPublicId()" alias="getSystemId"><return type="java.lang.String"/></method>
+      <method name="setInputStream" signature="setInputStream(java.io.InputStream)"></method>
+      <method name="setReader" signature="setInputStream(java.io.Reader)"></method>
+      <method name="setPublicId" signature="setPublicId(java.lang.String)" alias="setSystemId"></method>
+    </class>
+
+    <class name="javax.xml.transform.TransformerFactory" kind="abstract_class" standard="trax">
+      <method name="newInstance" signature="newInstance()" match="name">
+        <return type="@self"/>
+      </method>
+      <method name="newTransformer" signature="newTransformer(javax.xml.transform.Source)">
+        <return type="javax.xml.transform.Transformer"/>
+        <sink argpos="0" kind="xslt_injection" resource="other"/>
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+      <method name="newTransformer_2" signature="newTransformer()">
+        <!-- safe, identity transformation -->
+        <return type="javax.xml.transform.Transformer"/>
+      </method>
+      <method name="newTemplates" signature="newTemplates(javax.xml.transform.Source)">
+        <return type="javax.xml.transform.Templates"/>
+      </method>
+
+      <method name="getFeature" signature="getFeature(java.lang.String)"><return type="boolean"/></method>
+      <method name="setFeature" signature="setFeature(java.lang.String, boolean)"><tags>xml.config</tags></method>
+      <method name="getAttribute" signature="getAttribute(java.lang.String)"><return type="java.lang.Object"/></method>
+      <method name="setAttribute" signature="setAttribute(java.lang.String, java.lang.Object)"><tags>xml.config</tags></method>
+    </class>
+
+    <class name="javax.xml.transform.sax.SAXTransformerFactory" kind="abstract_class"
+           supertypes="javax.xml.transform.TransformerFactory" standard="trax">
+      <method name="newInstance" signature="newInstance()" match="name">
+        <return type="@self"/>
+      </method>
+      <method name="newXMLFilter" signature="newXMLFilter(javax.xml.transform.Source">
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+      <method name="mewTransformerHandler" signature="mewTransformerHandler()" match="name">
+        <return type="javax.xml.transform.sax.TransformerHandler"/>
+      </method>
+    </class>
+
+    <class name="javax.xml.transform.Transformer" kind="abstract_class" standard="trax">
+      <method name="transform" signature="transform(javax.xml.transform.Source,javax.xml.transform.Result)">
+        <sink argpos="0" kind="xml_injection"/>
+      </method>
+    </class>
+
+    <class name="javax.xml.transform.Templates" kind="abstract_class" standard="trax">
+      <method name="newTransformer" signature="newTransformer()">
+        <return type="javax.xml.transform.Transformer"/>
+      </method>
+    </class>
+
+  </module>
+
+  <!-- Java security -->
+  <module name="java.security">
+    <class name="java.security.Principal" kind="interface">
+      <method name="getName" signature="getName()" match="name">
+        <tags>sensitive_info,credential</tags>
+        <return type="java.lang.String"/>
+      </method>
+    </class>
+
+    <class name="javax.security.auth.Subject">
+      <method name="getSubject" signature="getSubject(java.security.AccessControlContext)">
+        <return type="javax.security.auth.Subject"/>
+      </method>
+      <method name="doAs" signature="doAs(javax.security.auth.Subject,java.security.PrivilegedAction)">
+        <!-- TODO markup for privileged code checks -->
+      </method>
+      <method name="doAsPrivileged" signature="doAsPrivileged(javax.security.auth.Subject,java.security.PrivilegedAction,java.security.AccessControlContext)">
+        <!-- TODO markup for privileged code checks -->
+      </method>
+      <method name="getPrincipals" signature="getPrincipals()" match="name" alias="getPrivateCredentials,getPublicCredentials">
+        <tags>sensitive_info,credential</tags>
+        <return type="java.util.Set"/>
+      </method>
+    </class>
+
+    <class name="javax.security.auth.callback.PasswordCallback" standard="jaas">
+      <constructor name="setPassword" signature="setPassword(char[])">
+        <tags>password:0</tags>
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+    </class>
+
+    <class name="javax.security.auth.kerberos.KerberosKey" standard="jaas">
+      <constructor name="KerberosKey" signature="KerberosKey(KerberosPrincipal,char[],java.lang.String)">
+        <tags>password:1</tags>
+        <sink argpos="1" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+    </class>
+
+    <class name="java.security.Permission" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.security.AllPermission" supertypes="java.security.Permission">
+      <tags>immutable</tags>
+    </class>
+    <class name="java.security.BasicPermission" supertypes="java.security.Permission">
+      <tags>immutable</tags>
+    </class>
+    <class name="java.security.FilePermission" supertypes="java.security.Permission">
+      <tags>immutable</tags>
+    </class>
+    <class name="javax.management.MBeanPermission" supertypes="java.security.Permission">
+      <tags>immutable</tags>
+    </class>
+    <class name="javax.security.auth.PrivateCredentialPermission" supertypes="java.security.Permission">
+      <tags>immutable</tags>
+    </class>
+    <class name="javax.security.auth.kerberos.ServicePermission" supertypes="java.security.Permission">
+      <tags>immutable</tags>
+    </class>
+    <class name="java.net.SocketPermission" supertypes="java.security.Permission">
+      <tags>immutable</tags>
+    </class>
+    <class name="java.security.UnresolvedPermission" supertypes="java.security.Permission">
+      <tags>immutable</tags>
+    </class>
+    <class name="javax.sound.sampled.AudioPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="java.awt.AWTPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="javax.security.auth.kerberos.DelegationPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="javax.xml.bind.JAXBPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="java.nio.file.LinkPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="java.lang.management.ManagementPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="javax.management.remote.SubjectDelegationPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="javax.management.MBeanServerPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="java.net.NetPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="java.util.PropertyPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="java.lang.reflect.ReflectPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="java.lang.RuntimePermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="java.security.SecurityPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="java.io.SerializablePermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="java.sql.SQLPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="javax.net.ssl.SSLPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="javax.management.remote.SubjectDelegationPermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+    <class name="javax.xml.ws.WebServicePermission" supertypes="java.security.BasicPermission">
+      <tags>immutable</tags>
+    </class>
+
+  </module>
+
+  <!-- Java logging -->
+  <module name="java.util.logging">
+    <class name="java.util.logging.LogManager">
+      <method name="getLogManager" signature="getLogManager()">
+        <return type="java.util.logging.LogManager"/>
+      </method>
+      <method name="getLogger" signature="getLogger(java.lang.String)">
+        <return type="java.util.logging.Logger"/>
+      </method>
+    </class>
+    <class name="java.util.logging.Logger">
+      <tags>logger</tags>
+      <method name="getLogger" signature="getLogger()" match="name">
+        <return type="java.util.logging.Logger"/>
+      </method>
+      <method name="config" signature="config(java.lang.String)" alias="config,fine,finer,finest,info,severe,warning">
+        <sink argpos="0" kind="log_forging"/>
+      </method>
+      <method name="entering" signature="entering(java.lang.String,java.lang.String)" alias="exiting">
+        <sink argpos="0,1,2" kind="log_forging"/>
+      </method>
+      <method name="throwing" signature="throwing(java.lang.String,java.lang.String,java.lang.Throwable)">
+        <sink argpos="0,1" kind="log_forging"/>
+      </method>
+      <method name="log" signature="log(java.util.logging.Level,java.lang.String)" match="name">
+        <sink argpos="1,2" kind="log_forging"/>
+      </method>
+      <method name="logp" signature="logp(java.util.logging.Level,java.lang.String,java.lang.String,java.lang.String)" match="name">
+        <sink argpos="3,4" kind="log_forging"/>
+      </method>
+      <method name="logrb" signature="logp(java.util.logging.Level,java.lang.String,java.lang.String,java.lang.String,java.lang.String)" match="name">
+        <sink argpos="4,5" kind="log_forging"/>
+      </method>
+    </class>
+  </module>
+  <class name="java.util.logging.LogRecord" supertypes="java.io.Serializable" >
+    <constructor name="LogRecord" signature="LogRecord(java.util.logging.Level,java.lang.String)" >
+      <sink argpos="1" kind="log_forging"/>
+    </constructor>
+
+    <method name="setMessage" signature="setMessage(java.lang.String)" >
+      <sink argpos="0" kind="log_forging"/>
+    </method>
+  </class>
+
+  <!-- JCR -->
+  <class name="javax.jcr.NodeIterator" supertypes="java.util.Iterator" >
+    <method name="nextNode" signature="nextNode" />
+  </class>
+
+
+  <!-- TIME -->
+  <module name="jdk.time">
+    <class name="java.util.Calendar">
+      <method name="getTime" signature="getTime()">
+        <return type="java.util.Date" />
+      </method>
+    </class>
+
+    <class name="java.time.Clock" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.time.Duration" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.time.Instant" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.time.LocalDate" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.time.LocalDateTime" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.time.LocalTime" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.time.MonthDay" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.time.OffsetDateTime" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.time.OffsetTime" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.time.Period" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.time.Year" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.time.YearMonth" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.time.ZonedDateTime" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.time.ZoneId" >
+      <tags>immutable</tags>
+    </class>
+    <class name="java.time.ZoneOffset" supertypes="java.time.ZoneId">
+      <tags>immutable</tags>
+    </class>
+  </module>
+
+  <module name="java.lang.invoke">
+    <class name="java.lang.invoke.MethodHandles.Lookup">
+      <method name="bind" signature="bind(java.lang.Object, java.lang.String, java.lang.invoke.MethodType)">
+        <return type="java.lang.invoke.MethodHandle"/>
+        <sink kind="unsafe_reflection" argpos="1" resource="other"/>
+      </method>
+      <method name="defineClass" signature="defineClass(byte[])">
+        <return type="java.lang.Class"/>
+        <sink kind="code_injection" argpos="0" resource="environment"/>
+      </method>
+      <method name="defineHiddenClass" signature="defineHiddenClass(byte[], boolean, java.lang.invoke.MethodHandles.Lookup.ClassOption...)">
+        <return type="@self"/>
+        <sink kind="code_injection" argpos="0" resource="environment"/>
+      </method>
+      <method name="dropLookupMode​" signature="dropLookupMode​(int)"><return type="@self"/></method>
+      <method name="findClass" signature="findClass(java.lang.String)">
+        <return type="java.lang.Class"/>
+        <sink kind="unsafe_reflection" argpos="0" resource="other"/>
+      </method>
+      <method name="findConstructor" signature="findConstructor(java.lang.Class, java.lang.invoke.MethodType)"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="findGetter" signature="findGetter(java.lang.Class, java.lang.String, java.lang.Class)" alias="findSetter, findStaticGetter, findStaticSetter">
+        <return type="java.lang.invoke.MethodHandle"/>
+        <sink kind="unsafe_reflection" argpos="1" resource="other"/>
+      </method>
+      <method name="findStatic" signature="findStatic(java.lang.Class, java.lang.String, java.lang.invoke.MethodType)" alias="findVirtual">
+        <return type="java.lang.invoke.MethodHandle"/>
+        <sink kind="unsafe_reflection" argpos="1" resource="other"/>
+      </method>
+      <method name="findVarHandle" signature="findVarHandle(java.lang.Class, java.lang.String, java.lang.Class)">
+        <return type="java.lang.invoke.VarHandle"/>
+        <sink kind="unsafe_reflection" argpos="1" resource="other"/>
+      </method>
+      <method name="in" signature="in(java.lang.Class)"><return type="@self"/></method>
+      <method name="lookupClass" signature="lookupClass()" alias="previousLookupClass"><return type="java.lang.Class"/></method>
+      <method name="unreflect" signature="unreflect(java.lang.reflect.Method)"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="unreflectConstructor" signature="unreflectConstructor(java.lang.reflect.Constructor"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="unreflectGetter" signature="unreflect(java.lang.reflect.Field)" alias="unreflectSetter"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="unreflectSpecial" signature="unreflectSpecial(java.lang.reflect.Method, java.lang.Class)"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="unreflectVarHandle" signature="unreflectVarHandle(java.lang.reflect.Field)"><return type="java.lang.invoke.VarHandle"/></method>
+    </class>
+
+    <class name="java.lang.invoke.MethodHandles">
+      <method name="lookup" signature="lookup()" instance="false" alias="publicLookup"><return type="java.lang.invoke.MethodHandles.Lookup"/></method>
+      <method name="privateLookupIn" signature="privateLookupIn(java.lang.Class, java.lang.invoke.MethodHandles.Lookup)" instance="false"><return type="java.lang.invoke.MethodHandles.Lookup"/></method>
+      <method name="reflectAs" signature="reflectAs(java.lang.Class, java.lang.invoke.MethodHandle)" instance="false"><return type="java.lang.reflect.Member"/></method>
+
+      <method name="arrayConstructor" signature="arrayConstructor(java.lang.Class)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="arrayElementGetter" signature="arrayElementGetter(java.lang.Class)" instance="false" alias="arrayElementSetter"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="arrayElementVarHandle" signature="arrayElementVarHandle(java.lang.Class)" instance="false"><return type="java.lang.invoke.VarHandle"/></method>
+      <method name="arrayLength" signature="arrayLength(java.lang.Class)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="byteArrayViewVarHandle" signature="byteArrayViewVarHandle(java.lang.Class, java.nio.ByteOrder)" instance="false" alias="byteBufferViewVarHandle"><return type="java.lang.invoke.VarHandle"/></method>
+
+      <method name="catchException" signature="catchException(java.lang.invoke.MethodHandle, java.lang.Class, java.lang.invoke.MethodHandle)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="collectArguments" signature="collectArguments(java.lang.invoke.MethodHandle, int, java.lang.invoke.MethodHandle)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="dropArguments" signature="dropArguments(java.lang.invoke.MethodHandle, int, java.lang.Class...)" instance="false" match="numargs"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="constant" signature="constant(java.lang.Class, java.lang.Object)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="empty" signature="empty(java.lang.invoke.MethodType)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="invoker" signature="invoker(java.lang.invoke.MethodType)" instance="false" alias="exactInvoker"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="explicitCastArguments" signature="explicitCastArguments(java.lang.invoke.MethodHandle, java.lang.invoke.MethodType)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="filterArguments​" signature="filterArguments​(java.lang.invoke.MethodHandle, int, java.lang.invoke.MethodHandle...)" instance="false" alias="insertArguments"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="filterReturnValue" signature="filterReturnValue(java.lang.invoke.MethodHandle, java.lang.invoke.MethodHandle)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="foldArguments" signature="foldArguments(java.lang.invoke.MethodHandle, java.lang.invoke.MethodHandle)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="foldArguments" signature="foldArguments(java.lang.invoke.MethodHandle, int, java.lang.invoke.MethodHandle)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="loop" signature="loop(java.lang.invoke.MethodHandle...)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="permuteArguments" signature="permuteArguments(java.lang.invoke.MethodHandle, java.lang.invoke.MethodType, int..)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="spreadInvoker" signature="spreadInvoker(java.lang.invoke.MethodType, int)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="throwException" signature="throwException(java.lang.Class, java.lang.Class)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="tryFinally" signature="tryFinally(java.lang.invoke.MethodHandle)" instance="false"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="varHandleInvoker" signature="varHandleInvoker(java.lang.invoke.VarHandle.AccessMode, java.lang.invoke.MethodType)"
+              instance="false" alias="varHandleExactInvoker"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="whileLoop" signature="whileLoop(java.lang.invoke.MethodHandle, java.lang.invoke.MethodHandle, java.lang.invoke.MethodHandle)" instance="false"
+              alias="countedLoop, iteratedLoop, doWhileLoop, guardWithTest">
+        <return type="java.lang.invoke.MethodHandle"/>
+      </method>
+      <method name="zero" signature="zero(java.lang.Class)" instance="false" alias="identity"><return type="java.lang.invoke.MethodHandle"/></method>
+    </class>
+
+    <class name="java.lang.invoke.MethodType">
+      <method name="methodType" signature="methodType(java.lang.Class, java.lang.Class)" instance="false"><return type="@self"/></method>
+    </class>
+
+    <class name="java.lang.invoke.MethodHandle">
+      <method name="asCollector" signature="asCollector(int, java.lang.Class, int)" match="name"><return type="@self"/></method>
+      <method name="asFixedArity" signature="asFixedArity()"><return type="@self"/></method>
+      <method name="asSpreader" signature="asSpreader(int, java.lang.Class, int)" match="name"><return type="@self"/></method>
+      <method name="asType" signature="asType(java.lang.invoke.MethodType)"><return type="@self"/></method>
+      <method name="asVarargsCollector" signature="asVarargsCollector(java.lang.Class)"><return type="@self"/></method>
+      <method name="bindTo" signature="bindTo(java.lang.Object)"><return type="@self"/></method>
+      <method name="withVarargs" signature="withVarargs(boolean)"><return type="@self"/></method>
+
+      <method name="invoke" signature="invoke(java.lang.Object...)" alias="invokeExact, invokeWithArguments"><return type="java.lang.Object"/></method>
+      <method name="type" signature="type()"><return type="java.lang.invoke.MethodType"/></method>
+      <method name="isVarargsCollector" signature="isVarargsCollector()"><return type="boolean"/></method>
+    </class>
+
+    <class name="java.lang.invoke.VarHandle">
+      <method name="varType" signature="varType()"><return type="java.lang.Class"/></method>
+      <method name="coordinateTypes" signature="coordinateTypes()"><return type="java.lang.List" elementType="java.lang.Class"/></method>
+
+      <method name="compareAndExchange" signature="compareAndExchange(java.lang.Object...)"
+              alias="compareAndExchangeAcquire, compareAndExchangeRelease, compareAndSet">
+        <return type="java.lang.Object"/>
+      </method>
+      <method name="get" signature="get(java.lang.Object...)"
+              alias="getAcquire, getAndAdd, getAndAddAcquire, getAndAddRelease, getAndBitwiseAnd, getAndBitwiseAndAcquire, getAndBitwiseAndRelease,
+                     getAndBitwiseOr, getAndBitwiseOrAcquire, getAndBitwiseOrRelease, getAndBitwiseXor, getAndBitwiseXorAcquire, getAndBitwiseXorRelease,
+                     getAndSet, getAndSetAcquire, getAndSetRelease, getOpaque, getVolatile">
+        <return type="java.lang.Object"/>
+      </method>
+      <method name="set" signature="set(java.lang.Object...)" alias="setOpaque, setRelease, setVolatile"></method>
+      <method name="weakCompareAndSet​" signature="weakCompareAndSet​(java.lang.Object...)"
+              alias="weakCompareAndSetAcquire​, weakCompareAndSetPlain​, weakCompareAndSet​Release">
+        <return type="boolean"/>
+      </method>
+
+      <method name="toMethodHandle" signature="toMethodHandle(java.lang.invoke.VarHandle.AccessMode)"><return type="java.lang.invoke.MethodHandle"/></method>
+    </class>
+
+    <class name="java.lang.invoke.CallSite" kind="abstract_class">
+      <method name="dynamicInvoker" signature="dynamicInvoker()"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="getTarget" signature="getTarget()"><return type="java.lang.invoke.MethodHandle"/></method>
+      <method name="getTarget" signature="setTarget(java.lang.invoke.MethodHandle)"></method>
+      <method name="type" signature="type()"><return type="java.lang.invoke.MethodType"/></method>
+    </class>
+    <class name="java.lang.invoke.ConstantCallSite" supertypes="java.lang.invoke.CallSite">
+      <constructor name="ConstantCallSite" signature="ConstantCallSite(java.lang.invoke.MethodHandle)"></constructor>
+    </class>
+    <class name="java.lang.invoke.MutableCallSite" supertypes="java.lang.invoke.CallSite">
+      <constructor name="MutableCallSite" signature="MutableCallSite(java.lang.invoke.MethodHandle)"></constructor>
+      <constructor name="MutableCallSite" signature="MutableCallSite(java.lang.invoke.MethodType)"></constructor>
+    </class>
+    <class name="java.lang.invoke.VolatileCallSite" supertypes="java.lang.invoke.CallSite">
+      <constructor name="VolatileCallSite" signature="VolatileCallSite(java.lang.invoke.MethodHandle)"></constructor>
+      <constructor name="VolatileCallSite" signature="VolatileCallSite(java.lang.invoke.MethodType)"></constructor>
+    </class>
+  </module>
+
+</library>

@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric"
+    version="1.1">
+
+  <metric id="OPT.classes" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.SIZE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.SIZE.CODE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="1000.00" meaning="good" />
+        <threshold from="1000.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.SIZE.NCF" />
+        <java-class>com.als.cpp.metrics.ClassesCppMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.SIZE.NCF" />
+        <java-class>com.optimyth.csharp.metrics.ClassesCsharpMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.SIZE.NCF" />
+        <java-class>com.als.java.metrics.ClassesJavaMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <internal-name id="OPT.OBJECTIVEC.CLASSES_FUNCTIONS" />
+        <java-class>com.optimyth.qaking.objectivec.metrics.ClassFunctionMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <internal-name id="OPT.PHP.CLASSES_FUNCTIONS" />
+        <java-class>com.optimyth.qaking.php.metrics.ClassFunctionMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+        <internal-name id="OPT.VB6.SIZE.NCF" />
+        <java-class>com.optimyth.qaking.vb6.metrics.ClassesVB6MetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.SIZE.NCF" />
+        <java-class>com.optimyth.vbnet.metrics.ClassesVBnetMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+   <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <code-example name="metricCodeExampleCpp" result-value="2">
+<![CDATA[
+#include <boost/detail/lightweight_test.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#include <cstddef>
+
+class X                                                 //CLASS 1
+{
+private:
+
+    X( X const & );
+    X & operator=( X const & );
+
+    void * operator new( std::size_t n )
+    {
+        // lack of this definition causes link errors on Comeau C++
+        BOOST_ERROR( "private X::new called" );
+        return ::operator new( n );
+    }
+
+    void operator delete( void * p )
+    {
+        // lack of this definition causes link errors on MSVC
+        BOOST_ERROR( "private X::delete called" );
+        ::operator delete( p );
+    }
+
+public:
+
+    static int instances;
+
+    int v;
+
+    explicit X( int a1 = 0, int a2 = 0, int a3 = 0, int a4 = 0, int a5 = 0, int a6 = 0, int a7 = 0, int a8 = 0, int a9 = 0 ): v( a1+a2+a3+a4+a5+a6+a7+a8+a9 )
+    {
+        ++instances;
+    }
+
+    ~X()
+    {
+        --instances;
+    }
+};
+class Y                                                 //CLASS 2
+{
+private:
+
+    Y( Y const & );
+    Y & operator=( Y const & );
+
+    void * operator new( std::size_t n )
+    {
+        // lack of this definition causes link errors on Comeau C++
+        BOOST_ERROR( "private X::new called" );
+        return ::operator new( n );
+    }
+
+    void operator delete( void * p )
+    {
+        // lack of this definition causes link errors on MSVC
+        BOOST_ERROR( "private X::delete called" );
+        ::operator delete( p );
+    }
+
+public:
+
+    static int instances;
+
+    int v;
+
+    explicit Y( int a1 = 0, int a2 = 0, int a3 = 0, int a4 = 0, int a5 = 0, int a6 = 0, int a7 = 0, int a8 = 0, int a9 = 0 ): v( a1+a2+a3+a4+a5+a6+a7+a8+a9 )
+    {
+        ++instances;
+    }
+
+    ~Y()
+    {
+        --instances;
+    }
+};
+
+int X::instances = 0;
+]]>
+       </code-example>
+      </language-parser>
+     <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="metricCodeExampleCsharp" result-value="2">
+<![CDATA[
+using System;
+
+class Stress {                                 //CLASS 1
+
+    static string mode = "unchecked";
+
+    static string [] types = {
+        "int",   "uint",
+        "short", "ushort",
+        "long",  "ulong",
+        "sbyte", "byte", "char"
+        };
+
+
+    static void w (string s)
+    {
+        Console.Write (s);
+    }
+
+    static void wl (string s)
+    {
+        Console.WriteLine (s);
+    }
+
+    static void generate_receptors ()
+    {
+        foreach (string t in types){
+            w ("\tstatic void receive_" + t + " (" + t + " a)\n\t{\n");
+            w ("\t\tConsole.Write (\"        \");\n");
+            w ("\t\tConsole.WriteLine (a);\n");
+            w ("\t}\n\n");
+        }
+
+    }
+
+    static void var (string type, string name, string init)
+    {
+        w ("\t\t" + type + " " + name + " = (" + type + ") " + init + ";\n");
+    }
+}
+class MatchingNames                            //CLASS 2
+{
+
+      int someField;
+      string varOne, varTwo;
+
+      void SomeMethod () {
+        int i, someField;
+        string varTwo;
+      }
+}
+]]>
+       </code-example>
+      </language-parser>
+     <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="metricCodeExampleJava" result-value="2">
+<![CDATA[
+package objzr.ci.cliente;
+
+import objzr.ci.componentes.*;
+
+public class CITabObjetoInmueble extends objzr.ae.presentacion.AqTab implements objzr.ci.componentes.CIPanelObjeto {  //CLASS 1
+    public final int NUM_PANELES_OBJ_INMUEBLE = 2;
+
+    private boolean completarMensajeGrabacion(objzr.ci.componentes.CIEstructuraDatosGrid datos) {
+      CIPanelObjeto panelActual = null;
+      boolean completadoCorrectamente = true;
+      for (int i = 0; i < NUM_PANELES_OBJ_INMUEBLE; i++) {
+          panelActual = (CIPanelObjeto) devolverPanel(i);
+          completadoCorrectamente = panelActual.completarMensajeGrabacion(datos);
+          if (!completadoCorrectamente) break;
+      }
+      return completadoCorrectamente;
+    }
+
+    public class INDDPRID0130 {               //CLASS 2
+
+        public int getNumber() {
+            synchronized ( this ) {
+            try { Thread.sleep( 3000 ); } catch (InterruptedException e) {}
+                return number;
+            }
+        }
+
+        public String getString() {
+            synchronized ( this ) {
+                return str;
+            }
+        }
+    }
+
+}
+
+]]>
+       </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <code-example name="metricCodeExampleObjectiveC" result-value="2">
+<![CDATA[
+@implementation QAMyProgram
+
+@synthesize initialized = _initialized;
+
+- (id)initWithValue:(NSString *)initialValue
+{
+    if ((self = [super init]))
+    {
+        _initialized = NO;
+    }
+
+    return self;
+}
+
+@end
+
+@implementation QAOtherProgram
+
+@synthesize initialized = _initialized;
+
+- (id)initWithValue:(NSString *)initialValue
+{
+    if ((self = [super init]))
+    {
+        _initialized = NO;
+    }
+
+    return self;
+}
+
+@end
+]]>
+       </code-example>
+     </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <code-example name="metricCodeExamplePhp" result-value="2">
+<![CDATA[
+<?php
+
+class SubObject {
+
+  static $instances = 0;
+  public $instance;
+  public function __construct() {
+    $this->instance = ++self::$instances;
+  }
+
+  public function __clone() {
+    $this->instance = ++self::$instances;
+  }
+}
+
+class MyCloneable {
+
+  public $object1;
+  public $object2;
+  function __clone() {
+
+    // Force a copy of this->object, otherwise
+    // it will point to same object.
+    $this->object1 = clone($this->object1);
+  }
+}
+
+$obj = new MyCloneable();
+$obj->object1 = new SubObject();
+$obj->object2 = new SubObject();
+$obj2 = clone $obj;
+
+?>
+]]>
+       </code-example>
+     </language-parser>
+     <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+        <code-example name="metricCodeExampleVb6" result-value="1">
+<![CDATA[
+VERSION 1.0 CLASS                         'CLASS 1
+BEGIN
+  MultiUse = -1  'True
+  Persistable = 0  'NotPersistable
+  DataBindingBehavior = 0  'vbNone
+  DataSourceBehavior  = 0  'vbNone
+  MTSTransactionMode  = 0  'NotAnMTSObject
+END
+'Control de locx vbalGrid_
+Option Explicit 'Control de locx vbalGrid
+Public obG As vbalGrid
+'Purpose: .
+Public Function RowMatch(ByVal p_vaSearch As Variant, p_svClauColumna As String) As Long
+    Dim i As Long
+    Dim j As Long
+
+    With Me.obG
+        j = .ColumnIndex(p_svClauColumna)
+        For i = 1 To .Rows
+            If .CellText(i, j) = p_vaSearch Then
+                RowMatch = i
+                Exit Function
+            End If
+        Next i
+    End With
+End Function
+
+]]>
+       </code-example>
+      </language-parser>
+     <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="metricCodeExampleVbnet" result-value="2">
+<![CDATA[
+Imports System
+
+Namespace DesignLibrary
+
+   Class History                       'CLASS 1
+
+      Friend Sub AddToHistory(uriString As String)
+      End Sub
+
+      Friend Sub AddToHistory(uriType As Uri)
+      End Sub
+
+   End Class
+
+   Public Class Browser                'CLASS 2
+
+      Dim uriHistory As New History()
+
+      Sub ErrorProne()
+         uriHistory.AddToHistory("http://www.adventure.com")
+      End Sub
+
+      Sub SaferWay()
+         Try
+            Dim newUri As New Uri("http://www.adventure.com")
+            uriHistory.AddToHistory(newUri)
+         Catch uriException As UriFormatException
+         End Try
+      End Sub
+
+   End Class
+
+End Namespace
+]]>
+       </code-example>
+      </language-parser>
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Clases]]></name>
+
+      <description>
+<![CDATA[
+Número de clases.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Suma de todas las clases, structs y unions definidos en un mismo fichero. Los enums no se tienen en cuenta.
+
+Las clases se contarán en el fichero en el que se definan, no en el que se implementen: si en un fichero A.h tenemos la definición de la clase A y en otro A.cpp tenemos la implementación, el número de clases para A.h será 1 mientras que el de A.cpp será 0.
+            ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Suma de todas las clases "public", "protected", "private" o "internal" (independientemente de los modificadores adicionales "static", "sealed", etc...) definidas en un mismo fichero. Se tienen en cuenta clases internas.
+            ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Suma de todas las clases "public", "protected", "private" o "package" (independientemente de los modificadores adicionales "static", "final", etc...) definidas en un mismo fichero. Se tienen en cuenta clases internas, anónimas y enumeradas.
+            ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+<![CDATA[
+Suma el número de clases Objective C.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+Suma el número de clases PHP.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+<![CDATA[
+Suma de todas las clases definidas en un mismo fichero. Se consideran clases los ficheros .cls que contienen una definición VERSION x.x CLASS
+            ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Suma de todas las clases "Public", "Protected", "Private" o "Friend" (independientemente de los modificadores adicionales "NotInheritable", "Shared", etc...) definidas en un mismo fichero. Se tienen en cuenta clases internas.
+            ]]></implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Classes]]></name>
+
+      <description>
+<![CDATA[
+Number of classes.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Counts all the classes, structs and unions defined in the same file. Enums are not taken into account.
+
+Only counts classes in the files where they are DEFINED. If we have an A.h file with a class defined and an A.cpp with the class implementation, the count will be A.h=1 and A.cpp=0
+            ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Counts all the classes "public", "protected", "private" or "internal" (regardless the additional modifiers "static", "sealed", etc ...) defined in the same file. Internal classes are taken into account.
+            ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Counts all the classes "public", "protected", "private" or "package" (regardless the additional modifiers "static", "final", etc ...) defined in the same file. Internal and anonymous classes are taken into account.
+            ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+<![CDATA[
+Count the number of Objective C classes.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+Count the number of PHP classes.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+<![CDATA[
+Counts all the classes defined in the same file. We consider as 'classes' all the .cls files that contain a VERSION x.x CLASS definition.
+            ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Counts all the classes "Public", "Protected", "Private" or "Friend" (regardless the additional modifiers "NotInheritable", "Shared", etc ...) defined in the same file. Internal classes are taken into account.
+            ]]></implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

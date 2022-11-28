@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/DB_pg" standard="nodejs">
+
+  <module name="nodejs/DB_pg" standard="database/node-postgres">
+    <description url="https://node-postgres.com/">Node.js module for PostgreSQL</description>
+
+    <class name="nodejs/pg">
+      <field name="native" type="nodejs/pg"/> <!-- same api, approx. -->
+      <field name="Pool" type="nodejs/pg.Pool"/>
+      <field name="Client" type="nodejs/pg.Client"/>
+    </class>
+
+    <class name="nodejs/pg.Client">
+      <function name="Client">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="sensitive_data" resource="database">
+          <arg pos="0" field="user,password"/>
+        </sink>
+        <sink kind="resource_injection" resource="database">
+          <arg pos="0" field="database"/>
+        </sink>
+        <sink kind="ssrf" resource="database">
+          <arg pos="0" field="host,port"/>
+        </sink>
+      </function>
+
+      <function name="connect">
+        <parameters>
+          <param type="function(Error,nodejs/pg.Client,Function)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/pg.Client"/><!-- for await -->
+      </function>
+      <function name="end"/>
+
+      <function name="query">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,Array)"><!-- optional args -->
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+          <param type="function(Error,Array)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/pg.Query"/>
+        <sink kind="sql_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="text"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/pg.Pool" supertypes="nodejs/pg.Client">
+      <function name="Pool">
+        <return type="nodejs/pg.Pool"/>
+        <sink kind="sensitive_data" resource="database">
+          <arg pos="0" field="user,password"/>
+        </sink>
+        <sink kind="resource_injection" resource="database">
+          <arg pos="0" field="database"/>
+        </sink>
+        <sink kind="ssrf" resource="database">
+          <arg pos="0" field="host,port"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/pg-pool" supertypes="nodejs/pg.Pool"/><!-- require('pg-pool') -->
+
+    <class name="nodejs/pg.Query">
+      <tags>hasEvents</tags>
+      <function name="on:row">
+        <parameters>
+          <param type="function(Object,Array)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+      <function name="on:end">
+        <parameters>
+          <param type="function(nodejs/pg.Result)"/>
+        </parameters>
+      </function>
+      <function name="on:error">
+        <parameters>
+          <param type="function(Error)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/pg.Result">
+      <field name="command" type="String"/>
+      <field name="rows" type="Array">
+        <source kind="database_input" resource="database"/>
+      </field>
+      <field name="addRow"/>
+    </class>
+  </module>
+
+  <module name="odejs/pg-promise" standard="nodejs" >
+    <description url="https://github.com/vitaly-t/pg-promise" >pg-promise provides a Promise interface to pg module</description>
+
+    <class name="nodejs/pg-promise.Database">
+      <field name="$pool" type="nodejs/pg.Pool"/>
+      <function name="any" alias="each,many,manyOrOne,map,none,one,oneOrNone,query,result,">
+        <return type="Promise"/>
+        <sink kind="sql_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="text"/>
+        </sink>
+      </function>
+      <function name="func,proc">
+        <return type="Promise"/>
+        <sink kind="sql_injection" resource="database">
+          <arg pos="0" field="funcName,procName"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/pg-promise.PreparedStatement">
+      <function name="PreparedStatement">
+        <sink kind="sql_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="text"/>
+        </sink>
+      </function>
+    </class>
+    <class name="nodejs/pg-promise.ParameterizedQuery">
+      <function name="ParameterizedQuery">
+        <sink kind="sql_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="text"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/pg-promise.Module">
+      <function name="#module#">
+        <return type="nodejs/pg-promise.Database"/>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="sensitive_data" resource="database">
+          <arg pos="0" field="user,password"/>
+        </sink>
+        <sink kind="resource_injection" resource="database">
+          <arg pos="0" field="database"/>
+        </sink>
+        <sink kind="ssrf" resource="database">
+          <arg pos="0" field="host,port"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/pg-promise">
+      <function name="#module#">
+        <return type="nodejs/pg-promise.Module"/>
+      </function>
+      <field name="PreparedStatement" type="nodejs/pg-promise.PreparedStatement"/>
+      <field name="ParameterizedQuery" type="nodejs/pg-promise.ParameterizedQuery"/>
+    </class>
+  </module>
+</library>

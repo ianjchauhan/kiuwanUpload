@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="other" standard="Third-party_modules">
+
+  <description>Common third-party Go modules</description>
+
+  <module name="github.com.novalagung.golpal" standard="Golpal">
+    <description url="https://pkg.go.dev/github.com/novalagung/golpal" >Eval Library</description>
+
+    <function name="github.com.novalagung.golpal.New" signature="github.com.novalagung.golpal.New()" >
+      <return type="github.com.novalagung.golpal.Golpal" />
+    </function>
+
+    <class name="github.com.novalagung.golpal.Golpal" >
+      <method name="ExecuteSimple" signature="ExecuteSimple(go.string)" alias="Execute, ExecuteRaw">
+        <sink argpos="0" kind="code_injection" resource="other" />
+      </method>
+      <method name="AddLibs" signature="AddLibs(...go.string)" >
+        <return type="github.com.novalagung.golpal.Golpal" />
+      </method>
+    </class>
+  </module>
+
+  <module name="github.com.novalagung.go-eek" standard="go-eek">
+    <description url="https://pkg.go.dev/github.com/novalagung/go-eek" >Eval library</description>
+
+    <function name="github.com.novalagung.go-eek.NewEek" signature="github.com.novalagung.go-eek.NewEek()" >
+      <return type="github.com.novalagung.go-eek.Eek" />
+    </function>
+
+    <class name="github.com.novalagung.go-eek.Eek" >
+      <method name="Evaluate" signature="Evaluate(github.com.novalagung.go-eek.ExecVar)" >
+        <sink argpos="0" kind="code_injection" resource="other" />
+      </method>
+    </class>
+  </module>
+
+  <module name="github.com.robertkrimen.otto" standard="otto">
+    <description url="https://pkg.go.dev/github.com/robertkrimen/otto" >JavaScript parser and interpreter</description>
+
+    <function name="github.com.robertkrimen.otto.New" signature="github.com.robertkrimen.otto.New()" >
+      <return type="github.com.robertkrimen.otto.Value" />
+    </function>
+
+    <class name="github.com.robertkrimen.otto.Value" >
+      <method name="Set" signature="Set(go.string, go.interface)" >
+        <sink argpos="1" kind="code_injection" resource="other" />
+      </method>
+    </class>
+  </module>
+
+  <module name="github.com.dgrijalva.jwt-go.jwt" standard="jwt-go">
+    <description url="https://pkg.go.dev/github.com/dgrijalva/jwt-go">Implementation of JSON Web Tokens (JWT)</description>
+
+    <function name="github.com.dgrijalva.jwt-go.jwt.NewWithClaims" signature="github.com.dgrijalva.jwt-go.jwt.NewWithClaims(SigningMethod,Claims)" >
+      <return type="github.com.dgrijalva.jwt-go.jwt.Token" />
+      <sink argpos="1" kind="security_decision" />
+    </function>
+  </module>
+
+  <module name="github.com.rainycape.dl" standard="dl">
+    <description url="https://pkg.go.dev/github.com/rainycape/dl">Implements dynamic loading of shared libraries</description>
+
+    <function name="github.com.rainycape.dl.Open" signature="github.com.rainycape.dl.Open(go.string, go.int)" >
+      <sink argpos="0" kind="process_control" resource="os" />
+    </function>
+  </module>
+
+  <module name="launchpad.net.xmlpath" standard="xmlpath">
+    <description url="https://pkg.go.dev/launchpad.net/xmlpath">Implements a strict subset of the XPath specification</description>
+
+    <class name="launchpad.net.xmlpath.Node" />
+    <class name="launchpad.net.xmlpath.Path" />
+
+    <function name="launchpad.net.xmlpath.Parse" signature="launchpad.net.xmlpath.Parse(io.Reader)" >
+      <return type="launchpad.net.xmlpath.Node,go.error" />
+    </function>
+    <function name="launchpad.net.xmlpath.ParseDecoder" signature="launchpad.net.xmlpath.ParseDecoder(xml.Decoder)" >
+      <return type="launchpad.net.xmlpath.Node,go.error" />
+    </function>
+    <function name="launchpad.net.xmlpath.ParseHTML" signature="launchpad.net.xmlpath.ParseHTML(io.reader)" >
+      <return type="launchpad.net.xmlpath.Node,go.error" />
+    </function>
+    <function name="launchpad.net.xmlpath.Compile" signature="launchpad.net.xmlpath.Compile(go.string)" >
+      <return type="launchpad.net.xmlpath.Path,go.error" />
+      <sink argpos="0" kind="xpath_injection" resource="other" />
+    </function>
+    <function name="launchpad.net.xmlpath.MustCompile" signature="launchpad.net.xmlpath.MustCompile(go.string)" >
+      <return type="launchpad.net.xmlpath.Path" />
+      <sink argpos="0" kind="xpath_injection" resource="other" />
+    </function>
+  </module>
+
+  <module name="github.com.antchfx.xpath" standard="antchfx.xpath">
+    <description url="https://pkg.go.dev/github.com/antchfx/xpath" >XPath expressions module</description>
+
+    <class name="github.com.antchfx.xpath.Expr" />
+    <class name="github.com.antchfx.xpath.NodeIterator" />
+
+    <function name="github.com.antchfx.xpath.Compile" signature="github.com.antchfx.xpath.Compile(go.string)" >
+      <return type="github.com.antchfx.xpath.Expr,go.error" />
+      <sink argpos="0" kind="xpath_injection" resource="other" />
+    </function>
+    <function name="github.com.antchfx.xpath.MustCompile" signature="github.com.antchfx.xpath.MustCompile(go.string)" >
+      <return type="github.com.antchfx.xpath.Expr" />
+      <sink argpos="0" kind="xpath_injection" resource="other" />
+    </function>
+    <function name="github.com.antchfx.xpath.Select" signature="github.com.antchfx.xpath.Select(github.com.antchfx.xpath.NodeNavigator,go.string)" >
+      <return type="github.com.antchfx.xpath.NodeIterator" />
+    </function>
+  </module>
+
+  <module name="github.com.antchfx.xmlquery" standard="antchfx.xmlquery">
+    <description url="https://pkg.go.dev/github.com/antchfx/xmlquery" >XPath query for XML documents</description>
+
+    <class name="github.com.antchfx.xmlquery.FindOne" />
+    <class name="github.com.antchfx.xpath.NodeIterator" />
+
+    <function name="github.com.antchfx.xmlquery.LoadURL" signature="github.com.antchfx.xmlquery.LoadURL(go.string)" >
+      <return type="github.com.antchfx.xmlquery.Node,go.error" />
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="0" kind="insecure_transport" resource="network" />
+    </function>
+    <function name="github.com.antchfx.xmlquery.parse" signature="github.com.antchfx.xmlquery.parse(io.Reader)" >
+      <return type="github.com.antchfx.xmlquery.Node,go.error" />
+      <sink argpos="1" kind="xml_entity_injection" resource="other" />
+    </function>
+    <function name="github.com.antchfx.xmlquery.CreateXpathNavigator" signature="github.com.antchfx.xmlquery.CreateXpathNavigator(github.com.antchfx.xmlquery.Node)" >
+      <return type="github.com.antchfx.xmlquery.NodeNavigator" />
+    </function>
+    <function name="github.com.antchfx.xmlquery.getCurrentNode" signature="github.com.antchfx.xmlquery.getCurrentNode(xpath.NodeIterator)" >
+      <return type="github.com.antchfx.xmlquery.Node" />
+    </function>
+    <function name="github.com.antchfx.xmlquery.Find" signature="github.com.antchfx.xmlquery.Find(github.com.antchfx.xmlquery.Node,go.string)" >
+      <return type="go.slice" elementType="github.com.antchfx.xmlquery.Node" />
+      <sink argpos="1" kind="xpath_injection" resource="other" />
+    </function>
+    <function name="github.com.antchfx.xmlquery.FindOne" signature="github.com.antchfx.xmlquery.FindOne(github.com.antchfx.xmlquery.Node,go.string)" >
+      <return type="github.com.antchfx.xmlquery.Node" />
+      <sink argpos="1" kind="xpath_injection" resource="other" />
+    </function>
+    <function name="github.com.antchfx.xmlquery.QueryAll" signature="github.com.antchfx.xmlquery.QueryAll(github.com.antchfx.xmlquery.Node,go.string)" >
+      <return type="go.slice,go.error" elementType="github.com.antchfx.xmlquery.Node" />
+      <sink argpos="1" kind="xpath_injection" resource="other" />
+    </function>
+    <function name="github.com.antchfx.xmlquery.Query" signature="github.com.antchfx.xmlquery.Query(github.com.antchfx.xmlquery.Node,go.string)" >
+      <return type="github.com.antchfx.xmlquery.Node,go.error" />
+      <sink argpos="1" kind="xpath_injection" resource="other" />
+    </function>
+  </module>
+
+  <module name="github.com.antchfx.htmlquery" standard="antchfx.htmlquery">
+    <description url="https://pkg.go.dev/github.com/antchfx/htmlquery">XPath query for HTML documents</description>
+
+    <class name="github.com.antchfx.htmlquery.FindOne" />
+    <class name="github.com.antchfx.xpath.NodeIterator" />
+
+    <function name="github.com.antchfx.htmlquery.LoadURL" signature="github.com.antchfx.htmlquery.LoadURL(go.string)" >
+      <return type="github.com.antchfx.htmlquery.Node,go.error" />
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="0" kind="insecure_transport" resource="network" />
+    </function>
+    <function name="github.com.antchfx.htmlquery.parse" signature="github.com.antchfx.htmlquery.parse(io.Reader)" >
+      <return type="github.com.antchfx.htmlquery.Node,go.error" />
+      <sink argpos="1" kind="xml_entity_injection" resource="other" />
+    </function>
+    <function name="github.com.antchfx.htmlquery.CreateXpathNavigator" signature="github.com.antchfx.htmlquery.CreateXpathNavigator(github.com.antchfx.htmlquery.Node)" >
+      <return type="github.com.antchfx.htmlquery.NodeNavigator" />
+    </function>
+    <function name="github.com.antchfx.htmlquery.getCurrentNode" signature="github.com.antchfx.htmlquery.getCurrentNode(xpath.NodeIterator)" >
+      <return type="github.com.antchfx.htmlquery.Node" />
+    </function>
+    <function name="github.com.antchfx.htmlquery.Find" signature="github.com.antchfx.htmlquery.Find(github.com.antchfx.htmlquery.Node,go.string)" >
+      <return type="go.slice" elementType="github.com.antchfx.htmlquery.Node" />
+      <sink argpos="1" kind="xpath_injection" resource="other" />
+    </function>
+    <function name="github.com.antchfx.htmlquery.FindOne" signature="github.com.antchfx.htmlquery.FindOne(github.com.antchfx.htmlquery.Node,go.string)" >
+      <return type="github.com.antchfx.htmlquery.Node" />
+      <sink argpos="1" kind="xpath_injection" resource="other" />
+    </function>
+    <function name="github.com.antchfx.htmlquery.QueryAll" signature="github.com.antchfx.htmlquery.QueryAll(github.com.antchfx.htmlquery.Node,go.string)" >
+      <return type="go.slice,go.error" elementType="github.com.antchfx.htmlquery.Node" />
+      <sink argpos="1" kind="xpath_injection" resource="other" />
+    </function>
+    <function name="github.com.antchfx.htmlquery.Query" signature="github.com.antchfx.htmlquery.Query(github.com.antchfx.htmlquery.Node,go.string)" >
+      <return type="github.com.antchfx.htmlquery.Node,go.error" />
+      <sink argpos="1" kind="xpath_injection" resource="other" />
+    </function>
+  </module>
+
+  <module name="github.com.antchfx.jsonquery" standard="antchfx.jsonquery">
+    <description url="https://pkg.go.dev/github.com/antchfx/jsonquery">XPath query for JSON documents</description>
+
+    <class name="github.com.antchfx.jsonquery.FindOne" />
+    <class name="github.com.antchfx.xpath.NodeIterator" />
+
+    <function name="github.com.antchfx.jsonquery.LoadURL" signature="github.com.antchfx.jsonquery.LoadURL(go.string)" >
+      <return type="github.com.antchfx.jsonquery.Node,go.error" />
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="0" kind="insecure_transport" resource="network" />
+    </function>
+    <function name="github.com.antchfx.jsonquery.parse" signature="github.com.antchfx.jsonquery.parse(io.Reader)" >
+      <return type="github.com.antchfx.jsonquery.Node,go.error" />
+      <sink argpos="1" kind="xml_entity_injection" resource="other" />
+    </function>
+    <function name="github.com.antchfx.jsonquery.CreateXpathNavigator" signature="github.com.antchfx.jsonquery.CreateXpathNavigator(github.com.antchfx.jsonquery.Node)" >
+      <return type="github.com.antchfx.jsonquery.NodeNavigator" />
+    </function>
+    <function name="github.com.antchfx.jsonquery.getCurrentNode" signature="github.com.antchfx.jsonquery.getCurrentNode(xpath.NodeIterator)" >
+      <return type="github.com.antchfx.jsonquery.Node" />
+    </function>
+    <function name="github.com.antchfx.jsonquery.Find" signature="github.com.antchfx.jsonquery.Find(github.com.antchfx.jsonquery.Node,go.string)" >
+      <return type="go.slice" elementType="github.com.antchfx.jsonquery.Node" />
+      <sink argpos="1" kind="xpath_injection" resource="other" />
+    </function>
+    <function name="github.com.antchfx.jsonquery.FindOne" signature="github.com.antchfx.jsonquery.FindOne(github.com.antchfx.jsonquery.Node,go.string)" >
+      <return type="github.com.antchfx.jsonquery.Node" />
+      <sink argpos="1" kind="xpath_injection" resource="other" />
+    </function>
+    <function name="github.com.antchfx.jsonquery.QueryAll" signature="github.com.antchfx.jsonquery.QueryAll(github.com.antchfx.jsonquery.Node,go.string)" >
+      <return type="go.slice,go.error" elementType="github.com.antchfx.jsonquery.Node" />
+      <sink argpos="1" kind="xpath_injection" resource="other" />
+    </function>
+    <function name="github.com.antchfx.jsonquery.Query" signature="github.com.antchfx.jsonquery.Query(github.com.antchfx.jsonquery.Node,go.string)" >
+      <return type="github.com.antchfx.jsonquery.Node,go.error" />
+      <sink argpos="1" kind="xpath_injection" resource="other" />
+    </function>
+  </module>
+
+  <module name="github.com.spf13.viper" standard="Viper">
+    <description url="https://pkg.go.dev/github.com/spf13/viper">Application configuration helper</description>
+
+    <class name="github.com.spf13.viper.Viper"  >
+      <method name="AddRemoteProvider" signature="AddRemoteProvider(go.string, go.string, go.string)" alias="AddSecureRemoteProvider">
+        <return type="go.error" />
+        <sink argpos="1" kind="insecure_transport" resource="other" />
+        <sink argpos="1" kind="http_parameter_pollution" resource="other" />
+        <sink argpos="0,2" kind="resource_injection" resource="other" />
+      </method>
+      <method name="ReadConfig" signature="ReadConfig(io.Reader)" >
+        <return type="go.error" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="ReadInConfig" signature="ReadInConfig()" >
+        <return type="go.error" />
+        <source argpos="-2" kind="file_input" resource="filesystem" />
+      </method>
+    </class>
+
+    <function name="github.com.spf13.viper.New" signature="github.com.spf13.viper.New()" >
+      <return type="github.com.spf13.viper.Viper" />
+    </function>
+    <function name="github.com.spf13.viper.NewWithOptions" signature="github.com.spf13.viper.NewWithOptions(...github.com.spf13.viper.Options)" >
+      <return type="github.com.spf13.viper.Viper" />
+    </function>
+    <function name="github.com.spf13.viper.GetViper" signature="github.com.spf13.viper.GetViper()" >
+      <return type="github.com.spf13.viper.Viper" />
+    </function>
+    <function name="github.com.spf13.viper.AddRemoteProvider" signature="github.com.spf13.viper.AddRemoteProvider(go.string, go.string, go.string)" alias="AddSecureRemoteProvider">
+      <return type="go.error" />
+      <sink argpos="1" kind="insecure_transport" resource="other" />
+      <sink argpos="1" kind="http_parameter_pollution" resource="other" />
+      <sink argpos="0,2" kind="resource_injection" resource="other" />
+    </function>
+    <function name="github.com.spf13.viper.ReadConfig" signature="github.com.spf13.viper.ReadConfig(io.Reader)" >
+      <return type="go.error" />
+      <source argpos="-1" kind="file_input" resource="filesystem" />
+    </function>
+    <function name="github.com.spf13.viper.ReadInConfig" signature="github.com.spf13.viper.ReadInConfig()" >
+      <return type="go.error" />
+      <source argpos="-2" kind="file_input" resource="filesystem" />
+    </function>
+  </module>
+
+  <module name="gopkg.in.dutchcoders.goftp.v1" standard="goftp">
+    <description url="https://github.com/dutchcoders/goftp" >FTP library</description>
+
+    <function name="gopkg.in.dutchcoders.goftp.Connect" signature="gopkg.in.dutchcoders.goftp.Connect(go.string)" alias="ConnectDbg">
+      <return type="gopkg.in.dutchcoders.goftp.FTP" />
+      <sink argpos="0" kind="insecure_transport" resource="network" />
+    </function>
+
+    <class name="gopkg.in.dutchcoders.goftp.v1.FTP" >
+      <field name="conn" elementType="net.Conn" />
+
+      <method name="Login" signature="Login(go.string, go.string)" >
+        <tags>username:0, password:1</tags>
+      </method>
+      <method name="newConnection" signature="newConnection(go.int)" >
+        <return type="(net.Conn, go.error)" />
+        <sink kind="resource_injection" argpos="0" resource="network" />
+      </method>
+    </class>
+  </module>
+
+  <module name="github.com.secsy.goftp" standard="goftp">
+    <description url="https://godoc.org/github.com/secsy/goftp" >FTP library</description>
+
+    <function name="github.com.secsy.goftp.Dial" signature="github.com.secsy.goftp.Dial(...go.string)" >
+      <return type="(github.com.secsy.goftp.Client,go.error)" />
+      <sink argpos="0,1,2,3" kind="insecure_transport" resource="network" >
+        <tags>insecure_ftp</tags>
+      </sink>
+    </function>
+    <function name="github.com.secsy.goftp.DialConfig" signature="github.com.secsy.goftp.DialConfig(github.com.secsy.goftp.Config,...go.string)" >
+      <return type="(github.com.secsy.goftp.Client,go.error)" />
+      <sink argpos="0,1,2,3" kind="insecure_transport" resource="network" >
+        <tags>insecure:ftp</tags>
+      </sink>
+    </function>
+  </module>
+
+  <module name="github.com.jlaffaye.ftp" standard="goftp">
+    <description url="https://godoc.org/github.com/jlaffaye/ftp" >FTP library</description>
+
+    <function name="github.com.jlaffaye.ftp.Connect" signature="github.com.jlaffaye.ftp.Connect(go.string)" alias="Dial,DialTimeout">
+      <return type="(github.com.jlaffaye.ftp.ServerConn,go.error)" />
+      <sink argpos="0" kind="insecure_transport" resource="network" >
+        <tags>insecure:ftp</tags>
+      </sink>
+    </function>
+
+    <class name="github.com.jlaffaye.ftp.ServerConn" >
+      <method name="Login" signature="Login(go.string, go.string)" >
+        <tags>username:0, password:1</tags>
+      </method>
+    </class>
+  </module>
+</library>

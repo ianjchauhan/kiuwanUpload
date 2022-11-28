@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="gorilla" standard="Gorilla">
+
+  <description url="https://www.gorillatoolkit.org/">Web toolkit</description>
+
+  <module name="github.com.gorilla.sessions" standard="Gorilla.sessions">
+    <description url="https://pkg.go.dev/github.com/gorilla/sessions">Gorilla Sessions</description>
+
+    <function name="github.com.gorilla.sessions.NewSession" signature="github.com.gorilla.sessions.NewSession(github.com.gorilla.sessions.Store, go.string)" >
+      <return type="github.com.gorilla.sessions.Session" />
+    </function>
+
+    <class name="github.com.gorilla.sessions.Session" kind="struct" >
+      <field name="ID" type="go.string" />
+      <field name="Values" type="go.map" >
+        <sink argpos="-2" kind="trust_boundary" resource="web" />
+      </field>
+      <field name="store" type="github.com.gorilla.sessions.Store" />
+      <field name="name" type="go.string" />
+
+      <method name="Name" signature="Name()" >
+        <return type="go.string" />
+      </method>
+      <method name="Store" signature="Store()" >
+        <return type="github.com.gorilla.sessions.Store" />
+      </method>
+      <method name="AddFlash" signature="AddFlash(go.interface,...go.string)" >
+        <return type="go.interface" />
+        <sink argpos="1,2,3" kind="trust_boundary" resource="web" />
+      </method>
+    </class>
+
+    <function name="github.com.gorilla.sessions.GetRegistry" signature="github.com.gorilla.sessions.GetRegistry(net.http.Request)" >
+      <return type="github.com.gorilla.sessions.Registry" />
+    </function>
+
+    <class name="github.com.gorilla.sessions.Registry" kind="struct" >
+      <field name="request" type="net.http.Request" />
+      <field name="sessions" type="go.map" />
+
+      <method name="Get" signature="Get(github.com.gorilla.sessions.Store, go.string)" >
+        <return type="github.com.gorilla.sessions.Session, go.error" />
+      </method>
+      <method name="Save" signature="Save(net.http.ResponseWriter)" >
+        <return type="go.error" />
+      </method>
+    </class>
+
+    <function name="github.com.gorilla.sessions.NewCookie" signature="github.com.gorilla.sessions.NewCookie(go.string, go.string, github.com.gorilla.sessions.Options)" >
+      <tags>cookie.name:0,cookie.value:1</tags>
+      <return type="net.http.Cookie" />
+      <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+    </function>
+
+    <function name="github.com.gorilla.sessions.NewCookieFromOptions" signature="github.com.gorilla.sessions.NewCookieFromOptions(go.string, go.string, github.com.gorilla.sessions.Options)" >
+      <tags>cookie.name:0,cookie.value:1</tags>
+      <return type="net.http.Cookie" />
+      <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+    </function>
+
+    <class name="github.com.gorilla.sessions.Store" kind="interface" >
+      <method name="Get" signature="Get(net.http.Request, go.string)" >
+        <return type="github.com.gorilla.sessions.Session, go.error" />
+      </method>
+      <method name="New" signature="New(net.http.Request, go.string)" >
+        <return type="github.com.gorilla.sessions.Session, go.error" />
+      </method>
+      <method name="Save" signature="Save(net.http.Request, net.http.ResponseWriter, github.com.gorilla.sessions.Session)" >
+        <return type="go.error" />
+        <sink argpos="2" kind="trust_boundary" resource="web" />
+      </method>
+    </class>
+
+    <function name="github.com.gorilla.sessions.NewCookieStore" signature="github.com.gorilla.sessions.NewCookieStore(...go.slice)" >
+      <return type="github.com.gorilla.sessions.CookieStore" />
+    </function>
+
+    <class name="github.com.gorilla.sessions.CookieStore" kind="struct" supertypes="github.com.gorilla.sessions.Store" />
+
+    <class name="github.com.gorilla.sessions.Options" kind="struct" >
+      <tags>cookie.create</tags>
+
+      <field name="Path" type="go.string" >
+        <tags>cookie.path</tags>
+      </field>
+      <field name="Domain" type="go.string" >
+        <tags>cookie.domain</tags>
+      </field>
+      <field name="Expires" type="time.Time"  >
+        <tags>session.persistent</tags>
+      </field>
+      <field name="MaxAge" type="go.int" >
+        <tags>session.persistent</tags>
+      </field>
+      <field name="Secure" type="go.bool" >
+        <tags>cookie.secure</tags>
+      </field>
+      <field name="HttpOnly" type="go.bool" >
+        <tags>cookie.httpOnly</tags>
+      </field>
+    </class>
+  </module>
+
+  <module name="github.com.gorilla.websocket" standard="Gorilla.websocket">
+    <description url="https://pkg.go.dev/github.com/gorilla/websocket">Gorilla Websocket</description>
+
+    <class name="github.com.gorilla.websocket.Upgrader" kind="struct" >
+    </class>
+    <class name="github.com.gorilla.websocket.Conn" kind="struct" >
+      <method name="LocalAddr" signature="LocalAddr()" >
+        <return type="net.Addr" />
+      </method>
+      <method name="RemoteAddr" signature="RemoteAddr()" >
+        <return type="net.Addr" />
+      </method>
+      <method name="NextReader" signature="NextReader()" >
+        <return type="go.int,io.Reader,go.error" />
+      </method>
+      <method name="NextWriter" signature="NextWriter(go.int)" >
+        <return type="io.WriteCloser,go.error" />
+      </method>
+      <method name="ReadJSON" signature="ReadJSON(go.interface)" >
+        <return type="go.error" />
+        <source argpos="0" kind="user_input" resource="web" />
+      </method>
+      <method name="ReadMessage" signature="ReadMessage()" >
+        <return type="go.int,go.slice,go.error" />
+        <source argpos="1" kind="user_input" resource="web" />
+      </method>
+      <method name="UnderlyingConn" signature="UnderlyingConn()" >
+        <return type="net.Conn" />
+      </method>
+      <method name="WriteJSON" signature="WriteJSON(go.interface)" >
+        <tags>serialization:0</tags>
+        <return type="go.error" />
+      </method>
+      <method name="WritePreparedMessage" signature="WritePreparedMessage(github.com.gorilla.websocket.PreparedMessage)" >
+        <return type="go.error" />
+      </method>
+    </class>
+    <class name="github.com.gorilla.websocket.Dialer" kind="struct" >
+      <field name="Jar" type="net.http.CookieJar" />
+
+      <method name="Dial" signature="Dial(go.string,net.http.Header)" >
+        <return type="github.com.gorilla.websocket.Conn,net.http.Response,go.error" />
+        <sink argpos="0" kind="ssrf" resource="web" />
+        <sink argpos="0" kind="insecure_transport" resource="web" />
+      </method>
+      <method name="DialContext" signature="DialContext(context.Context,go.string,net.http.Header)" >
+        <return type="github.com.gorilla.websocket.Conn,net.http.Response,go.error" />
+        <sink argpos="1" kind="ssrf" resource="web" />
+        <sink argpos="1" kind="insecure_transport" resource="web" />
+      </method>
+    </class>
+    <class name="github.com.gorilla.websocket.Upgrader" kind="struct" >
+      <method name="Upgrade" signature="Upgrade(net.http.ResponseWriter,net.http.Request,net.http.Header)" >
+        <return type="github.com.gorilla.websocket.Conn,go.error" />
+      </method>
+    </class>
+
+    <function name="github.com.gorilla.websocket.Upgrader" signature="github.com.gorilla.websocket.Upgrader()" >
+
+    </function>
+    <function name="github.com.gorilla.websocket.WriteJSON" signature="github.com.gorilla.websocket.WriteJSON(github.com.gorilla.websocket.Conn,go.interface)" >
+      <tags>serialization:0</tags>
+      <return type="go.error" />
+    </function>
+    <function name="github.com.gorilla.websocket.NewClient" signature="github.com.gorilla.websocket.NewClient(net.Conn,net.url.URL,net.http.Header,go.int,go.int)" >
+      <return type="github.com.gorilla.websocket.Conn,net.http.Response,go.error" />
+    </function>
+    <function name="github.com.gorilla.websocket.Upgrade" signature="github.com.gorilla.websocket.Upgrade(net.http.ResponseWriter,net.http.Request,net.http.header,go.int,go.int)" >
+      <return type="github.com.gorilla.websocket.Conn,go.error" />
+    </function>
+    <function name="github.com.gorilla.csrf.Protect" signature="github.com.gorilla.csrf.Protect()" >
+      <tags>csrfFilter</tags>
+    </function>
+  </module>
+
+  <!-- extensions -->
+  <module name="github.com.rbcervilla.redisstore" standard="rbcervilla.redisstore">
+    <description url="https://pkg.go.dev/github.com/rbcervilla/redisstore">Gorilla Sessions Store implementation backed by Redis</description>
+
+    <function name="github.com.rbcervilla.redisstore.NewRedisStore" signature="github.com.rbcervilla.redisstore.NewRedisStore(...go.slice)" >
+      <return type="github.com.rbcervilla.redisstore.RedisStore" />
+    </function>
+
+    <class name="github.com.rbcervilla.redisstore.RedisStore" kind="struct" supertypes="github.com.gorilla.sessions.Store" />
+  </module>
+
+  <module name="gopkg.in.boj.redistore" standard="boj.redistore">
+    <description url="https://pkg.go.dev/gopkg.in/boj/redistore.v1">Gorilla's Session store implementation with Redis</description>
+
+    <function name="gopkg.in.boj.redistore.NewRedisStore" signature="gopkg.in.boj.redistore.NewRedisStore(...go.slice)" >
+      <return type="gopkg.in.boj.redistore.RedisStore" />
+      <sink argpos="1,2" kind="server_insecure_transport" resource="web" />
+      <sink argpos="3" kind="hardcoded_credentials" resource="web" />
+    </function>
+    <function name="gopkg.in.boj.redistore.dial" signature="gopkg.in.boj.redistore.dial(...go.slice)" >
+      <return type="github.com.gomodule.redigo.redis.Con,go.error" />
+      <sink argpos="0,1" kind="server_insecure_transport" resource="web" />
+      <sink argpos="2" kind="hardcoded_credentials" resource="web" />
+    </function>
+
+    <class name="gopkg.in.boj.redistore.RedisStore" kind="struct" supertypes="github.com.gorilla.sessions.Store" />
+  </module>
+
+  <module name="github.com.kidstuff.mongostore" standard="kidstuff.mongostore">
+    <description url="https://pkg.go.dev/github.com/kidstuff/mongostore">Gorilla's Session store implementation with MongoDB</description>
+
+    <function name="github.com.kidstuff.mongostore.NewMongoStore" signature="github.com.kidstuff.mongostore.NewMongoStore(...go.slice)" >
+      <return type="github.com.kidstuff.mongostore.MongoStore" />
+      <sink argpos="1,2" kind="server_insecure_transport" resource="web" />
+      <sink argpos="3" kind="hardcoded_credentials" resource="web" />
+    </function>
+
+    <class name="github.com.kidstuff.mongostore.MongoStore" kind="struct" supertypes="github.com.gorilla.sessions.Store" />
+  </module>
+</library>

@@ -1,0 +1,2510 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_python" updated="">
+  <description>Nykaa_Web</description>
+  <rule name="OPT.PYTHON.DJANGO.InsecureDirectObjectReferences" message="InsecureDirectObjectReferences: Check for user authentication and/ or authorization before let him modifying a sensible system resource" class="com.optimyth.python.rules.django.InsecureDirectObjectReferences" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:4.1.2,ASVS-v4.0.2:4.2.1,CWEScope:Access-Control,Framework:Django]]></tags>
+    <description><![CDATA[Most of time web application user actions carries a system resource modification, where
+some of these resource can be considered sensible (DB,...).
+
+If an user request leads to a critical resource modification then the user authentication and user authorization must be
+checked prior to this modification.
+
+Obviating this check can lead to critical system resource unauthorized modification, exposing the resource sensible data
+and allowing a malicious user to take advantage from it and do whatever he wants to do.
+
+When using the Django framework one of these sensible resources is the DB because the user interactions with the web
+application can lead to DB data modifications.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid improper access to sensitive system resources.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from django.db import models
+from django.shortcuts import render_to_response
+
+class OBJ(models.Model):
+    id = "some_id"
+
+def create(request):
+
+    if request.method == 'POST':
+        obj = OBJ()
+        obj.save()    # VIOLATION
+        return redirect('/manager/' + obj.id )
+    else:
+        return render_to_response('manager/error.html', {'obj_id': obj.id}, RequestContext(request))]]></example>
+    <repair><![CDATA[from django.db import models
+from django.shortcuts import render_to_response
+
+class OBJ(models.Model):
+    id = "some_id"
+
+def create(request):
+
+    if request.method == 'POST':
+        if user.is_authenticated():
+          obj = OBJ()
+          obj.save()
+          return redirect('/manager/' + obj.id )
+        else:
+          return render_to_response('manager/error.html', {'obj_id': obj.id}, RequestContext(request))
+
+    else:
+        return render_to_response('manager/error.html', {'obj_id': obj.id}, RequestContext(request))]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Top_10_2013-A4-Insecure_Direct_Object_References,http://projects.webappsec.org/w/page/13246939/Insufficient%20Authentication,http://cwe.mitre.org/data/definitions/639.html,http://projects.webappsec.org/w/page/13246940/Insufficient%20Authorization]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:639,OWASP:2021:A1,WASC:01,WASC:02]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.DJANGO.InsufficientDjangoSettingsSessionExpiration" message="InsufficientDjangoSettingsSessionExpiration: Checks that session expiration interval is positive and does not exceed a limit" class="com.optimyth.python.rules.django.InsufficientDjangoSettingsSessionExpiration" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.8.1,ASVS-v4.0.2:2.8.6,ASVS-v4.0.2:3.3.1,ASVS-v4.0.2:3.3.2,ASVS-v4.0.2:3.3.3,ASVS-v4.0.2:3.3.4,ASVS-v4.0.2:3.6.1,ASVS-v4.0.2:3.6.2,CWEScope:Access-Control,Framework:Django]]></tags>
+    <description><![CDATA[Checks that when setting in code (SESSION_COOKIE_AGE) a session expiration interval, interval is not negative or zero
+(no expiration) and does not exceed a maximum interval.
+
+If a negative interval is set, session never expires. If exceeds the maxExpiration parameter, session lives too much
+time and it is considered a security issue.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Controlling session expiration interval improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[SESSION_COOKIE_AGE = 1209600    # VIOLATION, django default cookie expiration value (2 weeks)]]></example>
+    <repair><![CDATA[SESSION_COOKIE_AGE = 3600]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/613.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:613,OWASP:2021:A7]]></security>
+    </normatives>
+    <properties>
+      <property name="maxExpiration" descname="Maximum time expiration allowed (seconds)." value="7200"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.DJANGO.MassAssigmentAttack" message="MassAssigmentAttack: Insufficient form fields validation" class="com.optimyth.python.rules.django.MassAssigmentAttack" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.2,CWEScope:Integrity,Framework:Django]]></tags>
+    <description><![CDATA[When building a database-driven app Django provides a helper class to be extended by a
+custom Form class which modelates the custom Django model, this way Django will map the forms to a model.
+
+This django.forms.ModelForm class allows to define a Meta class with two very important members: "fields" and "exclude".
+
+The first member "fields" is used as a white list of the fields from the form which should be mapped to the model. Setting
+its value to '__all__' can lead to security problems when a field which shouldn't be mapped is misleading, so using it
+this way it's considered a bad programming practice.
+
+The second member "exclude" is used as a blacklist of the fields from the form which shouldn't be mapped to the model.
+Using this member instead of the first one can be harmful too when a sensitive field is misleading and it's not added to
+this field.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevents sensible data modification by a malicious user, allowing him to perform malicious activities as session hijacking.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from django import forms
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        exclude = ['user_permissions']  # VIOLATION
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = '__all__'  # VIOLATION]]></example>
+    <repair><![CDATA[from django import forms
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'date']  # OK]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/915.html,http://projects.webappsec.org/w/page/13246943/Insufficient%20Process%20Validation,https://docs.djangoproject.com/en/1.11/topics/forms/modelforms/#selecting-the-fields-to-use]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:915,OWASP:2021:A8,WASC:40]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.DJANGO.MissingBrowserXssFilter" message="MissingBrowserXssFilter: Secure browser XSS filter" class="com.optimyth.python.rules.django.MissingBrowserXssFilter" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,Framework:Django]]></tags>
+    <description><![CDATA[This rule checks if SECURE_BROWSER_XSS_FILTER property has been set to True value.
+If set to True, causes SecurityMiddlware to set  X-Content-Type-Options: nosniff header on all responses that do not already have that header.
+
+By default SECURE_BROWSER_XSS_FILTER is set to False, so the rule throws a violation when the property is set to False or if is missing.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve the browser security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[# django setting file
+# ...
+# more configurations
+# ...
+
+# VIOLATION
+SECURE_BROWSER_XSS_FILTER = False  # or missing because SECURE_BROWSER_XSS_FILTER is False by default]]></example>
+    <repair><![CDATA[# django setting file
+# ...
+# more configurations
+# ...
+
+# OK
+SECURE_BROWSER_XSS_FILTER = True]]></repair>
+    <reference><![CDATA[https://django-secure.readthedocs.io/en/latest/settings.html#secure-browser-xss-filter,https://blogs.msdn.microsoft.com/ieinternals/2011/01/31/controlling-the-xss-filter/,https://cwe.mitre.org/data/definitions/80.html,https://docs.djangoproject.com/en/dev/ref/middleware/#x-xss-protection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:80,OWASP:2021:A3,PCI-DSS:6.5.7,WASC:08]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.DJANGO.MissingFunctionLevelAccessControl" message="MissingFunctionLevelAccessControl: Perform an authorization check when performing an action which requires authorization" class="com.optimyth.python.rules.django.MissingFunctionLevelAccessControl" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.4,ASVS-v4.0.2:13.4.2,ASVS-v4.0.2:2.10.1,ASVS-v4.0.2:2.3.3,ASVS-v4.0.2:2.7.1,ASVS-v4.0.2:2.7.2,ASVS-v4.0.2:2.7.3,ASVS-v4.0.2:2.8.4,ASVS-v4.0.2:2.8.5,ASVS-v4.0.2:4.1.3,ASVS-v4.0.2:4.1.5,ASVS-v4.0.2:7.2.2,ASVS-v4.0.2:8.3.3,ASVS-v4.0.2:8.3.8,ASVS-v4.0.2:9.2.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,Framework:Django]]></tags>
+    <description><![CDATA[Function level access control is used to protect a web application from unauthorized access
+from a malicious user.
+
+Developers commonly think that some parts of the web application can be only accessed from other specific web application
+places with an specific request, but a malicious user can send a fully customized HTTP request to unexpectedly gain access
+to that web application part, reaching sensible resources and data.
+
+This situation can be avoided by performing not only authentication checks but also authorization checks when requesting
+the web application to perform some sensible action.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid the exposure of resources or functionality to unintended actors, possibly providing attackers with sensitive information or even execute arbitrary code.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from django.shortcuts import render, render_to_response, redirect
+from django.http import HttpResponse
+from django.template import RequestContext
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+
+def fun(request):
+
+    user = request.user
+
+    if user.is_authenticated():
+    	return render_to_response('manager/board.html', RequestContext(request))	# VIOLATION
+
+    else:
+        redirect('/manager/', {'logged_in':False})]]></example>
+    <repair><![CDATA[from django.shortcuts import render, render_to_response, redirect
+from django.http import HttpResponse
+from django.template import RequestContext
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+
+def fun(request):
+
+    user = request.user
+
+    if user.is_authenticated():
+    	if user.has_perm('some_awesome_permission'):
+    		return render_to_response('manager/board.html', RequestContext(request))	# OK
+
+    else:
+        redirect('/manager/', {'logged_in':False})]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/287.html,http://projects.webappsec.org/w/page/13246939/Insufficient%20Authentication,https://cwe.mitre.org/data/definitions/285.html,http://projects.webappsec.org/w/page/13246940/Insufficient%20Authorization]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:285,CWE:287,CWETOP25:2021:14,OWASP:2021:A1,WASC:01,WASC:02]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.DJANGO.WeakCryptographicHashInSettings" message="WeakCryptographicHashInSettings: Weak cryptographic hashes cannot guarantee data integrity" class="com.optimyth.python.rules.django.WeakCryptographicHashInSettings" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,Framework:Django,crypto]]></tags>
+    <description><![CDATA[Password storage is complex, with many potential security flaws.
+The state-of-the-art today for password storage is password hashing + stretching, with a robust hash function,
+with controlled computational cost, plus additional measures like random salt.
+
+Modern schemes like PBKDF2, Argon2 (winner of the 2013 Password Hashing Competition), bcrypt and scrypt should be used
+instead of traditional schemes, as brute-force dictionary-based attacks leveraging the efficiency of standard hash functions
+on GPU and ASIC hardware were efficient.
+
+Django 1.10 removed the hashers listed below from the default PASSWORDS_HASHERS, because they can be cracked easily
+with today's hardware.
+  - django.contrib.auth.hashers.SHA1PasswordHasher
+  - django.contrib.auth.hashers.MD5PasswordHasher
+  - django.contrib.auth.hashers.UnsaltedSHA1PasswordHasher
+  - django.contrib.auth.hashers.UnsaltedMD5PasswordHasher
+  - django.contrib.auth.hashers.CryptPasswordHasher
+
+Thus, they should not be included in Django application settings.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid weak password hashing schemes.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[PASSWORD_HASHERS = [  # VIOLATION
+    'django.contrib.auth.hashers.SHA1PasswordHasher',
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+    'django.contrib.auth.hashers.UnsaltedSHA1PasswordHasher',
+    'django.contrib.auth.hashers.UnsaltedMD5PasswordHasher',
+    'django.contrib.auth.hashers.CryptPasswordHasher',
+]]]></example>
+    <repair><![CDATA[# Use robust password hashers from Django app settings
+# Argon2 and BCrypt are recommended, but they need external libraries
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+]]]></repair>
+    <reference><![CDATA[https://docs.djangoproject.com/en/3.2/topics/auth/passwords/,http://cwe.mitre.org/data/definitions/916.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:916,OWASP:2021:A2]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.CodeInjection" message="CodeInjection: Avoid non-neutralized user-controlled input in dynamic code evaluation" class="com.optimyth.python.rules.security.CodeInjection" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.5,ASVS-v4.0.2:5.2.8,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[Code injection is a general term for attack types which consist of injecting code that is dynamically evaluated and executed by the vulnerable application.
+
+In Python applications, as most of popular languages and frameworks, the main ways to evaluate code dynamically can be used, are using eval and exec functions.
+
+Code injection attacks can lead to loss of data integrity and can often result in the execution of arbitrary code.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent code injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[python_code = input()
+exec(python_code)  # VIOLATION
+eval(python_code)  # VIOLATION]]></example>
+    <repair><![CDATA[import re
+
+python_code = input()
+
+pattern = re.compile("valid_input_0|valid_input_1|valid_input_3")
+if pattern.fullmatch(python_code):  # NEUTRALIZATION
+    eval(python_code)]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/94.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:94,CWETOP25:2021:28,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.CommandInjection" message="CommandInjection: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')" class="com.optimyth.python.rules.security.CommandInjection" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.5,ASVS-v4.0.2:5.3.8,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[The software constructs all or part of an operating system (OS) command using externally-controlled input, but it does not neutralize properly that input that could modify the intended command when it is sent to a function that executes the command (e.g. subprocess.call() or subprocess.run()).
+
+The rule detects a path in code between an user-input statement (source) and a command execution call (sink), with command depending on non neutralized input. This allows for an attacker to change the intended command to execute or to add a malicious extra command, executed with the application rights.
+
+A neutralization function either validates inputs and report an (neutral) error without allowing command execution, or replaces sensitive shell characters in the input to avoid that the resulting command has different semantics.
+If possible, use "accept known good" input validation strategy (whitelist).
+
+First, ask yourself if you really need to execute OS commands.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid execution of malicious commands.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import subprocess, shlex
+
+command_line = raw_input()
+args = shlex.split(command_line)
+subprocess.Popen(args, shell=True)  # VIOLATION]]></example>
+    <repair><![CDATA[import subprocess, shlex
+
+command_line = raw_input()
+args = shlex.split(command_line)
+args = map(shlex.quote, args) # NEUTRALIZATION
+subprocess.Popen(args, shell=True)  # OK]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Command_Injection,http://cwe.mitre.org/data/definitions/78.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:77,CWE:78,CWETOP25:2021:5,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:31]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.ConnectionStringParameterPollution" message="ConnectionStringParameterPollution: Connection string polluted with untrusted input" class="com.optimyth.python.rules.security.ConnectionStringParameterPollution" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.7,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When the connection string for an application resource (like database, remote server, persistence entity manager...) could
+be affected by an untrusted source, not properly neutralized, the application is vulnerable to a Connection String Parameter Pollution attack.
+
+An attack targeted at this vulnerability may use special characters (like ';' or ':') to add unexpected parts to the connection string,
+for example to gain extra privileges, or to deactivate security features.
+
+"Untrusted input" means, in this context, a user-controlled application input, an environment variable, or data fetched
+from an external web source.
+
+It should be suspicious that a connection string depends on untrusted input. Normally the application configuration uses
+a fixed connection string, but other attacks, depending on where the connection string is stored (like an SQL injection or
+path traversal attack) may affect the configuration item. This rule only checks for connection strings that are constructed
+programmatically with untrusted input.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import mysql.connector
+import sqlalchemy
+from rest_framework.decorators import api_view
+
+CONN_STR = 'mysql+mysqlconnector://%s:%s@%s:%d/%s'
+
+dbConf = {
+  'host': 'localhost',
+  'port': 3306,
+  'database': 'MyDB'
+}
+
+# By design, fetch database account from user-controlled input
+# But: attacker may fully control MySQL connection string, including host/port/database...
+
+def create_connection(user, pwd):
+  url =  CONN_STR % (user, pwd, dbConf['host'], dbConf['port'], dbConf['database'])
+  engine = sqlalchemy.create_engine(url) # indirect sink
+  return engine.connect()
+
+@api_view()
+def users(request):
+  user = request.query_params['user']
+  pwd = request.query_params['password']
+  conn = create_connection(user, pwd) # VIOLATION]]></example>
+    <repair><![CDATA[# Fetch connection string (or its parts) from a trusted source.]]></repair>
+    <reference><![CDATA[https://www.blackhat.com/presentations/bh-dc-10/Alonso_Chema/Blackhat-DC-2010-Alonso-Connection-String-Parameter-Pollution-wp.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:15,OWASP:2021:A5,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.CookiePoisoning" message="CookiePoisoning: Cookie Poisoning" class="com.optimyth.python.rules.security.CookiePoisoning" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Integrity]]></tags>
+    <description><![CDATA[The application does not prevent malicious input from being inserted into application cookies.
+
+If an attacker may insert an attack payload that is stored as part of a browser cookie,
+that payload may be accepted as legitimate by the application.
+
+The poisoned cookie can be used to bypass security controls, change user preferences, perform unintended actions
+with logged user identity, etc.
+
+In addition, as the cookie typically is coded in the response message in the 'Set-Cookie' HTTP header,
+by inserting CR/LR characters, an attacker may also launch a header manipulation attack.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import web
+app = web.application(urls, globals())
+
+class index:
+  def GET(self):
+    get_input = web.input()
+    username = get_input['username']
+    pers_info = username + ':' + getSensitivePersonalInfo(username)
+    web.setcookie('pers_info', pers_info, secure = True, httponly = True) # VIOLATION]]></example>
+    <repair><![CDATA[# Do not let unvalidated input to be used as cookie name/value
+# If cookie contents are sensitive or they are used in security decisions, consider encryption and/or
+# message integrity (or both with authenticated encryption) to avoid manipulation.]]></repair>
+    <reference><![CDATA[]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:472,OWASP:2021:A4,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.CookiesInSecurityDecision" message="CookiesInSecurityDecision: Reliance on Cookies without Validation and Integrity Checking in a Security Decision" class="com.optimyth.python.rules.security.CookiesInSecurityDecision" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Using a cookie for security decision is a bad practice. Remember that attackers control most parts of the HTTP message,
+including cookies sent to the application. If a security check is based on the value of a cookie field (for example,
+the cookie value), a attacker may choose a particular value to pass such security check, without any reliance to
+past navigation through the vulnerable application.
+
+Attackers may exploit this vulnerability to bypass protection mechanisms such as authorization and authentication,
+by modifying the cookie to contain an expected value.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid bypass of protection mechanisms, due to flawed security decisions based on cookies.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from django.contrib.auth.models import User
+
+def check2(request):
+ for cookie in request.COOKIES:
+  if "role" == cookie.name:
+    perm = cookie.value;
+
+    joe = User.objects.get(username="joe")
+
+    if joe.has_perm("admin"): # VIOLATION
+      doAdminOperation(req, res);]]></example>
+    <repair><![CDATA[Do not use cookies in security decisions.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/784.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:784,OWASP:2021:A8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.CrossSiteRequestForgery" message="CrossSiteRequestForgery: Cross-site request forgery (CSRF)" class="com.optimyth.python.rules.security.CrossSiteRequestForgeryRule" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.3,ASVS-v4.0.2:4.2.2,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[When a user is authenticated in a web site, an attacker with knowledge about the web site
+can perform malicious requests against the vulnerable site and execute actions while user remains authenticated.
+
+Usually the attacker forces an authenticated user to launch the malicious request using social engineering,or by exploiting
+an XSS vulnerability.
+
+Anti-forgery tokens, also known as request verification tokens, should be utilized to prevent CSRF attacks.
+
+Anti-forgery tokens are random values generated in the server when a form is requested, and they are included in every request,
+so the server can verify not only that user is authenticated, but that the request was originated from the application.
+
+In web sites developed with Django framework, anti CSRF protection can be enabled for the whole application by including
+the django.middleware.csrf.CsrfViewMiddleware module in the MIDDLEWARE_CLASSES array within the settings.py config file.
+
+The @csrf_exempt excludes a certain part from the web application from the CSRF validation, creating a potential security
+hole into the web application. This is considered a bad programming practice and must be avoided.]]></description>
+    <priority>2</priority>
+    <effort>4</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid attackers to forge requests that appear to be originated from an authenticated victim ("CSRF attacks").]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[[Settings.py]
+MIDDLEWARE_CLASSES = (      # VIOLATION
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+)
+
+[views.py]
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt        # VIOLATION
+def product_by_id(request, product_id):
+    p = Product.objects.get(pk=product_id)
+
+    return render(request, 'manager/detail.html', {'product': p})]]></example>
+    <repair><![CDATA[[Settings.py]
+MIDDLEWARE_CLASSES = (      # OK
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+)
+
+[views.py]
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+
+def product_by_id(request, product_id):   // OK
+    p = Product.objects.get(pk=product_id)
+
+    return render(request, 'manager/detail.html', {'product': p})]]></repair>
+    <reference><![CDATA[https://docs.djangoproject.com/en/1.11/ref/csrf,http://cwe.mitre.org/data/definitions/352.html,https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:352,CWETOP25:2021:9,OWASP:2013:A8,PCI-DSS:6.5.9,WASC:9]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.CrossSiteScripting" message="CrossSiteScripting: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')" class="com.optimyth.python.rules.security.CrossSiteScriptingRule" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in page content. An attacker could inject browser script code that is executed in the client browser.
+The end-user is the attacked subject, and the software is the vehicle for the attack. This attack is known as Cross-Site Scripting (XSS).
+
+There are three kinds of XSS:
+* Reflected XSS: Attacker causes victim to supply malicious content to a vulnerable web application, which renders HTML content
+  embedding a malicious script executed in victim's browser.
+  A variation of this is named DOM-based XSS, where the vulnerable software does not generate content depending on user input
+  but include script code that use user-controlled input.
+
+* Persistent XSS: Attacker provides malicious content to the vulnerable application, which is stored somewhere.
+  When stored data is fetched and rendered,
+
+Note: This rule only considers the first case ("Reflected XSS").
+
+When other user access to vulnerable pages that embed without proper neutralization the attacker content,
+script code is executed in the victim's browser.
+
+The script executed in the victim's browser could perform malicious activities, like stealing active authentication tokens
+(sometimes in the form of cookies) and performing operations on a insecure webapp (on behalf of the victim) that trusts
+too much identity artifacts in browser and do not request additional authorization for operations ('Cross-Site Request Forgery attack', CSRF).
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but user browsers generally allow scripting languages
+(e.g. JavaScript) in their browsers (disabling JavaScript severely limits a web application).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XSS vulnerabilities.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from flask import Flask, request, make_response
+app = Flask(__name__)
+
+@app.route('/XSS_param', methods =['GET'])
+def XSS():
+    param = request.args.get('someparam', 'p')
+
+    html = open('templates/xss.html').read()
+    resp = make_response(html.replace('{{ param }}', param))       # VIOLATION
+    return resp]]></example>
+    <repair><![CDATA[from flask import Flask, request, make_response, escape
+app = Flask(__name__)
+
+@app.route('/XSS_param', methods =['GET'])
+def XSS():
+    param = request.args.get('someparam', 'p')
+    param = escape(param)
+    html = open('templates/xss.html').read()
+    resp = make_response(html.replace('{{ param }}', param))       # VIOLATION
+    return resp]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/79.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:24]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.DoSRegexp" message="DoSRegexp: Potential denial-of-service attack through malicious regular expression (ReDoS)" class="com.optimyth.python.rules.security.DoSRegexp" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.1.1,CWEScope:Access-Control,ReDoS,denial-of-service]]></tags>
+    <description><![CDATA[Regular expressions are a formal language for identifying strings of text, parsing, and matching them.
+
+Most regular expressions engines are built over a non-deterministic Finite Automaton (NFA). They use backtracking and,
+while these regular expression engines can quickly confirm a positive match, confirming a negative match can take much more longer.
+
+There are lots of well-known regular expression patterns that, using selected inputs, take a time exponentially related to input size.
+
+An attacker with total or partial control over a regular expression may carry out a denial-of-service (DoS) attack.
+In certain server-side frameworks like Node.js, the event loop could be blocked, and the app will be unresponsive.
+
+The rule checks whether (1) the regular expression is build using untrusted input (in that case, an attacker may
+inject a malicious pattern and force a DoS condition when applied to crafted strings), or (2) the coded regular expression
+contains a structure that may lead to catastrophic backtracking and a DoS condition.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent denial of service attacks due to regular expressions.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import re
+
+emailExpression = "/^(?=[A-Z])[A-Z0-9_\-\.]+@([A-Z0-9_\-]+\.)+[A-Z]{2,4}$/i";
+m = re.search(emailExpression, 'abcdef') # VIOLATION, evil pattern
+m.group(0)
+
+user_input = input()
+m2 = re.search(user_input, 'abcdef') # VIOLATION
+m2.group(0)]]></example>
+    <repair><![CDATA[// Rewrite pattern to avoid dangerous backtracking: possessive quantifiers, atomic groups and lookahead
+// instead of nested groups with greedy quantifiers.
+
+// Dangerous ([A-Z0-9_\-]+\.)+ could be replaced with ([A-Z0-9_\-]+\.)++ (possessive quantifier, no backtracking).
+// A possesive quantifier like a++ could be replaced by atomic group (?>a+), and atomic group (?>a+) could be emulated
+// with lookahead + backreference (?=(a+))\1.
+// Python regex engine does not support possessive quantifiers nor atomic groups, but it does support lookahead
+// and backreferences. Such substitution was applied here.
+
+import re
+
+emailExpression = "/^(?=[A-Z])[A-Z0-9_\-\.]+@(?=(([A-Z0-9_\-]+\.)+))\1[A-Z]{2,4}$/i";
+m = re.search(emailExpression, 'abcdef') # OK
+m.group(0)
+
+user_input = input()
+valid_values = {"admin"}
+if not user_input in valid_values:
+  pass
+
+m2 = re.search(valid_values.get(user_input), 'abcdef') # OK
+m2.group(0)]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/400.html,https://snyk.io/blog/redos-and-catastrophic-backtracking/,https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS,http://www.regular-expressions.info/catastrophic.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:400,CWETOP25:2021:27,OWASP:2021:A3]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.FormatStringInjectionRule" message="FormatStringInjectionRule: Exclude unsanitized user input from format strings" class="com.optimyth.python.rules.security.FormatStringInjectionRule" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.4.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When the format string is constructed with untrusted input, an attacker may produce unexpected application behaviour.
+It may cause an exception (which, if not catched, may lead to a denial-of-service condition), or information leak.
+
+Consequently, unsanitized input from untrusted source should never be incorporated into format strings.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid denial of service.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[tainted_input = input()
+'%s %s' % (tainted_input, 'two')    # VIOLATION
+'{} {}'.format(tainted_input, 'two')    # VIOLATION]]></example>
+    <repair><![CDATA[import re
+
+input = input()
+
+pattern = re.compile("valid_input_0|valid_input_1|valid_input_3")
+if pattern.fullmatch(input):  # NEUTRALIZATION
+    '%s %s' % (input, 'two')
+    '{} {}'.format(input, 'two')]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/134.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:134,CWETOP25:2011:23,OWASP:2004:A5,PCI-DSS:6.5.1,WASC:10]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input, hardcoded_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.HardcodedAuthData" message="HardcodedAuthData: Use of Hard-coded Credentials" class="com.optimyth.python.rules.security.HardcodedAuthData" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.4,ASVS-v4.0.2:3.5.2,ASVS-v4.0.2:6.4.1,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When a Python program requires authorization credentials to recover data from an API or 
+other REST service it should never be harcoded into the program because a malicious attacker might gain access to them,
+leading to unwanted application data access, impersonation or even unauthorized code or commands execution.
+ 
+This situation can get worsen when the program is sent to a version program system.
+ 
+This rule has a customizable property, authPattern, which can be used to customize the authorization data being reported.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping safe authorization credentials improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[OAUTH_SECRET = 'klpifg9787ijrofds890s8fopkopADOPJopi98iOPFKL9890jkfD'		# VIOLATION]]></example>
+    <repair><![CDATA[import os
+OAUTH_SECRET = os.environ['OAUTH_SECRET']]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/798.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:798,CWETOP25:2021:16,OWASP:2021:A7]]></security>
+    </normatives>
+    <properties>
+      <property name="authPattern" descname="Pattern used to recognize hardcoded authorization credentials." value="^(OAUTH_SECRET|api_key|CONSUMER_SECRET|OAUTH_TOKEN)$"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.HardcodedCredential" message="HardcodedCredential: Empty or hardcoded passwords may compromise system security in a way that cannot be easily remedied" class="com.optimyth.python.rules.security.HardcodedCredential" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.4,ASVS-v4.0.2:3.5.2,ASVS-v4.0.2:6.4.1,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[It is never a good idea to hardcode authentication credentials, like usernames / passwords.
+
+Not only does hardcoding credentials allow all of the project's developers to view that credential, it also makes fixing any
+issue with compromised accounts extremely difficult. Once the code is in production, the credentials cannot be changed
+without patching the software. If the account protected by the password is compromised, the owners of the system will be forced
+to choose between security and availability.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credential leakage, improving security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import mysql.connector
+cnx = mysql.connector.connect(
+  user='joe', # VIOLATION
+  password='P4ssw0rt', # VIOLATION
+  database='test'
+)]]></example>
+    <repair><![CDATA[...
+# For this particular case, an external file holds the database credentials
+cnx = mysql.connector.connect(option_files='/etc/mysql/connectors.cnf')]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/798.html,https://www.kiuwan.com/docs/display/K5/Avoid+hard-coded+or+in-comment+passwords+in+code,http://cwe.mitre.org/data/definitions/259.html,http://projects.webappsec.org/Insufficient-Authentication]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:259,CWE:798,CWETOP25:2021:16,OWASP:2021:A7,PCI-DSS:6.5.8,WASC:01]]></security>
+    </normatives>
+    <properties>
+      <property name="passwordPattern" descname="Pattern to use. If blank, the default pattern is used." value=""/>
+      <property name="usernamePattern" descname="Regular expression for matching field names containing user ids." value=".*(user|username).*|(^|.*_)id(_.*|$)"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.HardcodedCryptoKey" message="HardcodedCryptoKey: Hardcoded cryptographic keys" class="com.optimyth.python.rules.security.HardcodedCryptoKey" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,crypto,essential]]></tags>
+    <description><![CDATA[Never hard-code cryptographic keys (or passwords used to generate them) in your program.
+
+Crypto keys are used for encryption/decryption, for generation of message authentication codes (MAC), during generation
+of password-based encryption keys (the password is the "crypto key" that generates key material for the cipher), and other usages.
+Source code is the worst place for key storage, as any change in keys needs recompilation, and it is easy to reverse-engineer
+an application binary to learn any keys or secrets that may be embedded in it.
+
+Some data used in cryptographic operations (like initial vector for block ciphers, salt for password hashes, etc.)
+are not "private", and it is recommended to generate a good random instance at the origin, and add it to the message
+in plaintext, so the destination may use it. The security depends on properly protecting the "secret" thing
+(private key in a public/private keypair, encryption key in a symmetric cipher, key in an HMAC, etc.).
+
+Long-term cryptographic keys (in contrast with ephemeral ones), are better stored in a safe key storage.
+Private keys in a public/private keypair should NEVER be unprotected (in raw form) and they should be stored in an even
+safer key storage (the impact for a compromise of a private key is typically huge and brutal).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Encrypt data safely.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from simplecrypt import encrypt, decrypt
+
+ciphertext = encrypt('lol', 'my secret message')    # VIOLATION]]></example>
+    <repair><![CDATA[from simplecrypt import encrypt, decrypt
+
+ciphertext = encrypt(getPassword(), 'my secret message')    # OK]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/321.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:321,OWASP-M:2016:M5,OWASP:2021:A2,PCI-DSS:6.3.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.HardcodedIp" message="HardcodedIp: Do not write IP address in source code" class="com.optimyth.python.rules.security.HardcodedIp" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality,infoleak]]></tags>
+    <description><![CDATA[Hardcoding an IP address can create a potential security breach if it is discovered by a
+malicious attacker who successfully decompiles the code.
+
+Also maintainability and portability is deteriorated because the IP address must be directly modified into the code.
+
+The customizable parameter ipPattern contains the pattern used to identify the hardcoded IP.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid potential security breaches.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[ip = '192.168.13.96' # VIOLATION]]></example>
+    <repair><![CDATA[Avoid hardcoding IP addresses.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/200.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:200,CWETOP25:2021:20]]></security>
+    </normatives>
+    <properties>
+      <property name="ipPattern" descname="Pattern used to recognize harcoded IP addresses." value="(.*(^|\s|\\|//)(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\s|:|$).*|^(\p{XDigit}{1,4}(?:\:\p{XDigit}{1,4}){3,7}))"/>
+      <property name="strictMode" descname="When enabled only fully matched strings will be reported." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.HardcodedSalt" message="HardcodedSalt: Use of hardcoded salt" class="com.optimyth.python.rules.security.HardcodedSalt" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[The software uses a one-way cryptographic hash against an input that should not be reversible, such as a password,
+but the software uses a predictable salt as part of the input.
+
+A hardcoded, fixed salt makes easier for attackers to pre-compute a dictionary of common passwords and their hash values,
+effectively disabling the protection that an unpredictable salt would provide.
+
+The rule will report any usage of a hash function that expects a salt, when the salt is hardcoded.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid compromising hashed values.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import uuid
+import hashlib
+
+def hash_password(password):
+    # uuid is used to generate a random number
+    salt = 'hardcoded_salt'
+    return hashlib.sha256(salt.encode() + password.encode()).hexdigest()  # VIOLATION]]></example>
+    <repair><![CDATA[import uuid
+import hashlib
+
+def hash_password(password):
+    # uuid is used to generate a random number
+    salt = uuid.uuid4().hex  # FIXED
+    return hashlib.sha256(salt.encode() + password.encode()).hexdigest()]]></repair>
+    <reference><![CDATA[https://docs.python.org/2/library/hashlib.html,http://cwe.mitre.org/data/definitions/760.html,https://docs.python.org/3/library/hashlib.html,https://www.pythoncentral.io/hashing-strings-with-python/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:760,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.HeaderManipulation" message="HeaderManipulation: Avoid including unvalidated data in HTTP response header or in Cookies" class="com.optimyth.python.rules.security.HeaderManipulation" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Including unvalidated data in Cookies can lead to HTTP Response header manipulation and
+enables:
+  - cache-poisoning
+  - cross-site scripting
+  - cross-user defacement
+  - page hijacking
+  - cookie manipulation
+  - open redirect
+
+Header Manipulation vulnerabilities occur when:
+  - Data enters a web application through an untrusted source, most frequently an HTTP request.
+  - The data is included in an HTTP response header sent to a web user without being validated.
+
+Using this vulnerability, an attacker can pass malicious data to a vulnerable application and the application can
+include the data into an HTTP response header.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Performing the input data validation improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from django.http import HttpResponse
+from rest_framework.decorators import api_view
+
+@api_view()
+def test(request):
+    location = request.get_header('some_location')
+
+    response = HttpResponse()
+    response._headers["location"] =  location       # VIOLATION]]></example>
+    <repair><![CDATA[@api_view()
+def test2(request):
+		location = request.get_header('some_location')
+
+		response = HttpResponse()
+
+		sanitizedField = getSanitizedLocation (location)       # neutralization
+
+		response._headers["location"] = sanitizedField
+
+def getSanitizedLocation(location):
+    if (location in valid_locations): return location
+    else: return ""]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/113.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:113,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:25]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.HttpParameterPollutionRule" message="HttpParameterPollutionRule: HTTP parameter pollution (HPP)" class="com.optimyth.python.rules.security.HttpParameterPollutionRule" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.1,CWEScope:Integrity,http-parameter-pollution]]></tags>
+    <description><![CDATA[Concatenating untrusted input into path, query string, or parameters for HTTP message (in
+the URL or in the request body) may allow an attacker to override/add unexpected request parameters. Attacker may change the intended
+HTTP request semantics, and may give him/her access to unauthorized data or bypass web application
+firewall validations.
+
+Note: Do not confuse HPP with Server-Side Request Forgery (SSRF), where the attacker has control over the
+full request URL, including host and port. For HPP attack, attacker has control over other parts like the query string
+part of the URL. Remember the format of an HTTP URL: scheme://user:password@host:port/path?query#fragment
+where query is typically param=value&param2=value. HPP is about attackers controlling path, query or fragment,
+while SSRF means controlling scheme, user, password, host or port.
+
+Like other injection issues, with HPP attackers play with "&" to inject additional parameter (similar to the quote
+in SQL injection), "../" to change the path, ";" (to add matrix parameters to URL at different path segments), or "#"
+to remove ending URL characters (like "--" comment delimiter in SQL injection).
+
+Controlling the path typically changes the semantics of the action represented by the HTTP resource.
+Some REST services use request parameter like _method for selecting the HTTP method, which may be subverted by an HPP attack
+(an HTTP header manipulation flaw could also be leveraged with X-HTTP-Method-Override or similar headers in certain frameworks).
+
+For example, imagine a web application that calls to a remote home-banking REST API. The webapp emits
+a (GET) url https://mybank.com/show-balance/account/X/monetaryUnit?date=now to show the balance for the user account X,
+where X is taken from a trusted source, but where monetaryUnit is taken from a cookie, and concatenated without
+any validation or encoding into the URL. An attacker could pass a Cookie request header set to "../../../transfer/X/to/Y?_method=POST#",
+so the vulnerable web application will create https://mybank.com/show-balance/account/X/../../../transfer/X/to/Y?_method=POST#?date=now
+which is equivalent to a POST https://mybank.com/transfer/X/to/Y.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Performing input data validation improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from django.http import HttpResponse
+
+def detail(request):
+    response = HttpResponse("")
+
+    user_input = request.COOKIES.get('my_secret_cookie')
+    r = requests.get('https://my-site?user=' + user_input)    # VIOLATION
+
+    response.set_cookie('my_cookie', r)
+    return response]]></example>
+    <repair><![CDATA[from django.http import HttpResponse
+
+def detail2(request):
+    response = HttpResponse("")
+
+    user_input = request.COOKIES.get('my_secret_cookie')
+    sanitizedField = getSanitizedUserName(user_input)   # neutralization
+    r = requests.get('https://my-site?user=' + sanitizedField)
+
+    response.set_cookie('my_cookie', r)
+    return response
+
+def getSanitizedUserName(userName):
+    if (userName in valid_users): return userName
+    else: return ""]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/235.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:235,OWASP:2021:A4,PCI-DSS:6.5.6,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.InformationExposureThroughDebugLog" message="InformationExposureThroughDebugLog: Avoid exposing sensitive information through log" class="com.optimyth.python.rules.security.InformationExposureThroughDebugLog" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:7.1.1,ASVS-v4.0.2:7.1.2,ASVS-v4.0.2:8.3.5,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Logs can be very helpful at development stages but they should be used on later stages
+because they can show rewarding information.
+
+When a log shows sensitive information, it can create a security leak, making useless any other system protection
+mechanisms. Also sensible data can have many legal implications due to the established limitations about personal
+information storage.
+
+This rule reports violation when the log shows information that could be considered sensitive.]]></description>
+    <priority>4</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoiding exposing sensitive data improves security because it could provide rewarding information to a malicious attacker.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[print passwd      # VIOLATION]]></example>
+    <repair><![CDATA[# Avoid exposing sensitive information through log]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/532.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:532,CWETOP25:2021:39]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.InformationExposureThroughErrorMessage" message="InformationExposureThroughErrorMessage: Avoid sensitive information exposure through error messages" class="com.optimyth.python.rules.security.InformationExposureThroughErrorMessage" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.1,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[When an error message is generated, care should be taken to ensure that it does not contain
+sensitive information about the environment, users or any other information that may be considered sensitive.
+
+Such information may be valuable itself or may be useful for further attacks with a higher impact.
+
+Attention should be paid to information explicitly included into error messages, and also to certain functions
+that may produce an error that unexpectedly shows sensitive information.
+
+Rule shows violation when some sensitive error information, or with excessive technical detail, is shown to the application end-user.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid sensitive information leakage.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[try:
+  raise Exception('spam', 'eggs')
+
+except Exception as inst:
+  print(type(inst))    # VIOLATION
+  x, y = inst.args
+  print('x =', x)     # VIOLATION
+  traceback.print_stack()   # VIOLATION]]></example>
+    <repair><![CDATA[try:
+  raise Exception('spam', 'eggs')
+
+except Exception as inst:
+  print('Error here :boom:')]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/w/page/13246936/Information%20Leakage,https://cwe.mitre.org/data/definitions/209.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:209,OWASP:2021:A4,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.InsecureRandomness" message="InsecureRandomness: Standard pseudo-random number generators cannot withstand cryptographic attacks" class="com.optimyth.python.rules.security.InsecureRandomness" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.3.1,ASVS-v4.0.2:2.6.2,ASVS-v4.0.2:2.9.2,ASVS-v4.0.2:6.3.1,ASVS-v4.0.2:6.3.2,ASVS-v4.0.2:6.3.3,CWEScope:Access-Control,CWEScope:Confidentiality,crypto,prng]]></tags>
+    <description><![CDATA[Insecure randomness errors occur when a function that can produce predictable values is used as a source of randomness
+in security-sensitive context.
+
+Computers are deterministic machines, and as such are unable to produce true randomness. Pseudo-Random Number Generators
+(PRNGs) approximate randomness algorithmically, starting with a seed from which subsequent values are calculated.
+
+There are two types of PRNGs: statistical and cryptographic. Statistical PRNGs provide useful statistical properties,
+but their output is highly predictable and forms an easy to reproduce numeric stream that is unsuitable for use in cases
+where security depends on generated values being unpredictable. Cryptographic PRNGs address this problem by generating
+output that is more difficult to predict. For a value to be cryptographically secure, it must be impossible or highly
+improbable for an attacker to distinguish between it and a truly random value. In general, if a PRNG algorithm is not
+advertised as being cryptographically secure, then it is probably a statistical PRNG and should not be used in
+security-sensitive contexts, where its use can lead to serious vulnerabilities such as easy-to-guess temporary passwords,
+predictable cryptographic keys, session hijacking, and DNS spoofing.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Using non predictable keys improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[# The following code uses a statistical PRNG to create a URL for a receipt
+# that remains active for some period of time after a purchase.
+import random, urllib.parse
+
+def getTicketUrl(baseUrl, purchaseId):
+  rand = random.randint(100000, 999999) # VIOLATION
+  return urlib.parse.urljoin(baseUrl, purchaseId + "_" + rand + ".html")
+
+# Because Python's random is a statistical PRNG, an attacker may guess the strings it generates.
+# Although the design of the receipt system is also flawed, it would be more secure with a PRNG
+# with unpredictable receipt identifiers, such as a cryptographic PRNG.]]></example>
+    <repair><![CDATA[import random, urllib.parse
+
+def getTicketUrl(baseUrl, purchaseId):
+  rng = random.SystemRandom()
+  rand = rng.randint(100000, 999999) # FIXED
+  return urlib.parse.urljoin(baseUrl, purchaseId + "_" + str(rand) + ".html")]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/338.html,http://cwe.mitre.org/data/definitions/330.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:330,CWE:338,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="pattern" descname="Regular expression for detecting when a non-cryptographic PRNG is used in a security context.
+When blank, any non-cryptographic PRNG usage is reported as a rule violation." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.InsecureTransport" message="InsecureTransport: Insecure transport" class="com.optimyth.python.rules.security.InsecureTransport" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[An insecure transport is used in a request for a remote resource.
+
+In Python software, this rule requires that all requests for a remote HTTP resource are performed
+on a secure transport (SSL/TLS).
+
+Request content over an insecure transport is cleartext, and any sensitive information it contains may be eavesdropped.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import urllib.request
+urllib.request.urlopen('http://www.python.org/')        # VIOLATION]]></example>
+    <repair><![CDATA[import httplib
+c = httplib.HTTPSConnection('http://www.python.org/')   # OK]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP:2021:A4,PCI-DSS:6.5.4,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="checkFtpConn" descname="When true then insecure FTP connections are checked too." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.InsufficientKeySizeRule" message="InsufficientKeySizeRule: Weak cryptography, insufficient key length" class="com.optimyth.python.rules.security.InsufficientKeySizeRule" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.6.1,ASVS-v4.0.2:1.6.2,ASVS-v4.0.2:1.6.3,ASVS-v4.0.2:1.6.4,ASVS-v4.0.2:2.6.3,ASVS-v4.0.2:2.7.6,ASVS-v4.0.2:2.8.2,ASVS-v4.0.2:2.8.3,ASVS-v4.0.2:2.9.1,ASVS-v4.0.2:6.2.1,ASVS-v4.0.2:6.2.3,ASVS-v4.0.2:6.2.4,ASVS-v4.0.2:6.2.5,ASVS-v4.0.2:6.2.6,ASVS-v4.0.2:6.2.7,ASVS-v4.0.2:6.4.2,ASVS-v4.0.2:9.1.2,ASVS-v4.0.2:9.1.3,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[A robust cryptographic algorithm (like RSA or AES) with a small key length could be vulnerable
+to brute-force type attacks.
+
+For symmetric ciphers, AES-CBC (FIPS 197) is the most often recommended algorithm nowadays, with a block size of at least
+64 bits (128 bits for the better). Recommended minimum key length for AES is 128 bits for most usages, but for long-range
+security, 192 bits or even 256 bits are often recommended.
+
+DES and DESede (or "triple-DES") are, nowadays, not robust enough for most applications. Many algorithms used in the past,
+like Blowfish or RC2, are now deemed insecure.
+
+For asymmetric cryptography ("public key"), the algorithm most often used is RSA. Most experts consider 2048 as the
+most adequate key length for common needs, as its usage in digital signature and other applications demand cryptographic
+robustness for a long period of time. Experts now consider 1024 bits for RSA keys (modulus) not enough secure.
+
+Algorithms based on elliptic curves cryptography (like EC-DSA) typically require smaller key sizes, around 200 bits.
+
+See http://www.keylength.com for an interactive site showing current recommendations in cryptographic algorithms,
+key length and other issues to take into account.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Crypto
+from Crypto.PublicKey import RSA
+from Crypto import Random
+import ast
+
+random_generator = Random.new().read
+key = RSA.generate(1024, random_generator) # VIOLATION]]></example>
+    <repair><![CDATA[import Crypto
+from Crypto.PublicKey import RSA
+from Crypto import Random
+import ast
+
+random_generator = Random.new().read
+
+key = RSA.generate(2048, random_generator) # OK]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/320.html,http://cwe.mitre.org/data/definitions/326.html,http://cwe.mitre.org/data/definitions/310.html,http://www.keylength.com/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:310,CWE:320,CWE:326,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="minKeySize" descname="Comma-separated list of minimum key size per algorithms" value="RSA/2048, DSA/2048, EC/256, AES/128, DiffieHellman/2048"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.InsufficientSessionExpirationRule" message="InsufficientSessionExpirationRule: Checks that session expiration interval is positive and does not exceed a limit" class="com.optimyth.python.rules.security.InsufficientSessionExpirationRule" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.8.1,ASVS-v4.0.2:2.8.6,ASVS-v4.0.2:3.3.1,ASVS-v4.0.2:3.3.2,ASVS-v4.0.2:3.3.3,ASVS-v4.0.2:3.3.4,ASVS-v4.0.2:3.6.1,ASVS-v4.0.2:3.6.2,CWEScope:Access-Control,Framework:Django]]></tags>
+    <description><![CDATA[Checks that when setting in code a session expiration interval, interval is not negative or zero (no expiration) and
+does not exceed a maximum interval.
+
+If a negative interval is set, session never expires. If exceeds the maxExpiration parameter, session lives too much
+time and it is considered a security issue.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Controlling session expiration interval improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[[ Django ]
+from django.conf import settings
+
+class WebMiddleware(object):
+    def process_request(self, request):
+        request.session.set_expiry(10 * 365 * 24 * 60 * 60) # VIOLATION ten years
+
+[ Flask ]
+import datetime
+import flask
+import flask_login
+
+@app.before_request
+def before_request():
+    flask.session.permanent = True
+    app.permanent_session_lifetime = datetime.timedelta(days=2)   # VIOLATION
+    flask.session.modified = True
+    flask.g.user = flask_login.current_user]]></example>
+    <repair><![CDATA[[ Django ]
+from django.conf import settings
+
+class WebMiddleware(object):
+    def process_request(self, request):
+        request.session.set_expiry(7200) # Ok
+
+[ Flask ]
+import datetime
+import flask
+import flask_login
+
+@app.before_request
+def before_request():
+    flask.session.permanent = True
+    app.permanent_session_lifetime = datetime.timedelta(minutes=20)   # Ok
+    flask.session.modified = True
+    flask.g.user = flask_login.current_user]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/613.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:613,OWASP:2021:A7]]></security>
+    </normatives>
+    <properties>
+      <property name="maxExpiration" descname="Maximum time expiration allowed (seconds)." value="7200"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.JSONInjection" message="JSONInjection: Avoid using non-neutralized user-controlled input into JSON entities - JSON Injection" class="com.optimyth.python.rules.security.JSONInjection" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.6,ASVS-v4.0.2:13.3.2,ASVS-v4.0.2:3.5.3,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Unvalidated untrusted input is concatenated to a JSON stream, which is sent as request to a potentially service.
+This allows an attacker to inject tailored content that change the semantics of the original JSON message.
+
+Depending on how the JSON-formatted data is later used, the attacker could execute unexpected dynamic code, or
+escape from authentication or authorization controls. If the resulting JSON string is evaluated in JavaScript
+(JavaScript may eval a string and treat it as an array or JavaScript object), the attacker may add additional
+code (for example, an attack payload like "'}; while(1); //" that could produce a denial-of-service condition.
+
+Note: Do not confuse this issue with JSON (or JavaScript) hijacking, which is a browser-side vulnerability
+where an attacker can steal sensitive information sent as JSON to victim's browser.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid JSON Injection attacks]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import json
+
+from django.shortcuts import render, render_to_response, redirect
+from django.http import HttpResponse
+
+
+def manage_tasks(request):
+
+    json_file = request.POST.get("file.json")
+    json.load(json_file)    # VIOLATION]]></example>
+    <repair><![CDATA[import json
+
+from django.shortcuts import render, render_to_response, redirect
+from django.http import HttpResponse
+
+
+def manage_tasks(request):
+
+    json_file = request.POST.get("file.json")
+    if json_file in white_list:
+      json.load(json_file)]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/345.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.LdapInjection" message="LdapInjection: Avoid non-neutralized user-controlled input in LDAP search filters" class="com.optimyth.python.rules.security.LdapInjection" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.7,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software constructs all or part of an LDAP query or search filter using externally-influenced input, but it does not neutralize or incorrectly neutralizes special elements that could modify the intended LDAP query when sent to LDAP server.]]></description>
+    <priority>1</priority>
+    <effort>4</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It improves the safety.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import ldap
+from flask import Flask, render_template, request
+
+@app.route('/vulnerable_ldap', methods=['POST'])
+def vulnerable_ldap():
+    param = request.form['uid']   # SOURCE
+    logger = utils.get_logger()
+    ldap_server = ldap_settings["server"]
+    ldap_base = ldap_settings["base"]
+    get_uid = lambda x: x[1]["uid"][0]
+    members = []
+    try:
+        conn = ldap.initialize(ldap_server)
+        g_ldap_filter = ldap_settings[group_name]
+        logger.debug("Searching members for %s: %s" % (group_name,
+                                                       g_ldap_filter))
+        items = conn.search_s(ldap_base, ldap.SCOPE_SUBTREE, attrlist=param, filterstr=g_ldap_filter) #VIOLATION
+        members = map(get_uid, items)
+    except Exception, e:
+        logger.error("Error getting custom group %s from LDAP: %s" % (group_name, e))
+    return members]]></example>
+    <repair><![CDATA[import ldap
+from flask import Flask, render_template, request
+
+@app.route('/vulnerable_ldap', methods=['POST'])
+def ldap_ok():
+    param = request.form['uid']   # SOURCE
+    logger = utils.get_logger()
+    ldap_server = ldap_settings["server"]
+    ldap_base = ldap_settings["base"]
+    get_uid = lambda x: x[1]["uid"][0]
+    members = []
+    try:
+        conn = ldap.initialize(ldap_server)
+        g_ldap_filter = ldap_settings[group_name]
+        logger.debug("Searching members for %s: %s" % (group_name,
+                                                       g_ldap_filter))
+        if valid_input(param):
+          items = conn.search_s(ldap_base, ldap.SCOPE_SUBTREE, attrlist=param, filterstr=g_ldap_filter)
+          members = map(get_uid, items)
+    except Exception, e:
+        logger.error("Error getting custom group %s from LDAP: %s" % (group_name, e))
+    return members]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/90.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:90,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:29]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.LogForging" message="LogForging: Unvalidated untrusted input in log" class="com.optimyth.python.rules.security.LogForging" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:7.3.1,ASVS-v4.0.2:7.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[When the application writes untrusted input to a log destination, using any Python logging API,
+a "log forging" attack could be launched to inject false log entries, corrupt log entries, or even exploit a
+vulnerability in an external "log viewer" application.
+
+Corrupted log entries could hinder detection for malicious activity, or implicate another party
+in the commission of a malicious act.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import logging
+
+logger = logging.getLogger()
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
+msg = input()
+logger.debug('often makes a very good meal of %s' + msg, 'visiting tourists')  # VIOLATION]]></example>
+    <repair><![CDATA[import logging
+
+logger = logging.getLogger()
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
+msg = input()
+sanitized = msg.replace('\n', '').replace('\r', '')  # NEUTRALIZATION
+
+logger.debug('often makes a very good meal of %s' + sanitized, 'visiting tourists')  # OK]]></repair>
+    <reference><![CDATA[https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html,https://cwe.mitre.org/data/definitions/117.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:117,OWASP:2021:A9,PCI-DSS:10.5.2,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.MailCommandInjection" message="MailCommandInjection: Mail Command Injection" class="com.optimyth.python.rules.security.MailCommandInjection" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Integrity]]></tags>
+    <description><![CDATA[Mail command injection vulnerabilities occur when an attacker can influence the commands sent to an SMTP mail server.
+
+If the library or the developer fails to safely encode the line breaks, an attacker controlling any of the arguments for these commands
+will be able to inject line breaks and new commands after them.
+
+As line breaks are the usual mechanism that attackers use to change the expected behaviour, this vulnerability
+is considered a special CRLF Injection attack.
+
+What the attacker may launch by exploiting a Mail Command Injection vulnerability include:
+- Generate spam (SMTP). The application acts as a "mail proxy" that attackers may use to create spam messages.
+- Abusing a trusted server to send HTML emails with malicious contents.
+- Change authentication or security options, to skip security controls in mail servers.
+
+See "MX Injection: Capturing and Exploiting Hidden Mail Servers", from Vicente Aguilera, for a full description on
+the benefits that an attacker may gain.
+
+The rule checks when vulnerable mail libraries are called with untrusted input, without validation, which might be vulnerable
+to Mail Command Injection attacks.
+
+Frameworks like Django or Flask are automatically protected against this vulnerability.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid Mail Command Injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from smtplib import SMTP
+from flask import Flask
+from flask import request
+
+app = Flask(__name__)
+
+@app.route('/send_mail')
+def send_mail(request):
+    body = request.args.get['body']
+    subject = request.args.get['subject']
+    s = smtplib.SMTP(smtp_server, smtp_tls_port)
+    s.ehlo()
+    s.starttls()
+    s.login(username, password)
+    headers = "\r\n".join(["from: jacob.admin@system.com",
+                           "subject: [Password recovery] " + subject,
+                           "to: user@system.com",
+                           "mime-version: 1.0",
+                           "content-type: text/html"])
+
+    s.sendmail("jacob@admin.com", "user@system.com", headers + "\n" + body)   # VIOLATION]]></example>
+    <repair><![CDATA[Sanitize user inputs before using them into a mail command.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/93.html,http://projects.webappsec.org/w/page/13246948/Mail%20Command%20Injection,OWASP Testing for IMAP/SMTP injection: https://www.owasp.org/index.php/Testing_for_IMAP/SMTP_Injection_(OTG-INPVAL-011)]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:93,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:30]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.MemcachedInjection" message="MemcachedInjection: Avoid non-neutralized user-controlled input to be stored into a cache" class="com.optimyth.python.rules.security.MemcachedInjection" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.2,ASVS-v4.0.2:13.3.1,ASVS-v4.0.2:5.1.3,ASVS-v4.0.2:5.1.4,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software stores external input into a cache, but software does not properly neutralize the
+input, so an attacker might store harmful data into the cache.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoids cache harmful data injection.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import pylibmc
+
+mc = pylibmc.Client(['cache'])
+user_input = readline()
+success = mc.set(str(user_input), 1)        # VIOLATION]]></example>
+    <repair><![CDATA[import pylibmc
+
+mc = pylibmc.Client(['cache'])
+user_input = readline()
+success = mc.set(str(filterInput(user_input)), 1)]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/20.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:20,CWETOP25:2021:4,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.NonRandomIVWithCBCMode" message="NonRandomIVWithCBCMode: Not using a Random IV with CBC Mode" class="com.optimyth.python.rules.security.NonRandomIVWithCBCMode" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity,crypto,essential]]></tags>
+    <description><![CDATA[Not using a random initialization Vector (IV) with Cipher Block Chaining (CBC) Mode causes
+encryption to be susceptible to dictionary attacks.
+
+CBC mode with predictable IV allows a well-known chosen plaintext attack, and is definitely unsecure.
+
+Note: For other feedback modes, NIST recommends unpredictable IVs for CFB, and unique (non-repeating, like an increasing
+counter or message number) IVs for OFB, CTR or PCBC, and for GCM plus other authenticated encryption modes, but certainly
+the IV should not be eligible by an attacker.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Use safe encryption modes.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from base64 import b64decode
+from base64 import b64encode
+from Crypto import Random
+from Crypto.Cipher import AES
+
+class MyCipher:
+    def encrypt(self, raw):
+        raw = pad(raw)
+        iv = []
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)    # VIOLATION, not random iv
+        return b64encode(iv + cipher.encrypt(raw))]]></example>
+    <repair><![CDATA[from Crypto import Random
+from Crypto.Cipher import AES
+
+class MyCipher:
+    def encrypt(self, raw):
+        raw = pad(raw)
+        iv = Random.new().read(AES.block_size)
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)    # OK
+        return b64encode(iv + cipher.encrypt(raw))]]></repair>
+    <reference><![CDATA[http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf,https://crypto.stackexchange.com/questions/3515/is-using-a-predictable-iv-with-cfb-mode-safe-or-not]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:329,OWASP:2021:A2,PCI-DSS:3.6.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.NoSQLInjection" message="NoSQLInjection: Improper neutralization of special elements in data query logic (NoSQL injection)" class="com.optimyth.python.rules.security.NoSQLInjection" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,NoSQL]]></tags>
+    <description><![CDATA[The application generates a query intended to access or manipulate data in a data store such as a NoSQL database,
+but it does not neutralize or incorrectly neutralizes special elements that can modify the intended logic of the query.
+
+Depending on the capabilities of the query language, an attacker could inject additional login into the query to:
+- Modify the intended selection criteria, thus changing which data entities (e.g., records) are returned, modified, or otherwise manipulated.
+- Append additional commands to the query.
+- Return more or fewer entities than intended.
+- Cause entities to be sorted in an unexpected way.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent NoSQL injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from flask import Flask
+from flask import request
+import pymongo
+
+db = pymongo.MongoClient("localhost", 27017).test
+app = Flask(__name__)
+app.secret_key = "secret"
+
+@app.route("/login/", methods=['GET', 'POST'])
+def login(request):
+    if request.method == "POST":
+        username = request.form['username']
+        password = request.form['password']
+
+        # VIOLATION
+        check = db.members.find_one({"username" : username, "password" : password})
+
+        if check:
+            session['_id'] = str(check)
+            return redirect("/?name={}".format)
+        else:
+            return "Invalid Login"
+    return "<h1>Login</h1>" + form
+
+app.run(debug=True)]]></example>
+    <repair><![CDATA[# Validate external inputs passed as NoSQL filters to ensure that the query semantics does not change]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/943.html,https://technopy.com/mongodb-injection-how-to-hack-mongodb-html/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:943,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.OpenRedirect" message="OpenRedirect: Do not allow to control the URL used in a redirect by an unvalidated input" class="com.optimyth.python.rules.security.OpenRedirect" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.5,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Allowing unvalidated input to control the URL used in a redirect can aid phishing attacks.
+
+Through open redirects, malicious users may mislead other users to visit a URL to a trusted site and redirect them to a
+malicious site.
+
+By encoding the URL, a malicious user can make it difficult to realize the target of malicious redirect.
+
+The rule detects a path in code between an input statement (source) and a redirect statement (sink), to an URL depending
+on non neutralized input.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Limits phishing attacks, and unintended client-side redirections, improving security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import os
+from flask import Flask, redirect, Response
+
+app = Flask(__name__)
+
+@app.route('/<username>')
+def hello(username):
+
+    return redirect("http://www.example.com/" + username, code=302)     # VIOLATION
+
+@app.route('/<url>')
+def hello(url):
+
+    resp = Response()
+
+    h = resp.headers
+    h["location"] = url     # VIOLATION]]></example>
+    <repair><![CDATA[import os
+from flask import Flask, redirect, Response
+
+app = Flask(__name__)
+
+@app.route('/<username>')
+def hello(username):
+		sanitizedField = getSanitizedLocation (username)    # neutralization
+
+		return redirect("http://www.example.com/" + sanitizedField, code=302)
+
+@app.route('/<url>')
+def hello(url):
+
+		resp = Response()
+		sanitizedField = getSanitizedLocation (url)    # neutralization
+
+		h = resp.headers
+		h["location"] = getSanitizedLocation(sanitizedField)
+
+
+def getSanitizedLocation(location):
+    if (location in valid_locations): return location
+    else: return "index"]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/601.html,http://projects.webappsec.org/w/page/13246981/URL%20Redirector%20Abuse]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:601,CWETOP25:2021:37,OWASP:2013:A10,PCI-DSS:6.5.1,WASC:38]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.PasswordInComments" message="PasswordInComments: Storing passwords or password details in plaintext anywhere in the system or system code can compromise system security" class="com.optimyth.python.rules.security.PasswordInComments" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[It is never a good idea to hardcode a password. Storing password details within comments
+is equivalent to hardcoding passwords.
+
+Not only does it allow all of the project's developers to view the password, it also makes fixing the problem extremely
+difficult.
+
+Once the code is in production, the password is now leaked to the outside world and cannot be protected or changed
+without patching the software.
+
+If the account protected by the password is compromised, the owners of the system will be forced to choose between
+security and availability.
+
+The rule checks if there are comments in the code that contain expressions that match with the pattern, so it can lead
+to several false positives and/or false negatives.]]></description>
+    <priority>4</priority>
+    <effort>1</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Ensuring that password is kept in secret improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[# The following comment specifies the default password to connect to a database
+# Default username for database connection is "scott"
+# Default password for database connection is "tiger"
+# Anyone who has access to source code will have access to the password.
+# A devious employee with access to this information can use it to break into the system.]]></example>
+    <repair><![CDATA[# Do not code passwords in source code comments.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/615.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:615,OWASP:2021:A7,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="passwordPattern" descname="Pattern to check for hardcoded passwords in comments. If blank, the default pattern will be used." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.PasswordInConfigurationFile" message="PasswordInConfigurationFile: Use of credentials into configuration file" class="com.optimyth.python.rules.security.PasswordInConfigurationFile" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Passwords written into a configuration file which is distributed along with the code are
+visible to any person reading the source code. If the resource protected by such hardcoded credentials is important, this
+may compromise system security.
+
+A better programming practice would be storing these credential into an environment variable.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credential leakage.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[[ conf file ]
+user: admin
+passwd: admin]]></example>
+    <repair><![CDATA[Use an environment variable to store credentials.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/260.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:260,OWASP:2021:A5]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.PasswordInRedirectRule" message="PasswordInRedirectRule: Password Management - Password in Redirect" class="com.optimyth.python.rules.security.PasswordInRedirectRule" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.3,ASVS-v4.0.2:3.1.1,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Sending a password as part of an HTTP redirect will cause the password to be displayed,
+logged, or stored in a cache.
+
+An HTTP redirect causes the user's web browser to issue an HTTP GET request. By convention, the parameters associated
+with an HTTP GET are not treated as sensitive data,  so web servers log them, proxies cache them, and web browsers do
+not make an effort to conceal them.
+
+Sending a password or other sensitive data as part of a redirect will likely cause the data to be mishandled and
+potentially revealed to an attacker.
+
+The rule checks if there are parts of the redirect chain that contain expressions that match with the pattern, so it can
+lead to several false positives and/or false negatives.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoids sensitive data leakage]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from django.shortcuts import redirect
+from rest_framework.decorators import api_view
+from django.http import HttpResponseRedirect, HttpResponse
+
+user = "user"
+password = "password"
+
+@api_view()
+def my_view(request):
+    url = request.GET['URL']
+
+    return redirect(url + "?user=" + user + "&pass=" + password)     # VIOLATION]]></example>
+    <repair><![CDATA[Do not send passwords as part of an HTTP redirect.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/359.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:598,OWASP:2021:A7,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.PathTraversal" message="PathTraversal: Avoid non-neutralized user-controlled input to be part of a pathname (file or directory) used in I/O operations" class="com.optimyth.python.rules.security.PathTraversal" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.1,ASVS-v4.0.2:12.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software uses external input to construct a pathname that is intended to identify a file or
+directory located underneath a restricted parent directory, but software does not properly neutralize elements within
+pathname, which may cause the pathname to resolve to a location outside the restricted directory.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[File system paths should not be controlled by user-controlled inputs.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import urllib2
+import os
+
+def sink1(req):
+    rName = req.field('reportName')
+    rFile = os.open("/usr/local/apfr/reports/" + rName)     # sink
+    os.unlink(rFile);
+
+content = urllib2.urlopen(some_url).read()
+sink1(content)      # VIOLATION]]></example>
+    <repair><![CDATA[import urllib2
+
+def sink1(req):
+    rName = req.field('reportName')
+    sanitizedField = getSanitizedPath(rName)   # neutralization
+    rFile = os.open("/usr/local/apfr/reports/" + sanitizedField)
+    os.unlink(rFile);
+
+content = urllib2.urlopen(some_url).read()
+sink1(content)      # OK
+
+def getSanitizedPath(path):
+    if (path in valid_paths): return path
+    else: return ""]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/22.html,http://cwe.mitre.org/data/definitions/73.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:22,CWE:73,CWETOP25:2021:8,OWASP:2021:A4,OWASP:2021:A5,PCI-DSS:6.5.8,WASC:33]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.PotentialInfiniteLoop" message="PotentialInfiniteLoop: Loop with Unreachable Exit Condition ('Infinite Loop')" class="com.optimyth.python.rules.security.PotentialInfiniteLoop" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Availability,essential,potential-bug]]></tags>
+    <description><![CDATA[The program contains an iteration or loop with an exit condition that cannot be reached, i.e., an infinite loop.
+Such infinite loop conditions are due typically to logical errors in the loop exit conditions and/or loop variables update,
+where the loop exit condition is never reached.
+
+An infinite loop will cause unexpected consumption of resources, such as CPU cycles or memory, and might compromise software availability.
+
+NOTE: Rule OPT.PYTHON.SECURITY.UncheckedInputInLoopCondition (CWE-606) checks when an untrusted input, not validated, might influence
+loop termination leading to a denial-of-service condition.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Control flow management</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid DDOS.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[while true:    # VIOLATION
+  doDDOS()]]></example>
+    <repair><![CDATA[while true:    # Ok
+  doSomething()
+  if condition():
+    break]]></repair>
+    <reference><![CDATA[https://blog.jooq.org/2015/01/16/infinite-loops-or-anything-that-can-possibly-go-wrong-does/,https://cwe.mitre.org/data/definitions/835.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:835,CWETOP25:2020:36]]></security>
+    </normatives>
+    <properties>
+      <property name="allowExplicitInfiniteLoops" descname="Intentional non-empty infinite loops, coded as &quot;while True:&quot;, are allowed." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.ResourceInjection" message="ResourceInjection: Improper control of resource identifiers (&quot;Resource Injection&quot;)" class="com.optimyth.python.rules.security.ResourceInjection" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software takes from an untrusted source the identifier for a system resource (like a port number),
+and allows access to a non-expected resource. Attackers may use the flaw for malicious behaviour,
+for example a port scan, change software configuration, transmit sensitive information to a third-party server,
+etc.
+
+OWASP project uses the term "Insecure Direct Object Reference" instead of "Resource Injection".
+
+The conditions for injection issues are:
+ - An attacker can specify the identifier used to access a system resource.
+ - The attacker gains a capability that would not otherwise be permitted.
+
+Note: Please note that other rules may check injection flaws for specific resources (like Path Traversal rule for filesytem resources,
+or SSRF for network addresses). This rule reports injection flaws on resource identifiers not covered by other rules.
+
+The rule OPT.PYTHON.DJANGO.InsecureDirectObjectReferences performs checks for this vulnerability specifically over Django
+source code.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from flask import Flask
+
+app = Flask(__name__)
+
+user_input = input()
+
+if __name__ == '__main__':
+    app.run(host='127.0.0.1', port=user_input)     # VIOLATION]]></example>
+    <repair><![CDATA[from flask import Flask
+
+app = Flask(__name__)
+
+valid_ports = [80, 8080]
+
+user_input = input()
+
+if user_input in valid_ports:
+  app.run(host='127.0.0.1', port=user_input)     # OK]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Resource_Injection,https://cwe.mitre.org/data/definitions/99.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:99,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.SerializationInjection" message="SerializationInjection: Deserialization of untrusted data" class="com.optimyth.python.rules.security.SerializationInjection" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.5.2,ASVS-v4.0.2:5.5.1,ASVS-v4.0.2:5.5.3,CWEScope:Availability,CWEScope:Integrity,serialization]]></tags>
+    <description><![CDATA[When application deserializes untrusted data (possibly chosen by an attacker), malformed
+data or unexpected data could be used to abuse application logic, deny service, or execute arbitrary code, when
+deserialized.
+
+The vulnerability occurs when user-supplied input is not properly sanitized before being passed to yaml.load(),
+pickle.load() or pickle.loads().
+
+Since Python allows object serialization, attackers could pass ad-hoc serialized strings to a vulnerable call, resulting
+in an arbitrary Python object(s) injection into the application scope.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid deserializing untrusted data inputs.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import os
+import cPickle
+import yaml
+
+user_input = input()
+cPickle.loads(user_input)      # VIOLATION
+
+with open(user_input) as exploit_file:
+    contents = yaml.load(exploit_file)      # VIOLATION]]></example>
+    <repair><![CDATA[import os
+import yaml
+
+user_input = input()
+
+with open(user_input) as exploit_file:
+    contents = yaml.safe_load(exploit_file)      # OK]]></repair>
+    <reference><![CDATA[http://pyyaml.org/wiki/PyYAMLDocumentation#LoadingYAML,https://docs.python.org/2/library/pickle.html,http://cwe.mitre.org/data/definitions/502.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:502,CWETOP25:2021:13,OWASP:2021:A8,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.ServerInsecureTransport" message="ServerInsecureTransport: Insecure transport in HTTP servers" class="com.optimyth.python.rules.security.ServerInsecureTransport" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[For sensitive applications, a secure transport (like TLS/SSL) provides confidentiality and integrity in communications
+with the server.
+
+The rule demands that HTTP servers use SSL/TLS transport, to ensure server-side authentication,
+confidentiality and integrity of the communications with clients.]]></description>
+    <priority>2</priority>
+    <effort>4</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from flask import Flask
+
+app = Flask(__name__)
+
+if __name__ == '__main__':
+    app.run()       # VIOLATION]]></example>
+    <repair><![CDATA[from flask import Flask
+
+from OpenSSL import SSL
+context = SSL.Context(SSL.SSLv23_METHOD)
+context.use_privatekey_file('server.key')
+context.use_certificate_file('server.crt')
+
+app = Flask(__name__)
+
+if __name__ == '__main__':
+    app.run(host='127.0.0.1', debug=True, ssl_context=context)     # OK]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP:2021:A4,PCI-DSS:6.5.4,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="onlyHttps" descname="If true, any HTTP server put to listen will be reported as violation, even when an HTTPS server is started." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.ServerSideRequestForgery" message="ServerSideRequestForgery: Creation of requests from a vulnerable server using untrusted input (server side request forgery, SSRF)" class="com.optimyth.python.rules.security.ServerSideRequestForgery" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.6.1,ASVS-v4.0.2:5.2.6,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[A server side request forgery vulnerability appears when an attacker can send requests from a vulnerable server to remote services.
+
+SSRF attacks allow accessing, through the vulnerable server, to internal systems located behind a firewall,
+that normally should not be accessible.
+
+There are two kinds of SSRF attacks:
+- Trusted SSRF: we just can send requests to a list of predefined remote services.
+- Remote SSRF: we can send requests to any remote IP and port.
+
+SSRF attacks are commonly used for port scanning and attacking systems from the internal network.
+
+This rule checks if there are connections established using untrusted input data.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent SSRF attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import socket
+import sys
+from rest_framework.decorators import api_view
+
+@api_view()
+def users(request):
+  host = request.query_params['host']
+
+  # Create a TCP/IP socket
+  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+  # Connect the socket to the port where the server is listening
+  server_address = (host, 10000)
+  print >>sys.stderr, 'connecting to %s port %s' % server_address
+  sock.connect(server_address)  # VIOLATION
+  # do something]]></example>
+    <repair><![CDATA[# Avoid using untrusted input when composing URLs to connect to external services.
+# If needed, validate (in a white-list) the target services from a closed list of allowed endpoints.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/918.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:918,CWETOP25:2021:24,OWASP:2021:A10,PCI-DSS:6.5.8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.SqlInjection" message="SqlInjection: Avoid SQL code formed with non neutralized user input (vulnerable to SQL Injection attacks)" class="com.optimyth.python.rules.security.SQLInjection" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The software constructs all or part of an SQL command using externally-controlled input, but it does not neutralize properly that input that could modify the intended SQL command when it is sent to a database interaction method.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent SQL injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import sqlite3
+from rest_framework.decorators import api_view              
+
+def customSinkFunction (query):
+    connection = sqlite3.connect("add some args here")
+
+    return connection.execute(query)    # sink
+
+@api_view()
+def customSourceFunction2 (request):
+    user_input = request.GET['query']
+
+    return user_input
+
+def fun():
+  source = customSourceFunction();
+
+  customSinkFunction(source);      # VIOLATION]]></example>
+    <repair><![CDATA[import sqlite3
+from rest_framework.decorators import api_view              
+
+def customSinkFunction (query):
+    connection = sqlite3.connect("add some args here");
+
+    return connection.execute(query)     # sink
+
+@api_view()
+def customSourceFunction2 (request):
+    user_input = request.GET['query']
+
+    return user_input
+
+def fun():
+  source=""
+  source = customSourceFunction2()
+  sanitizedQuery = source.replace("'", "''")     # neutralization
+  customSinkFunction(sanitizedQuery)     # OK]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/SQL_Injection_Prevention_Cheat_Sheet,http://cwe.mitre.org/data/definitions/89.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:89,CWETOP25:2021:6,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.StoredCrossSiteScripting" message="StoredCrossSiteScripting: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')" class="com.optimyth.python.rules.security.StoredCrossSiteScripting" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in page content. An attacker could inject browser script code that is executed in the client browser.
+The end-user is the attacked subject, and the software is the vehicle for the attack. This attack is known as Cross-Site Scripting (XSS).
+
+There are three kinds of XSS:
+* Reflected XSS: Attacker causes victim to supply malicious content to a vulnerable web application, which renders HTML content
+  embedding a malicious script executed in victim's browser.
+  A variation of this is named DOM-based XSS, where the vulnerable software does not generate content depending on user input
+  but include script code that use user-controlled input.
+
+* Persistent XSS: Attacker provides malicious content to the vulnerable application, which is stored somewhere.
+  When stored data is fetched and rendered,
+
+Note: This rule only considers the second case ("Persistent XSS").
+
+When other user access to vulnerable pages that embed without proper neutralization the attacker content,
+script code is executed in the victim's browser.
+
+The script executed in the victim's browser could perform malicious activities, like stealing active authentication tokens
+(sometimes in the form of cookies) and performing operations on a insecure webapp (on behalf of the victim) that trusts
+too much identity artifacts in browser and do not request additional authorization for operations ('Cross-Site Request Forgery attack', CSRF).
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but user browsers generally allow scripting languages
+(e.g. JavaScript) in their browsers (disabling JavaScript severely limits a web application).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XSS vulnerabilities.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import sqlite3
+from flask import Flask, request, make_response
+app = Flask(__name__)
+
+con = sqlite3.connect(":memory:")
+cur = con.cursor()
+
+def XSS1():
+    cur.execute("select ?", (AUSTRIA,))
+    row = cur.fetchone()
+
+    html = open('templates/xss.html').read()
+    resp = make_response(html.replace('{{ param }}', row))       # VIOLATION
+    return resp
+
+if __name__ == '__main__':
+    app.run(debug= True)]]></example>
+    <repair><![CDATA[import sqlite3
+from flask import Flask, request, make_response, escape
+app = Flask(__name__)
+
+con = sqlite3.connect(":memory:")
+cur = con.cursor()
+
+def XSS1():
+    cur.execute("select ?", (AUSTRIA,))
+    row = cur.fetchone()
+    row = escape(row)
+    html = open('templates/xss.html').read()
+    resp = make_response(html.replace('{{ param }}', row))
+    return resp
+
+if __name__ == '__main__':
+    app.run(debug= True)]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/79.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:24]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.TooMuchOriginsAllowedRule" message="TooMuchOriginsAllowedRule: CORS policy (Cross-origin resource sharing) too broad" class="com.optimyth.python.rules.security.TooMuchOriginsAllowedRule" technology="PYTHON" active="true">
+    <tags><![CDATA[CORS,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Too much allowed origins in HTML5 Access-Control-Allow-Origin header. 
+        
+Traditionally, web browsers enforced the Same Origin Policy (SOP) to avoid cross-domain JavaScript to access
+certain contents in web page. This policy prevents a malicious script on one page from obtaining
+access to sensitive data on another web page ("victim") with a different origin. A strict separation between content
+from unrelated sites must be maintained on the browser to prevent loss of data confidentiality or integrity.
+
+Cross-Origin Resource Sharing (CORS) relaxes the SOP. To do this, essentially two HTTP headers (Origin, emitted by client,
+and Access-Control-Allow-Origin, emitted by server). This allows, for example, to Ajax requests (XMLHttpRequest) for
+accessing content from different origin that should be forbidden by the SOP.
+
+With Access-Control-Allow-Origin header, server defines which other domains are allowed to access content in its domain
+using cross-origin requests. A too much permissive value (like '*') will allow a malicious application to communicate
+with the vulnerable application in unexpected ways, leading to different security problems.
+
+NOTE: CORS is intended to avoid data read from pages coming from other origins, and it is enforced by modern browsers.
+Remember that an attacker has full control over an HTTP request message, so do not rely on CORS Origin header for
+validating the source of a request, or for CSRF protection.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Limits read application data from content coming from hostile origins.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from django.shortcuts import redirect
+from rest_framework.decorators import api_view
+from django.http import HttpResponseRedirect, HttpResponse
+
+@api_view()
+def my_view(request):
+    resp = HttpResponse()
+    headers = resp._headers
+    headers["Access-Control-Allow-Origin"] = "*"     # VIOLATION
+
+    return resp]]></example>
+    <repair><![CDATA[Do not set a too broad CORS origins policy.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/942.html,https://w3c.github.io/webappsec-cors-for-developers,https://enable-cors.org/server_flask.html,https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:942,OWASP:2021:A5,PCI-DSS:6.5.10,WASC:15]]></security>
+    </normatives>
+    <properties>
+      <property name="disallowedOriginPattern" descname="Regular expression for CORS origins do not considered valid" value="\*|null"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.UnsafeCookie" message="UnsafeCookie: Generate server-side cookies with adequate security properties" class="com.optimyth.python.rules.security.UnsafeCookie" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:3.2.3,ASVS-v4.0.2:3.4.1,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Checks that cookies generated server-side (for example, in Node.js) have the following security properties:
+
+* Non persistent - Cookie is not stored persistently by the browser (it is hold in memory)
+* HttpOnly - Cookie is not accessible by client-side scripts (not all browsers support this)
+* Secure - Cookie is sent in HTTP/SSL communications only (more difficult to capture on the net)
+* Path - Path should not match a certain patterns that allow transmission to unintended web applications.
+* Domain - Domain should not be too wide so the cookie is sent to unintended servers.
+
+HttpOnly, for example, could mitigate some CSRF (cross-site request forgery) issues as it makes
+more difficult for the attacker to capture sensitive cookies from client-side code generated by
+exploiting an XSS vulnerability in a web application.
+
+Additionally, the name of any session cookie should be chosen to avoid providing common names that may give clues
+to the attacker about how are sessions handled in the server. For example, connect.sid is the default name
+in express-session module, and that knowledge may help attackers to mount a targeted attack.
+
+Other rules (like HeaderManipulation) check other conditions, like HTTP Splitting, that could be
+produced when the cookie value depends on user-controlled input non properly neutralized.
+
+NOTE: Not setting domain or path forces browser to send the cookie to the originator's domain and
+application path, so this is considered secure.]]></description>
+    <priority>3</priority>
+    <effort>4</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from django import http
+from django.template import RequestContext
+from django.http import HttpResponse
+from django.shortcuts import render_to_response
+
+def login(request):
+  MyLoginForm = LoginForm(request.POST)
+  if MyLoginForm.is_valid():
+    username = MyLoginForm.cleaned_data['username']
+  else:
+    MyLoginForm = LoginForm()
+
+  response = render_to_response(request, 'target.html',
+    {'username': username},
+    context_instance = RequestContext(request))
+
+  pers_info = getSensitivePersonalInfo(username)
+  persistence = 90 * 24*60*60
+  # VIOLATION, unsafe cookie
+  response.set_cookie('pers_info', pers_info, max_age = persistence, domain = '*.com', path = '/')
+  # ...]]></example>
+    <repair><![CDATA[  salt = getRandomSaltForUser(username)
+  # Fixed: secure and httponly, with same origin.
+  # Cookie is also cryptographically protected against manipulation at client side
+  response.set_signed_cookie('pers_info', pers_info, salt=salt, secure=True, httponly=True)]]></repair>
+    <reference><![CDATA[https://docs.djangoproject.com/en/1.11/topics/http/sessions/#session-security,http://cwe.mitre.org/data/definitions/200.html,https://docs.djangoproject.com/en/1.11/topics/http/sessions/#using-cookie-based-sessions]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:1004,CWE:200,CWE:539,CWE:614,CWETOP25:2021:20,PCI-DSS:6.5.3,WASC:13]]></security>
+    </normatives>
+    <properties>
+      <property name="domainPatternToAvoid" descname="Domain pattern to avoid" value="\.[^\.]+"/>
+      <property name="avoidPersistentCookies" descname="Avoid persistent cookies" value="true"/>
+      <property name="cookieNamePatternToAvoid" descname="Pattern for session cookie names to avoid" value="sessionid"/>
+      <property name="avoidUnsecureCookies" descname="Avoid unsecure cookies" value="false"/>
+      <property name="pathPatternToAvoid" descname="Path pattern to avoid" value="/"/>
+      <property name="forceHttpOnly" descname="Set HttpOnly" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.UnsafeReflection" message="UnsafeReflection: Use of Externally-Controlled Input to Select Classes or Code ('Unsafe Reflection')" class="com.optimyth.python.rules.security.UnsafeReflection" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,reflection]]></tags>
+    <description><![CDATA[The software uses external input with reflection to select which classes or code to use, but it does not prevent
+the input from selecting improper classes or code.
+
+If the application uses external inputs to determine which class to instantiate or which method to invoke, then an attacker
+could supply values to select unexpected classes or methods. If this occurs, then the attacker could execute code that
+was not intended by the developer. It may bypass authentication or access control checks, or otherwise cause unexpected behaviour.
+
+It the attacker is able to upload files in a location that appears in the classpath, or add new entries to the classpath,
+this flaw could lead to execution of arbitrary code, chosen by the attacker.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Limit potential unexpected code execution, or uncontrolled access to sensitive information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from django.shortcuts import render, render_to_response, redirect
+from django.http import HttpResponse
+
+
+def manage_tasks(request):
+
+    method_name = request.POST.get("method_name")
+    person = Person()
+    my_method = getattr(person, method_name)    # VIOLATION
+    my_method()]]></example>
+    <repair><![CDATA[# Validate externally-controlled parameters affecting targets of reflexion code]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Resource_Injection,https://cwe.mitre.org/data/definitions/470.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:470,OWASP:2021:A3,PCI-DSS:6.5.8,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.WeakCryptographicHash" message="WeakCryptographicHash: Weak cryptographic hash" class="com.optimyth.python.rules.security.WeakCryptographicHash" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,crypto,hash]]></tags>
+    <description><![CDATA[Use of weak cryptographic hash does not guarantee data integrity.
+
+A (cryptographic) hash function maps data of arbitrary size ("the message") to a bit string of a fixed size ("the digest"),
+designed to be a 'one-way' function, infeasible to invert. Ideally, a brute-force search of possible inputs to check
+for a match on the expected digest (or a 'rainbow' table of precomputed message/hash pairs) should be the unique way
+to recreate an input for a given digest.
+
+Hash functions are the "workhorses" of modern cryptography, with many usages in digital signatures, message authentication codes (MACs),
+symmetric key generation, indexing in hash tables, duplicate data detection, checksum against accidental data corruption...
+
+A hash function hash() should have resistance against certain attacks:
+* pre-image resistance: given hash value h, it should be difficult to find m such that h = hash(m).
+* second pre-image resistance: given m1, it should be difficult to find another m2 such that hash(m1) = hash(m2).
+* collision resistance ("birthday attack"): it should be difficult to find m1, m2 such that hash(m1) = hash(m2).
+* length-extension resistance: given hash(m) and len(m) but not m, by choosing a suitable m' an attacker can calculate hash(m | m')
+  (| denotes concatenation).
+
+Resources needed for brute-force attacks obviously vary exponentially with hash size in bits, while for other attacks
+could be half the bits in time or pre-image space (or much lower, if the algorithm has weaknesses).
+
+MD5 and SHA1 are often used to verify the integrity of data but last advances in cryptanalysis have discovered weaknesses
+in both algorithms. In particular, they use the Merkle-Damgard construction, which are vulnerable to length-extension attacks
+against naive MAC generation, like hash(K | M).
+
+Note: Currently, a few crypto libraries include the newly NIST standarized hash algorithm SHA-3 (Keccak),
+which is a variable-size hash function (actually, a "cryptographic sponge") under sha3-224 ... sha3-512. When available
+their usage is recommended in new code.
+
+The rule looks for usages of crypto primitives (hash or hmac) using a weak function.]]></description>
+    <priority>2</priority>
+    <effort>4</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid data integrity issues due to a poor selection of hash function.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import hashlib
+md5 = hashlib.md5() # VIOLATION
+md5 = hashlib.new('md5') # VIOLATION, md5 is unsafe
+md5.update(b'something')
+print md5.hexdigest()
+
+# when using crypto packages like pycrypto, use also a strong hash
+from Crypto.Hash import MD2
+h = MD2.new() # VIOLATION, md2 is unsafe
+h.update(b'something')
+print h.hexdigest()]]></example>
+    <repair><![CDATA[import hashlib
+sha256 = hashlib.sha256() # strong
+sha256 = hashlib.new('sha256') # strong
+sha256.update(b'something')
+print sha256.hexdigest()
+
+from Crypto.Hash import SHA256
+h = SHA256.new() # strong
+h.update(b'something')
+print h.hexdigest()]]></repair>
+    <reference><![CDATA[https://en.wikipedia.org/wiki/Hash_function_security_summary,http://cwe.mitre.org/data/definitions/328.html,http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-131Ar1.pdf,https://crackstation.net/hashing-security.htm]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:328,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:50]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="List of robust hash functions">
+        <value><![CDATA[
+sha224, sha256, sha384, sha512, sha3, sha3-224, sha3-256, sha3-384, sha3-512, keccak, ripemd128, ripemd160, rmd160, ripemd256, ripemd320, whirlpool, dss1, bcrypt, pbkdf2
+        ]]></value>
+      </property>
+      <property name="forbiddenAlgorithms" descname="List of weak hash functions">
+        <value><![CDATA[
+md2, md4, md5, sha1, gost, gost-crypto, tiger128, tiger160, tiger192, panama, haval128, snefru, adler32, crc32, crc32b, fnv132, fnv1a32, fnv164, fnv1a64, joaat, plaintext
+        ]]></value>
+      </property>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.WeakEncryptionAlgorithm" message="WeakEncryptionAlgorithm: Weak symmetric encryption algorithm" class="com.optimyth.python.rules.security.WeakEncryptionAlgorithm" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.9.3,ASVS-v4.0.2:6.2.2,ASVS-v4.0.2:8.3.7,CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,cipher,crypto]]></tags>
+    <description><![CDATA[Using a weak encryption algorithms does not guarantee the confidentiality of sensitive data.
+
+Home-grown ciphers, or standard algorithms that were proven flawed or weak, compromise the confidentiality of data.
+
+Encryption algorithms like DES, Triple-DES and RC2 are nowadays too weak for cryptographic usage,
+in particular for ensuring information confidentiality.
+
+DES is currently broken, as an small key size renders it unsafe against brute-force attacks.
+
+RC2 is currently broken, as a related-key attack, where an attacker finds mathematical relationships
+between key values, renders it unsafe as well.
+
+Triple-DES (or 3DES) is weak, and should be migrated to a more robust standard cipher.
+
+The AES standard algorithm, with an adequate key length and proper setup (initial vector, mode, padding)
+should be used instead, for cryptographic operations.
+
+The rule checks usages of weak ciphers in cryptographic primitives, not registred in the allowed list, and registed in the forbidden list.
+The rule does not check if the cipher operation is coded properly (key length, initial vector and feedback mode, padding).]]></description>
+    <priority>2</priority>
+    <effort>4</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid loss of confidentiality due to weak ciphers.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from Crypto.Cipher import DES
+from Crypto import Random
+
+key = b'12345678'
+iv = Random.new().read(DES.block_size)
+cipher = DES.new(key, DES.MODE_CBC, iv) # VIOLATION
+plaintext = b'sona si latine loqueris '
+msg = iv + cipher.encrypt(plaintext)]]></example>
+    <repair><![CDATA[from Crypto.Cipher import AES
+from Crypto import Random
+
+key = b'Sixteen byte key'
+iv = Random.new().read(AES.block_size)
+cipher = AES.new(key, AES.MODE_CBC, iv) # FIXED
+plaintext = b'sona si latine loqueris '
+msg = iv + cipher.encrypt(plaintext)
+
+# Alternatively, you may use cryptography package,
+# Which by default uses authenticated AES cipher (256 keysize, CBC mode + SHA-256 HMAC).
+from cryptography.fernet import Fernet
+key = Fernet.generate_key() # key generation, keep it safely!
+f = Fernet(key)
+cipherToken = f.encrypt(plaintext)]]></repair>
+    <reference><![CDATA[https://cryptography.io,https://blog.cryptographyengineering.com/2012/05/19/how-to-choose-authenticated-encryption/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:327,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="Comma-separated list of allowed ciphers." value="aes, rijndael, camellia, cast, cast5, tripledes, 3des, des3, des-ede, des-ede3, mars, twofish, saferplus, seed, serpent, idea, rc5, rc6, rabbit, trivium, salsa20, chacha20"/>
+      <property name="forbiddenAlgorithms" descname="Comma-separated list of ciphers that should NOT be used." value="des, desx, gost, loki, blowfish, enigma, rc2, rc4, arc4, arcfour, rc4drop, threeway, kasumi, panama, skipjack, crypt"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.XmlEntityInjection" message="XmlEntityInjection: XML entity injection" class="com.optimyth.python.rules.security.XmlEntityInjection" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.5.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[In XML parsers, when XML document to parse could be altered by untrusted input, and the untrusted input may
+alter the Document Type Definition (DTD, embedded or external), the parser should be configured to avoid
+two kinds of potential attacks:
+
+* XML entity expansion DoS (XML bomb or "billion laughs attack"), CWE-776, where well-formed DTD with
+  internal entities are expanded exponentially until they exhaust memory.
+
+* XML external entity injection (XXE), CWE-611, where an external entity controlled by the attacker refers to the URL
+  of a resource that gives unauthorized access to sensitive files on the server machine, or to a resource
+  like /dev/random in Unix systems that, when entity is expanded, leads to a denial-of-service condition.
+  A variant of this attack is the server-side request forgery (SSRF), where the URL for external DTD or XML-Schema
+  is processed by the URL handler used by the XML parser, allowing the attacker access to an unexpected
+  network resource (for cross-site request forgery attacks or port-scanning enumeration).
+
+Please note that Python parsers are particularly vulnerable to XML entity injection attacks because their
+default settings have both entity expansion and external entity resolution enabled. Disabling validations
+does not help, as entity expansion / external entity loading is done even when validation is disabled.
+
+DTD is not the unique element that an attacker could use for injection: XML-Schema attributes could be specified
+on any tag, so SSRF injection may happen at any place in the XML document, not only at the start where DTD should
+be placed, but fortunately common Python XML parsers do not seem to fetch schema URLs by default.
+
+XML parsing could be hidden in other frameworks and libraries. For example, with REST, when a resource has an XML
+representation, the REST framework typically use an underlying XML parser for processing the request message, which
+obviusly is fully under control of a potential attacker.
+
+To be safe during XML processing coming from untrusted sources, a number of XML features should be disabled
+when configuring the parser:
+* DTD interpretation - Ensure DOCTYPE tags are ignored, or documents containing them are rejected.
+* Ignore or reject external entities.
+* schemaLocation and noNamespaceSchemaLocation should not fetch URLs.
+* XIncludes - Should be disabled or left disabled.
+
+The rule checks that there is a path between an untrusted input and the XML document to parse,
+then verifies that the XML parser is configured to avoid both external entity and entity expansion attacks.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XML entity attacks that could cause denial-of-service and information leakage.]]></benefits>
+    <inconvenients><![CDATA[Dependencies on certain features related to DTD or entity expansion may render runtime errors.]]></inconvenients>
+    <example><![CDATA[from lxml import etree
+
+user_input = input()
+doc = etree.parse(open(user_input, "r")) # VIOLATION
+doc.xinclude() # VIOLATION]]></example>
+    <repair><![CDATA[from lxml import etree
+
+user_input = input()
+parser2 = etree.XMLParser(resolve_entities=False)      # Parser vulnerability neutralized
+tree3   = etree.parse(StringIO(user_input), parser2)   # OK]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/776.html,https://docs.python.org/2/library/xml.html,https://cwe.mitre.org/data/definitions/611.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:611,CWE:776,CWETOP25:2021:23,OWASP:2021:A5,PCI-DSS:6.5.1,WASC:43,WASC:44]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.XmlInjection" message="XmlInjection: Avoid using non-neutralized user-controlled input when creating XML documents" class="com.optimyth.python.rules.security.XmlInjection" technology="PYTHON" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The extensible markup language (XML) is used in a wide range of applications, from remote
+procedure calls to storage, exchange and retrieval of data.
+
+By injecting XML content or structures into an XML document, an attacker can alter the logic of the application or
+insert malicious content.
+
+Input data must be validated before writing into an XML document.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevents XML injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[from lxml import etree
+
+original = etree.parse('somedoc.xml')
+
+user_input = input()
+user = etree._Element('user')
+user.append((etree.fromstring(user_input)))     # VIOLATION]]></example>
+    <repair><![CDATA[from lxml import etree
+import re
+
+original = etree.parse('somedoc.xml')
+
+user_input = input()
+pattern = re.compile("valid_input_0|valid_input_1|valid_input_3")
+if pattern.fullmatch(user_input):  # NEUTRALIZED
+  user = _Element('user')
+  user.append((etree.fromstring(user_input)))     # OK]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/91.html,http://projects.webappsec.org/w/page/13247004/XML%20Injection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:23]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PYTHON.SECURITY.XpathInjection" message="XpathInjection: Avoid XPath expressions formed with non neutralized user input" class="com.optimyth.python.rules.security.XpathInjection" technology="PYTHON" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.10,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[The software uses external input to dynamically construct an XPath expression used to
+retrieve data from an XML database, but it does not neutralize or incorrectly neutralizes that input.
+This allows an attacker to control the structure of the query.
+
+Effect: the attacker will have control over the information selected from the XML database and may use that ability
+to control application flow, modify logic, retrieve unauthorized data, or bypass important checks (e.g. authentication).
+
+This check looks for calls that create or execute an XPath expression, and detects if an untrusted input could
+change the XPath code used at that call.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid Xpath injection attacks produced by non neutralized user inputs.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import xml.etree.ElementTree as ET
+
+user_input = input()
+tree = ET.parse('origin.xml')
+email = "/pathtomail[id=" + user_input + "]/email/text()"
+r = tree.find(email)      # VIOLATION]]></example>
+    <repair><![CDATA[import xml.etree.ElementTree as ET
+import re
+
+user_input2 = input()
+pattern = re.compile(awesome_regex)
+if pattern.fullmatch(user_input2):  # NEUTRALIZATION
+    email2 = "/pathtomail[id=" + user_input2 + "]/email/text()"
+    r = tree.find(email2)      # OK]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/w/page/13247005/XPath%20Injection,http://cwe.mitre.org/data/definitions/643.html,Prevent XPath Injection: https://www.securecoding.cert.org/confluence/pages/viewpage.action?pageId=62849047]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:643,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:39]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="PYTHON" technology="PYTHON" active="true" weight="1.0">
+      <description><![CDATA[PYTHON rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="PYTHON" active="true" weight="8.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="PYTHON" active="true" weight="10.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="PYTHON" active="true" weight="5.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="PYTHON" active="true" weight="10.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="PYTHON" active="true" weight="4.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

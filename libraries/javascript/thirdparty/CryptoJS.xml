@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="CryptoJS" standard="CryptoJS">
+
+  <!-- This library was common, but is a bit outdated. Last commit in 2014... -->
+  <description url="https://code.google.com/archive/p/crypto-js/">Collection of cryptographic algorithms implemented in JavaScript</description>
+
+  <module name="CryptoJS" >
+    <globalObject name="CryptoJS" type="CryptoJS"/>
+
+    <class name="CryptoJS">
+      <field name="algo" type="CryptoJS.algo"/>
+      <field name="enc" type="CryptoJS.enc"/>
+      <field name="format" type="CryptoJS.format"/>
+      <field name="lib" type="CryptoJS.lib"/>
+      <field name="mode" type="CryptoJS.mode"/>
+      <field name="pad" type="CryptoJS.pad"/>
+      <field name="kdf" type="CryptoJS.kdf"/>
+
+      <field name="AES" type="CryptoJS.Cipher" alias="DES,TripleDES,Rabbit,RC4,RC4Drop"/>
+
+      <!-- modular include? var SHA256 = require("crypto-js/sha256"); -->
+
+      <function name="MD5" alias="SHA1,SHA224,SHA256,SHA384,SHA512,SHA3,RIPEMD160">
+        <tags>hash,data:0</tags>
+        <return type="CryptoJS.lib.WordArray"/>
+      </function>
+
+      <function name="HmacMD5" alias="HmacSHA1,HmacSHA224,HmacSHA256,HmacSHA384,HmacSHA512,HmacSHA3,HmacRIPEMD160">
+        <tags>hmac,data:0,key:1</tags>
+        <return type="CryptoJS.lib.WordArray"/>
+      </function>
+
+      <function name="PBKDF2">
+        <tags>keygen,key:0,password:0,salt:1,config:2,pass_hash_gen:0,pass_hash_check:0</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="Array"/>
+          <param type="CryptoJS.PBKDF2._config"/>
+        </parameters>
+      </function>
+
+    </class>
+
+    <class name="CryptoJS.algo">
+      <field name="MD5" type="CryptoJS.Hash" alias="SHA1,SHA224,SHA256,SHA384,SHA512,SHA3,RIPEMD160"/>
+      <field name="HMAC" type="CryptoJS.HMAC"/>
+      <field name="PBKDF2" type="CryptoJS.PBKDF2"/>
+      <field name="AES" type="CryptoJS.Cipher" alias="DES,TripleDES,Rabbit,RC4,RC4Drop"/>
+    </class>
+
+    <class name="CryptoJS.Hash">
+      <function name="create">
+        <tags>hash</tags>
+        <return type="CryptoJS.Hash"/>
+      </function>
+      <function name="update">
+        <tags>hash,data:0</tags>
+      </function>
+      <function name="finalize">
+        <tags>hash</tags>
+        <return type="CryptoJS.lib.WordArray"/>
+      </function>
+    </class>
+
+    <class name="CryptoJS.HMAC">
+      <function name="create">
+        <tags>hmac,algo:0,key:1</tags>
+        <return type="CryptoJS.HMAC"/>
+      </function>
+      <function name="update">
+        <tags>hmac,data:0</tags>
+      </function>
+      <function name="finalize">
+        <tags>hmac</tags>
+        <return type="CryptoJS.lib.WordArray"/>
+      </function>
+    </class>
+
+    <class name="CryptoJS.Cipher">
+      <function name="encrypt">
+        <tags>cipher,encrypt,data:0,key:1,config:2</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="Array"/>
+          <param type="CryptoJS.Cipher.CipherParams"/>
+        </parameters>
+        <return type="CryptoJS.Cipher.CipherParams"/>
+      </function>
+      <function name="decrypt">
+        <tags>cipher,decrypt,data:0,key:1,config:2</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="Array"/>
+          <param type="CryptoJS.Cipher.CipherParams"/>
+        </parameters>
+        <return type="CryptoJS.lib.WordArray"/>
+      </function>
+      <function name="createEncryptor">
+        <tags>cipher,key:0,config:1</tags>
+        <return type="CryptoJS.Cipher"/>
+      </function>
+      <function name="process">
+        <tags>data:0</tags>
+        <return type="CryptoJS.lib.WordArray"/>
+      </function>
+      <function name="finalize">
+        <return type="CryptoJS.lib.WordArray"/>
+      </function>
+    </class>
+
+    <class name="CryptoJS.Cipher.CipherParams">
+      <field name="key"><tags>key</tags></field>
+      <field name="iv"><tags>iv</tags></field>
+      <field name="salt"><tags>salt</tags></field>
+      <field name="mode"><tags>mode</tags></field>
+      <field name="padding"><tags>padding</tags></field>
+      <field name="ciphertext"><tags>data</tags></field>
+    </class>
+
+    <class name="CryptoJS.PBKDF2">
+      <function name="create">
+        <parameters>
+          <param type="CryptoJS.PBKDF2._config"/>
+        </parameters>
+        <return type="CryptoJS.PBKDF2"/>
+      </function>
+      <function name="compute">
+        <tags>keygen,key:0,password:0,salt:1,pass_hash_gen:0,pass_hash_check:0</tags>
+      </function>
+    </class>
+
+    <class name="CryptoJS.PBKDF2._config">
+      <field name="keySize" type="Number"><tags>keylen</tags></field>
+      <field name="hasher"><tags>hash,algo</tags></field>
+      <field name="iterations"><tags>iterations</tags></field>
+    </class>
+
+    <class name="CryptoJS.lib">
+      <field name="WordArray" type="CryptoJS.lib.WordArray"/>
+    </class>
+
+    <class name="CryptoJS.lib.WordArray" supertypes="Array">
+      <function name="random">
+        <!-- Probably fixed, see https://github.com/brix/crypto-js/issues/7
+        <sink kind="weak_random"/>
+        -->
+      </function>
+    </class>
+  </module>
+
+</library>

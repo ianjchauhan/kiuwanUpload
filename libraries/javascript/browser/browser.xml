@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="browser" standard="javascript" technology="javascript">
+  <description>DOM level 4 object model</description>
+
+  <typeAnnotation name="browser" class="com.optimyth.qaking.js.tainting.typesystem.BrowserAnnotation"/>
+
+  <module name="browser">
+    <class name="EventTarget">
+      <function name="addEventListener">
+        <sink argpos="1" kind="code_injection" resource="web"><checker id="ignoreCallbacks"/></sink>
+      </function>
+    </class>
+
+    <class name="Node" supertypes="EventTarget">
+      <field name="textContent" type="String"/><!-- safe against DOM XSS -->
+
+      <function name="appendChild">
+        <return type="Node"/>
+      </function>
+      <function name="cloneNode">
+        <return type="Node"/>
+      </function>
+      <function name="insertBefore">
+        <return type="Node"/>
+      </function>
+      <function name="replaceChild">
+        <return type="Node"/>
+      </function>
+    </class>
+
+    <class name="ParentNode">
+      <!-- ParentNode mixin, a Node that may have children. -->
+      <field name="children" type="HTMLCollection"/>
+      <field name="firstElementChild" type="Element" alias="lastElementChild"/>
+
+      <function name="append" alias="prepend"/>
+      <function name="querySelector">
+        <return type="Element"/>
+      </function>
+      <function name="querySelectorAll">
+        <return type="HTMLCollection"/>
+      </function>
+    </class>
+
+    <class name="Element" supertypes="Node,ParentNode">
+      <field name="id" type="String"/>
+      <field name="innerText" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="innerHTML" type="String">
+        <sink kind="xss" resource="web"/>
+      </field>
+      <field name="outerHTML" type="String">
+        <sink kind="xss" resource="web"/>
+      </field>
+      <field name="contentWindow" type="Window"/>
+      <field name="className" type="String"/>
+      <field name="classList" type="DOMTokenList"/>
+      <field name="value" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <function name="getAttribute" alias="getAttributeNS">
+        <return type="String"/>
+        <source argpos="-1" kind="external_input"/>
+      </function>
+      <function name="getAttributeNode" alias="getAttributeNodeNS">
+        <return type="String"/>
+        <source argpos="-1" kind="external_input"/>
+      </function>
+      <function name="setAttribute" alias="setAttributeNS">
+        <sink argpos="1" kind="xss" resource="web"/>
+      </function>
+      <function name="setAttributeNode">
+        <!--sink argpos="1" kind="xss" resource="web"/--><!-- probably safe -->
+      </function>
+      <function name="insertAdjacentHTML">
+        <sink argpos="1" kind="xss" resource="web"/>
+      </function>
+    </class>
+
+    <class name="HTMLElement" supertypes="Element">
+      <field name="title" type="String">
+        <sink kind="xss" resource="web"/>
+        <source kind="external_input"/>
+      </field>
+      <field name="style" type="String">
+        <sink kind="xss" resource="web"/>
+        <source kind="external_input"/>
+      </field>
+      <field name="dataset" type="DOMStringMap">
+        <source kind="external_input" resource="web"/>
+        <sink kind="xss" resource="web"/>
+      </field>
+    </class>
+
+    <class name="HTMLAnchorElement" supertypes="HTMLElement">
+      <field name="href" type="String"></field>
+      <field name="text" type="String"></field>
+    </class>
+
+    <class name="HTMLInputElement" supertypes="HTMLElement">
+      <field name="form" type="HTMLFormElement"/>
+      <field name="formAction" type="String"/>
+      <field name="formEncType" type="String"/>
+      <field name="formNoValidate" type="Boolean"/>
+      <field name="formTarget" type="String"/>
+      <field name="name" type="String"/>
+      <field name="type" type="String"/>
+      <field name="disabled" type="Boolean"/>
+      <field name="autofocus" type="Boolean"/>
+      <field name="required" type="Boolean"/>
+      <field name="validity" type="Boolean" alias="willValidate"/>
+      <field name="validitationMessage" type="String"/>
+      <field name="list" type="HtmlElement"/>
+      <field name="labels" type="Array"/>
+      <field name="pattern">
+        <sink kind="regex_dos"/>
+      </field>
+      <field name="autocomplete" type="Boolean"/>
+      <!-- for type=checkbox or radio -->
+      <field name="checked" alias="defaultChecked,indeterminate" type="Boolean"/>
+      <!-- for type=image -->
+      <field name="src" type="String">
+        <!-- potential XSS because URL may point to attacker's SVG, with embedded <script>  -->
+        <!-- But possibly blacklisted by browsers: https://security.stackexchange.com/questions/135513/what-could-an-img-src-xss-do -->
+        <sink kind="xss" resource="web"/>
+      </field>
+      <!-- for type=file -->
+      <field name="accept" type="String"/>
+      <field name="allowdirs" type="Boolean"/>
+      <field name="files" type="Array">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="valueAsDate" alias="valueAsNumber">
+        <neutralization kind="*"/>
+      </field>
+    </class>
+
+    <!-- not really extending from HTMLInputElement, but shares many properties with it, so ... -->
+    <class name="HTMLSelectElement" supertypes="HTMLInputElement" itemType="HTMLOptionElement">
+      <field name="form" type="HTMLFormElement"/>
+      <field name="labels" type="Array"/>
+      <field name="options" type="HTMLCollection"/>
+      <field name="selectedOptions" type="HTMLCollection"/>
+      <field name="item" alias="namedItem" type="HTMLOptionElement"/>
+      <function name="item" alias="namedItem"><return type="HTMLOptionElement"/></function>
+    </class>
+
+    <class name="HTMLOptionElement" supertypes="HTMLElement">
+      <field name="form" type="HTMLFormElement"/>
+      <field name="text" type="String" alias="label"/>
+      <field name="selected" alias="Boolean"/>
+    </class>
+
+    <class name="HTMLFormElement" supertypes="HTMLElement">
+      <tags>hasFields:Element</tags>
+      <field name="acceptCharset" type="String"/>
+      <field name="action">
+        <source kind="external_input" resource="web"/>
+        <sink kind="resource_injection" resource="web"/>
+      </field>
+      <field name="autocomplete" type="String"/>
+      <field name="elements" type="HTMLCollection"/>
+      <field name="encoding" type="String"/>
+      <field name="enctype" type="String"/>
+      <field name="length">
+        <neutralization argpos="-1"/>
+      </field>
+      <field name="method" type="String"/>
+      <field name="name" type="String"/>
+      <field name="noValidate" type="Boolean"/>
+      <field name="target" type="String"/>
+
+      <function name="submit"/>
+      <function name="reset"/>
+      <function name="checkValidity"/>
+      <function name="reportValidity"/>
+      <function name="requestAutocomplete"/>
+    </class>
+
+    <class name="HTMLScriptElement" supertypes="HTMLElement">
+      <field name="async" type="Boolean" alias="defer,noModule"/>
+      <field name="type" type="String"/>
+      <field name="src" type="String">
+        <sink kind="code_injection" resource="web"/>
+      </field>
+      <field name="text" type="String">
+        <sink kind="code_injection" resource="web"/>
+      </field>
+    </class>
+
+    <class name="HTMLIFrameElement" supertypes="HTMLElement">
+      <field name="contentDocument" type="Document"/>
+      <field name="contentWindow" type="Window"/>
+      <field name="name" type="String"/>
+      <field name="sandbox" type="Array"/>
+      <field name="src" type="String">
+        <sink kind="cross_frame_scripting"/>
+      </field>
+    </class>
+
+    <class name="HTMLCollection" itemType="Element">
+      <function name="item"><return type="Element"/></function>
+      <function name="namedItem"><return type="Element"/></function>
+    </class>
+
+    <class name="HTMLFormCollection" itemType="HTMLFormElement" supertypes="HTMLCollection" />
+
+    <class name="DOMStringMap" itemType="String">
+      <function name="getDataAttr">
+        <source kind="external_input" resource="web" argpos="-1"/>
+      </function>
+      <function name="setDataAttr">
+        <sink kind="xss" resource="web" argpos="0,1"/>
+      </function>
+    </class>
+
+    <class name="XPathResult">
+      <field name="booleanValue" type="Boolean"/>
+      <field name="invalidIteratorState" type="Boolean"/>
+      <field name="numberValue" type="Number"/>
+      <field name="resultType" type="Number"/>
+      <field name="singleNodeValue" type="Node"/>
+      <field name="snapshotLength" type="Number"/>
+      <field name="stringValue" type="String"/>
+      <function name="iterateNext"><return type="XPathResult"/></function>
+      <function name="snapshotItem"><return type="XPathResult"/></function>
+    </class>
+
+    <class name="XPathExpression">
+      <function name="evaluate"><return type="XPathResult"/></function>
+      <function name="evaluateWithContext"></function>
+    </class>
+
+    <class name="Storage">
+      <field name="*" type="String" >
+        <source argpos="-1" kind="database_input" resource="database" />
+      </field>
+      <function name="getItem">
+        <parameters><param type="String"/></parameters>
+        <return type="String"/>
+        <source argpos="-1" kind="database_input" resource="database" />
+      </function>
+      <function name="setItem">
+        <parameters><param type="String"/><param type="String"/></parameters>
+      </function>
+      <function name="removeItem">
+        <parameters><param type="String"/></parameters>
+      </function>
+    </class>
+
+    <class name="Location">
+      <field name="hash" type="String">
+        <source kind="external_input" resource="web"/>
+        <!--sink kind="open_redirect" resource="web"/-->
+      </field>
+      <field name="href" type="String">
+        <source kind="external_input" resource="web">
+          <checker id="location.srcChecker" />
+        </source>
+        <sink kind="open_redirect" resource="web"/>
+      </field>
+      <field name="pathname" type="String">
+        <source kind="external_input" resource="web"/>
+        <sink kind="resource_injection" resource="web"/>
+      </field>
+      <field name="search" type="String">
+        <source kind="external_input" resource="web"/>
+        <sink kind="http_parameter_pollution" resource="web"/>
+      </field>
+      <field name="host" type="String" alias="hostname,port">
+        <sink kind="ssrf" resource="web"/>
+      </field>
+      <field name="username" type="String">
+        <sink kind="sensitive_data" resource="database"/>
+      </field>
+      <field name="password" type="String">
+        <sink kind="sensitive_data" resource="database"/>
+      </field>
+      <field name="origin" type="String"/><!-- read-only -->
+      <field name="search" type="String">
+        <source kind="external_input" resource="web" />
+      </field>
+
+      <function name="assign" alias="replace">
+        <sink argpos="0" kind="open_redirect" resource="web"/>
+      </function>
+    </class>
+
+    <class name="Document" supertypes="Node,ParentNode,EventTarget">
+      <field name="body" type="Element"/>
+      <field name="head" type="Element"/>
+      <field name="currentScript" type="HTMLScriptElement"/>
+      <field name="documentElement" type="Element"/>
+      <field name="cookie" type="String">
+        <tags>cookie, header.name:Cookie, header.value:1</tags>
+        <source kind="external_input" resource="web"/>
+        <!--sink kind="header_manipulation" resource="web"/-->
+        <sink kind="cookie_poisoning" resource="web"/>
+      </field>
+      <field name="URL" type="String">
+        <source kind="external_input" resource="web"/>
+        <sink kind="open_redirect" resource="web"/>
+      </field>
+      <field name="documentURI" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="referrer" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="location" type="Location">
+        <source kind="external_input" resource="web"/>
+        <sink kind="open_redirect" resource="web"/>
+      </field>
+      <field name="forms" type="HTMLFormCollection">
+        <source kind="external_input" resource="web"/>
+        <sink kind="xss" resource="web"/>
+      </field>
+      <field name="form" type="Element">
+        <source kind="external_input" resource="web"/>
+        <sink kind="xss" resource="web"/>
+      </field>
+      <field name="images" type="HTMLCollection"></field>
+      <field name="links" type="HTMLCollection">
+        <source kind="external_input" resource="web"/>
+        <sink kind="xss" resource="web"/>
+      </field>
+      <field name="anchors" type="HTMLCollection"></field>
+
+      <function name="createExpression">
+        <return type="XPathExpression"/>
+        <sink kind="xpath_injection" resource="web" argpos="0"/>
+      </function>
+      <function name="evaluate">
+        <sink kind="xpath_injection" resource="web" argpos="0"/>
+      </function>
+      <function name="execCommand">
+        <sink kind="xss" argpos="2">
+          <!-- depends on first command = insertHTML -->
+          <checker id="browser.execCommand">
+            <property name="commands" value="insertHTML"/>
+          </checker>
+        </sink>
+        <sink kind="resource_injection" argpos="2">
+          <!-- depends on first command = createLink, insertImage -->
+          <checker id="browser.execCommand">
+            <property name="commands" value="createLink,insertImage"/>
+          </checker>
+        </sink>
+      </function>
+
+      <function name="createElement">
+        <return type="Element"/>
+      </function>
+      <function name="createTextNode">
+        <return type="Node"/>
+      </function>
+      <function name="getElementById">
+        <return type="Element"/>
+      </function>
+      <function name="getElementsByTagName" alias="getElementsByTagNameNS">
+        <return type="HTMLCollection"/>
+      </function>
+      <function name="write" alias="writeln">
+        <sink argpos="0" kind="xss" resource="web"/>
+      </function>
+    </class>
+
+    <class name="History"/>
+    <class name="Screen"/>
+
+
+    <class name="Window" supertypes="global,EventTarget">
+      <field name="document" type="Document"/>
+      <field name="history" type="History"/>
+      <field name="location" type="Location">
+        <sink kind="open_redirect" resource="web"/>
+      </field>
+      <field name="screen" type="Screen"/>
+
+      <field name="frames" type="Window"/>
+      <field name="frameElement" type="Element"/>
+      <field name="parent" type="Window"/>
+      <field name="opener" type="Window"/>
+      <field name="window" type="Window"/>
+      <field name="self" type="Window"/>
+      <field name="top" type="Window"/>
+
+      <field name="localStorage" type="Storage"/>
+      <field name="sessionStorage" type="Storage"/>
+      <field name="crypto" type="wca/Crypto"/>
+      <field name="msCrypto" type="wca/Crypto"/>
+
+      <!-- see https://github.com/js-cookie/js-cookie -->
+      <field name="Cookies" type="browser/js.cookie">
+        <checker id="import"><property name="files" value="js.cookie"/><property name="modules" value="js-cookie"/></checker>
+      </field>
+
+      <function name="open">
+        <return type="Window"/>
+        <sink argpos="0" kind="open_redirect" resource="web"/>
+      </function>
+
+      <function name="execScript" standard="ie">
+        <sink argpos="0" kind="code_injection" resource="web"/>
+      </function>
+
+      <function name="setInterval" alias="setTimeout">
+        <sink argpos="0" kind="code_injection"><checker id="ignoreCallbacks"/></sink>
+        <sink argpos="1" kind="timing_dos"/>
+      </function>
+
+      <function name="postMessage">
+        <sink kind="insecure_transport" resource="web" argpos="1"/>
+        <sink kind="resource_injection" resource="web" argpos="1"/>
+      </function>
+
+      <function name="openDatabase" alias="openDatabaseSync">
+        <tags>partial.support,browsers:chrome4+,safari3.1+,opera10.5+,android2.1+</tags>
+        <parameters>
+          <param type="String"/><param type="String"/><param type="String"/><param type="Number"/>
+          <param type="function(WebSQL/Database)"/>
+        </parameters>
+        <return type="WebSQL/Database"/>
+        <sink argpos="1" kind="resource_injection" resource="database"/>
+      </function>
+
+      <function name="requestFileSystem" alias="webkitRequestFileSystem">
+        <parameters>
+          <param type="Number"/>
+          <param type="Number"/>
+          <param type="function(LocalFileSystem/FileSystem)" callback="true"/>
+        </parameters>
+      </function>
+      <function name="resolveLocalFileSystemURL">
+        <parameters>
+          <param type="String">
+            <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+          </param>
+          <param type="function(LocalFileSystem/FileSystemDirectoryEntry)"/>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="XMLHttpRequest" supertypes="EventTarget">
+      <field name="response">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="responseText" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="responseURL" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="responseXML" type="Document">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="onload" type="Function"></field>
+      <field name="withCredentials" type="Boolean"/>
+
+      <function name="open">
+        <tags>username:3,password:4</tags>
+        <sink argpos="1" kind="insecure_transport" resource="web"/>
+        <sink argpos="1" kind="resource_injection" resource="web"/>
+        <!-- new async parameter (third) is optional... -->
+        <sink argpos="3,4,5" kind="credentials_manipulation" resource="web"/>
+      </function>
+      <function name="overrideMimeType"></function>
+      <function name="send"></function>
+      <function name="sendAsBinary"><tags>deprecated</tags></function>
+      <function name="setRequestHeader">
+        <tags>header.name:0, header.value:1</tags>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </function>
+      <function name="getResponseHeader" alias="getAllResponseHeaders">
+        <return type="String"/>
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+    </class>
+
+    <globalObject name="window" type="Window"/>
+    <globalObject name="document" type="Document"/>
+    <globalObject name="location" type="Location">
+      <sink kind="open_redirect"/>
+    </globalObject>
+    <globalObject name="sessionStorage" type="Storage"/>
+    <globalObject name="localStorage" type="Storage"/>
+
+    <!-- WebSocket constructor -->
+    <function name="WebSocket">
+      <sink argpos="0" kind="resource_injection"/>
+    </function>
+
+    <function name="openDatabase" alias="openDatabaseSync">
+      <tags>partial.support,browsers:chrome4+,safari3.1+,opera10.5+,android2.1+</tags>
+      <parameters>
+        <param type="String"/><param type="String"/><param type="String"/><param type="Number"/>
+        <param type="function(WebSQL/Database)"/>
+      </parameters>
+      <return type="WebSQL/Database"/>
+      <sink argpos="1" kind="resource_injection" resource="database"/>
+    </function>
+
+    <!-- Gaia library proposed for escaping issues reported by the eslint 'no-unsafe-innerhtml' plugin -->
+    <class name="Sanitizer">
+      <function name="escapeHTML" alias="createSafeHTML,unwrapSafeHTML">
+        <neutralization kind="xss" resource="web" argpos="-1"/>
+      </function>
+    </class>
+  </module>
+
+</library>

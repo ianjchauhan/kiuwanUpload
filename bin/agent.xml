@@ -1,0 +1,872 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="agent" default="run" basedir=".">
+  <import file="common.xml"/>
+  <import file="rd.xml"/>
+  <set.system.property property="AGENT_HOME" value="${AGENT_HOME}"/>
+  <set.system.property property="CHECKING_DATA" value="${AGENT_HOME}"/>
+  <set.system.property property="TASK.LOG" value="${temp.dir}/agent.log"/>
+  <property file="${analyzer.configuration}"/>
+  <property file="${agent.configuration}"/>
+  <target name="run" description="Runs local analysis" depends="init">
+    <trycatch reference="analysisException">
+      <try>
+        <analysis.appender folder="${results.dir}" add="true"/>
+        <if>
+          <isfalse value="${deferred.mode}"/>
+          <then>
+            <call target="update.engine"/>
+          </then>
+        </if>
+        <loadfile srcfile="${agent.version.file}" property="agent.version" failonerror="false"/>
+        <loadfile srcfile="${engine.version.file}" property="engine.version" failonerror="false"/>
+        <fail message="Kiuwan Local Analyzer installation is corrupt, cannot analyze!" unless="agent.version"/>
+        <fail message="No Kiuwan Engine available or engine is corrupt, cannot analyze!" unless="engine.version"/>
+        <call target="sync.config"/>
+        <call target="process.kiuwan.properties"/>
+        <configuration.load.kiuwan file="${results.dir}/.kiuwan"/>
+        <configuration.resolver property="analysis.config.file" applicationName="${softwareName}" value="${analysisConfig}" analysisScope="${analysisScope}"/>
+        <echo>-----------------------------------------------------</echo>
+        <echo>Starting analysis for application "${softwareName}"</echo>
+        <echo>-----------------------------------------------------</echo>
+        <echo>Local analyzer version: ${agent.version}</echo>
+        <echo>Engine version:         ${engine.version}</echo>
+        <echo>Source paths:           ${sourcePaths}</echo>
+        <echo>Bill-of-materials file: ${bomFile}</echo>
+        <echo>Bill-of-materials fmt:  ${bomFormat}</echo>
+        <echo>Analysis scope:         ${analysisScope}</echo>
+        <echo>Change req. status:     ${changeRequestStatus}</echo>
+        <echo>Branch name:            ${branchName}</echo>
+        <echo>Change request:         ${changeRequest}</echo>
+        <echo>Analysis label:         ${label}</echo>
+        <echo>Model name:             ${modelName}</echo>
+        <echo>Kiuwan model:           ${agent.isKiuwanModel}</echo>
+        <echo>Include patterns:       ${include.patterns}</echo>
+        <echo>Exclude patterns:       ${exclude.patterns}</echo>
+        <echo>Create if needed:       ${createIfNeeded}</echo>
+        <echo>Wait for results:       ${waitForResults}</echo>
+        <echo>Encoding:               ${encoding}</echo>
+        <echo>Ignore steps:           ${ignore}</echo>
+        <echo>Upload code fragments:  ${dump.code}</echo>
+        <echo>Upload analyzed code:   ${upload.analyzed.code}</echo>
+        <echo>Config synchronization: ${sync.analysis.config}</echo>
+        <echo>Output file:            ${outputFile}</echo>
+        <lock create="analysis" dependsOn="update,sync" timeout="${upgrade.timeout}"/>
+        <if>
+          <isfalse value="${deferred.mode}"/>
+          <then>
+            <call target="analysis.authorization"/>
+          </then>
+          <else>
+            <echo>Configuration load: STARTED</echo>
+            <configuration.load.deferred appname="${softwareName}"/>
+            <property name="model.dir" location="${models.dir}/${agent.modelId}"/>
+            <property name="softwareId" value="${agent.applicationId}"/>
+            <property name="allowed" value="${agent.allowed}"/>
+            <property name="licenseToken" value="${agent.licenseToken}"/>
+            <echo>Configuration load: FINISHED</echo>
+          </else>
+        </if>
+        <if>
+          <contains string="${allowed}" substring="SCA" casesensitive="no"/>
+          <then>
+            <call target="run.discovery"/>
+          </then>
+        </if>
+        <stopwatch name="time.analysis" action="start"/>
+        <elapsed key="time.preprocess">
+          <echo>Preprocess: STARTED</echo>
+          <ant antfile="preprocess.xml" target="preprocess.run" inheritall="yes" inheritrefs="yes"/>
+          <echo>Preprocess: FINISHED</echo>
+        </elapsed>
+        <elapsed key="time.load.configuration">
+          <if>
+            <not>
+              <equals arg1="${analysisScope}" arg2="baseline" casesensitive="no"/>
+            </not>
+            <then>
+              <call target="download.delivery.data"/>
+            </then>
+          </if>
+          <if>
+            <and>
+              <isfalse value="${deferred.mode}"/>
+              <contains string="${allowed}" substring="SCA" casesensitive="no"/>
+            </and>
+            <then>
+              <call target="download.model"/>
+            </then>
+          </if>
+        </elapsed>
+        <tstamp>
+          <format property="agent.start.time" pattern="yyyyMMddHHmmssS" timezone="UTC-0"/>
+        </tstamp>
+        <if>
+          <isfalse value="${deferred.mode}"/>
+          <then>
+            <echo>License check: STARTED</echo>
+            <license property="licenseToken" configurationFile="${agent.configuration}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}"/>
+            <echo>License check: FINISHED</echo>
+          </then>
+        </if>
+        <echo>Prepare analysis data: STARTED</echo>
+        <if>
+          <not>
+            <contains string="${ignore}" substring="all" casesensitive="yes"/>
+          </not>
+          <then>
+            <analysis.preconditions property="languages" modelDir="${model.dir}" allowed="${allowed}"/>
+          </then>
+        </if>
+        <if>
+          <contains string="${allowed}" substring="SCA" casesensitive="no"/>
+          <then>
+            <echo message="${discoveryReport}" file="${results.dir}/discovery.diagnosis.txt"/>
+          </then>
+        </if>
+        <globalReport reportFile="${global.report}">
+          <prop key="mode" value="CLI"/>
+          <prop key="softwareName" value="${softwareName}"/>
+          <prop key="softwareId" value="${softwareId}"/>
+          <prop key="modelId" value="${agent.modelId}"/>
+          <prop key="modelName" value="${modelName}"/>
+          <prop key="kiuwanModel" value="${agent.isKiuwanModel}"/>
+          <prop key="createIfNeeded" value="${createIfNeeded}"/>
+          <prop key="waitForResults" value="${waitForResults}"/>
+          <prop key="sourcePaths" value="${sourcePaths}"/>
+          <prop key="argsFile" value="${argsFile}"/>
+          <prop key="bomFile" value="${bomFile}"/>
+          <prop key="bomFormat" value="${bomFormat}"/>
+          <prop key="branchName" value="${branchName}"/>
+          <prop key="changeRequestStatus" value="${changeRequestStatus}"/>
+          <prop key="changeRequest" value="${changeRequest}"/>
+          <prop key="analysisScope" value="${agent.analysisScope}"/>
+          <prop key="baseAnalysisId" value="${agent.baseAnalysisId}"/>
+          <prop key="agent.version" value="${agent.version}"/>
+          <prop key="engine.version" value="${engine.version}"/>
+          <prop key="technologies" value="${languages}"/>
+          <prop key="label" value="${label}"/>
+          <prop key="ignore" value="${ignore}"/>
+          <prop key="include.patterns" value="${include.patterns}"/>
+          <prop key="exclude.patterns" value="${exclude.patterns}"/>
+          <prop key="encoding" value="${encoding}"/>
+          <prop key="dump.code" value="${dump.code}"/>
+          <prop key="launch.time" value="${launch.time}"/>
+          <prop key="ciDataFile" value="${ciDataFile}"/>
+          <prop key="sync.analysis.config" value="${sync.analysis.config}"/>
+          <prop key="localAnalysisConfigChecksum" value="${agent.localAnalysisConfigChecksum}"/>
+          <prop key="remoteAnalysisConfigChecksum" value="${agent.remoteAnalysisConfigChecksum}"/>
+          <prop key="localAnalysisConfigChecksumAfterSync" value="${agent.localAnalysisConfigChecksumAfterSync}"/>
+        </globalReport>
+        <configuration.copy applicationName="${softwareName}" destinationFolder="${results.dir.conf}"/>
+        <ci.data.copy sourceFile="${ciDataFile}" destinationFile="${results.dir}/ci-data.json"/>
+        <echo>Prepare analysis data: FINISHED</echo>
+        <if>
+          <contains string="${allowed}" substring="SCA" casesensitive="no"/>
+          <then>
+            <echo>Prepare source code files for upload: STARTED</echo>
+            <if>
+              <istrue value="${upload.analyzed.code}"/>
+              <then>
+                <source.code.copy applicationName="${softwareName}" destinationFolder="${results.dir}" baseDir="${sourcePaths}" discoveryResultRefid="languages"/>
+              </then>
+            </if>
+            <echo>Prepare source code files for upload: FINISHED</echo>
+          </then>
+        </if>
+        <if>
+          <not>
+            <contains string="${ignore}" substring="all" casesensitive="yes"/>
+          </not>
+          <then>
+            <call target="analyze"/>
+          </then>
+        </if>
+        <condition property="aim.failed" else="">
+          <isreference refid="aimException"/>
+        </condition>
+        <condition property="insight.failed" else="">
+          <isreference refid="insightException"/>
+        </condition>
+        <fail message="All available analysis steps failed!">
+          <condition>
+            <and>
+              <not>
+                <contains string="${allowed}" substring="SCA" casesensitive="no"/>
+              </not>
+              <contains string="${allowed}" substring="ARCHITECTURE" casesensitive="no"/>
+              <contains string="${allowed}" substring="INSIGHT" casesensitive="no"/>
+              <equals arg1="${aim.failed}" arg2="true" casesensitive="no"/>
+              <equals arg1="${insight.failed}" arg2="true" casesensitive="no"/>
+            </and>
+          </condition>
+        </fail>
+        <tstamp>
+          <format property="agent.end.time" pattern="yyyyMMddHHmmssS" timezone="UTC-0"/>
+        </tstamp>
+        <elapsed key="time.report.extensions">
+          <echo>Report extensions: STARTED</echo>
+          <call target="manage.report.extensions"/>
+          <echo>Report extensions: FINISHED</echo>
+        </elapsed>
+        <elapsed key="time.postprocess">
+          <echo>Postprocess: STARTED</echo>
+          <ant antfile="postprocess.xml" target="postprocess.run" inheritall="yes" inheritrefs="yes"/>
+          <echo>Postprocess: FINISHED</echo>
+        </elapsed>
+        <tstamp>
+          <format property="stop.time" pattern="yyyyMMddHHmmssS" timezone="UTC-0"/>
+        </tstamp>
+        <stopwatch name="time.analysis" action="elapsed" log="false"/>
+        <echo>Update global report: STARTED</echo>
+        <globalReport reportFile="${global.report}">
+          <prop key="status" value="OK"/>
+          <prop key="time.analyze" value="${time.analyze}"/>
+          <prop key="time.analyze.aim" value="${time.analyze.aim}"/>
+          <prop key="time.analyze.insight" value="${time.analyze.insight}"/>
+          <prop key="time.analysis" value="${time.analysis}"/>
+          <prop key="analyze.start.time" value="${agent.start.time}"/>
+          <prop key="analyze.end.time" value="${agent.end.time}"/>
+          <prop key="stop.time" value="${stop.time}"/>
+          <prop key="aim.error" value="${aim.failed}"/>
+          <prop key="insight.error" value="${insight.failed}"/>
+        </globalReport>
+        <echo>Update global report: FINISHED</echo>
+        <if>
+          <isfalse value="${deferred.mode}"/>
+          <then>
+            <call target="upload.results"/>
+            <call target="retrieve.results"/>
+          </then>
+        </if>
+        <echo>Register analysis code in global report: STARTED</echo>
+        <globalReport reportFile="${global.report}">
+          <prop key="analysisCode" value="${analysisId}"/>
+        </globalReport>
+        <echo>Register analysis code in global report: FINISHED</echo>
+        <stopwatch name="time.analysis" action="total" log="true"/>
+        <echo>Analysis finished!</echo>
+      </try>
+      <catch>
+        <stopwatch name="time.analysis" action="total" log="true"/>
+        <tstamp>
+          <format property="agent.end.time" pattern="yyyyMMddHHmmssS" timezone="UTC-0"/>
+        </tstamp>
+        <tstamp>
+          <format property="stop.time" pattern="yyyyMMddHHmmssS" timezone="UTC-0"/>
+        </tstamp>
+        <globalReport reportFile="${global.report}">
+          <prop key="status" value="FAILED"/>
+          <prop key="time.analyze" value="${time.analyze}"/>
+          <prop key="time.analyze.aim" value="${time.analyze.aim}"/>
+          <prop key="time.analyze.insight" value="${time.analyze.insight}"/>
+          <prop key="time.analysis" value="${time.analysis}"/>
+          <prop key="analyze.start.time" value="${agent.start.time}"/>
+          <prop key="analyze.end.time" value="${agent.end.time}"/>
+          <prop key="stop.time" value="${stop.time}"/>
+          <prop key="analysisCode" value="${analysisId}"/>
+          <prop key="aim.error" value="${aim.failed}"/>
+          <prop key="insight.error" value="${insight.failed}"/>
+        </globalReport>
+        <unwrap.exception resultsFolder="${results.dir}" configurationFile="${agent.configuration}" exceptionProperty="analysisException" exitCodeProperty="exitCode" errorMessageProperty="errorMessage" createTicketProperty="createTicket"/>
+        <echo>Kiuwan Local Analyzer found a problem in the current analysis:</echo>
+        <echo>${errorMessage}</echo>
+        <if>
+          <not>
+            <equals arg1="${exitCode}" arg2="1"/>
+          </not>
+          <then>
+            <echo>Please check Kiuwan Local Analyzer troubleshooting guide for details on how to solve this issue:</echo>
+            <echo>https://www.kiuwan.com/docs/display/K5/Troubleshooting</echo>
+          </then>
+        </if>
+        <if>
+          <and>
+            <isfalse value="${deferred.mode}"/>
+            <istrue value="${createTicket}"/>
+          </and>
+          <then>
+            <trycatch property="upload.results.errorMessage">
+              <try>
+                <call target="upload.failure.results"/>
+              </try>
+              <catch>
+                <echo>Failed creating support ticket! Reason: ${upload.results.errorMessage}</echo>
+                <echo>Please get in contact with Kiuwan Technical Support for further information on this issue.</echo>
+              </catch>
+            </trycatch>
+          </then>
+        </if>
+        <echo>Exit code = ${exitCode}</echo>
+        <throw refid="analysisException"/>
+      </catch>
+    </trycatch>
+  </target>
+  <target name="gui" description="Runs gui" depends="check.java.version">
+    <echo>Running Kiuwan Local Analyzer in GUI mode...</echo>
+    <mkdir dir="${temp.dir}"/>
+    <property name="agentGUI.log" location="${temp.dir}/agentGUI.log"/>
+    <delete file="${agentGUI.log}" failonerror="false"/>
+    <java classname="com.optimyth.qaking.agent.analyzer.gui.AnalyzerGUILauncher" classpathref="agent.classpath" fork="yes" spawn="yes">
+      <jvmarg value="-XshowSettings:vm"/>
+      <jvmarg value="-Xms${gui.memory.start}"/>
+      <jvmarg value="-Xmx${gui.memory.max}"/>
+      <sysproperty key="AGENT_HOME" value="${AGENT_HOME}"/>
+      <sysproperty key="JKQA_HOME" value="${AGENT_HOME}"/>
+      <sysproperty key="TASK.LOG" value="${agentGUI.log}"/>
+    </java>
+  </target>
+  <target name="parser.check" description="Run parser check, with no rules, for parser testing only" depends="init">
+    <echo>Running parser check mode...</echo>
+    <echo>language     = ${language}</echo>
+    <echo>softwareName = ${softwareName}</echo>
+    <echo>paths        = ${sourcePaths}</echo>
+    <echo>bomFile      = ${bomFile}</echo>
+    <license property="licenseToken" configurationFile="${agent.configuration}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}"/>
+    <configuration.resolver property="analysis.config.file" applicationName="${softwareName}" value="${analysisConfig}"/>
+    <ant antfile="analyzerCommon.xml" target="run.parser.check"/>
+  </target>
+  <target name="encrypt.password" description="For encrypting agent username and password in agent.properties" depends="check.java.version">
+    <encrypt property="username" message="Enter service account name: " file="${agent.configuration}"/>
+    <encrypt property="password" message="Enter service account password: " file="${agent.configuration}"/>
+  </target>
+  <target name="promote.delivery" description="Promotes a delivery or a group of deliveries to baseline" depends="check.java.version">
+    <property name="outputFile" value=""/>
+    <if>
+      <and>
+        <isset property="label"/>
+        <isset property="changeRequest"/>
+      </and>
+      <then>
+        <echo>Running single delivery promotion mode...</echo>
+        <echo>application    = ${softwareName}</echo>
+        <echo>delivery label = ${label}</echo>
+        <echo>change request = ${changeRequest}</echo>
+        <echo>baseline label = ${promoteToBaselineLabel}</echo>
+        <echo>Output file = ${outputFile}</echo>
+        <echo>wait for results = ${waitForResults}</echo>
+        <promote.delivery applicationName="${softwareName}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}" configurationFile="${agent.configuration}" deliveryLabel="${label}" changeRequest="${changeRequest}" baselineLabel="${promoteToBaselineLabel}" analysisCodeProperty="analysisCode"/>
+        <echo>Delivery promoted. New baseline analysis code = ${analysisCode}</echo>
+      </then>
+      <else>
+        <echo>Running bulk delivery promotion mode...</echo>
+        <echo>application = ${softwareName}</echo>
+        <echo>Output file = ${outputFile}</echo>
+        <echo>wait for results = ${waitForResults}</echo>
+        <promote.delivery applicationName="${softwareName}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}" configurationFile="${agent.configuration}" analysisCodeProperty="analysisCode"/>
+        <echo>Bulk promotion done. Latest enqueued analysis code = ${analysisCode}</echo>
+      </else>
+    </if>
+    <retrieve.results configurationfile="${agent.configuration}" analysisId="${analysisCode}" applicationName="${softwareName}" analysisScope="baseline" waitForResults="${waitForResults}" timeout="${results.timeout}" resultsUrlProperty="resultsUrl" auditResultsProperty="auditResult" outputFile="${outputFile}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}"/>
+    <echo>Promotion done!</echo>
+  </target>
+  <target name="retrieve.data" description="Retrieves data from Kiuwan" depends="check.java.version">
+    <property name="analysisCode" value=""/>
+    <property name="format" value=""/>
+    <property name="outputFile" value=""/>
+    <echo>Running retrieve data mode...</echo>
+    <echo>application    = ${softwareName}</echo>
+    <echo>analysisCode   = ${analysisCode}</echo>
+    <echo>format         = ${format}</echo>
+    <echo>outputFile     = ${outputFile}</echo>
+    <retrieve.data applicationName="${softwareName}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}" configurationFile="${agent.configuration}" analysisCode="${analysisCode}" format="${format}" outputFile="${outputFile}"/>
+    <length file="${outputFile}" property="outputFile.length.bytes"/>
+    <math result="outputFile.length.kbytes" operand1="${outputFile.length.bytes}" operation="/" operand2="1024" datatype="int"/>
+    <echo>${outputFile.length.kbytes} KB written</echo>
+    <echo>Data retrieved in file ${outputFile}</echo>
+  </target>
+  <target name="dump.analysis.config" description="Dumps current configuration to zip" depends="check.java.version">
+    <echo>Running dump analysis configuration mode...</echo>
+    <tstamp><format property="current.date" pattern="yyyyMMddHHmm"/></tstamp>
+    <property name="outputFile" value="${temp.dir}/conf/${current.date}_kiuwan_analysis_config.zip"/>
+    <configuration.dump outputFile="${outputFile}"/>
+    <echo>Done!</echo>
+  </target>
+  <target name="update" description="Updates the engine">
+    <property name="username" value=""/>
+    <property name="password" value=""/>
+    <property name="domain.id" value=""/>
+    <echo>Update engine: STARTED</echo>
+    <update.engine configurationFile="${agent.configuration}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}"/>
+    <echo>Update engine: FINISHED</echo>
+  </target>
+  <target name="clean" description="Remove lock files and temporary directories from previous analyses">
+    <echo>Cleaning temp folder...</echo>
+    <delete dir="${temp.dir}/" excludes="models/**,uploaded/**,nvddb/**" includeEmptyDirs="yes" failonerror="false"/>
+  </target>
+  <target name="defer.init" description="Downloads and saves user configuration to local files" depends="check.java.version">
+    <echo>Initializing for deferred mode: STARTED</echo>
+    <call target="download.userconfig"/> 
+    <call target="download.license"/>
+    <call target="configuration.save.deferred"/>
+    <echo>Initializing for deferred mode: FINISHED</echo>
+  </target>
+  <target name="defer.analyze" description="Launches deferred.mode analysis">
+    <property name="deferred.mode" value="true"/>
+    <property name="analysisScope" value="baseline"/>
+    <call target="run"/>
+  </target>
+  <target name="defer.upload" description="Uploads deferred analysis results" depends="download.userconfig">
+    <echo>Upload deferred analyses: STARTED</echo>
+    <if>
+      <not>
+        <equals arg1="${appNames}" arg2=""/>
+      </not>
+      <then>
+        <call target="download.license"/>
+        <var name="processed.results" value="0"/>
+        <for list="${appNames}" param="app">
+          <sequential>
+            <echo>Looking for analysis results, application "@{app}"...</echo>
+            <path id="available.results.path">
+              <dirset dir="${temp.dir}" casesensitive="false">
+                <include name="@{app}.*/results"/>
+              </dirset>
+            </path>
+            <for param="results.dir">
+              <path refid="available.results.path"/>
+              <sequential>
+                <math result="processed.results" operand1="${processed.results}" operation="+" operand2="1" datatype="int"/>
+                <configuration.load.deferred appname="@{app}"/>
+                <var name="globalReportFile" unset="true"/>
+                <var name="globalReportFile" value="@{results.dir}/analysis.report.properties"/>
+                <if>
+                  <available file="${globalReportFile}"/>
+                  <then>
+                    <var name="results.dir.parent" unset="true"/>
+                    <basename property="results.dir.parent" file="@{results.dir}/.."/>
+                    <var name="status" unset="true"/>
+                    <var name="analyze.start.time" unset="true"/>
+                    <var name="label" unset="true"/>
+                    <loadfile property="status" srcfile="${globalReportFile}" encoding="ISO-8859-1">
+                      <filterchain>
+                        <tokenfilter>
+                          <containsregex pattern="^status=(.*)$" replace="\1"/>
+                        </tokenfilter>
+                        <striplinebreaks/>
+                      </filterchain>
+                    </loadfile>
+                    <echo>  Uploading analysis results found in @{results.dir} with status ${status}...</echo>
+                    <if>
+                      <equals arg1="${status}" arg2="OK"/>
+                      <then>
+                        <trycatch property="upload.results.errorMessage">
+                          <try>
+                            <var file="${globalReportFile}"/>
+                            <var name="agent.start.time" value="${analyze.start.time}"/>
+                            <upload.results configurationfile="${agent.configuration}" resultsdir="@{results.dir}" label="${label}" analysisIdProperty="analysisId" analysisScope="${analysisScope}" timeout="${upload.timeout}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}"/>
+                            <echo>  Analysis created in Kiuwan with code: ${analysisId}</echo>
+                            <mkdir dir="${temp.dir}/uploaded/${analysisId}"/>
+                            <move todir="${temp.dir}/uploaded/${analysisId}">
+                              <fileset dir="@{results.dir}"/>
+                            </move>
+                            <delete includeEmptyDirs="true">
+                              <fileset dir="${temp.dir}/${results.dir.parent}"/>
+                            </delete>
+                          </try>
+                          <catch>
+                            <echo>Could not upload ${status} analysis result. Reason: ${upload.results.errorMessage}</echo>
+                          </catch>
+                        </trycatch>
+                      </then>
+                      <else>
+                        <trycatch property="upload.results.errorMessage">
+                          <try>
+                            <upload.failure.results configurationfile="${agent.configuration}" resultsdir="@{results.dir}" ticketIdProperty="ticketId" resultProperty="result" timeout="${upload.timeout}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}"/>
+                            <echo>  Analysis error ticket created with result: ${result}</echo>
+                            <mkdir dir="${temp.dir}/uploaded/${results.dir.parent}"/>
+                            <move todir="${temp.dir}/uploaded/${results.dir.parent}">
+                              <fileset dir="@{results.dir}"/>
+                            </move>
+                            <delete includeEmptyDirs="true">
+                              <fileset dir="${temp.dir}/${results.dir.parent}"/>
+                            </delete>
+                          </try>
+                          <catch>
+                            <echo>Could not upload ${status} analysis result. Reason: ${upload.results.errorMessage}</echo>
+                          </catch>
+                        </trycatch>
+                      </else>
+                    </if>
+                  </then>
+                  <else>
+                    <echo>  Corrupt analysis results found in @{results.dir}. Ignoring results...</echo>
+                  </else>
+                </if>
+              </sequential>
+            </for>
+          </sequential>
+        </for>
+        <if>
+          <not>
+            <equals arg1="${processed.results}" arg2="0"/>
+          </not>
+          <then>
+            <call target="configuration.save.deferred"/>
+            <echo>${processed.results} analysis results uploaded!</echo>
+            <echo>You can find your analysis results in kiuwan: ${url}</echo>
+          </then>
+          <else>
+            <echo>No results to upload found!</echo>
+          </else>
+        </if>
+      </then>
+      <else>
+        <echo>Nothing to upload!</echo>
+      </else>
+    </if>
+    <echo>Upload deferred analyses: FINISHED</echo>
+  </target>
+  <target name="generate.base.discovery" description="Generate base discovery" depends="init">
+    <analysis.appender folder="${results.dir}" add="true"/>
+    <call target="process.kiuwan.properties"/>
+    <configuration.load.kiuwan file="${results.dir}/.kiuwan"/>
+    <configuration.resolver property="analysis.config.file" applicationName="${softwareName}" value="${analysisConfig}"/>
+    <echo>--------------------------------------------------------------------</echo>
+    <echo>Starting generate base discovery for application "${softwareName}"</echo>
+    <echo>--------------------------------------------------------------------</echo>
+    <echo>Source paths:       ${sourcePaths}</echo>
+    <echo>Include patterns:   ${include.patterns}</echo>
+    <echo>Exclude patterns:   ${exclude.patterns}</echo>
+    <echo>Encoding:           ${encoding}</echo>
+    <lock create="analysis" dependsOn="update,sync" timeout="${upgrade.timeout}"/>
+    <call target="analysis.authorization"/>
+    <echo>License check: STARTED</echo>
+    <license property="licenseToken" configurationFile="${agent.configuration}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}"/>
+    <echo>License check: FINISHED</echo>
+    <call target="analyze.aim.discovery.base"/>
+  </target>
+  <target name="init" depends="check.java.version">
+    <if>
+      <not>
+        <isset property="softwareName"/>
+      </not>
+      <then>
+        <antcall target="help"/>
+        <fail>Mandatory 'softwareName' parameter was not specified</fail>
+      </then>
+    </if>
+    <if>
+      <not>
+        <isset property="sourcePaths"/>
+      </not>
+      <then>
+        <antcall target="help"/>
+        <fail>Mandatory 'sourcePaths' parameter was not specified</fail>
+      </then>
+    </if>
+    <if>
+      <or>
+        <length string="${sourcePaths}" when="le" length="0"/>
+        <not>
+          <available file="${sourcePaths}" type="dir"/>
+        </not>
+      </or>
+      <then>
+        <property name="exitCode" value="18"/>
+        <fail status="${exitCode}">Specified analysis directory does not exist</fail>
+      </then>
+    </if>
+    <if>
+      <and>
+        <isfalse value="${deferred.mode}"/>
+        <and>
+          <or>
+            <or>
+              <not>
+                <isset property="username"/>
+              </not>
+              <equals arg1="${username}" arg2="" trim="true"/>
+            </or>
+            <or>
+              <not>
+                <isset property="password"/>
+              </not>
+              <equals arg1="${password}" arg2="" trim="true"/>
+            </or>
+          </or>
+            <and>
+              <not>
+                <equals arg1="${sso.useWIA}" arg2="true" trim="true"/>
+              </not>
+              <not>
+                <equals arg1="${sso.useHTTPAuthentication}" arg2="true" trim="true"/>
+              </not>
+              <not>
+                <equals arg1="${sso.useFormAuthentication}" arg2="true" trim="true"/>
+              </not>
+            </and>
+          </and>
+      </and>
+      <then>
+        <if>
+          <istrue value="${userInput}"/>
+          <then>
+            <call target="encrypt.password"/>
+          </then>
+          <else>
+            <fail message="No username / password set in ${agent.configuration}. Use agent -e to save kiuwan username and password securely."/>
+          </else>
+        </if>
+      </then>
+    </if>
+    <tempfile property="analysis.dir" destdir="${temp.dir}" prefix="${softwareName}."/>
+    <mkdir dir="${analysis.dir}"/>
+    <basename property="analysis.dir.tempname" file="${analysis.dir}"/>
+    <property name="temp.version.file" location="${analysis.dir}/agent.version"/>
+    <property name="results.dir" location="${analysis.dir}/results"/>
+    <property name="results.dir.aim" location="${results.dir}/aim/${softwareName}"/>
+    <property name="results.dir.extended_reports" location="${results.dir}"/>
+    <property name="results.dir.conf" location="${results.dir}/conf"/>
+    <property name="global.report" location="${results.dir}/analysis.report.properties"/>
+    <property name="upload.results.dir" value="${results.dir}"/>
+    <property name="argsFile" value=""/>
+    <property name="bomFile" value=""/>
+    <property name="bomFormat" value=""/>
+    <property name="label" value=""/>
+    <property name="ignore" value=""/>
+    <property name="analysisScope" value=""/>
+    <property name="changeRequest" value=""/>
+    <property name="branchName" value=""/>
+    <property name="changeRequestStatus" value=""/>
+    <property name="modelName" value=""/>
+    <property name="agent.isKiuwanModel" value=""/>
+    <property name="waitForResults" value=""/>
+    <property name="analysisConfig" value=""/>
+    <property name="time.analysis" value=""/>
+    <property name="agent.analysisScope" value=""/>
+    <property name="agent.baseAnalysisId" value=""/>
+    <property name="analysisId" value=""/>
+    <property name="upgrade.timeout" value="60"/>
+    <property name="results.timeout" value="3600"/>
+    <property name="domain.id" value=""/>
+    <property name="insight.static.url" value=""/>
+    <property name="ciDataFile" value=""/>
+    <property name="outputFile" value=""/>
+    <tstamp>
+      <format property="launch.time" pattern="yyyyMMddHHmmssS" timezone="UTC-0"/>
+    </tstamp>
+  </target>
+  <target name="check.java.version">
+    <available property="hasJdk8" classname="java.time.Clock"/>
+    <fail unless="hasJdk8" status="1">
+ERROR: Unsupported java version: ${java.version} (detected: ${ant.java.version}).
+Java JDK 1.8 or higher should be installed. You may need to set PATH variable
+to the proper Java bin directory, or alternatively to set JAVA_HOME environment
+variable to point to java installation directory.
+You may download Java from http://www.oracle.com/technetwork/java/javase/downloads
+    </fail>
+  </target>
+  <target name="process.kiuwan.properties">
+    <echoproperties.encoding destfile="${results.dir}/tmp.kiuwan" prefix=".kiuwan." encoding="UTF-8"/>
+    <replace file="${results.dir}/tmp.kiuwan" token=".kiuwan." value="" encoding="UTF-8"/>
+    <propertyregex property="firstSourcePath" input="${sourcePaths}" regexp="(?:[^\,]*\,){0}([^,]*)" select="\1" casesensitive="false"/>
+    <concat destfile="${results.dir}/.kiuwan" append="yes" fixlastline="yes" encoding="UTF-8" outputencoding="UTF-8">
+      <fileset file="${firstSourcePath}/.kiuwan"/>
+      <fileset file="${results.dir}/tmp.kiuwan"/>
+    </concat>
+    <delete file="${results.dir}/tmp.kiuwan" quiet="true"/>
+  </target>
+  <target name="update.engine">
+    <echo>Update engine: STARTED</echo>
+    <update.engine configurationFile="${agent.configuration}" applicationName="${softwareName}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}"/>
+    <property file="${analyzer.configuration}"/>
+    <echo>Update engine: FINISHED</echo>
+  </target>
+  <target name="sync.config">
+    <echo>Sync config: STARTED</echo>
+    <sync.config configurationFile="${agent.configuration}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}"/>
+    <property file="${analyzer.configuration}"/>
+    <echo>Sync config: FINISHED</echo>
+  </target>
+  <target name="analysis.authorization">
+    <echo>Analysis authorization: STARTED</echo>
+    <analysis.authorization configurationFile="${agent.configuration}" applicationName="${softwareName}" analysisScope="${analysisScope}" createIfNeeded="${createIfNeeded}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}" allowedProperty="allowed" ignore="${ignore}"/>
+    <echo>Analysis authorization: FINISHED</echo>
+  </target>
+  <target name="run.discovery">
+    <echo>Discovery: STARTED</echo>
+    <discovery argsFile="${argsFile}" application="${softwareName}" directories="${sourcePaths}" bomFile="${bomFile}" bomFormat="${bomFormat}" supportedTechnologies="${supported.technologies}" includes="${include.patterns}" excludes="${exclude.patterns}" extraFilters="oracleforms=com.optimyth.qaking.agent.analyzer.util.OracleFormsFileMatcher" property="languages" reportProperty="discoveryReport"/>
+    <echo>Discovery: FINISHED</echo>
+  </target>
+  <target name="download.delivery.data">
+    <echo>Delivery data download: STARTED</echo>
+    <download.delivery.data configurationFile="${agent.configuration}" applicationName="${softwareName}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}" applicationId="${agent.applicationId}" deliveryDataProperty="deliveryData"/>
+    <echo>Delivery data download: FINISHED</echo>
+  </target>
+  <target name="download.model">
+    <echo>Model retrieval: STARTED</echo>
+    <download.model configurationFile="${agent.configuration}" applicationName="${softwareName}" modelDir="${models.dir}" modelName="${modelName}" analysisScope="${analysisScope}" username="${username}" password="${password}" domainId="${domain.id}" deliveryDataProperty="deliveryData" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}"/>
+    <property name="model.dir" location="${models.dir}/${agent.modelId}"/>
+    <property name="softwareId" value="${agent.applicationId}"/>
+    <echo>Model retrieval: FINISHED</echo>
+  </target>
+  <target name="analyze">
+    <elapsed key="time.analyze">
+      <if>
+        <contains string="${allowed}" substring="SCA" casesensitive="no"/>
+        <then>
+          <for list="${languages}" param="language">
+            <sequential>
+              <if>
+                <available file="${model.dir}/qaking_metrics_@{language}.xml"/>
+                <then>
+                  <sequential>
+                    <ant antfile="rules.xml" inheritall="true" inheritrefs="true">
+                      <property name="language" value="@{language}"/>
+                    </ant>
+                    <ant antfile="metrics.xml" inheritall="true" inheritrefs="true">
+                      <property name="language" value="@{language}"/>
+                    </ant>
+                    <if>
+                      <contains string="${allowed}" substring="CLONES" casesensitive="no"/>
+                      <then>
+                        <ant antfile="clones.xml" inheritall="true" inheritrefs="true">
+                          <property name="language" value="@{language}"/>
+                        </ant>
+                      </then>
+                    </if>
+                  </sequential>
+                </then>
+              </if>
+            </sequential>
+          </for>
+        </then>
+      </if>
+    </elapsed>
+    <elapsed key="time.analyze.aim">
+      <if>
+        <contains string="${allowed}" substring="ARCHITECTURE" casesensitive="no"/>
+        <then>
+          <trycatch reference="aimException">
+            <try>
+              <ant antfile="appmap.xml" inheritall="true" inheritrefs="true" target="discovery"/>
+              <configuration.resolver.aim configFolder="${config.dir.aim}/${analysis.dir.tempname}"/>
+              <configuration.copy.aim resultsTempFolderName="${analysis.dir.tempname}" destinationFolder="${results.dir.conf}"/>
+              <ant antfile="appmap.xml" inheritall="true" inheritrefs="true" target="modelbuilder"/>
+            </try>
+            <catch>
+              <property name="aim.failed" value="true"/>
+              <if>
+                <and>
+                  <not>
+                    <contains string="${allowed}" substring="SCA" casesensitive="no"/>
+                  </not>
+                  <contains string="${allowed}" substring="ARCHITECTURE" casesensitive="no"/>
+                  <not>
+                    <contains string="${allowed}" substring="INSIGHT" casesensitive="no"/>
+                  </not>
+                </and>
+                <then>
+                  <throw refid="aimException"/>
+                </then>
+              </if>
+            </catch>
+          </trycatch>
+        </then>
+      </if>
+    </elapsed>
+    <elapsed key="time.analyze.insight">
+      <if>
+        <contains string="${allowed}" substring="INSIGHT" casesensitive="no"/>
+        <then>
+          <trycatch reference="insightException">
+            <try>
+              <configuration.copy.insight destinationFolder="${results.dir.conf}"/>
+              <ant antfile="insight.xml" inheritall="true" inheritrefs="true" target="analyze"/>
+            </try>
+            <catch>
+              <property name="insight.failed" value="true"/>
+              <if>
+                <and>
+                  <not>
+                    <contains string="${allowed}" substring="SCA" casesensitive="no"/>
+                  </not>
+                  <not>
+                    <contains string="${allowed}" substring="ARCHITECTURE" casesensitive="no"/>
+                  </not>
+                  <contains string="${allowed}" substring="INSIGHT" casesensitive="no"/>
+                </and>
+                <then>
+                  <throw refid="insightException"/>
+                </then>
+              </if>
+            </catch>
+          </trycatch>
+        </then>
+      </if>
+    </elapsed>
+  </target>
+  <target name="manage.report.extensions">
+    <if>
+      <isset property="extendedReportsFolder"/>
+      <then>
+        <echo>*** Copying extended reports folder content to analysis results folder...</echo>
+        <mkdir dir="${results.dir.extended_reports}"/>
+        <copy todir="${results.dir.extended_reports}" description="Copy extended reports">
+          <fileset dir="${extendedReportsFolder}" includes="**/*"/>
+        </copy>
+      </then>
+    </if>
+  </target>
+  <target name="upload.results">
+    <echo>Upload results to kiuwan: STARTED</echo>
+    <upload.results configurationfile="${agent.configuration}" resultsdir="${upload.results.dir}" label="${label}" changeRequest="${changeRequest}" analysisIdProperty="analysisId" analysisScope="${analysisScope}" changeRequestStatus="${changeRequestStatus}" branchName="${branchName}" timeout="${upload.timeout}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}"/>
+    <echo>Analysis created in Kiuwan with code: ${analysisId}</echo>
+    <echo>Upload results to kiuwan: FINISHED</echo>
+  </target>
+  <target name="retrieve.results">
+    <echo>Retrieve complete results from kiuwan: STARTED</echo>
+    <retrieve.results configurationfile="${agent.configuration}" analysisId="${analysisId}" analysisScope="${analysisScope}" waitForResults="${waitForResults}" timeout="${results.timeout}" resultsUrlProperty="resultsUrl" auditResultsProperty="auditResult" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}" applicationName="${softwareName}" outputFile="${outputFile}"/>
+    <if>
+      <isset property="auditResult"/>
+      <then>
+        <echo>Audit passed: ${auditResult}</echo>
+      </then>
+    </if>
+    <echo>Retrieve complete results from kiuwan: FINISHED</echo>
+  </target>
+  <target name="upload.failure.results">
+    <upload.failure.results configurationfile="${agent.configuration}" resultsdir="${results.dir}" ticketIdProperty="ticketId" resultProperty="result" applicationName="${softwareName}" timeout="${upload.timeout}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}"/>
+    <if>
+      <and>
+        <equals arg1="${result}" arg2="OK"/>
+        <not>
+          <equals arg1="${ticketId}" arg2=""/>
+        </not>
+      </and>
+      <then>
+        <echo>An error report has been uploaded to Kiuwan. Our support team will investigate the cause of this failure.</echo>
+        <echo>A support ticket has been created with reference: ${ticketId}</echo>
+      </then>
+      <else>
+        <echo>We could not send an error report to Kiuwan. Please get in contact with Kiuwan Technical Support for further information on this issue.</echo>
+      </else>
+    </if>
+  </target>
+  <target name="download.userconfig">
+    <echo>Download user configuration: STARTED</echo>
+    <download.userconfig configurationFile="${agent.configuration}" modelsDir="${models.dir}" appNamesProperty="appNames" appIdsProperty="appIds" modelIdsProperty="modelIds" allowedProperty="allowed" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}"/>
+    <echo>Download user configuration: FINISHED</echo>
+  </target>
+  <target name="download.license">
+    <echo>Getting license for user: STARTED</echo>
+    <license property="licenseToken" configurationFile="${agent.configuration}" username="${username}" password="${password}" domainId="${domain.id}" idpHostname="${sso.idp.hostname}" trustedHosts="${sso.trustedHosts}" noProxyHosts="${sso.noProxyHosts}" useWIA="${sso.useWIA}" useHTTPAuthentication="${sso.useHTTPAuthentication}" httpAuthUserAgent="${sso.httpAuthUserAgent}" useFormAuthentication="${sso.useFormAuthentication}" usernameInputFieldName="${sso.formAuth.usernameInputFieldName}" passwordInputFieldName="${sso.formAuth.passwordInputFieldName}" idpUsername="${sso.idp.username}" idpPassword="${sso.idp.password}"/>
+    <echo>Getting license for user: FINISHED</echo>
+  </target>
+  <target name="configuration.save.deferred">
+    <echo>Saving user application configuration: STARTED</echo>
+    <configuration.save.deferred appNames="${appNames}" appIds="${appIds}" modelIds="${modelIds}" allowed="${allowed}" licenseToken="${licenseToken}"/>
+    <echo>Saving user application configuration: FINISHED</echo>
+  </target>
+  <target name="analyze.aim.discovery.base">
+    <if>
+      <contains string="${allowed}" substring="ARCHITECTURE" casesensitive="no"/>
+      <then>
+        <ant antfile="appmap.xml" inheritall="true" inheritrefs="true" target="discovery.base"/>
+      </then>
+      <else>
+        <echo>ARCHITECTURE is not allowed for current user. Base discovery was not run.</echo>
+      </else>
+    </if>
+  </target>
+</project>

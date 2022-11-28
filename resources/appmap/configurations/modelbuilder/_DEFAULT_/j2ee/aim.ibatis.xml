@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for iBatis framework</description>
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-java.xml"/>
+  <import resource="classpath:resources/qaking-tech-sql.xml"/>
+  <import resource="classpath:resources/qaking-tech-plsql.xml"/>
+  <import resource="classpath:resources/qaking-tech-transactsql.xml"/>
+
+  <!-- Rules -->
+  <bean id="aim.ibatis.rule.mapping" class="com.optimyth.apm.builder.rules.database.ibatis.IbatisDescriptorRule">
+    <description>iBatis mapping descriptors rule</description>
+    <property name="active" value="${aim.ibatis.rule.mapping.active}"/>
+    <property name="callback" ref="aim.ibatis.callback" />
+    <property name="descriptorFilter" ref="aim.ibatis.filter.mappings"/>
+    <property name="defaultExpressionValue" value="${aim.ibatis.rule.mapping.defaultExpressionValue}"/>
+    <!--<property name="expressionValuesResource" value=""/>-->
+    <property name="descriptorResolver" ref="aim.ibatis.descriptor.resolver"/>
+  </bean>
+
+  <bean id="aim.ibatis.rule.java" class="com.optimyth.apm.builder.rules.database.ibatis.IbatisJavaRule">
+    <description>iBatis mapping descriptors rule</description>
+    <property name="active" value="${aim.ibatis.rule.java.active}"/>
+    <property name="callback" ref="aim.ibatis.callback" />
+    <property name="filter" ref="aim.ibatis.filter.code"/>
+    <property name="apiResolver" ref="aim.ibatis.rule.java.apiResolver"/>
+  </bean>
+  
+  <!-- Resolver -->
+  
+  <bean id="aim.ibatis.rule.java.apiResolver" class="com.optimyth.apm.builder.rules.database.ibatis.DefaultIbatisApiResolver">
+    <description>Resolve id for SQL invoked in iBatis API calls</description>
+    <property name="methodsToCheck" value="${aim.ibatis.rule.java.apiResolver.methodsToCheck}"/>
+    <property name="daoClasses" value="${aim.ibatis.rule.java.apiResolver.daoClasses}"/>
+  </bean>
+  
+  <bean id="aim.ibatis.descriptor.resolver" class="com.optimyth.apm.builder.rules.database.ibatis.DescriptorFileResolver">
+    <property name="sourceDirs" value="main"/>
+    <property name="resourceDirs" value="resources,webapp"/>
+  </bean>  
+
+  <!-- Callback -->
+
+  <bean id="aim.ibatis.callback" class="com.optimyth.apm.builder.rules.database.ibatis.BasicIbatisCallback">
+    <description>iBatis callback</description>
+    <property name="softwareName" value="${aim.ibatis.software}"/>
+    <property name="dbType" value="${aim.ibatis.dbsystem}"/>
+    <property name="dbName" value="${aim.ibatis.dbname}"/>
+    <property name="ignoreCase" value="${aim.ibatis.ignoreCase}"/>
+    <property name="queryProcessor" ref="aim.ibatis.callback.queryProcessor"/>
+    <property name="addSqlCode" value="${aim.ibatis.addSqlCode}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+  
+  <!-- Query processor/SqlProcessor -->
+  
+  <!-- To support old and new properties configuration -->
+  <bean name="aim.ibatis.sqltype.supportConfig" class="com.optimyth.apm.builder.rules.common.FirstNonNullPropertyFactoryBean">
+    <property name="objectType" value="java.lang.String"/>
+    <property name="values">
+      <list>
+        <bean class="java.lang.String"><constructor-arg value="${aim.ibatis.sqltype}"/></bean>
+        <bean class="java.lang.String"><constructor-arg value="${aim.ibatis.sqlKind}"/></bean>
+      </list>
+    </property>
+  </bean>   
+  
+  <bean id="aim.ibatis.callback.queryProcessor" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>
+      Process
+        + aim.ibatis.sqlKind (old config - deprecated)
+        + aim.ibatis.sqltype (new config)
+      to choose the right Sql Processor used by the rule callback
+    </description>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.database.ibatis.QueryProcessor"/>
+    <property name="key" ref="aim.ibatis.sqltype.supportConfig"/>  <!-- To support old and new properties configuration -->
+    <property name="defaultValue" ref="aim.ibatis.callback.queryProcessor.sql92"/>
+    <property name="map"><map>
+      <entry key="sql92"       value-ref="aim.ibatis.callback.queryProcessor.sql92"/>      <!-- deprecated value, kept for retro-compatibility -->
+      <entry key="oracle"      value-ref="aim.ibatis.callback.queryProcessor.oracle"/>     <!-- deprecated value, kept for retro-compatibility -->
+      <entry key="sqlserver"   value-ref="aim.ibatis.callback.queryProcessor.sqlserver"/>  <!-- deprecated value, kept for retro-compatibility -->
+      <entry key="any"         value-ref="aim.ibatis.callback.queryProcessor.any"/>        <!-- deprecated value, kept for retro-compatibility -->
+      <entry key="ansisql"     value-ref="aim.ibatis.callback.queryProcessor.sql92"/>
+      <entry key="plsql"       value-ref="aim.ibatis.callback.queryProcessor.oracle"/>
+      <entry key="transactsql" value-ref="aim.ibatis.callback.queryProcessor.sqlserver"/>
+      <entry key="multi"       value-ref="aim.ibatis.callback.queryProcessor.any"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.ibatis.callback.queryProcessor.base" abstract="true" class="com.optimyth.apm.builder.rules.database.ibatis.BaseQueryProcessor">
+    <property name="useFallbackParse" value="${aim.ibatis.useFallbackParser}" />
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+  
+  <bean id="aim.ibatis.callback.queryProcessor.sql92" parent="aim.ibatis.callback.queryProcessor.base" class="com.optimyth.apm.builder.rules.database.ibatis.Sql92QueryProcessor">
+  </bean>
+  
+  <bean id="aim.ibatis.callback.queryProcessor.oracle" parent="aim.ibatis.callback.queryProcessor.base" class="com.optimyth.apm.builder.rules.database.ibatis.PlsqlQueryProcessor">
+    <!-- property name="plsqlProcessor" ref="aim.plsql.codeProcessor"/ -->
+  </bean>
+
+  <bean id="aim.ibatis.callback.queryProcessor.sqlserver" parent="aim.ibatis.callback.queryProcessor.base" class="com.optimyth.apm.builder.rules.database.ibatis.SqlServerQueryProcessor">
+  </bean>  
+
+  <bean id="aim.ibatis.callback.queryProcessor.any" parent="aim.ibatis.callback.queryProcessor.base" class="com.optimyth.apm.builder.rules.database.ibatis.CompositeQueryProcessor">
+    <property name="processors"><list>
+      <ref bean="aim.ibatis.callback.queryProcessor.sql92"/>
+      <ref bean="aim.ibatis.callback.queryProcessor.oracle"/>
+      <ref bean="aim.ibatis.callback.queryProcessor.sqlserver"/>
+    </list></property>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+  
+  <!-- Spring processor -->
+
+  <bean id="aim.ibatis.spring.processor" class="com.optimyth.apm.builder.rules.database.ibatis.IBatisSpringProcessor">
+    <description>Process Spring beans of type SqlMapClientFactoryBean, linking the bean with iBatis descriptor.</description>
+    <property name="callback" ref="aim.ibatis.callback"/>
+    <property name="descriptorResolver" ref="aim.ibatis.descriptor.resolver"/>
+  </bean>
+  
+  <!-- Filters -->
+  <bean id="aim.ibatis.filter.mappings" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.ibatis.filter.mappings}"/>
+  </bean>
+
+  <bean id="aim.ibatis.filter.code" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.ibatis.filter.code}"/>
+  </bean>
+
+</beans>

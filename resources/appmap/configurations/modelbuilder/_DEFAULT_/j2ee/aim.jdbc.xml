@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+
+  <description>AIM rules for SQL code embedded in java sources.</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="../database/aim.plsql.xml"/>
+  <import resource="aim.java.xml"/>
+  <import resource="classpath:resources/qaking-tech-sql.xml"/>
+  <import resource="classpath:resources/qaking-tech-plsql.xml"/>
+  <import resource="classpath:resources/qaking-tech-transactsql.xml"/>
+  <import resource="classpath:resources/qaking-tech-cobol.xml"/><!-- TODO this is due to the fact that SQL extractors reference Cobol beans -->
+
+  <!-- Rule -->
+
+  <bean name="aim.j2ee.rule.jdbc" class="com.optimyth.apm.builder.rules.j2ee.jdbc.JdbcRule">
+    <description>AIM rule for discovering SQL usages (e.g. via JDBC or specific method calls) in Java code</description>
+    <property name="active" value="${aim.j2ee.rule.jdbc.active}"/>
+    <property name="filter" ref="aim.j2ee.rule.jdbc.filter"/>
+    <property name="extractor" ref="aim.j2ee.rule.jdbc.extractor" />
+    <property name="priority" value="50"/>
+  </bean>
+  
+    <!-- SQL extractors -->
+
+  <bean name="aim.j2ee.rule.jdbc.fallbackExtractor" class="com.optimyth.apm.builder.rules.j2ee.jdbc.TextFallbackSqlExtractor">
+    <property name="callback" ref="aim.j2ee.rule.jdbc.callback" />
+    <property name="createSqlComponents" value="${aim.j2ee.rule.jdbc.createSqlComponents}"/>
+  </bean>
+
+  <bean name="aim.j2ee.rule.jdbc.extractor" parent="java_sql_extractor">
+    <description>Extracts SQL code embedded in Java</description>
+    <property name="listener" ref="aim.j2ee.rule.jdbc.listener" />
+    <property name="frameworkExtractors">
+      <list>
+        <!-- TODO infer sql extractors by discovery, finding which frameworks (e.g. Hibernate, Spring JDBC, old plain JDBC) are used -->
+        <bean class="com.als.sql.extractor.java.JdbcCodeSqlExtractor">
+          <property name="databaseMethods" value="${aim.j2ee.rule.jdbc.methods},${aim.j2ee.rule.jdbc.customMethods}"/>
+          <property name="customDatabaseMethods" value="${aim.j2ee.rule.jdbc.customMethods}"/>
+          <property name="fallbackSqlExtractor" ref="aim.j2ee.rule.jdbc.fallbackExtractor" />
+          <property name="strictCheck" value="${aim.j2ee.rule.jdbc.strictCheck}"/>
+          <property name="methodsGetConnection" value="${aim.j2ee.rule.jdbc.methodsGetConnection}"/>
+          <property name="ignoreMethodCalls" value="${aim.j2ee.rule.jdbc.ignoreMethodCalls}"/>
+          <property name="maxPaths" value="64"/>
+        </bean>
+        <bean class="com.als.sql.extractor.java.SpringJdbcTemplateSqlExtractor">
+          <property name="fallbackSqlExtractor" ref="aim.j2ee.rule.jdbc.fallbackExtractor" />
+          <property name="strictCheck" value="${aim.j2ee.rule.jdbc.strictCheck}"/>
+          <property name="ignoreMethodCalls" value="${aim.j2ee.rule.jdbc.ignoreMethodCalls}"/>
+          <property name="maxPaths" value="64"/>
+        </bean>
+      </list>
+    </property>
+    <property name="frameworkExtractorNames">
+      <null />
+    </property>
+  </bean>
+
+  <!-- Database listeners -->
+  
+  <!-- To support old and new properties configuration -->
+  <bean name="aim.jdbc.sqltype.supportConfig" class="com.optimyth.apm.builder.rules.common.FirstNonNullPropertyFactoryBean">
+    <property name="objectType" value="java.lang.String"/>
+    <property name="values">
+      <list>
+        <bean class="java.lang.String"><constructor-arg value="${aim.jdbc.sqltype}"/></bean>
+        <bean class="java.lang.String"><constructor-arg value="${aim.j2ee.rule.jdbc.dbtype}"/></bean>
+      </list>
+    </property>
+  </bean>   
+  
+  <bean id="aim.j2ee.rule.jdbc.listener" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>
+    Which listener to use for processing SQL code. Process 
+      + aim.j2ee.rule.jdbc.dbtype (old config - deprecated)
+      + aim.jdbc.sqltype (new config)
+    </description>
+    <property name="key" ref="aim.jdbc.sqltype.supportConfig"/>  <!-- To support old and new properties configuration -->
+    <property name="objectType" value="com.optimyth.apm.builder.rules.j2ee.jdbc.JdbcSqlListener"/>
+    <property name="defaultValue" ref="aim.j2ee.rule.jdbc.listener.sql"/>
+    <property name="map"><map>
+      <entry key="sql"         value-ref="aim.j2ee.rule.jdbc.listener.sql"/>    <!-- deprecated value, kept for retro-compatibility -->
+      <entry key="oracle"      value-ref="aim.j2ee.rule.jdbc.listener.oracle"/> <!-- deprecated value, kept for retro-compatibility -->
+      <entry key="ansisql"     value-ref="aim.j2ee.rule.jdbc.listener.sql"/>
+      <entry key="plsql"       value-ref="aim.j2ee.rule.jdbc.listener.oracle"/>
+      <entry key="transactsql" value-ref="aim.j2ee.rule.jdbc.listener.sqlserver"/>
+      <entry key="multi"       value-ref="aim.j2ee.rule.jdbc.listener.multi"/>
+    </map></property>
+  </bean>  
+
+  <bean id="aim.j2ee.rule.jdbc.listener.sql" class="com.optimyth.apm.builder.rules.j2ee.jdbc.JdbcSqlListener">
+    <property name="callback" ref="aim.j2ee.rule.jdbc.callback"/>
+    <property name="sqlLanguageSupport" ref="ls_sql"/>
+    <property name="languageSupportJava" ref="ls_java"/>
+    <property name="createSqlComponents" value="${aim.j2ee.rule.jdbc.createSqlComponents}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+
+  <bean id="aim.j2ee.rule.jdbc.listener.oracle" parent="aim.j2ee.rule.jdbc.listener.sql" class="com.optimyth.apm.builder.rules.j2ee.jdbc.JdbcPlSqlListener">
+    <property name="sqlLanguageSupport" ref="ls_plsql"/>
+  </bean>
+  
+  <bean id="aim.j2ee.rule.jdbc.listener.sqlserver" parent="aim.j2ee.rule.jdbc.listener.sql" class="com.optimyth.apm.builder.rules.j2ee.jdbc.JdbcTransactSqlListener">
+    <property name="sqlLanguageSupport" ref="ls_transactsql"/>
+  </bean> 
+  
+  <bean id="aim.j2ee.rule.jdbc.listener.multi" class="com.optimyth.apm.builder.rules.common.CompositeSqlListener">
+    <property name="callback" ref="aim.j2ee.rule.jdbc.callback"/>
+    <property name="createSqlComponents" value="${aim.j2ee.rule.jdbc.createSqlComponents}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>  
+    <property name="sqlListeners"><list>
+      <ref bean="aim.j2ee.rule.jdbc.listener.sql"/>
+      <ref bean="aim.j2ee.rule.jdbc.listener.oracle"/>
+      <ref bean="aim.j2ee.rule.jdbc.listener.sqlserver"/>
+    </list></property>
+  </bean>    
+
+  <!-- Callback -->
+
+  <bean name="aim.j2ee.rule.jdbc.callback" class="com.optimyth.apm.builder.rules.j2ee.jdbc.BasicJdbcCallback">
+    <property name="application" value="${aim.j2ee.rule.java.software}"/>
+    <property name="dbType" value="${aim.j2ee.rule.jdbc.dbsystem}"/>
+    <property name="dbName" value="${aim.j2ee.rule.jdbc.dbname}"/>
+    <property name="addCodeToRelations" value="${aim.common.addCodeToRelations}"/>
+    <property name="ignoreCase" value="${aim.j2ee.rule.jdbc.ignoreCase}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+    <property name="databaseObjectResolver" ref="aim.global.databaseObjectResolver"/>
+  </bean>
+
+  <bean name="aim.j2ee.rule.jdbc.databaseObjectResolver" class="com.optimyth.apm.builder.rules.common.FirstNonNullFactoryBean">
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.dbresolution.DatabaseObjectResolver"/>
+    <property name="values"><list>
+      <ref bean="aim.global.databaseObjectResolver"/>
+      <ref bean="aim.common.databaseObjectResolver.default"/>
+    </list>
+    </property>
+  </bean>
+
+  <!-- Uses same filter for java code. Could be changed if SQL code analysis should be reduced to a subset of sources -->
+  <bean id="aim.j2ee.rule.jdbc.filter" parent="aim.j2ee.filter.javaSource"/>
+
+</beans>

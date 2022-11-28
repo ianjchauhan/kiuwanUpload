@@ -1,0 +1,107 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='javascript' subtech='typescript' descriptor='javascript/aim.typescript.xml' label='Process Typescript scripts'>
+  <description>
+    Models some Typescript Angular decorators (modules, components, pipe, directives, injectables) and classes    
+  </description>
+
+  <properties>
+    <property id='aim.typescript.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>Activation for Typescript analysis.</description>
+    </property>
+
+    <property id='aim.typescript.software' type='string'>
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>
+        Default (fallback) software name. Please note that global software resolvers could be used to
+        resolve the software where each Typescript file lives.
+      </description>
+    </property>
+
+    <property id='aim.typescript.addCodeToRelations' type='bool'>
+      <name>addCodeToRelations</name>
+      <example>${aim.common.addCodeToRelations}</example>
+      <description>If true, matching Typescript code will be added to relations.</description>
+    </property>
+
+    <property id='aim.typescript.resolveArtifacts' type='bool'>
+      <name>resolveArtifacts</name>
+      <example>${aim.common.resolveArtifacts}</example>
+      <description>If true, artifacts will be resolved.</description>
+    </property>
+
+    <property id='aim.typescript.resolver' type='enum'>
+      <name>resolver</name>
+      <example>existing</example>
+      <description>
+        Which class resolver to use for resolving dependencies on target classes.
+      </description>
+      <possible>
+        <enumval name="existing">Resolve only relations to classes found in analyzed code.</enumval>
+        <enumval name="matching">Resolve only relations to classes matching <code>matching.patterns</code>.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.typescript.matching.patterns' type='list' subtype='regexp'>
+      <name>matching.patterns</name>
+      <example>.+</example>
+      <description>
+        If <code>resolver</code> is set to <i>matching</i>, the package patterns (regular expressions) to use.
+      </description>
+    </property>
+
+
+    <property id="aim.typescript.filter" type="enum">
+      <name>filter</name>
+      <example>default</example>
+      <description>Filter to use (default, pattern) for typescript code files</description>
+      <possible>
+        <enumval name="default">Use typescript extensions to match typescript source files.</enumval>
+        <enumval name="pattern">Use Ant patterns given in the <code>filter.pattern</code> property.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.typescript.filter.pattern' type='list' subtype='antPattern'>
+      <name>filter.pattern</name>
+      <example>**/*.js,**/*.xsjs,**/*.ts,**/*.tsx</example>
+      <description>Filter (Ant patterns) for Typescript sources, when filter = pattern</description>
+    </property>
+    
+    <property id="aim.typescript.ignore.folders" type='list' subtype="string">
+      <name>ignore.folders</name>
+      <example>/UI</example>
+      <description>Part of the beginning of the name that will be ignored in the names of classes and elements of the typescript language. Values separated by ','. Example: /FRONT,/UI</description>
+    </property>
+    
+    <property id='aim.typescript.ignore.case.folders' type='bool'>
+      <name>ignore.case.folders</name>
+      <example>false</example>
+      <description>if the match of the beginning of the names is ignore case or not. Values true or false.</description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values></values>
+    <description></description>
+  </createdEntities>
+
+  <createdRelations>
+    <values></values>
+    <description></description>
+  </createdRelations>
+  
+  
+  <!--importantConfigurations activation="aim.typescript.rule.active" /-->
+  <importantConfigurations>
+    <alternative>
+      <value>aim.typescript.rule.active=true</value>
+    </alternative>
+    <alternative>
+      <value></value>
+    </alternative>
+  </importantConfigurations>
+  
+</block>

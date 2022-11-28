@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.functionParameters" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COMPLEXITY" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COMPLEXITY" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.LOWER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.FUNCTION" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="5.00" meaning="good" />
+        <threshold from="5.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <internal-name id="OPT.ABAP.COMPLEXITY.FUNCTIONPARAMETERS" />
+        <java-class>com.als.abap.metrics.ParamsMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <internal-name id="OPT.PLSQL.COMPLEXITY.INPUTPARAMETERS" />
+        <java-class>com.als.plsql.metrics.InputParametersMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+      <!-- Code examples for each language parser -->
+    <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <code-example name="metricCodeExampleAbap" result-value="13">
+<![CDATA[
+*       Source Name is  LZIFMU02
+FUNCTION Z_OPEN_OUTBOUND_INTERFACE
+*      *      *      *      *      *      *      *      *      *      *      *      -
+*       DO NOT USE THIS FUNCTION - instead use ZZ_OPEN_OUTBOUND_INTERFACE *      *-*                                           *      *-
+*      *      *      *      *      *      *      *      *      *      *      *-
+*      "----------------------------------------------------------------------
+*      "*      "Local interface:
+       using
+             VALUE(FILE_NAME) LIKE  FILENAME-FILEEXTERN   "PARAM 1
+             VALUE(PGM_ID) LIKE  SY-REPID                 "PARAM 2
+             VALUE(MODE) LIKE  PPPCH-ACCES                "PARAM 3
+             VALUE(FILE2) LIKE  FILENAME-FILEEXTERN       "PARAM 4
+             VALUE(FILE3) LIKE  FILENAME-FILEEXTERN       "PARAM 5
+             VALUE(FILE4) LIKE  FILENAME-FILEEXTERN       "PARAM 6
+             VALUE(FILE5) LIKE  FILENAME-FILEEXTERN       "PARAM 7
+             VALUE(FILE6) LIKE  FILENAME-FILEEXTERN       "PARAM 8
+             VALUE(FILE7) LIKE  FILENAME-FILEEXTERN       "PARAM 9
+             VALUE(FILE8) LIKE  FILENAME-FILEEXTERN       "PARAM 10
+             VALUE(FILE9) LIKE  FILENAME-FILEEXTERN       "PARAM 11
+             VALUE(FILE10) LIKE  FILENAME-FILEEXTERN      "PARAM 12
+             VALUE(ABEND_ON_ERROR_IF_SPACE)               "PARAM 13
+                             LIKE  EDIGENERAL-ERRHANDLE .
+
+              endfunction.
+]]>
+        </code-example>
+      </language-parser>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <code-example name="metricCodeExamplePlsql" result-value="2">
+<![CDATA[
+CREATE OR REPLACE PROCEDURE update_employee_salary(
+      p_factor IN NUMBER    --PARAM 1
+    ) AS
+      v_employee_count INTEGER;
+    BEGIN
+        UPDATE employee
+        SET salary = salary * p_factor;
+        COMMIT;
+    EXCEPTION
+     WHEN OTHERS THEN
+       ROLLBACK;
+   END update_employee_salary;
+CREATE OR REPLACE PROCEDURE delete_employee_salary(
+      p_factor IN NUMBER   --PARAM 2
+    ) AS
+      v_employee_count INTEGER;
+    BEGIN
+        DELETE FROM employee
+      WHERE       first_name = 'junk';
+        COMMIT;
+    EXCEPTION
+     WHEN OTHERS THEN
+       ROLLBACK;
+   END update_employee_salary;
+   /
+]]>
+        </code-example>
+      </language-parser>
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Parámetros por función]]></name>
+      
+      <description>
+<![CDATA[
+Número de parámetros por función/procedimiento/método. Esta métrica nos da una idea de la complejidad de interfaz. Las funciones con gran número de argumentos son más difícules de entender y de usar.
+
+Si sus funciones tuvieran muchos argumentos, podría ser porque:
+- La función hace demasiadas cosas: descompóngala en varias funciones con responsabilidades más concretas.
+- La función necesita demasiadas entradas para hacer su trabajo: puede que esto sea inevitable, pero debería agrupar los argumentos en una o varias estructuras lógicas compuestas (structs en C, beans Java, etc.) para que argumentos que estén relacionados entre sí queden contenidos en unos pocos, más fáciles de entender.
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Número de parámetros de cada función.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Número de parámetros de entrada de cada función y procedimiento del fichero.
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Parameters per function]]></name>
+      
+      <description>
+<![CDATA[
+Number of parameters per function/procedure/method. This metric gives an indication of the "interface" complexity. Functions with a large number of arguments are more difficult to use and understand.
+
+If your functions have a large number of arguments, this could indicate that:
+- Your function is doing too much things: refactor the function into multiple functions with a more specific behaviour.
+- Your function needs too many inputs to do its job: this could be unavoidable, but then you may refactor the args themselfs, collecting logically related args in an composite structure (a struct in C, a JavaBean in Java, etc.) to aggregate the large arguments list in a few, well understable composed arguments.
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Number of parameters of every function.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+          <![CDATA[Number of input parameters of every function and procedure of the file.]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

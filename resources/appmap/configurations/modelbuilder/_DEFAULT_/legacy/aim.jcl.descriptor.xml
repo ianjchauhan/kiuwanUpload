@@ -1,0 +1,202 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='legacy' subtech='jcl' descriptor='legacy/aim.jcl.xml' label='Process Job Control Language (JCL) code'>
+  <description>
+    Process Job Control Language (JCL) code.
+  </description>
+
+  <properties>
+
+    <property id='aim.jcl.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>Enables processing of JCL code.</description>
+    </property>
+
+    <property id='aim.jcl.software.batch' type='string'>
+      <name>batch</name>
+      <example>${aim.common.software}</example>
+      <description>Application/module name for JCL scripts.</description>
+    </property>
+
+    <property id='aim.jcl.software.backend' type='string'>
+      <name>backend</name>
+      <example>${aim.common.software}</example>
+      <description>Application/module name for called programs, not resolved as JCL scripts.</description>
+    </property>
+
+    <property id='aim.jcl.filter' type='enum'>
+      <name>filter</name>
+      <example>default</example>
+      <description>Strategy to use for selecting JCL files to process.</description>
+      <possible>
+        <enumval name='default'>Accept language extensions for jcl technology.</enumval>
+        <enumval name='pattern'>Accept scripts matching patterns in the <code>patterns</code> property.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.jcl.filter.pattern' type='list' subtype='antPattern'>
+      <name>pattern</name>
+      <example>**/*.jcl</example>
+      <description>If <code>filter=pattern</code>, use the following comma-separated Ant patterns for matching JCL files.</description>
+    </property>
+
+    <property id='aim.jcl.ignoreCase' type='string'>
+      <name>ignoreCase</name>
+      <example>${aim.common.ignoreCase}</example>
+      <description>If true, case is ignored in entity names referenced in JCL scripts.</description>
+    </property>
+
+    <property id="aim.jcl.acceptUnresolved" type="bool">
+      <name>acceptUnresolved</name>
+      <example>${aim.common.acceptUnresolved}</example>
+      <description>If true, target called programs not found in model are created (in batch application). If false, unresolved calls are ignored.</description>
+    </property>
+
+    <property id="aim.jcl.saveStepInformation" type="bool">
+      <name>saveStepInformation</name>
+      <example>true</example>
+      <description>If true, be mapped so many relationships between the JCL and the element as are referred to in various steps. If false, be mapped a single relationship between JCL and the element although references the element more than once inside.</description>
+    </property>
+
+    <property id="aim.jcl.instream" type="bool">
+      <name>instream</name>
+      <example>true</example>
+      <description>If true, internal procedures are modeled</description>
+    </property>
+
+    <property id="aim.jcl.visitor" type="string">
+      <name>visitor</name>
+      <example>E</example>
+      <description>Type of node visitor</description>
+      <possible>
+        <enumval name='E'>Use extended visitor.</enumval>
+        <enumval name='D'>Use default visitor.</enumval>
+      </possible>
+    </property>
+
+    <property id="aim.jcl.resolver.progcalls.registerUnresolvedCalls" type="bool">
+      <name>registerUnresolvedCalls</name>
+      <example>${aim.common.acceptUnresolved}</example>
+      <description>If true, calls to programs that cannot be found are registered without language / artifact properties. If false, such calls are ignored.</description>
+    </property>
+
+    <property id="aim.jcl.resolver.file.extensions" type="string">
+      <name>file.extensions</name>
+      <example>jcl,prc,ctc</example>
+      <description>Extensions to consider for called files</description>
+    </property>
+
+    <property id="aim.jcl.resolver.cobol.extensions" type="list" subtype="string">
+      <name>cobol.extensions</name>
+      <example>cob,cbl,cobol,pco</example>
+      <description>Extensions to consider for called cobol programs</description>
+    </property>
+
+    <property id="aim.jcl.registerUtilities" type="bool">
+      <name>registerUtilities</name>
+      <example>true</example>
+      <description>If true, utilities called are registered. If false, utilities are not modelled as components and no calls relation is created.</description>
+    </property>
+
+    <property id="aim.jcl.resolveSqlStatements" type="bool">
+      <name>resolveSqlStatements</name>
+      <example>true</example>
+      <description>If true, SQL statements passed to DB2 utilities are processed. If false, SQL statements in JCL code are ignored.</description>
+    </property>
+
+    <property id="aim.jcl.addQuery" type="bool">
+      <name>addQuery</name>
+      <example>true</example>
+      <description>If set to true, SQL queries and their relationships with used tables are inserted into the model as explicit entities. If false, direct relations between JCL and used tables are presented.</description>
+    </property>
+
+    <property id="aim.jcl.addSqlCode" type="bool">
+      <name>addSqlCode</name>
+      <example>true</example>
+      <description>If set to true, SQL code is added as property into the queries. Ignored if addQuery=false.</description>
+    </property>
+
+    <property id="aim.jcl.utilities.toIgnore" type="list" subtype="string">
+      <name>utilities.toIgnore</name>
+      <example>IDCAMS, IEBCOPY, IEBDG, IEBGENER, IEBUPDTE, IEFBR14, ICEGENER, SORT, SORTD, ICEMAN, ICKDSF, IEHINITT, IEHLIST, IEHPROGM, SPZAP</example>
+      <description>Comma-separated list of system programs / procedures to ignore</description>
+    </property>
+
+    <property id="aim.jcl.utilities.host" type="list" subtype="string">
+      <name>utilities.host</name>
+      <example>IKJEFT01, IKJEFT1A, IKJEFT1B</example>
+      <description>Comma-separated list of host utilities (used to execute programs and launch DB2 utilities)</description>
+    </property>
+
+    <property id="aim.jcl.utilities.db2" type="list" subtype="string">
+      <name>utilities.db2</name>
+      <example>DSNTIAUL, DSNTIAD, DSNTEP2, DSNTEP4, DSNTIAUP</example>
+      <description>Comma-separated list of DB2 utilities, used to execute SQL statements (or table LOAD/UNLOAD)</description>
+    </property>
+
+    <property id="aim.jcl.utilities.controlm" type="list" subtype="string">
+      <name>utilities.controlm</name>
+      <example>CTMJOB, CTMPLANB</example>
+      <description>Comma-separated list of Control-M utilities for launching/scheduling Control-M jobs from JCL</description>
+    </property>
+
+    <property id='aim.jcl.dbsystem' type='string'>
+      <name>dbsystem</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>
+        The database type (e.g. DB2) or database name for container of referenced tables.
+        Used as fallback if no global database object resolver, or the resolver cannot find the target entity.
+      </description>
+    </property>
+
+    <property id='aim.jcl.dbname' type='string'>
+      <name>dbname</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>
+        The database name or database schema for container of referenced tables.
+        Used as fallback if no global database object resolver, or the resolver cannot find the target entity.
+      </description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>program (jcl or cobol), operation (procedure), resource (file), utility, sql, table</values>
+    <description>
+      Creates <i>program</i> components for each JCL job, and for each called cobol programs.<br/>
+      Creates <i>operation</i> components for each procedure (instream or cataloged procedures).<br/>
+      Creates <i>resource</i> components for each called file (i.e. ctc files).<br/>
+      Creates <i>utility</i> components for utilities called to execute DB2 programs (i.e. IKJEFT01, IKJEFT1A or IKJEFT1B).
+      Creates <i>sql</i> and <i>table</i> components for dependencies on DB2 tables (when resolveSqlStatements is true).
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      program -contains-> operation,
+      operation -contains-> operation,
+      program -calls-> program,
+      operation -calls-> program,
+      program -calls-> operation,
+      operation -calls-> operation,
+      program -calls-> utility,
+      program -calls-> utility,
+      program -uses-> resource,
+      operation -uses-> resource,
+      program|operation -uses-> sql,
+      sql -select|insert|update|delete-> table
+    </values>
+    <description>
+      Creates a <i>calls</i> relation between the jcl job program or procedure (operation) and the called program, procedure or utility.<br/>
+      Creates a <i>uses</i> relation between the jcl job program or procedure (operation) and the called file.<br/>
+      Creates a <i>contains</i> relation between the jcl job program or procedure (operation) and the declared procedure.<br/>
+      Creates relations between job/procedure and DB2 tables, with intermediate query objects.
+    </description>
+  </createdRelations>
+
+  <importantConfigurations activation="aim.jcl.rule.active">
+    <alternative><value>aim.jcl.instream=false</value></alternative>
+    <alternative><value>aim.jcl.saveStepInformation=false</value></alternative>
+  </importantConfigurations>
+
+</block>

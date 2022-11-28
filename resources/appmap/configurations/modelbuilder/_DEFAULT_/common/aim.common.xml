@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="common/aim.common.properties"/>
+  </bean-->
+
+  <util:constant id="aim.common.softwareType.application" static-field="com.optimyth.apm.model.Types$SoftwareType.APPLICATION"/>
+
+  <bean name="aim.extensions.classifier" class="com.als.core.techclassifier.ExtensionFileClassifier">
+    <property name="languageInfo" ref="language_info"/>
+  </bean>
+
+  <!-- Common resolvers -->
+
+  <bean id="aim.common.resolver.base" abstract="true" class="com.optimyth.apm.builder.rules.common.callresolution.ConfigurableCalledResolver">
+    <description>Base resolver template</description>
+    <property name="application" value="${aim.common.software}"/>
+    <property name="applicationType" ref="aim.common.softwareType.application"/>
+  </bean>
+
+  <bean id="aim.common.resolver.fallback" parent="aim.common.resolver.base" class="com.optimyth.apm.builder.rules.common.callresolution.NotfoundCalledResolver">
+    <description>
+      Default CalledResolver, that will resolve target component to a program of unknown technology (language = "?").
+      This is typically the last resolver (fallback) in a sequence ({@link CompositeCalledResolver}) of resolvers.
+    </description>
+  </bean>
+
+  <util:constant id="aim.common.resolver.null" static-field="com.optimyth.apm.builder.rules.common.callresolution.CalledResolver.NULL"/>
+
+  <bean id="aim.global.databaseObjectResolver" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="key" value="${aim.common.dbresolver.name}"/>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.dbresolution.DatabaseObjectResolver"/>
+    <property name="defaultValue"><null/></property>
+    <property name="map"><map>
+      <entry key="multidatabase">
+      	<bean class="com.optimyth.apm.builder.rules.database.resolver.MultiDatabaseObjectResolver">
+      		<property name="databaseSchemaLoader">
+      			<bean class="com.optimyth.apm.builder.rules.database.resolver.DefaultDatabaseSchemaLoader">
+      				<property name="directories" value="${aim.common.dbresolver.directories}"/>
+              <property name="patterns" value="${aim.common.dbresolver.schema.patterns}"/>
+      			</bean>
+      		</property>
+      	</bean>
+      </entry>
+      <entry key="custom" value-ref="aim.global.databaseObjectResolver.custom"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.global.databaseObjectResolver.custom" class="com.optimyth.apm.builder.rules.common.IfExistsFactoryBean">
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.dbresolution.DatabaseObjectResolver"/>
+    <property name="defaultValue"><null/></property>
+    <property name="key" value="aim.custom.databaseObjectResolver"/>
+  </bean>
+
+  <bean id="aim.common.databaseObjectResolver.default" class="com.optimyth.apm.builder.rules.database.resolver.MultiDatabaseObjectResolver">
+    <property name="databaseSchemaLoader">
+      <bean class="com.optimyth.apm.builder.rules.database.resolver.DefaultDatabaseSchemaLoader">
+        <property name="directories" value="${aim.common.dbresolver.directories}"/>
+        <property name="patterns" value="${aim.common.dbresolver.schema.patterns}"/>
+      </bean>
+    </property>
+  </bean>
+
+  <bean id="aim.common.excludeDatabaseItems" class="com.optimyth.apm.builder.rules.common.SetPredicate">
+    <property name="items" value="${aim.common.excludeDatabaseItems}"/>
+  </bean>
+
+  <!-- ********************************** -->
+  <!-- *****  APPLICATION RESOLVERS ***** -->
+  <!-- ********************************** -->
+
+  <!-- Generate dynamically a Composite Software Resolvers containing those software resolvers that are specified with "resolvers" (as a CSV of resolvers ids) -->
+  <bean class="com.optimyth.apm.builder.rules.common.appresolution.CompositeSoftwareResolverCreator">
+    <property name="beanName" value="aim.global.applicationResolver" />
+    <property name="resolvers" value="${aim.common.resolvers}"/>
+    <property name="renamingMap" value="${aim.common.resolvers.renameMap}"/>
+    <property name="extensionDir" value="${AGENT_HOME}/resources/appmap"/>
+  </bean>
+
+  <!-- Predefined software resolvers: used by CompositeSoftwareResolverCreator when needed -->
+  <bean name="aim.common.appresolver.registry" class="com.optimyth.apm.builder.rules.common.appresolution.ApplicationRegistrySoftwareResolver" />
+  <bean name="aim.common.appresolver.webregistry" class="com.optimyth.apm.builder.rules.common.appresolution.WebAppSoftwareResolver" />
+  <bean name="aim.common.appresolver.single" class="com.optimyth.apm.builder.rules.common.appresolution.SingleNameSoftwareResolver">
+    <property name="softwareName" value="${aim.common.appresolver.single.softwareName}" />
+    <property name="softwareType" value="${aim.common.appresolver.single.softwareType}" />
+  </bean>
+  <bean name="aim.common.appresolver.filepath" class="com.optimyth.apm.builder.rules.common.appresolution.FilePathSoftwareResolver">
+    <property name="regexp" value="${aim.common.appresolver.filepath.regexp}" />
+  </bean>
+
+  <bean id="aim.common.resolver.incremental" class="com.optimyth.apm.builder.rules.common.callresolution.InitialModelResolver"/>
+
+  <!-- ************************** -->
+  <!-- *****  GENERIC RULES ***** -->
+  <!-- ************************** -->
+  <bean name="aim.common.rule.metrics" class="com.optimyth.apm.builder.rules.metrics.MetricsRule">
+  	<property name="active" value="${aim.common.rule.metrics.active}" />
+  	<property name="directoriesMetrics" value="${aim.common.metrics.directories}" />
+    <property name="metrics" value="${aim.common.metrics}" />
+  </bean>
+  <bean id="aim.klaFilter" class="com.optimyth.apm.builder.file.AgentFileFilter">
+    <constructor-arg index="0"><value>${aim.common.baseDir}</value></constructor-arg>
+    <constructor-arg index="1"><value>${aim.common.includes}</value></constructor-arg>
+    <constructor-arg index="2"><value>${aim.common.excludes}</value></constructor-arg>
+  </bean>
+</beans>

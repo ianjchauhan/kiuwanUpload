@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs.securityControls" standard="nodejs.securityControls">
+
+  <description>Security control modules (validators, anti-XSS, anti-CSRF) for Node.js</description>
+
+  <!-- Other modules to check: https://validatejs.org/, https://github.com/hapijs/joi, https://github.com/andrewkeig/express-validation -->
+
+  <module name="nodejs/csurf" standard="csurf" >
+    <description url="https://expressjs.com/en/resources/middleware/csurf.html" >anti-CSRF middleware</description>
+
+    <class name="nodejs/csurf"/>
+  </module>
+
+  <module name="nodejs/hide-powered-by" standard="hide-powered-by" >
+    <description url="https://helmetjs.github.io/docs/hide-powered-by/">Middleware to remove the X-Powered-By HTTP header</description>
+
+    <class name="nodejs/hide-powered-by">
+      <function name="#module#"/>
+    </class>
+  </module>
+
+  <module name="nodejs/validator" standard="chriso.validator" >
+    <description url="https://github.com/chriso/validator.js">Node.js validation</description>
+    <class name="nodejs/validator">
+      <function name="contains" alias="equals,matches,isAfter,isAlpha,isAlphanumeric,isAscii,isBase64,isBefore,isBoolean,isCreditCard,isCurrency">
+        <neutralization argpos="0"/>
+      </function>
+      <function name="isDataURI" alias="isDecimal,isDivisible,isEmail,isFQDN,isFloat,isHexColor,isHexadecimal,isIP,isISBN,isISSN,isISIN">
+        <neutralization argpos="0"/>
+      </function>
+      <function name="isISO8601" alias="isIn,isInt,isMACAddress,isMD5,isMobilePhone,isNumeric,isURL,isUUID,isWhitelisted">
+        <neutralization argpos="0"/>
+      </function>
+      <function name="isJSON">
+        <!--neutralization kind="json" -->
+      </function>
+      <function name="blacklist" alias="whitelist">
+        <neutralization argpos="0"/>
+      </function>
+      <function name="escape">
+        <neutralization kind="xss" argpos="0"/>
+      </function>
+      <function name="unescape">
+        <!--retaint kind="xss"/>-->
+      </function>
+      <function name="normalizeEmail">
+        <neutralization argpos="0"/>
+      </function>
+      <function name="toBoolean" alias="toDate,toFloat,toInt">
+        <neutralization argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/validate.js" standard="validatejs" >
+    <description url="https://validatejs.org/">Validate.js</description>
+    <class name="nodejs/validate.js">
+      <function name="#module#">
+        <neutralization kind="*" argpos="0"/>
+      </function>
+      <function name="async">
+        <neutralization kind="*" argpos="0"/>
+      </function>
+      <function name="single">
+        <neutralization kind="*" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/express-validator" standard="express-validator">
+    <description url="https://github.com/ctavan/express-validator">Express module over nodejs/validator</description>
+    <class name="nodejs/express-validator" />
+  </module>
+
+  <module name="nodejs/express-enforces-ssl" standard="express-enforces-ssl">
+    <description url="https://www.npmjs.com/package/express-enforces-ssl">Enforces HTTPS connections on any incoming requests</description>
+    <class name="nodejs/express-enforces-ssl">
+      <function name="#module#">
+        <return type="nodejs/express-enforces-ssl"/>
+        <neutralization kind="http_strict_transport_security" argpos="-1"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/dompurify" standard="dompurify">
+    <description url="https://github.com/cure53/DOMPurify">XSS sanitizer for HTML</description>
+    <globalObject name="DOMPurify" type="nodejs/dompurify"></globalObject>
+    <class name="nodejs/dompurify">
+      <function name="#module#">
+        <return type="nodejs/dompurify"/>
+      </function>
+      <function name="sanitize">
+        <neutralization argpos="0" kind="xss"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/xss-filters" standard="xss-filters" >
+    <description url="https://www.npmjs.com/package/xss-filters">Output filtering to prevent XSS</description>
+
+    <class name="nodejs/xss-filters">
+      <function name="inHtmlComment" alias="inHTMLData,inDoubleQuotedAttr,inSingleQuotedAttr,inUnquotedAttr">
+        <neutralization kind="xss" argpos="0"/>
+      </function>
+      <function name="uriInHTMLComment" alias="uriInHTMLData,uriInDoubleQuotedAttr,uriInSingleQuotedAttr,uriInUnQuotedAttr">
+        <neutralization kind="xss" argpos="0"/>
+      </function>
+      <function name="uriPathInHTMLComment" alias="uriPathInHTMLData,uriPathInDoubleQuotedAttr,uriPathInSingleQuotedAttr,uriPathInUnQuotedAttr">
+        <neutralization kind="xss" argpos="0"/>
+      </function>
+      <function name="uriQueryInHtmlComment" alias="uriQueryInHTMLData,uriQueryInDoubleQuotedAttr,uriQueryInSingleQuotedAttr,uriQueryInUnQuotedAttr">
+        <neutralization kind="xss" argpos="0"/>
+      </function>
+      <function name="uriComponentInHTMLComment" alias="uriComponentInHTMLData,uriComponentInDoubleQuotedAttr,uriComponentInSingleQuotedAttr,uriComponentInUnQuotedAttr">
+        <neutralization kind="xss" argpos="0"/>
+      </function>
+      <function name="uriFragmentInHTMLComment" alias="uriFragmentInHTMLData,uriFragmentInDoubleQuotedAttr,uriFragmentInSingleQuotedAttr,uriFragmentInUnQuotedAttr">
+        <neutralization kind="xss" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/xss" standard="jsxss" >
+    <description url="https://github.com/leizongmin/js-xss">Sanitize untrusted HTML</description>
+    <function name="filterXSS">
+      <neutralization kind="xss" argpos="0"/>
+    </function>
+    <class name="nodejs/xss">
+      <function name="#module#">
+        <neutralization kind="xss" argpos="0"/>
+      </function>
+      <function name="FilterXSS">
+        <return type="nodejs/xss.FilterXSS"/>
+      </function>
+    </class>
+    <class name="nodejs/xss.FilterXSS">
+      <function name="process">
+        <neutralization kind="xss" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/node-esapi" standard="node-esapi">
+    <description url="https://github.com/ESAPI/node-esapi" >Minimal port of OWASP ESAPI (Enterprise Security API) for JavaScript</description>
+
+    <class name="nodejs/node-esapi.Encoder">
+      <function name="encodeForHTML"
+        alias="encodeForCSS,encodeForJS,encodeForJavaScript,encodeForJavascript,encodeForURL,encodeForHTMLAttribute,encodeForBase64">
+        <neutralization kind="xss" argpos="0"/>
+      </function>
+    </class>
+    <function name="encoder">
+      <return type="nodejs/node-esapi.Encoder"/>
+    </function>
+  </module>
+
+  <module name="nodejs/sanitizer" standard="Caja_HTML_Sanitizer">
+    <description url="https://github.com/theSmaw/Caja-HTML-Sanitizer">Google Caja's HTML Sanitizer</description>
+    <globalObject name="Sanitizer" type="nodejs/sanitizer"/>
+    <class name="nodejs/sanitizer">
+      <function name="escape" alias="escapeAttrib,sanitizeAttribs,sanitizeWithPolicy,normalizeRCData">
+        <neutralization kind="xss" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/express-sanitizer" standard="express-sanitizer" >
+    <description url="https://www.npmjs.com/package/express-sanitizer">Express middleware based on Caja_HTML_Sanitizer</description>
+    <class name="nodejs/express-sanitizer"/>
+  </module>
+
+  <module name="nodejs/helmet" standard="helmet" >
+    <description url="https://helmetjs.github.io">Express.js security with HTTP headers</description>
+    <class name="nodejs/helmet">
+      <function name="#module#"><return type="nodejs/helmet"/></function>
+      <!-- These middlewares could be imported independently, hence the names for the return types... -->
+      <function name="contentSecurityPolicy"><return type="nodejs/helmet-csp"/></function>
+      <function name="dnsPrefetchControl"><return type="nodejs/dns-prefetch-control"/></function>
+      <function name="expectCt"><return type="nodejs/expect-ct"/></function>
+      <function name="frameguard"><return type="nodejs/frameguard"/></function>
+      <function name="hidePoweredBy"><return type="nodejs/hide-powered-by"/></function>
+      <function name="hpkp"><return type="nodejs/hpkp"/></function>
+      <function name="hsts"><return type="nodejs/hsts"/></function>
+      <function name="ieNoOpen"><return type="nodejs/ienoopen"/></function>
+      <function name="noCache"><return type="nodejs/nocache"/></function>
+      <function name="noSniff"><return type="nodejs/dont-sniff-mimetype"/></function>
+      <function name="referrerPolicy"><return type="nodejs/referrer-policy"/></function>
+      <function name="xssFilter">
+        <return type="nodejs/x-xss-protection"/>
+        <sink kind="xss_protection_disabled" resource="web">
+          <arg pos="0" field="setOnOldIE"/>
+        </sink>
+      </function>
+    </class>
+    <class name="nodejs/helmet-csp">
+      <!-- Content-Security-Policy. White-listed CSP in modern browsers helps against XSS and traffic tracking -->
+      <tags>mitigation:xss</tags>
+      <function name="#module#" />
+    </class>
+    <class name="nodejs/dns-prefetch-control">
+      <!-- X-DNS-Prefetch-Control (to off for better security) -->
+      <tags>default</tags>
+      <function name="#module#"/>
+    </class>
+    <class name="nodejs/expect-ct">
+      <!-- Expect-CT, certificate transparency. See https://scotthelme.co.uk/certificate-transparency-an-introduction/ -->
+      <function name="#module#"/>
+    </class>
+    <class name="nodejs/frameguard">
+      <tags>default,SAMEORIGIN,prevention:clickjacking</tags>
+      <!-- X-Frame-Options for modern browsers. Some ignore ALLOW-FROM option and ignore the header... -->
+      <function name="#module#"/>
+    </class>
+    <class name="nodejs/hide-powered-by">
+      <!-- removes (or lies about) X-Powered-By generated by frameworks like Express -->
+      <tags>defaul,prevention:poweredByHeader</tags>
+      <function name="#module#"/>
+    </class>
+    <class name="nodejs/hpkp">
+      <!-- Public-Key-Pins header for public key pinning in browsers -->
+      <tags>mitigation:tls_mitm</tags>
+      <function name="#module#"/>
+    </class>
+    <class name="nodejs/hsts">
+      <!--
+      Strict-Transport-Security header, to avoid protocol downgrade attacks (HTTPS->HTTP) downgrading.
+      Combine with express-enforces-ssl
+      -->
+      <tags>default,mitigation:http_strict_transport_security</tags>
+      <function name="#module#"/>
+    </class>
+    <class name="nodejs/ienoopen">
+      <!-- X-Download-Options: noopen for IE browsers -->
+      <tags>default,mitigation:code_injection</tags>
+      <function name="#module#"/>
+    </class>
+    <class name="nodejs/nocache">
+      <!-- Cache-Control, Surrogate-Control, Pragma, Expires -->
+      <function name="#module#"/>
+    </class>
+    <class name="nodejs/dont-sniff-mimetype">
+      <!-- X-Content-Type-Options: nosniff, prevents mime-sniffing attacks like Rosetta-Flash -->
+      <tags>default,prevention:mime_sniffing</tags>
+      <function name="#module#"/>
+    </class>
+    <class name="nodejs/referrer-policy">
+      <!-- Referrer-Policy, no-referrer by default -->
+      <tags>mitigation:privacy_leak</tags>
+      <function name="#module#"/>
+    </class>
+    <class name="nodejs/x-xss-protection">
+      <!-- X-XSS-Protection: 1; mode=block, except for old IEs where it is disabled... -->
+      <tags>default,mitigation:xss</tags>
+      <function name="#module#">
+        <sink kind="xss_protection_disabled" resource="web">
+          <arg pos="0" field="setOnOldIE"/>
+        </sink>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/bcrypt" standard="node.bcrypt.js" >
+    <description url="https://github.com/kelektiv/node.bcrypt.js">bcrypt for Node.js, for password hashing</description>
+    <class name="nodejs/bcrypt">
+      <function name="hash">
+        <tags>pass_hash_gen:0</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="Number"/><!-- salt rounds; or salt String if combined with genSalt() -->
+          <param type="function(Error,String)"/>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="hashSync">
+        <tags>pass_hash_gen:0</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="Number"/><!-- salt rounds; or salt string -->
+        </parameters>
+      </function>
+      <function name="compare">
+        <tags>pass_hash_check:0</tags>
+        <parameters>
+          <param type="String"/><!-- plaintext password -->
+          <param type="String"/><!-- hashed password -->
+          <param type="function(Error,Boolean)"/>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="compareSync">
+        <tags>pass_hash_check:0</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="String"/>
+        </parameters>
+        <return type="Boolean"/>
+      </function>
+    </class>
+    <class name="nodejs/bcrypt-nodejs" supertypes="nodejs/bcrypt"/>
+  </module>
+
+  <module name="nodejs/scrypt" standard="node-scrypt">
+    <description url="https://github.com/barrysteyn/node-scrypt">scrypt for Node.js, for password hashing</description>
+    <class name="nodejs/scrypt">
+      <function name="kdf" alias="kdfSync">
+        <tags>pass_hash_gen:0</tags>
+      </function>
+      <function name="verifyKdf" alias="verifyKdfSync">
+        <tags>pass_hash_check:0</tags>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/argon2" standard="node-argon2">
+    <description url="https://github.com/ranisalt/node-argon2">Argon2 for Node.js, new password hashing</description>
+    <class name="nodejs/argon2">
+      <function name="hash">
+        <tags>pass_hash_gen:0</tags>
+        <return type="Promise"/>
+      </function>
+      <function name="verify">
+        <tags>pass_hash_check:1</tags>
+        <return type="Promise"/>
+      </function>
+    </class>
+    <!-- Different implementation, same interface -->
+    <class name="nodejs/argon2-ffi" supertypes="nodejs/argon2">
+      <field name="argon2i" type="nodejs/argon2"/>
+      <field name="argon2d" type="nodejs/argon2"/>
+    </class>
+  </module>
+
+  <module name="nodejs/hpp" standard="hpp">
+    <description url="https://www.npmjs.com/package/hpp">Express middleware to protect against HTTP Parameter Pollution attacks</description>
+
+    <class name="nodejs/hpp">
+      <function name="#module#">
+        <tags>neutralizes:hpp</tags>
+      </function>
+    </class>
+  </module>
+
+</library>

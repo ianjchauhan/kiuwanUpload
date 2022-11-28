@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric"
+    version="1.1">
+
+  <metric id="OPT.cbo" unit="" aggregation="avg" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.LOWER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.NAMESPACE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.TYPE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="14.00" meaning="good" />
+        <threshold from="14.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters>
+      <parameter id="validPackages">
+        <default-value><![CDATA[java., javax., org.omg., org.w3c.dom., org.xml.sax., org.omg.stub.java.rmi., org.ietf.jgss.]]></default-value>
+      </parameter>
+    </parameters>
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.COUPLING.CBO" />
+        <java-class>com.als.cpp.metrics.CboCppMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.COUPLING.CBO" />
+        <java-class>com.optimyth.csharp.metrics.CboCsharpMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.COUPLING.CBO" />
+        <java-class>com.als.java.metrics.CboJavaMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters ref-list="validPackages" />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <internal-name id="OPT.OBJECTIVEC.COUPLING.CBO" />
+        <java-class>com.optimyth.qaking.objectivec.metrics.CboObjectivecMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <internal-name id="OPT.PHP.COUPLING.CBO" />
+        <java-class>com.optimyth.qaking.php.metrics.CboMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.COUPLING.CBO" />
+        <java-class>com.optimyth.vbnet.metrics.CboVBnetMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+    <code-examples>
+
+    	<language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <code-example name="metricCodeExampleCpp" result-value="2">
+<![CDATA[
+
+#include "SimpleData.h"
+#include "InfoData.h"
+
+namespace nsp {
+	class ActivityData : public SimpleData {
+
+	  public:
+      InfoData cpp_condition;
+      InfoData java_condition;
+
+		QString ActivityData::get_precond(DrawingLanguage ln) const {
+		  switch (ln) {
+		  case CppView:
+		    return cpp_condition.first;
+		  case JavaView:
+		    return java_condition.first;
+		  default:
+		    return ln.ds();
+		  }
+		}
+	}
+}
+
+
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="metricCodeExampleCsharp" result-value="3">
+<![CDATA[
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Collections;
+using System.Web.UI.WebControls;
+
+namespace Deepcode.Flux.Core.Services.Assistant
+{
+	public class ControlUtil
+	{
+
+		public static void SetSelectedCSV( CObject value)
+		{
+
+			ArrayList csv = value.getArrayList();
+			foreach (ListItem i in list)
+				if( csv.Contains( i.Value )) i.Selected = true;
+		}
+	}
+}
+
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="metricCodeExampleJava" result-value="2">
+<![CDATA[
+package paq.opt.cbo;
+
+import paq.opt.op.CommandData;
+import paq.opt.op.CommandData2;
+
+public class CboClass2{
+
+  String field = "hello";
+  CommandData commandData;
+  CommandData2 commandData2;
+  String tipoAbucar;
+
+  public CboClass2(String dataSource)   {
+    String var = "";
+    System.out.println("Literal1");
+    doSomething(dataSource);
+  }
+
+  public String method(){
+    tipoAbuscar = "AGE";
+    commandData.value = commandData2.value;
+  }
+
+}
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <code-example name="metricCodeExampleObjectiveC" result-value="2"><![CDATA[
+#import "MYClass.h"
+
+@implementation MYClass
+
+- (RETurn1)initWithDataProvider:(MYDataProvider *)provider {
+  self = [super init];
+  if (self) {
+    // ...
+  }
+  return self;
+}
+
+@end
+        ]]></code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <code-example name="metricCodeExamplePhp" result-value="3">
+<![CDATA[
+<?php
+
+abstract class CboMetric
+{
+
+    public function runJob(CboMetric2 $var , FanInClass3 $result, FanOutClass $out)
+    {
+
+        $var->runJob(this,$result);
+
+        $out->getVal(this);
+
+        if ($result !== NULL) {
+            $this->processChildResult($test, $result, $stdout, $stderr);
+        } else {
+            return array('stdout' => $stdout, 'stderr' => $stderr);
+        }
+    }
+}
+
+
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="metricCodeExampleVbnet" result-value="2"><![CDATA[
+
+Namespace Pac.P.Paquete1
+
+	Class MyClassOne
+
+		Private Const PREDICATE_NODE As New NodePredicate()
+
+		 Public Sub Method1()
+			 Dim mc2 As New MyClassTwo();
+			 Dim mc3 As New OtherType();
+			 mc2.doSomething();
+			 mc3.function();
+			 doSomething();
+		 End Sub
+
+		 Public Function method2() As Integer
+				doSomething()
+		 End Function
+
+	End Class
+
+End Namespace
+        ]]></code-example>
+      </language-parser>
+
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+      <i18n ref="OPT.LANGUAGE.SPANISH">
+        <name><![CDATA[Acoplamiento entre clases de objetos]]></name>
+
+        <description>
+<![CDATA[
+La definición original de CBO (Coupling Between Objects) por Chidamber & Kemerer consiste en el total del número de clases que una clase referencia más el número de clases que referencian a dicha clase. Si una misma clase aparece en ambos grupos, se cuenta una sola vez.
+
+Han surgido múltiples interpretaciones de CBO en los últimos años (incluyendo algunas generadas por los autores originales), siendo la más usada la de que CBO equivale al número de clases que una clase referencia.
+
+Un CBO demasiado alto es desaconsejable. Demasiado acoplamiento entre clases de objetos va en contra de un diseño modular e impide la reutilización. Cuanto más independiente sea la clase, más fácil es reutilizarla en otra aplicación.
+
+Clases con un CBO demasiado alto tienen el siguiente problema:
+- Fuerza a cambios locales al cambiar las clases relacionadas.
+- Más difíciles de entender por si solas.
+- Más difíciles de reutilizar porque requiere que las clases de las que depende también estén.
+]]>
+        </description>
+        <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Mide el número de clases que una clase referencia.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Mide el número de clases que una clase referencia.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Mide el número de clases que una clase referencia.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+<![CDATA[
+Mide el número de clases que una clase referencia.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+Mide el número de clases que una clase referencia.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Mide el número de clases que una clase referencia.
+]]>
+        </implementation-description>
+
+        </implementation-descriptions>
+        <parameters />
+      </i18n>
+
+      <i18n ref="OPT.LANGUAGE.ENGLISH">
+        <name><![CDATA[Coupling between object classes]]></name>
+
+        <description>
+<![CDATA[
+The original CBO definition by Chidamber & Kemerer was a total of the number of classes that a class referenced plus the number of classes that referenced the class. If a class appeared in both the referenced and the referred classes it was only counted once.
+
+There have been a number of interpretations of CBO in recent years (including some generated by the original authors) - the most commonly used of these is that CBO is the number of classes that a class references.
+
+High CBO is undesirable. Excessive coupling between object classes is detrimental to modular design and prevents reuse. The more independent a class is, the easier it is to reuse it in another application.
+
+Classes with high CBO have the following problems:
+- Forced local changes because of changes in related classes.
+- Harder to understand in isolation.
+- Harder to reuse because its use requires the additional presence of the classes on which it is dependent.
+]]>
+        </description>
+        <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+It measures the number of classes that a class references.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+It measures the number of classes that a class references.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+It measures the number of classes that a class references.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+<![CDATA[
+It measures the number of classes that a class references.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+It measures the number of classes that a class references.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+It measures the number of classes that a class references.
+]]>
+        </implementation-description>
+
+
+        </implementation-descriptions>
+        <parameters />
+      </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

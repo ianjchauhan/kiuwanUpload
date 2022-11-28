@@ -1,0 +1,1328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--suppress DeprecatedClassUsageInspection -->
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.android" standard="Android" technology="java">
+
+  <description url="https://developer.android.com/reference/packages">Android API (Android 10, level 29)</description>
+
+  <module name="android.net">
+    <description url="https://developer.android.com/reference/android/net/package-summary">
+      Network access, beyond the normal java.net.* APIs
+    </description>
+    <class name="android.net.Uri" >
+      <description>Uri</description>
+      <method name="getLastPathSegment" signature="getLastPathSegment()" match="name">
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="parse" signature="parse(java.lang.String)" instance="false">
+        <return type="android.net.Uri"/>
+        <sink argpos="0" kind="ssrf"/>
+        <sink argpos="0" kind="http_parameter_pollution"/>
+        <sink argpos="0" kind="insecure_transport" resource="network" />
+        <propagate from="0" to="-1" />
+      </method>
+    </class>
+  </module>
+
+  <module name="android.os">
+    <description url="https://developer.android.com/reference/android/os/package-summary">
+      Basic operating system services, message passing, and inter-process communication on the device
+    </description>
+    <class name="android.os.Environment">
+      <method name="getExternalStorageDirectory" signature="getExternalStorageDirectory()">
+        <return type="java.io.File"/>
+        <source argpos="-1" kind="external_storage" resource="filesystem"/>
+      </method>
+      <method name="getExternalStoragePublicDirectory" signature="getExternalStoragePublicDirectory(java.lang.String)">
+        <return type="java.io.File"/>
+        <source argpos="-1" kind="external_storage" resource="filesystem"/>
+      </method>
+    </class>
+
+    <class name="android.os.BaseBundle">
+      <method name="get" signature="get(java.lang.String key)">
+        <return type="java.lang.Object"/>
+      </method>
+    </class>
+    <class name="android.os.Bundle" supertypes="android.os.BaseBundle"/>
+
+    <!-- Parcel -->
+    <class name="android.os.Parcel" >
+      <method name="obtain" signature="obtain()">
+        <return type="android.os.Parcel"/>
+      </method>
+    </class>
+
+    <class name="android.os.ParcelFileDescriptor" >
+      <description>ParcelFileDescriptor</description>
+      <method name="open" signature="open(File file, int mode, Handler handler, ParcelFileDescriptor.OnCloseListener listener)">
+        <sink argpos="0" kind="content_provider_path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="open" signature="open(File file, int mode)">
+        <sink argpos="0" kind="content_provider_path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+    </class>
+  </module>
+
+  <module name="android.app">
+    <description url="https://developer.android.com/reference/android/app/package-summary">
+      High-level classes encapsulating the overall Android application model
+    </description>
+
+    <class name="android.app.Application" supertypes="android.content.ContextWrapper">
+    </class>
+
+    <class name="android.app.Service" supertypes="android.content.ContextWrapper">
+    </class>
+
+    <!-- Activity -->
+    <class name="android.app.Activity" supertypes="android.view.ContextThemeWrapper">
+      <method name="getIntent" signature="getIntent()">
+        <return type="android.content.Intent"/>
+        <source argpos="-1" kind="user_input" resource="other"/>
+      </method>
+      <method name="getFragmentManager" signature="getFragmentManager()">
+        <return type="android.app.FragmentManager"/>
+      </method>
+      <method name="getLayoutInflater" signature="getLayoutInflatter()">
+        <return type="android.view.LayoutInflater"/>
+      </method>
+    </class>
+
+    <class name="android.app.ActivityGroup" supertypes="android.app.Activity">
+    </class>
+    <class name="android.app.AliasActivity" supertypes="android.app.Activity">
+    </class>
+    <class name="android.app.ExpandableListActivity" supertypes="android.app.Activity">
+    </class>
+    <class name="android.app.ListActivity" supertypes="android.app.Activity">
+    </class>
+    <class name="android.app.NativeActivity" supertypes="android.app.Activity">
+    </class>
+    <class name="android.app.LauncherActivity" supertypes="android.app.Activity">
+    </class>
+    <class name="android.app.TabActivity" supertypes="android.app.Activity">
+    </class>
+
+    <!-- Fragment API -->
+    <class name="android.app.Fragment" supertypes="ComponentCallbacks2 View.OnCreateContextMenuListener">
+      <method name="getContext" signature="getContext()">
+        <return type="android.content.Context"/>
+      </method>
+    </class>
+
+    <class name="android.app.FragmentManager" kind="abstract_class">
+      <method name="beginTransaction" signature="beginTransaction()">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+    </class>
+
+    <class name="android.app.FragmentTransaction">
+      <method name="add" signature="add()" match="name">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+      <method name="addSharedElement" signature="addSharedElement()" match="name">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+      <method name="addToBackStack" signature="addToBackStack()" match="name">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+      <method name="attach" signature="attach(android.app.Fragment)">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+      <method name="detach" signature="detach(android.app.Fragment)">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+      <method name="disallowAddToBackStack" signature="disallowAddToBackStack()" match="name">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+      <method name="hide" signature="hide(android.app.Fragment)">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+      <method name="remove" signature="remove(android.app.Fragment)">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+      <method name="replace" signature="replace()" match="name">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+      <method name="setBreadCrumbShortTitle" signature="setBreadCrumbShortTitle()" match="name">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+      <method name="setBreadCrumbTitle" signature="setBreadCrumbTitle()" match="name">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+      <method name="setCustomAnimations" signature="setCustomAnimations()" match="name">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+      <method name="setTransition" signature="setTransition()" match="name">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+      <method name="setTransitionStyle" signature="setTransitionStyle()" match="name">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+      <method name="show" signature="show(android.app.Fragment)">
+        <return type="android.app.FragmentTransaction"/>
+      </method>
+    </class>
+
+    <class name="android.accounts.AccountAuthenticatorActivity" supertypes="android.app.Activity">
+    </class>
+    <class name="android.preference.PreferenceActivity" supertypes="android.app.Activity">
+    </class>
+
+  </module>
+
+  <module name="android.telephony">
+    <description url="https://developer.android.com/reference/android/telephony/package-summary">
+      Basic phone information and
+    </description>
+
+    <class name="android.telephony.SmsManager">
+      <method name="getDefault" signature="getDefault()">
+        <return type="android.telephony.SmsManager"/>
+      </method>
+      <method name="get" signature="getSmsManagerForSubscriptionId(int subId)">
+        <return type="android.telephony.SmsManager"/>
+      </method>
+      <method name="sendDataMessage"
+              signature="sendDataMessage(java.lang.String, java.lang.String, short, byte[] data, android.app.PendingIntent, android.app.PendingIntent)">
+        <tags>sms.send</tags>
+      </method>
+      <method name="sendMultimediaMessage"
+              signature="sendMultimediaMessage(android.content.Context, android.net.Uri, java.lang.String, android.os.Bundle, android.app.PendingIntent)">
+        <tags>sms.send</tags>
+      </method>
+      <method name="sendMultipartTextMessage"
+              signature="sendMultipartTextMessage(java.lang.String, java.lang.String, java.util.ArrayList, java.util.ArrayList, java.util.ArrayList)">
+        <tags>sms.send</tags>
+      </method>
+      <method name="sendTextMessage" alias="sendTextMessageWithoutPersisting"
+              signature="sendTextMessage (java.lang.String, java.lang.String, java.lang.String, android.app.PendingIntent, android.app.PendingIntent)">
+        <tags>sms.send</tags>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="android.text">
+    <description url="https://developer.android.com/reference/android/text/package-summary">
+      Render or track text and text spans on the screen
+    </description>
+
+    <class name="android.text.Editable" kind="interface" supertypes="java.lang.CharSequence,android.text.Spannable,android.text.GetChars,java.lang.Appendable" />
+    <class name="android.text.GetChars" kind="interface" supertypes="java.lang.CharSequence" />
+    <class name="android.text.Spannable" kind="interface" supertypes="android.text.Spanned" />
+    <class name="android.text.Spanned" kind="interface" supertypes="java.lang.CharSequence" />
+  </module>
+
+  <module name="android.content">
+    <description url="https://developer.android.com/reference/android/content/package-summary">
+      Accessing and publishing data on a device
+    </description>
+
+    <!-- Intent -->
+    <class name="android.content.Intent" supertypes="android.os.Parcelable,java.lang.Cloneable">
+      <constructor name="Intent" signature="Intent(java.lang.String)">
+        <sink argpos="0" kind="intent_manipulation"/>
+      </constructor>
+      <constructor name="Intent" signature="Intent(java.lang.String,android.net.Uri)">
+        <sink argpos="0" kind="intent_manipulation"/>
+      </constructor>
+      <method name="setAction" signature="setAction(java.lang.String)">
+        <return type="android.content.Intent"/>
+        <sink argpos="0" kind="intent_manipulation"/>
+      </method>
+      <method name="setClassName" signature="setClassName(java.lang.String,java.lang.String)">
+        <return type="android.content.Intent"/>
+        <sink argpos="1" kind="intent_manipulation"/>
+      </method>
+      <method name="setComponent" signature="setComponent(android.content.ComponentName)">
+        <return type="android.content.Intent"/>
+        <sink argpos="0" kind="intent_manipulation"/>
+      </method>
+      <method name="setData" signature="setData(android.net.Uri)">
+        <return type="android.content.Intent"/>
+        <sink argpos="0" kind="intent_manipulation"/>
+      </method>
+      <method name="setDataAndType" signature="setDataAndType(android.net.Uri,java.lang.String)">
+        <return type="android.content.Intent"/>
+        <sink argpos="0,1" kind="intent_manipulation"/>
+      </method>
+      <!-- to allow resolution of chained calls -->
+      <method name="addCategory" signature="addCategory()" match="name"
+              alias="addFlags, cloneFilter, createChooser, getIntent, getIntentOld, getSelector, parseIntent, parseUri,
+     setClass, setFlags, setPackage, setType, setTypeAndNormalize">
+        <return type="android.content.Intent"/>
+      </method>
+      <method name="makeMainActivity" signature="makeMainActivity(android.content.ComponentName)"
+              alias="makeMainSelectorActivity,makeRestartActivityTask">
+        <return type="android.content.Intent"/>
+        <sink argpos="0" kind="intent_manipulation"/>
+      </method>
+      <method name="putExtra" signature="putExtra()" match="name" alias="putExtras, putIntegerArrayListExtra,
+    putParcelableArrayListExtra, putCharSequenceArrayListExtra, putStringArrayListExtra, ">
+        <return type="android.content.Intent"/>
+        <propagate from="0,1" to="-1" />
+      </method>
+      <method name="getExtras" signature="getExtras()" match="name">
+        <return type="android.os.Bundle"/>
+      </method>
+      <method name="getSerializableExtra" signature="getSerializableExtra(java.lang.String name)" match="name">
+        <return type="java.io.Serializable"/>
+      </method>
+    </class>
+
+    <!-- Context and related types -->
+    <class name="android.content.Context" kind="abstract_class">
+      <method name="getExternalCacheDir" signature="getExternalCacheDir()" alias="getObbDir">
+        <return type="java.io.File"/>
+        <source argpos="-1" kind="external_storage" resource="filesystem"/>
+      </method>
+      <method name="getExternalCacheDirs" signature="getExternalCacheDir()" alias="getExternalMediaDirs,getObbDirs">
+        <return type="java.io.File[]"/>
+        <source argpos="-1" kind="external_storage" resource="filesystem"/>
+      </method>
+      <method name="getExternalFilesDir" signature="getExternalFilesDir(java.lang.String)">
+        <return type="java.io.File"/>
+        <source argpos="-1" kind="external_storage" resource="filesystem"/>
+      </method>
+      <method name="getExternalFilesDirs" signature="getExternalFilesDir(java.lang.String)">
+        <return type="java.io.File[]"/>
+        <source argpos="-1" kind="external_storage" resource="filesystem"/>
+      </method>
+
+      <method name="getDir" signature="getDir(java.lang.String,int)">
+        <tags>file_mode:1</tags>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="openFileOutput" signature="openFileOutput(java.lang.String,int)">
+        <tags>file_mode:1</tags>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+
+      <method name="openOrCreateDatabase" signature="openOrCreateDatabase(java.lang.String,int,android.database.sqlite.SQLiteDatabase.CursorFactory)" match="name">
+        <return type="android.database.sqlite.SQLiteDatabase"/>
+      </method>
+      <method name="createConfigurationContext" signature="createConfigurationContext(android.content.res.Configuration)">
+        <return type="android.content.Context"/>
+      </method>
+      <method name="createDisplayContext" signature="createDisplayContext(android.view.Display)">
+        <return type="android.content.Context"/>
+      </method>
+      <method name="createPackageContext" signature="createPackageContext(java.lang.String,int)">
+        <return type="android.content.Context"/>
+      </method>
+      <method name="getApplicationContext" signature="getApplicationContext()">
+        <return type="android.content.Context"/>
+      </method>
+      <method name="getContentResolver" signature="getContentResolver()">
+        <return type="android.content.ContentResolver"/>
+      </method>
+      <method name="getPackageManager" signature="getPackageManager()">
+        <return type="android.content.pm.PackageManager"/>
+      </method>
+      <method name="getTheme" signature="getTheme()">
+        <return type="android.content.res.Resources.Theme"/>
+      </method>
+      <method name="obtainStyledAttributes" signature="obtainStyledAttributes(int[])">
+        <return type="android.content.res.TypedArray"/>
+      </method>
+      <method name="obtainStyledAttributes" signature="obtainStyledAttributes(int,int[])">
+        <return type="android.content.res.TypedArray"/>
+      </method>
+      <method name="obtainStyledAttributes" signature="obtainStyledAttributes(AttributeSet,int[])">
+        <return type="android.content.res.TypedArray"/>
+      </method>
+      <method name="obtainStyledAttributes" signature="obtainStyledAttributes(AttributeSet,int[],int,int)">
+        <return type="android.content.res.TypedArray"/>
+      </method>
+
+      <method name="startActivity" signature="startActivity(android.content.Intent)" match="name">
+      </method>
+      <method name="startActivities" signature="startActivities(android.content.Intent[])" match="name">
+      </method>
+
+      <method name="bindService" signature="bindService(android.content.Intent,android.content.ServiceConnection,int)"/>
+      <method name="startService" signature="startService(android.content.Intent)" match="name">
+        <return type="android.content.ComponentName"/>
+      </method>
+      <method name="getSystemService" signature="getSystemService(java.lang.String)" match="name">
+        <return type="java.lang.Object"/>
+      </method>
+      <method name="stopService" signature="stopService(android.content.Intent)"/>
+      <method name="unbindService" signature="unbindService(android.content.ServiceConnection)"/>
+
+      <method name="registerReceiver" signature="registerReceiver(android.content.BroadcastReceiver,android.content.IntentFilter)" match="name">
+        <return type="android.content.Intent"/>
+      </method>
+      <method name="unregisterReceiver" signature="unregisterReceiver(android.content.BroadcastReceiver)"/>
+
+      <method name="removeStickyBroadcast" signature="removeStickyBroadcast(android.content.Intent)" match="name" alias="removeStickyBroadcastAsUser">
+      </method>
+      <method name="sendBroadcast" signature="sendBroadcast(android.content.Intent)" match="name"
+              alias="sendBroadcastAsUser,sendOrderedBroadcast,sendOrderedBroadcastAsUser">
+        <sink argpos="0" kind="privacy_violation" resource="network" />
+      </method>
+
+      <method name="checkCallingOrSelfPermission" signature="checkCallingOrSelfPermission(String)" match="name" />
+      <method name="checkCallingOrSelfUriPermission" signature="checkCallingOrSelfUriPermission(android.net.Uri, int)" match="name" />
+    </class>
+
+    <class name="android.content.ContextWrapper" supertypes="android.content.Context">
+      <method name="getBaseContext" signature="getBaseContext()">
+        <return type="android.content.Context"/>
+      </method>
+    </class>
+    <class name="android.view.ContextThemeWrapper" supertypes="android.content.ContextWrapper">
+    </class>
+
+    <class name="android.content.ContentResolver" kind="abstract_class">
+      <constructor name="ContentResolver" signature="ContentResolver(android.content.Context)"/>
+      <method name="acquireContentProviderClient" signature="acquireContentProviderClient(java.lang.String)" match="name" alias="acquireUnstableContentProviderClient">
+        <return type="android.content.ContentProviderClient"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+      <method name="acquireUnstableContentProviderClient" signature="acquireUnstableContentProviderClient(java.lang.String)" match="name">
+        <return type="android.content.ContentProviderClient"/>
+      </method>
+      <method name="bulkInsert" signature="bulkInsert(android.net.Uri,android.content.ContentValues[])">
+        <return type="int"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+      <method name="call" signature="call(android.net.Uri,java.lang.String,java.lang.String,android.os.Bundle)">
+        <return type="android.os.Bundle"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+        <sink argpos="1" kind="process_control" resource="database"/>
+      </method>
+      <method name="delete" signature="delete(android.net.Uri,java.lang.String,java.lang.String[])">
+        <return type="int"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+      <method name="getLocalContentProvider" signature="getLocalContentProvider()">
+        <return type="android.content.ContentProvider"/>
+      </method>
+      <method name="insert" signature="insert(android.net.Uri,android.content.ContentValues)">
+        <return type="int"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+      <method name="openFileDescriptor" signature="openFileDescriptor(Uri uri, String mode)"
+              alias="openAssetFileDescriptor,openTypedAssetFileDescriptor,openInputStream,openOutputStream" match="name">
+        <sink argpos="0" kind="content_provider_path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="query" signature="query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String)" alias="name">
+        <return type="android.database.Cursor"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+      <method name="update" signature="update(android.net.Uri,android.content.ContentValues,java.lang.String,java.lang.String[])">
+        <return type="int"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="android.content.ContentProvider" kind="abstract_class">
+      <method name="getContext" signature="getContext()">
+        <return type="android.content.Context"/>
+      </method>
+      <method name="bulkInsert" signature="bulkInsert(android.net.Uri,android.content.ContentValues[])">
+        <return type="int"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+      <method name="call" signature="call(java.lang.String,java.lang.String,android.os.Bundle)">
+        <return type="android.os.Bundle"/>
+        <sink argpos="0" kind="process_control" resource="database"/>
+      </method>
+      <method name="delete" signature="delete(android.net.Uri,java.lang.String,java.lang.String[])">
+        <return type="int"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+      <method name="insert" signature="insert(android.net.Uri,android.content.ContentValues)">
+        <return type="android.net.Uri"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+      <method name="openFile" signature="openFile(Uri uri, String mode)"
+              alias="openAssetFile,openTypedAssetFile,openPipeHelper" match="name">
+        <sink argpos="0" kind="content_provider_path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="query" signature="query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String)" alias="name">
+        <return type="android.database.Cursor"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+      <method name="update" signature="update(android.net.Uri,android.content.ContentValues,java.lang.String,java.lang.String[])">
+        <return type="int"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="android.provider.DocumentsProvider" kind="abstract_class" supertypes="android.content.ContentProvider">
+    </class>
+    <class name="android.content.SearchRecentSuggestionsProvider" supertypes="android.content.ContentProvider">
+    </class>
+
+    <class name="android.content.ContentProviderClient">
+      <method name="getLocalContentProvider" signature="getLocalContentProvider()">
+        <return type="android.content.ContentProvider"/>
+      </method>
+      <method name="bulkInsert" signature="bulkInsert(android.net.Uri,android.content.ContentValues[])">
+        <return type="int"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+      <method name="call" signature="call(java.lang.String,java.lang.String,android.os.Bundle)">
+        <return type="android.os.Bundle"/>
+        <sink argpos="0" kind="process_control" resource="database"/>
+      </method>
+      <method name="delete" signature="delete(android.net.Uri,java.lang.String,java.lang.String[])">
+        <return type="int"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+      <method name="insert" signature="insert(android.net.Uri,android.content.ContentValues)">
+        <return type="android.net.Uri"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+      <method name="openFile" signature="openFile(Uri uri, String mode)"
+              alias="openAssetFile,openTypedAssetFileDescriptor" match="name">
+        <sink argpos="0" kind="content_provider_path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="query" signature="query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String)" alias="name">
+        <return type="android.database.Cursor"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+      <method name="update" signature="update(android.net.Uri,android.content.ContentValues,java.lang.String,java.lang.String[])">
+        <return type="int"/>
+        <sink argpos="0" kind="content_provider_uri_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="android.content.pm.PackageManager" kind="abstract_class">
+    </class>
+
+    <!-- Resources.Theme -->
+    <class name="android.content.res.Resources.Theme" >
+      <method name="obtainStyledAttributes" signature="obtainStyledAttributes(int[])">
+        <return type="android.content.res.TypedArray"/>
+      </method>
+      <method name="obtainStyledAttributes" signature="obtainStyledAttributes(int,int[])">
+        <return type="android.content.res.TypedArray"/>
+      </method>
+      <method name="obtainStyledAttributes" signature="obtainStyledAttributes(AttributeSet,int[],int,int)">
+        <return type="android.content.res.TypedArray"/>
+      </method>
+    </class>
+
+    <!-- TypedArray -->
+    <class name="android.content.res.TypedArray" >
+    </class>
+
+  </module>
+
+  <module name="android.view">
+    <description url="https://developer.android.com/reference/android/view/package-summary">
+      Basic user interface classes that handle screen layout and interaction with the user.
+    </description>
+
+    <!-- View -->
+    <class name="android.view.View">
+      <method name="getContext" signature="getContext()">
+        <return type="android.content.Context"/>
+      </method>
+    </class>
+
+    <class name="android.view.LayoutInflater" kind="abstract_class">
+      <method name="from" signature="from(android.content.Context)">
+        <return type="android.view.LayoutInflater"/>
+      </method>
+    </class>
+
+    <class name="android.view.ViewParent" kind="interface">
+      <method name="bringChildToFront" signature="bringChildToFront(android.view.View)"/>
+      <method name="childDrawableStateChanged" signature="hildDrawableStateChanged(android.view.View)"/>
+      <method name="bringChildToFront" signature="bringChildToFront(android.view.View)"/>
+      <method name="getParent" signature="getParent()" alias="getParentForAccessibility"><return type="android.view.ViewParent"/></method>
+    </class>
+
+    <class name="android.view.ViewGroup" kind="abstract_class" supertypes="android.view.View,android.view.ViewParent,android.view.ViewManager">
+      <constructor name="ViewGroup" signature="ViewGroup(android.content.Context)" match="name"/>
+    </class>
+
+    <class name="android.view.ViewGroup.LayoutParams"/>
+
+    <class name="android.view.ViewManager" kind="interface">
+      <method name="addView" signature="addView(android.view.View,android.view.ViewGroup.LayoutParams)"/>
+      <method name="removeView" signature="removeView(android.view.View)"/>
+      <method name="updateViewLayout" signature="updateViewLayout(android.view.View,android.view.ViewGroup.LayoutParams)"/>
+    </class>
+
+    <class name="android.view.ViewGroup" kind="abstract_class" supertypes="android.view.View" />
+
+    <!-- VelocityTracker -->
+    <class name="android.view.VelocityTracker">
+    </class>
+
+    <!-- MotionEvent -->
+    <class name="android.view.MotionEvent" supertypes="android.view.InputEvent">
+      <method name="obtain" signature="obtain(MotionEvent)">
+        <return type="android.view.MotionEvent"/>
+      </method>
+      <method name="obtain" signature="obtain(long,long,int,int,PointerProperties[],PointerCoords[],int,int,float,float,int,int,int,int)">
+        <return type="android.view.MotionEvent"/>
+      </method>
+      <method name="obtain" signature="obtain(long,long,int,float,float,float,float,int,float,float,int,int)">
+        <return type="android.view.MotionEvent"/>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="android.widget">
+    <description url="https://developer.android.com/reference/android/widget/package-summary">
+      UI elements to use on Application screen.
+    </description>
+
+    <class name="android.widget.AbsoluteLayout" supertypes="android.view.ViewGroup" />
+
+    <!-- EditText -->
+    <class name="android.widget.EditText" supertypes="android.widget.TextView">
+      <method name="getContext" signature="getContext()">
+        <return type="android.content.Context"/>
+      </method>
+    </class>
+
+    <!-- TextView -->
+    <class name="android.widget.TextView" supertypes="android.view.View">
+      <method name="getText" signature="getText()">
+        <return type="java.lang.CharSequence"/>
+        <source argpos="-1" kind="user_input" resource="gui"/>
+      </method>
+    </class>
+
+    <!-- Some GUI fields -->
+    <class name="android.widget.EditText" supertypes="android.widget.TextView">
+      <method name="getText" signature="getText()">
+        <return type="android.text.Editable"/>
+        <source argpos="-1" kind="user_input" resource="gui"/>
+      </method>
+    </class>
+
+    <class name="android.widget.AutoCompleteTextView" supertypes="android.widget.EditText"/>
+
+  </module>
+
+  <module name="android.webkit">
+    <description url="https://developer.android.com/reference/android/webkit/package-summary">
+      Tools for browsing the web.
+    </description>
+
+    <class name="android.webkit.WebView" supertypes="android.widget.AbsoluteLayout">
+      <constructor name="WebView" signature="WebView(android.content.Context)" match="name"/>
+      <method name="addJavaScriptInterface" signature="addJavaScriptInterface(java.lang.Object,java.lang.String)">
+        <tags>javascript.enable</tags>
+      </method>
+      <method name="getSettings" signature="getSettings()">
+        <return type="android.webkit.WebSettings"/>
+      </method>
+      <method name="getWebChromeClient" signature="getWebChromeClient()">
+        <return type="android.webkit.WebChromeClient"/>
+      </method>
+      <method name="getWebViewClient" signature="getWebViewClient()">
+        <return type="android.webkit.WebViewClient"/>
+      </method>
+      <method name="evaluateJavaScript" signature="evaluateJavaScript(java.lang.String,android.webkit.ValueCallback)"/>
+      <method name="loadData" signature="loadData(java.lang.String, java.lang.String, java.lang.String)"/>
+      <method name="loadDataWithBaseUrl" signature="loadDataWithBaseUrl(java.lang.String, java.lang.String, java.lang.String)" match="name">
+        <sink argpos="0" kind="open_redirect"/>
+        <sink argpos="0" kind="insecure_transport" resource="network"/>
+      </method>
+      <method name="loadUrl" signature="loadUrl(java.lang.String, java.util.Map)" match="name">
+        <sink argpos="0" kind="open_redirect"/>
+        <sink argpos="0" kind="insecure_transport" resource="network"/>
+      </method>
+      <method name="onCreateInputConnection" signature="onCreateInputConnection(android.view.inputmethod.EditorInfo)">
+        <return type="android.view.inputmethod.InputConnection"/>
+      </method>
+      <method name="postUrl" signature="postUrl(java.lang.String, byte[])">
+        <sink argpos="0" kind="open_redirect"/>
+        <sink argpos="0" kind="insecure_transport" resource="network"/>
+      </method>
+      <method name="postWebMessage" signature="postWebMessage(android.webkit.WebMessage,android.net.Uri)"/>
+      <method name="removeJavascriptInterface" signature="removeJavascriptInterface(java.lang.String)"/>
+      <method name="savePassword" signature="savePassword(java.lang.String,java.lang.String,java.lang.String)">
+        <tags>username:1, password:2</tags>
+        <sink argpos="1,2" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setHttpAuthUsernamePassword" signature="setHttpAuthUsernamePassword(java.lang.String,java.lang.String,java.lang.String,java.lang.String)">
+        <tags>username:2, password:3</tags>
+        <sink argpos="2,3" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+
+    <class name="android.webkit.WebSettings" >
+      <method name="setJavaScriptEnabled" signature="setJavaScriptEnabled(boolean)">
+        <tags>javascript.enable</tags>
+      </method>
+    </class>
+
+    <class name="android.webkit.HttpAuthHandler">
+      <method name="proceed" signature="proceed(java.lang.String,java.lang.String)">
+        <tags>username:0, password:1</tags>
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="androidx.webkit">
+    <description url="https://developer.android.com/reference/android/webkit/package-summary">
+      Compatibility API for android.webkit.
+    </description>
+
+    <class name="androidx.webkit.WebViewCompat">
+
+    </class>
+  </module>
+
+  <module name="dalvik.system">
+    <description url="https://developer.android.com/reference/dalvik/system/package-summary">
+      ClassLoading in Android.
+    </description>
+
+    <class name="dalvik.system.DexFile">
+      <tags>dangerous, deprecated</tags>
+      <constructor name="DexFile" signature="DexFile(java.lang.String)">
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      </constructor>
+      <method name="loadClass" signature="loadClass(java.lang.String, java.lang.ClassLoader)">
+        <return type="java.lang.Class"/>
+        <sink kind="unsafe_reflection" argpos="0" resource="other"/>
+      </method>
+      <method name="loadDex" signature="loadDex(java.lang.String, java.lang.String, int)" instance="false">
+        <return type="dalvik.system.DexFile"/>
+        <sink kind="process_control" argpos="0"/>
+        <sink kind="path_traversal" argpos="1"/>
+      </method>
+    </class>
+
+    <class name="dalvik.system.DexClassLoader" supertypes="dalvik.system.BaseDexClassLoader" >
+      <constructor name="DexClassLoader" signature="DexClassLoader(java.lang.string, java.lang.string, java.lang.string, java.lang.classloader)" >
+        <sink argpos="1" kind="path_traversal" resource="filesystem" />
+        <sink kind="process_control" argpos="0,2"/>
+      </constructor>
+    </class>
+
+    <class name="dalvik.system.BaseDexClassLoader" supertypes="java.lang.ClassLoader" >
+      <constructor name="BaseDexClassLoader" signature="BaseDexClassLoader(java.lang.String, java.lang.String, java.lang.String, java.lang.ClassLoader)" >
+        <sink argpos="1" kind="path_traversal" resource="filesystem" />
+        <sink kind="process_control" argpos="0,2"/>
+      </constructor>
+    </class>
+    
+    <class name="dalvik.system.InMemoryDexClassLoader" supertypes="dalvik.system.BaseDexClassLoader">
+      <constructor name="InMemoryDexClassLoader" signature="InMemoryDexClassLoader(java.nio.ByteBuffer[], java.lang.String, java.lang.ClassLoader)" match="numargs">
+        <sink argpos="1" kind="process_control" />
+      </constructor>
+    </class>
+
+    <class name="dalvik.system.PathClassLoader" supertypes="dalvik.system.BaseDexClassLoader" >
+      <constructor name="PathClassLoader" signature="PathClassLoader(java.lang.String, java.lang.ClassLoader)" match="numargs">
+        <sink argpos="0" kind="process_control"/>
+      </constructor>
+      <constructor name="PathClassLoader" signature="PathClassLoader(java.lang.String, java.lang.String, java.lang.ClassLoader)" match="numargs">
+        <sink kind="process_control" argpos="0,1"/>
+      </constructor>
+    </class>
+
+    <class name="dalvik.system.DelegateLastClassLoader" supertypes="dalvik.system.PathClassLoader">
+      <constructor name="DelegateLastClassLoader" signature="DelegateLastClassLoader(java.lang.String, java.lang.String, java.lang.ClassLoader, boolean)" match="numargs">
+        <sink argpos="0,1" kind="process_control" />
+      </constructor>
+      <constructor name="DelegateLastClassLoader" signature="DelegateLastClassLoader(java.lang.String, java.lang.String, java.lang.ClassLoader)" match="numargs">
+        <sink argpos="0,1" kind="process_control" />
+      </constructor>
+      <constructor name="DelegateLastClassLoader" signature="DelegateLastClassLoader(java.lang.String, java.lang.ClassLoader)" match="numargs">
+        <sink argpos="0" kind="process_control" />
+      </constructor>
+    </class>
+
+  </module>
+
+  <module name="android.database">
+    <description url="https://developer.android.com/reference/android/database/package-summary">
+      Process data returned through a content provider
+    </description>
+
+    <class name="android.database.DatabaseUtils">
+      <method name="appendEscapedSQLString" signature="appendEscapedSQLString(java.lang.StringBuilder,java.lang.String)" instance="false">
+        <neutralization argpos="1" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="appendValueToSql" signature="appendValueToSql(java.lang.StringBuilder,java.lang.Object)" instance="false">
+        <neutralization argpos="1" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="longForQuery" signature="longForQuery(android.database.sqlite.SQLiteDatabase,java.lang.String,java.lang.String[])" instance="false">
+        <sink argpos="1" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="queryNumEntries" signature="queryNumEntries()" match="name" instance="false">
+        <sink argpos="2" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="sqlEscapeString" signature="sqlEscapeString(java.lang.String)" instance="false">
+        <neutralization argpos="0" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="stringForQuery" signature="stringForQuery(android.database.sqlite.SQLiteDatabase,java.lang.String,java.lang.String[])" instance="false">
+        <sink argpos="1" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="writeExceptionToParcel" signature="writeExceptionToParcel(android.os.Parcel,java.lang.Exception)" instance="false">
+        <sink argpos="0" kind="detail_error" resource="other"/>
+      </method>
+    </class>
+
+    <class name="android.database.Cursor" kind="interface">
+      <method name="copyStringToBuffer" signature="copyStringToBuffer(int, android.database.CharArrayBuffer)">
+        <source argpos="1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getBlob" signature="getBlob(int)">
+        <return type="byte[]"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getDouble" signature="getDouble(int)" alias="getFloat">
+        <return type="double"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getLong" signature="getLong(int)" alias="getInt,getShort">
+        <return type="long"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getString" signature="getString(int)">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+    <class name="android.database.AbstractCursor" supertypes="android.database.Cursor" kind="abstract_class">
+      <method name="getWindow" signature="getWindow()"><return type="android.database.CursorWindow"/></method>
+    </class>
+
+    <class name="android.database.CursorWindow" kind="interface">
+      <method name="copyStringToBuffer" signature="copyStringToBuffer(int,int, android.database.CharArrayBuffer)">
+        <source argpos="2" kind="database_input" resource="database"/>
+      </method>
+      <method name="getBlob" signature="getBlob(int,int)">
+        <return type="byte[]"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getDouble" signature="getDouble(int,int)" alias="getFloat">
+        <return type="double"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getLong" signature="getLong(int,int)" alias="getInt,getShort">
+        <return type="long"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getString" signature="getString(int,int)">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="android.database.sqlite">
+    <description url="https://developer.android.com/reference/android/database/sqlite/package-summary">
+      SQLite database management
+    </description>
+
+    <class name="android.database.sqlite.SQLiteDatabase" supertypes="android.database.sqlite.SQLiteClosable">
+      <description>SQLiteDatabase</description>
+
+      <!-- create / open db -->
+      <method name="create" signature="create(android.database.sqlite.SQLiteDatabase.CursorFactory)">
+        <return type="android.database.sqlite.SQLiteDatabase"/>
+      </method>
+      <method name="createInMemory" signature="createInMemory(android.database.sqlite.SQLiteDatabase.OpenParams)">
+        <return type="android.database.sqlite.SQLiteDatabase"/>
+      </method>
+      <method name="openDatabase" signature="openDatabase(java.io.File)" instance="false" match="name" alias="openOrCreateDatabase">
+        <return type="android.database.sqlite.SQLiteDatabase"/>
+        <sink kind="path_traversal" resource="filesystem" argpos="0"/>
+      </method>
+
+      <method name="compileStatement" signature="compileStatement(java.lang.String)">
+        <return type="android.database.sqlite.SQLiteStatement" />
+        <sink argpos="0" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="delete" signature="delete(java.lang.String, java.lang.String, java.lang.String[])">
+        <return type="int"/>
+        <sink argpos="0,1" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="deleteDatabase" signature="deleteDatabase(java.io.File)" instance="false">
+        <return type="boolean"/>
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </method>
+      <method name="execPerConnectionSQL" signature="execPerConnectionSQL(java.lang.String, java.lang.Object[])">
+        <sink argpos="0" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="execSQL" signature="execSQL(java.lang.String)" match="name">
+        <sink argpos="0" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="insert" signature="insert(java.lang.String)" match="name" alias="insertOrThrow,insertWithOnConflict">
+        <sink argpos="0" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="query" signature="query(java.lang.String,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String,java.lang.String,java.lang.String,java.lang.String)">
+        <return type="android.database.Cursor"/>
+        <sink argpos="0,1,2,4,5,6,7" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="query_2" signature="query(boolean,java.lang.String,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String,java.lang.String,java.lang.String,java.lang.String,CancellationSignal)">
+        <return type="android.database.Cursor"/>
+        <sink argpos="1,2,3,5,6,7,8" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="query_3" signature="query(java.lang.String,java.lang.String[],java.lang.String,java.lang.String[], java.lang.String, java.lang.String, java.lang.String)">
+        <return type="android.database.Cursor"/>
+        <sink argpos="0,1,2,4,5,6" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="query_4" signature="query(boolean,java.lang.String,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String,java.lang.String,java.lang.String,java.lang.String)">
+        <return type="android.database.Cursor"/>
+        <sink argpos="1,2,3,5,6,7,8" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="queryWithFactory" signature="queryWithFactory()" match="name">
+        <return type="android.database.Cursor"/>
+        <sink argpos="2,3,4,6,7,8,9" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="rawQuery" signature="rawQuery(java.lang.String, java.lang.String[])" match="name">
+        <return type="android.database.Cursor"/>
+        <sink argpos="0" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="rawQueryWithFactory" signature="rawQueryWithFactory(android.database.sqlite.SQLiteDatabase.CursorFactory, java.lang.String)" match="name">
+        <return type="android.database.Cursor"/>
+        <sink argpos="1" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="replace" signature="replace(java.lang.String,java.lang.String, android.content.ContentValues)" alias="replaceOrThrow">
+        <return type="long"/>
+        <sink argpos="0" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="update" signature="update(java.lang.String, android.content.ContentValues, java.lang.String, java.lang.String[])">
+        <return type="int"/>
+        <sink argpos="0,2" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="updateWithOnConflict" signature="updateWithOnConflict(java.lang.String, android.content.ContentValues, java.lang.String, java.lang.String[], int)">
+        <sink argpos="0,2" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="rawQuery" signature="rawQuery(java.lang.String, java.lang.String[])" match="name" >
+        <return type="android.database.Cursor" />
+        <sink argpos="0" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="rawQueryWithFactory" signature="rawQueryWithFactory(android.database.sqlite.SQLiteDatabase.CursorFactory, java.lang.String, java.lang.String[], java.lang.String)" match="name" >
+        <return type="android.database.Cursor" />
+        <sink argpos="0" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="validateSql" signature="validateSql(java.lang.String)" match="name">
+        <description>Does not neutralize SQL-i</description>
+      </method>
+
+      <!-- Anko extensions: https://github.com/Kotlin/anko -->
+      <method name="select" signature="select()" match="name" >
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </method>
+      <method name="update" signature="update()" match="name" >
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </method>
+      <method name="createTable" signature="createTable(tableName String, ifNotExists Boolean, columns Pair)" match="name" >
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+    </class>
+
+    <class name="android.database.sqlite.SQLiteProgram" supertypes="android.database.sqlite.SQLiteClosable" >
+      <method name="bindAllArgsAsString" signature="bindAllArgsAsString(java.lang.String[])" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="bindBlob" signature="bindBlob(int, byte[])" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="bindDouble" signature="bindDouble(int, double)" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="bindLong" signature="bindLong(int, long)" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="bindNull" signature="bindNull(int)" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="bindString" signature="bindString(int, java.lang.String)" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+    </class>
+    <class name="android.database.sqlite.SQLiteClosable" supertypes="java.io.Closeable" />
+
+    <class name="android.database.sqlite.SQLiteQuery" supertypes="android.database.sqlite.SQLiteProgram" />
+    <class name="android.database.sqlite.SQLiteStatement" supertypes="android.database.sqlite.SQLiteProgram">
+      <method name="execute" signature="execute()"/>
+      <method name="executeInsert" signature="executeInsert()" alias="executeUpdateDelete"><return type="int"/></method>
+      <method name="simpleQueryForBlobFileDescriptor" signature="simpleQueryForBlobFileDescriptor()">
+        <return type="android.os.ParcelFileDescriptor"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="simpleQueryForString" signature="simpleQueryForString()">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="android.database.sqlite.SQLiteOpenHelper" kind="abstract_class">
+      <method name="getReadableDatabaseName" signature="getReadableDatabaseName()">
+        <return type="android.database.sqlite.SQLiteDatabase"/>
+      </method>
+      <method name="getWritableDatabaseName" signature="getWritableDatabaseName()">
+        <return type="android.database.sqlite.SQLiteDatabase"/>
+      </method>
+    </class>
+
+    <class name="android.database.sqlite.SQLiteQueryBuilder">
+      <method name="appendColumns" signature="appendColumns(java.lang.StringBuilder,java.lang.String[])" instance="false">
+        <propagate from="1" to="0"/>
+      </method>
+      <method name="appendWhere" signature="appendWhere()" match="name" alias="appendWhereStandalone">
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="appendWhereEscapeString" signature="appendWhereEscapeString(java.lang.String)">
+        <neutralization argpos="0" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="setTables" signature="setTables(java.lang.String)">
+        <propagate from="0" to="-2"/>
+      </method>
+      <!--method name="buildQuery" signature="buildQuery()" match="name">
+        <return type="java.lang.String"/>
+      </method-->
+      <method name="query" signature="query()" match="name">
+        <return type="android.database.Cursor"/>
+        <sink argpos="1,2,4,5,6,7" kind="android_sql_injection" resource="database"/>
+      </method>
+      <method name="update" signature="update(android.database.sqlite.SQLiteDatabase, android.content.ContentValues, java.lang.String, java.lang.String[])">
+        <return type="int"/>
+        <sink kind="android_sql_injection" argpos="2" resource="database"/>
+      </method>
+    </class>
+    
+    <class name="android.database.sqlite.SQLiteCursor" supertypes="android.database.Cursor">
+      <method name="getDatabase" signature="getDatabase()">
+        <return type="android.database.sqlite.SQLiteDatabase"/>
+      </method>
+    </class>
+  </module>
+
+  <class name="android.util.Log">
+    <tags>logger</tags>
+    <method name="d" signature="d(java.lang.String,java.lang.String)" match="name" alias="e,i,v,w,wtf">
+      <sink argpos="0,1" kind="log_forging" />
+    </method>
+    <method name="println" signature="println(int,java.lang.String,java.lang.String)">
+      <sink argpos="1,2" kind="log_forging" />
+    </method>
+  </class>
+
+  <class name="android.security.keystore.KeyGenParameterSpec.Builder">
+    <tags>key_spec</tags>
+    <constructor name="Builder" signature="Builder(java.lang.String, int)"/>
+    <method name="build" signature="build()"><return type="android.security.keystore.KeyGenParameterSpec"/></method>
+    <method name="setAlgorithmParameterSpec" signature="setAlgorithmParameterSpec(java.security.spec.AlgorithmParameterSpec)">
+      <return type="android.security.keystore.KeyGenParameterSpec.Builder"/>
+    </method>
+    <method name="setBlockModes" signature="setBlockModes(java.lang.String...)">
+      <tags>blockmode:0</tags>
+      <return type="android.security.keystore.KeyGenParameterSpec.Builder"/>
+    </method>
+    <method name="setDigests" signature="setDigests(java.lang.String...)">
+      <tags>hash,algo:0</tags>
+      <return type="android.security.keystore.KeyGenParameterSpec.Builder"/>
+    </method>
+    <method name="setEncryptionPaddings" signature="setEncryptionPaddings(java.lang.String...)">
+      <tags>cipher,padding:0</tags>
+      <return type="android.security.keystore.KeyGenParameterSpec.Builder"/>
+    </method>
+    <method name="setSignaturePaddings" signature="setSignaturePaddings(java.lang.String...)">
+      <tags>sign,padding:0</tags>
+      <return type="android.security.keystore.KeyGenParameterSpec.Builder"/>
+    </method>
+    <method name="setKeySize" signature="setKeySize(int)">
+      <tags>keylen:0</tags>
+      <return type="android.security.keystore.KeyGenParameterSpec.Builder"/>
+    </method>
+    <method name="setCertificateNotAfter" signature="setCertificateNotAfter(java.util.Date)"
+            alias="setCertificateNotBefore,setKeyValidityStart,setKeyValidityForConsumption,setKeyValidityForOriginationEnd,setKeyValidityEnd,setKeyValidityForConsumptionEnd,setKeyValidityForOriginationEnd">
+      <return type="android.security.keystore.KeyGenParameterSpec.Builder"/>
+    </method>
+    <method name="setAttestationChallenge" signature="setAttestationChallenge()" match="name"
+            alias="setCertificateSerialNumber,setCertificateSubject,setInvalidatedByBiometricEnrollment,setIsStrongBoxBacked,setRandomizedEncryptionRequired,setUnlockedDeviceRequired,setUserAuthenticationValidWhileOnBody,setUserAuthenticationValidityDurationSeconds,setUserConfirmationRequired,setUserPresenceRequired">
+      <return type="android.security.keystore.KeyGenParameterSpec.Builder"/>
+    </method>
+  </class>
+  
+  <class name="android.security.keystore.KeyProperties" kind="abstract_class">
+    <field name="BLOCK_MODE_CBC"><tags>blockmode:CBC,exprValue:CBC</tags></field>
+    <field name="BLOCK_MODE_CTR"><tags>blockmode:CTR,exprValue:CTR</tags></field>
+    <field name="BLOCK_MODE_ECB"><tags>blockmode:ECB,exprValue:ECB</tags></field>
+    <field name="BLOCK_MODE_GCM"><tags>blockmode:GCM,exprValue:GCM</tags></field>
+    <field name="DIGEST_MD5"><tags>hash,algo:MD5,exprValue:MD5</tags></field>
+    <field name="DIGEST_NONE"><tags>hash,algo:NONE,exprValue:NONE</tags></field>
+    <field name="DIGEST_SHA1"><tags>hash,algo:SHA-1,exprValue:SHA-1</tags></field>
+    <field name="DIGEST_SHA224"><tags>hash,algo:SHA-224,exprValue:SHA-224</tags></field>
+    <field name="DIGEST_SHA256"><tags>hash,algo:SHA-256,exprValue:SHA-256</tags></field>
+    <field name="DIGEST_SHA384"><tags>hash,algo:SHA-384,exprValue:SHA-384</tags></field>
+    <field name="DIGEST_SHA512"><tags>hash,algo:SHA-512,exprValue:SHA-512</tags></field>
+    <field name="ENCRYPTION_PADDING_NONE"><tags>cipher,padding:NoPadding,exprValue:NoPadding</tags></field>
+    <field name="ENCRYPTION_PADDING_PKCS7"><tags>cipher,padding:PKCS7Padding,exprValue:PKCS7Padding</tags></field>
+    <field name="ENCRYPTION_PADDING_RSA_OAEP"><tags>cipher,padding:OAEPPadding,exprValue:OAEPPadding</tags></field>
+    <field name="ENCRYPTION_PADDING_RSA_PKCS1"><tags>cipher,padding:PKCS1Padding,exprValue:PKCS1Padding</tags></field>
+    <field name="KEY_ALGORITHM_3DES"><tags>cipher,algo:DESede,exprValue:DESede</tags></field>
+    <field name="KEY_ALGORITHM_AES"><tags>cipher,algo:AES,exprValue:AES</tags></field>
+    <field name="KEY_ALGORITHM_EC"><tags>cipher,algo:EC,exprValue:EC</tags></field>
+    <field name="KEY_ALGORITHM_HMAC_SHA1"><tags>mac,algo:HmacSHA1,exprValue:HmacSHA1</tags></field>
+    <field name="KEY_ALGORITHM_HMAC_SHA224"><tags>mac,algo:HmacSHA224,exprValue:HmacSHA224</tags></field>
+    <field name="KEY_ALGORITHM_HMAC_SHA256"><tags>mac,algo:HmacSHA256,exprValue:HmacSHA256</tags></field>
+    <field name="KEY_ALGORITHM_HMAC_SHA384"><tags>mac,algo:HmacSHA384,exprValue:HmacSHA384</tags></field>
+    <field name="KEY_ALGORITHM_HMAC_SHA512"><tags>mac,algo:HmacSHA512,exprValue:HmacSHA512</tags></field>
+    <field name="KEY_ALGORITHM_RSA"><tags>cipher,algo:RSA,exprValue:RSA</tags></field>
+    <field name="KEY_ALGORITHM_"><tags>cipher,algo:</tags></field>
+    <field name="SIGNATURE_PADDING_RSA_PKCS1"><tags>sign,padding:PKCS1Padding,exprValue:PKCS1</tags></field>
+    <field name="SIGNATURE_PADDING_RSA_PSS"><tags>sign,padding:PSSPadding,exprValue:PSS</tags></field>
+  </class>
+
+  <module name="android.support">
+    <description url="https://developer.android.com/reference/android/support/packages">
+      Android Support libraries, superseded by AndroidX.
+    </description>
+
+    <class name="android.support.v4.app.FragmentActivity" supertypes="android.app.Activity" />
+    <class name="android.support.v4.content.FileProvider" kind="abstract_class" supertypes="android.content.ContentProvider"/>
+    <class name="android.support.v4.app.FragmentActivity" supertypes="android.app.Activity">
+      <method name="getSupportFragmentManager" signature="getSupportFragmentManager()"><return type="android.app.FragmentManager"/></method>
+    </class>
+
+    <class name="android.support.v7.app.AppCompatActivity" supertypes="android.support.v4.app.FragmentActivity" />
+
+  </module>
+
+  <!-- Timber logging -->
+  <function name="timber.log.Timber.log" signature="timber.log.Timber.log(java.lang.Object,java.lang.Object...)" match="name"
+            alias="timber.log.Timber.v,timber.log.Timber.i,timber.log.Timber.w,timber.log.Timber.e,timber.log.Timber.wtf,timber.log.Timber.d" >
+    <tags>not_propagate_between_args</tags>
+    <sink argpos="0,1" kind="log_forging"/>
+  </function>
+  
+  <!-- Networking APIs -->
+
+  <module name="org.chromium.net">
+    <description url="https://developer.android.com/guide/topics/connectivity/cronet">Cronet, the Chromium network stack</description>
+
+    <class name="org.chromium.net.CronetEngine">
+      <method name="startNetLogToFile" signature="startNetLogToFile(java.lang.String,boolean)">
+        <sink argpos="0" kind="process_control" resource="environment"/>
+      </method>
+      <method name="openConnection" signature="openConnection(java.net.URL)">
+        <return type="java.net.HttpURLConnection"/>
+      </method>
+      <method name="createURLStreamHandlerFactory" signature="createURLStreamHandlerFactory()">
+        <return type="java.net.URLStreamHandlerFactory"/>
+      </method>
+      <method name="newUrlRequestBuilder" signature="newUrlRequestBuilder(java.lang.String,org.chromium.net.UrlRequest.Callback,java.util.concurrent.Executor)">
+        <return type="org.chromium.net.UrlRequest.Builder"/>
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink argpos="0" kind="insecure_transport" resource="network"/>
+      </method>
+    </class>
+
+    <class name="org.chromium.net.CronetEngine.Builder">
+      <constructor name="Builder" signature="Builder()" match="name"></constructor>
+      <method name="setUserAgent" signature="setUserAgent(java.lang.String)" match="name"
+              alias="setStoragePath,setLibraryLoader,enableQuic,enableHttp2,enableSdch,enableBrotli,enableHttpCache,addQuicHint,enablePublicKeyPinningBypassForLocalTrustAnchors">
+        <return type="org.chromium.net.CronetEngine.Builder"/>
+      </method>
+      <method name="build" signature="build()"><return type="org.chromium.net.CronetEngine"/></method>
+      <method name="getDefaultUserAgent" signature="getDefaultUserAgent()"><return type="java.lang.String"/></method>
+    </class>
+
+    <class name="org.chromium.net.CronetEngine.LibraryLoader">
+      <method name="loadLibrary" signature="loadLibrary(java.lang.String)">
+        <sink argpos="0" kind="process_control" resource="environment"/>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="com.android.volley">
+    <description url="https://developer.android.com/training/volley">Volley, HTTP library for Android</description>
+
+    <class name="com.android.volley.toolbox.Volley">
+      <method name="newRequestQueue" signature="newRequestQueue(android.content.Context)" match="name">
+        <return type="com.android.volley.RequestQueue"/>
+      </method>
+    </class>
+
+    <class name="com.android.volley.Request" kind="abstract_class">
+      <constructor name="Request" signature="Request(int,java.lang.String,com.android.volley.Request.ErrorListener)">
+        <sink argpos="1" kind="ssrf" resource="network"/>
+        <sink argpos="1" kind="insecure_transport" resource="network"/>
+      </constructor>
+      <constructor name="Request_2" signature="Request(java.lang.String,com.android.volley.Request.ErrorListener)">
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink argpos="0" kind="insecure_transport" resource="network"/>
+      </constructor>
+      <method name="cancel" signature="cancel()"/>
+    </class>
+
+    <class name="com.android.volley.toolbox.StringRequest" supertypes="com.android.volley.Request">
+      <constructor name="StringRequest" signature="StringRequest(int,java.lang.String,com.android.volley.Response.Listener,com.android.volley.Request.ErrorListener)">
+        <sink argpos="1" kind="ssrf" resource="network"/>
+        <sink argpos="1" kind="insecure_transport" resource="network"/>
+      </constructor>
+      <constructor name="StringRequest_2" signature="StringRequest(java.lang.String,com.android.volley.Response.Listener,com.android.volley.Request.ErrorListener)">
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink argpos="0" kind="insecure_transport" resource="network"/>
+      </constructor>
+    </class>
+
+    <class name="com.android.volley.toolbox.JsonRequest" kind="abstract_class" supertypes="com.android.volley.Request">
+      <constructor name="JsonRequest" signature="JsonRequest(int,java.lang.String,java.lang.String,com.android.volley.Response.Listener,com.android.volley.Request.ErrorListener)">
+        <sink argpos="1" kind="ssrf" resource="network"/>
+        <sink argpos="1" kind="insecure_transport" resource="network"/>
+      </constructor>
+      <constructor name="JsonRequest_2" signature="JsonRequest(java.lang.String,java.lang.String,com.android.volley.Response.Listener,com.android.volley.Request.ErrorListener)">
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink argpos="0" kind="insecure_transport" resource="network"/>
+      </constructor>
+    </class>
+    <class name="com.android.volley.toolbox.JsonObjectRequest" supertypes="com.android.volley.toolbox.JsonRequest">
+      <constructor name="JsonObjectRequest" signature="JsonObjectRequest(int,java.lang.String,org.json.JSONObject,com.android.volley.Response.Listener,com.android.volley.Request.ErrorListener)">
+        <sink argpos="1" kind="ssrf" resource="network"/>
+        <sink argpos="1" kind="insecure_transport" resource="network"/>
+      </constructor>
+      <constructor name="JsonObjectRequest_2" signature="JsonObjectRequest(java.lang.String,org.json.JSONObject,com.android.volley.Response.Listener,com.android.volley.Request.ErrorListener)">
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink argpos="0" kind="insecure_transport" resource="network"/>
+      </constructor>
+    </class>
+    <class name="com.android.volley.toolbox.JsonArrayRequest" supertypes="com.android.volley.toolbox.JsonRequest">
+      <constructor name="JsonArrayRequest" signature="JsonArrayRequest(int,java.lang.String,org.json.JSONArray,com.android.volley.Response.Listener,com.android.volley.Request.ErrorListener)">
+        <sink argpos="1" kind="ssrf" resource="network"/>
+        <sink argpos="1" kind="insecure_transport" resource="network"/>
+      </constructor>
+      <constructor name="JsonArrayRequest_2" signature="JsonArrayRequest(java.lang.String,com.android.volley.Response.Listener,com.android.volley.Request.ErrorListener)">
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink argpos="0" kind="insecure_transport" resource="network"/>
+      </constructor>
+    </class>
+
+    <class name="com.android.volley.Response.Listener" kind="interface">
+      <method name="onResponse" signature="onResponse(java.lang.Object)" match="numargs">
+        <source argpos="0" kind="user_input" resource="network"/>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="com.squareup.picasso">
+    <description url="https://square.github.io/picasso/">Picasso, image downloading and caching library for Android</description>
+
+    <!-- https://square.github.io/picasso/2.x/picasso/ -->
+    <class name="com.squareup.picasso.Picasso.Builder">
+      <method name="addRequestHandler" signature="addRequestHandler(com.squareup.picasso.RequestHandler)" >
+        <return type="com.squareup.picasso.Picasso.Builder" />
+      </method>
+      <method name="build" signature="build()" >
+        <return type="com.squareup.picasso.Picasso" />
+      </method>
+      <method name="debugging" signature="addRequestHandler(java.lang.Boolean)" >
+        <return type="com.squareup.picasso.Picasso.Builder" />
+      </method>
+      <method name="defaultBitmapConfig" signature="defaultBitmapConfig(android.graphics.Bitmap.Config)" >
+        <return type="com.squareup.picasso.Picasso.Builder" />
+      </method>
+      <method name="downloader" signature="downloader(com.squareup.picasso.Downloader)" >
+        <return type="com.squareup.picasso.Picasso.Builder" />
+      </method>
+      <method name="executor" signature="executor(java.util.concurrent.ExecutorService)" >
+        <return type="com.squareup.picasso.Picasso.Builder" />
+      </method>
+      <method name="indicatorsEnabled" signature="indicatorsEnabled(java.lang.Boolean" >
+        <return type="com.squareup.picasso.Picasso.Builder" />
+      </method>
+      <method name="listener" signature="listener(com.squareup.picasso.Picasso.Listener)" >
+        <return type="com.squareup.picasso.Picasso.Builder" />
+      </method>
+      <method name="loggingEnabled" signature="loggingEnabled(java.lang.Boolean" >
+        <return type="com.squareup.picasso.Picasso.Builder" />
+      </method>
+      <method name="memoryCache" signature="memoryCache(com.squareup.picasso.Cache)" >
+        <return type="com.squareup.picasso.Picasso.Builder" />
+      </method>
+      <method name="requestTransformer" signature="requestTransformer(com.squareup.picasso.Picasso.RequestTransformer)" >
+        <return type="com.squareup.picasso.Picasso.Builder" />
+      </method>
+    </class>
+
+    <class name="com.squareup.picasso.Picasso">
+      <method name="load" signature="load()" match="name" >
+        <return type="com.squareup.picasso.RequestCreator" />
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+        <sink argpos="0" kind="http_parameter_pollution" resource="filesystem" />
+      </method>
+      <method name="get" signature="get()" instance="false">
+        <return type="com.squareup.picasso.Picasso" />
+      </method>
+      <method name="with" signature="with(android.content.Context)" >
+        <return type="com.squareup.picasso.Picasso" />
+      </method>
+    </class>
+
+    <class name="com.squareup.picasso.Downloader">
+      <method name="load" signature="load(android.net.Uri, int)" >
+        <sink argpos="0" kind="http_parameter_pollution" resource="filesystem" />
+      </method>
+    </class>
+
+  </module>
+
+  <module name="com.bumptech.glide">
+    <description url="https://bumptech.github.io/glide">Glide, image loading library for Android</description>
+
+    <!-- https://bumptech.github.io/glide/javadocs/400/index.html -->
+    <class name="com.bumptech.glide.Glide">
+      <method name="with" signature="with()" match="name" >
+        <return type="com.bumptech.glide.RequestManager" />
+      </method>
+    </class>
+
+    <class name="com.bumptech.glide.GlideApp">
+      <method name="with" signature="with()" match="name" >
+        <return type="com.bumptech.glide.RequestManager" />
+      </method>
+    </class>
+
+    <class name="com.bumptech.glide.RequestManager">
+      <method name="load" signature="load(java.lang.Object)" match="name" >
+        <return type="com.bumptech.glide.RequestManager" />
+        <sink argpos="0" kind="http_parameter_pollution" resource="filesystem" />
+      </method>
+    </class>
+
+  </module>
+
+
+  <!-- JSON -->
+  <class name="org.json.JSONObject">
+    <constructor name="JSONObject" signature="JSONObject()" match="name" >
+      <sink argpos="0" kind="json_injection" resource="other" />
+    </constructor>
+  </class>
+
+  <class name="org.json.JSONArray" supertypes="java.lang.Iterable" >
+    <constructor name="JSONArray" signature="JSONArray()" match="name" >
+      <sink argpos="0" kind="json_injection" resource="other" />
+    </constructor>
+  </class>
+
+  <!-- http://ormlite.com/ -->
+  <class name="com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper" supertypes="android.database.sqlite.SQLiteOpenHelper" />
+
+</library>

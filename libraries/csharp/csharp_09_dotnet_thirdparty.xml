@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="dotnet.thirdparty" standard=".NET_thirdparty" technology="csharp">
+  <description>Common third-party .NET libraries</description>
+
+  <module name="RazorEngine">
+    <description url="https://antaris.github.io/RazorEngine/">Templating engine with Razor syntax</description>
+
+    <class name="RazorEngine.Razor" standard="RazorEngine">
+      <method name="Compile" signature="Compile(string,string)">
+        <sink argpos="0" kind="code_injection" resource="other"/>
+      </method>
+      <method name="Compile" signature="Compile(string,RazorEngine.ModelType,string)">
+        <sink argpos="0" kind="code_injection" resource="other"/>
+      </method>
+      <method name="CompileWithAnonymous" signature="CompileWithAnonymous(string,string)">
+        <sink argpos="0" kind="code_injection" resource="other"/>
+      </method>
+      <method name="Parse" signature="Parse(string,string)">
+        <sink argpos="0" kind="code_injection" resource="other"/>
+      </method>
+      <method name="Parse" signature="Parse(string,RazorEngine.ModelType,string)">
+        <sink argpos="0" kind="code_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="RazorEngine.Engine" standard="RazorEngine">
+      <field name="Razor" type="RazorEngine.Templating.IRazorEngineService"/>
+    </class>
+
+    <class name="RazorEngine.Templating.IRazorEngineService" kind="interface">
+      <field name="Value" type="string">
+        <sink argpos="0" kind="code_injection" resource="other"/>
+      </field>
+      <method name="AddTemplate" signature="AddTemplate(RazorEngine.Templating.ITemplateKey,RazorEngine.Templating.ITemplateSource)">
+        <sink argpos="1" kind="code_injection" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="Roslyn">
+    <description url="https://github.com/dotnet/roslyn">.NET Compiler Platform</description>
+    <class name="Roslyn.Scripting.CSharp.ScriptEngine" standard="Roslyn">
+      <description>.NET Compiler Platform (Roslyn)</description>
+      <method name="Execute" signature="Execute(string)" match="name">
+        <sink argpos="0" kind="code_injection" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="Saxon.NET">
+    <description url="https://www.saxonica.com/html/documentation/dotnet/dotnetapi.html">
+      XSLT, XQuery, XPath, and XML Schema processing
+    </description>
+
+    <class name="Saxon.Api.Processor" standard="saxon.net">
+      <description>An XQueryCompiler object allows XQuery queries to be compiled.</description>
+      <method name="NewXQueryCompiler" signature="NewXQueryCompiler()">
+        <return type="Saxon.Api.XQueryCompiler"/>
+      </method>
+      <method name="NewXPathCompiler" signature="NewXPathCompiler()">
+        <return type="Saxon.Api.XPathCompiler"/>
+      </method>
+      <method name="NewXsltCompiler" signature="NewXsltCompiler()">
+        <return type="Saxon.Api.XsltCompiler"/>
+      </method>
+    </class>
+
+    <class name="Saxon.Api.XQueryCompiler" standard="saxon.net">
+      <description>An XQueryCompiler object allows XQuery queries to be compiled.</description>
+      <method name="Compile" signature="Compile(string)">
+        <sink argpos="0" kind="xquery_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="Saxon.Api.XPathCompiler" standard="saxon.net">
+      <description>An XPathCompiler object allows XPath queries to be compiled.</description>
+      <method name="Compile" signature="Compile(string)">
+        <sink argpos="0" kind="xpath_injection" resource="other"/>
+      </method>
+      <method name="Evaluate" signature="	Evaluate(string,Saxon.Api.XdmItem)">
+        <sink argpos="0" kind="xpath_injection" resource="other"/>
+      </method>
+      <method name="EvaluateSingle" signature="	Evaluate(string,Saxon.Api.XdmItem)">
+        <sink argpos="0" kind="xpath_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="Saxon.Api.XsltCompiler" standard="saxon.net">
+      <description>An XsltCompiler object allows XSLT 2.0 stylesheets to be compiled.</description>
+      <method name="Compile" signature="Compile(System.IO.Stream)">
+        <sink argpos="0" kind="xslt_injection" resource="other"/>
+      </method>
+      <method name="Compile" signature="Compile(System.IO.Stream,string,bool)">
+        <sink argpos="0" kind="xslt_injection" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="XmlPrime">
+    <description url="https://www.xmlprime.com/xmlprime/">XML processing for .NET</description>
+
+    <class name="XmlPrime.XQuery" standard="XmlPrime">
+      <description>Queries XML data using the XQuery language.</description>
+      <method name="Compile" signature="Compile(string)">
+        <return type="XmlPrime.XQuery"/>
+        <sink argpos="0" kind="xquery_injection" resource="other"/>
+      </method>
+      <method name="Compile" signature="Compile(string,System.Xml.XmlNameTable)">
+        <return type="XmlPrime.XQuery"/>
+        <sink argpos="0" kind="xquery_injection" resource="other"/>
+      </method>
+      <method name="Compile" signature="Compile(System.Uri,string,System.Xml.XmlNameTable)">
+        <return type="XmlPrime.XQuery"/>
+        <sink argpos="1" kind="xquery_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="XmlPrime.XPath" standard="XmlPrime">
+      <description>Compiles an XPath expression and returns a XPath object that represents the expression with the specified in-scope namespaces.</description>
+      <method name="Compile" signature="Compile(string)">
+        <return type="XmlPrime.XPath"/>
+        <sink argpos="0" kind="xpath_injection" resource="other"/>
+      </method>
+      <method name="Compile" signature="Compile(string,System.Xml.XmlNameTable)">
+        <return type="XmlPrime.XPath"/>
+        <sink argpos="0" kind="xpath_injection" resource="other"/>
+      </method>
+      <method name="Compile" signature="Compile(string,System.Xml.XmlNameTable,System.Xml.IXmlNamespaceResolver)">
+        <return type="XmlPrime.XPath"/>
+        <sink argpos="0" kind="xpath_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="XmlPrime.Xslt" standard="XmlPrime">
+      <description>Transforms XML data using the XSLT language.</description>
+      <method name="Compile" signature="Compile(string)">
+        <return type="XmlPrime.Xslt"/>
+        <sink argpos="0" kind="xslt_injection" resource="other"/>
+      </method>
+      <method name="Compile" signature="Compile(string,System.Xml.XmlNameTable)">
+        <return type="XmlPrime.Xslt"/>
+        <sink argpos="0" kind="xslt_injection" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="fastJSON">
+    <description url="https://github.com/mgholam/fastJSON">JSON serializer</description>
+
+    <class name="fastJSON.JSON">
+      <description>Mostly unsafe against deserialization attacks</description>
+      <field name="Instance" type="fastJSON.JSON"/>
+      <method name="ToJSON" signature="ToJSON(object)" match="name" alias="ToNiceJSON" instance="false">
+        <return type="string"/>
+      </method>
+      <method name="ToObject" signature="ToObject(object)" match="name" alias="ToDynamic,Parse"  instance="false">
+        <return type="object"/>
+        <sink argpos="0" kind="code_injection_deserialization"><tags>reason:UNCONDITIONALLY_UNSAFE</tags></sink>
+      </method>
+      <method name="FillObject" signature="FillObject(object,string)" instance="false">
+        <return type="object"/>
+        <sink argpos="1" kind="code_injection_deserialization"><tags>reason:UNCONDITIONALLY_UNSAFE</tags></sink>
+      </method>
+    </class>
+  </module>
+
+  <module name="Json.NET">
+    <description url="https://www.newtonsoft.com/json">JSON framework for .NET</description>
+
+    <class name="Newtonsoft.Json.JsonSerializerSettings">
+      <field name="TypeNameHandling" type="Newtonsoft.Json.TypeNameHandling"/>
+    </class>
+
+    <class name="Newtonsoft.Json.JsonWriter" standard="json.net">
+      <method name="WritePropertyName" signature="WritePropertyName(string)">
+        <sink argpos="0" kind="json_injection" resource="other"/>
+      </method>
+      <method name="WritePropertyName" signature="WritePropertyName(string,bool)">
+        <sink argpos="0" kind="json_injection" resource="other"/>
+      </method>
+      <method name="WriteRaw" signature="WriteRaw(string)">
+        <sink argpos="0" kind="json_injection" resource="other"/>
+      </method>
+      <method name="WriteRawValue" signature="WriteRawValue(string)">
+        <sink argpos="0" kind="json_injection" resource="other"/>
+      </method>
+      <method name="WriteValue" signature="WriteValue(string)">
+        <sink argpos="0" kind="json_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="Newtonsoft.Json.Bson.BsonWriter" supertypes="Newtonsoft.Json.JsonWriter" standard="json.net"/>
+    <class name="Newtonsoft.Json.JsonTextWriter" supertypes="Newtonsoft.Json.JsonWriter" standard="json.net"/>
+    <class name="Newtonsoft.Json.Linq.JTokenWriter" supertypes="Newtonsoft.Json.JsonWriter" standard="json.net"/>
+
+    <class name="Newtonsoft.Json.JsonConvert" standard="json.net">
+      <method name="DeserializeObject" signature="DeserializeObject(string)" match="name" alias="DeserializeAnonymousType,DeserializeObjectAsync">
+        <sink argpos="0" kind="code_injection_deserialization"><tags>reason:WEAK_TYPE_CONTROL</tags><checker id="code_injection_deserialization"/></sink>
+        <sink argpos="0" kind="json_injection" resource="other"/>
+      </method>
+      <method name="PopulateObject" signature="PopulateObject(string,object)" match="name">
+        <sink argpos="0" kind="code_injection_deserialization"><tags>reason:WEAK_TYPE_CONTROL</tags><checker id="code_injection_deserialization"/></sink>
+      </method>
+      <method name="DeserializeXmlNode" signature="DeserializeXmlNode(string)" match="name">
+        <sink argpos="0" kind="json_injection" resource="other"/>
+      </method>
+      <method name="DeserializeXNode" signature="DeserializeXNode(string)" match="name">
+        <sink argpos="0" kind="json_injection" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="FsPickler">
+    <description url="https://github.com/mbraceproject/FsPickler">Serialization library</description>
+
+    <class name="MBrace.FsPickler.Serializer">
+      <method name="Deserialize" signature="Deserialize(System.IO.Stream)" match="name">
+        <return type="object"/>
+        <sink argpos="0" kind="code_injection_deserialization"><tags>reason:UNCONDITIONALLY_UNSAFE</tags></sink>
+      </method>
+      <method name="Serialize" signature="Serialize(System.IO.Stream,object)"/>
+    </class>
+
+    <class name="MBrace.FsPickler">
+      <method name="CreateBinarySerializer" signature="CreateBinarySerializer()" match="name" instance="false" alias="CreateXmlSerializer,CreateJsonSerializer">
+        <return type="MBrace.FsPickler.Serializer"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="SharpSerializer">
+    <description url="https://github.com/polenter/SharpSerializer">Binary and XML Serializer for .NET</description>
+
+    <class name="Polenter.Serialization.SharpSerializer">
+      <method name="Serialize" signature="Serialize(object, System.IO.Stream)"></method>
+      <method name="Deserialize" signature="Deserialize(System.IO.Stream)">
+        <return type="object"/>
+        <sink argpos="0" kind="code_injection_deserialization"><tags>reason:UNCONDITIONALLY_UNSAFE</tags></sink>
+      </method>
+    </class>
+  </module>
+
+  <module name="Wire">
+    <description url="https://github.com/rogeralsing/Wire">A high performance polymorphic serializer for the .NET framework</description>
+    <!-- Wire / Hyperion (fork of Wire, same security issues) -->
+    <class name="Wire.Serializer">
+      <method name="Serialize" signature="Serialize(object,System.IO.Stream)" match="name"></method>
+      <method name="Deserialize" signature="Deserialize(System.IO.Stream)" match="name">
+        <return type="object"/>
+        <sink argpos="0" kind="code_injection_deserialization"><tags>reason:UNCONDITIONALLY_UNSAFE</tags></sink>
+      </method>
+    </class>
+
+    <class name="Hyperion.Serializer" supertypes="Wire.Serializer"/>
+  </module>
+
+  <module name="Sweet.Jayson">
+    <description url="https://github.com/ocdogan/Sweet.Jayson">JSON library</description>
+
+    <class name="Sweet.Jayson.JaysonConverter">
+      <method name="ToJsonObject" signature="ToJsonObject(object,Sweet.Jayson.JaysonSerializationSettings)" match="name" instance="false">
+        <return type="object"/>
+      </method>
+      <method name="ToJsonString" signature="ToJsonString(object,Sweet.Jayson.JaysonSerializationSettings)" match="name" instance="false">
+        <return type="string"/>
+      </method>
+      <method name="ToObject" signature="ToObject(string,Sweet.Jayson.JaysonSerializationSettings)" match="name" alias="Parse" instance="false">
+        <return type="object"/>
+        <sink argpos="0" kind="code_injection_deserialization"><tags>reason:UNCONDITIONALLY_UNSAFE</tags></sink>
+      </method>
+    </class>
+  </module>
+
+  <module name="RestSharp">
+    <description url="https://restsharp.dev/">REST client for .NET</description>
+
+    <!-- HTTP requests (SSRF) -->
+    <class name="RestSharp.RestClient" standard="RestSharp">
+      <constructor name="RestClient" signature="RestClient(string)">
+        <sink argpos="0" kind="ssrf" resource="network"/>
+      </constructor>
+      <field name="BaseUrl" type="string">
+        <sink argpos="0" kind="ssrf" resource="network"/>
+      </field>
+    </class>
+  </module>
+
+</library>

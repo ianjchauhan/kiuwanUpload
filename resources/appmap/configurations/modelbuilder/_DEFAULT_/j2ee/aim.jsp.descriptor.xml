@@ -1,0 +1,137 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='j2ee' subtech='jsp' descriptor='j2ee/aim.jsp.xml' label='Process J2EE presentation (web layer) artifacts'>
+  <description>
+    Process standard presentation ("web layer") J2EE artifacts: web.xml descriptors, JSP pages, servlets.
+    <br/>
+    If processes also Java Server Faces (JSF): Faces descriptors, UI components and managed beans.
+    <br/>
+    For other web frameworks, see the corresponding module.
+  </description>
+
+  <dependencies>
+    <dependency>j2ee/java</dependency>
+  </dependencies>
+
+  <properties>
+
+    <property id='aim.j2ee.rule.webxml.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>Activates web.xml descriptors processing.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.jsp.active' type='bool'>
+      <name>jspActive</name>
+      <example>false</example>
+      <description>Activates JSP processing.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.servlet.active' type='bool'>
+      <name>servletActive</name>
+      <example>false</example>
+      <description>Activates servlet processing (.class files corresponding to J2EE servlet or filter).</description>
+    </property>
+
+    <property id='aim.j2ee.rule.faces.active' type='bool'>
+      <name>facesActive</name>
+      <example>false</example>
+      <description>Activates JSF (Faces 1.2) processing (parses faces descriptors, and discovers UI components and managed beans).</description>
+    </property>
+
+    <property id='aim.j2ee.webapp' type='string'>
+      <name>webapp</name>
+      <example>${aim.common.software}</example>
+      <description>Default (fallback) web application where discovered entities will be registered, if global resolver does not resolve it.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.jsp.overrideSoftwareResolver' type='bool'>
+      <name>overrideSoftwareResolver</name>
+      <example>true</example>
+      <description>
+        If true, use the software detected in web.xml descriptor, if any.
+        If false, use standard software resolution.
+      </description>
+    </property>
+
+    <property id='aim.j2ee.rule.webxml.webxmlPatterns' type='list' subtype='antPattern'>
+      <name>webxmlPatterns</name>
+      <example>**/web.xml</example>
+      <description>Ant pattern(s) for web.xml descriptors to process.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.jsp.acceptUnresolved' type='bool'>
+      <name>acceptUnresolved</name>
+      <example>${aim.common.acceptUnresolved}</example>
+      <description>
+        If true, accept any unresolved reference in HTML (to a file in analyzed software) and create a target entity.
+        If false, references to HTML resources not found in analyzed software are ignored.
+      </description>
+    </property>
+
+    <property id='aim.j2ee.rule.jsp.webContents' type='string'>
+      <name>webContents</name>
+      <example>${aim.common.srcdir}</example>
+      <description>
+        The (fallback) directory where web content can be found (for resolving relative URLs to code resources).
+        <br/>
+        Inferred web contents dir from web apps matched in web.xml descriptors will be tried first.
+        <br/>
+        If no WebApp is matched, this webContents is used as fallback base dir for JSP resources.
+        <br/>
+        This permits the rule to operate without a WebXmlRule resolving web applications explicitly.
+      </description>
+    </property>
+
+    <property id='aim.j2ee.jsp.filter' type='list' subtype='antPattern'>
+      <name>filter</name>
+      <example>**/*.jsp,**/*.jspx</example>
+      <description>Ant patterns for selecting which JSP files to process.</description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>
+      configuration(web.xml|faces descriptor),
+      servlet,filter,contextListener,element(ejb,faces bean),page(JSP),
+      library(taglib),
+      class,resource,program
+    </values>
+    <description>
+      Creates configuration for web.xml and JSF descriptors
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      software(webapp)-configuration->configuration(web.xml,faces descriptor),
+      servlet|filter|contextListener|page|-configuration->configuration(web.xml),
+      page-use->resource|program|page,
+      page-calls|includes->page,
+      page-transition->page|resource,
+      page-inherits|calls|uses|instantiates|references->class,
+      page-uses->program(JavaScript),
+      element(faces bean)-configuration->configuration(faces descriptor),
+      element(faces bean)-uses->class
+    </values>
+    <description>
+      A configuration relation is modeled between each web application (and elements declared in the descriptor)
+      and the web.xml descriptor.
+      <br/>
+      Dependencies between JSP pages and referenced web elements (web resources, included/forwarded pages, JavaScript) are
+      modeled.
+      <br/>
+      Additionally, dependencies between JSP and Java classes are modeled (see <i>j2ee/java</i> module for full details).
+      <br/>
+      For JSF, configuration relation between faces beans and Faces descriptor is created. Uses relation is created
+      between the Faces bean and the target class.
+    </description>
+  </createdRelations>
+  
+  <importantConfigurations activation="aim.j2ee.rule.jsp.active">
+    <alternative><value>aim.j2ee.rule.webxml.active=true</value></alternative>
+    <alternative><value>aim.j2ee.rule.servlet.active=true</value></alternative>
+    <alternative><value>aim.j2ee.rule.faces.active=true</value></alternative>
+  </importantConfigurations>
+  
+</block>

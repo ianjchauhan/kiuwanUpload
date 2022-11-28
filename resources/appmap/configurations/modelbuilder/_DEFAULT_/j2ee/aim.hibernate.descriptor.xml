@@ -1,0 +1,153 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='j2ee' subtech='hibernate' descriptor='j2ee/aim.hibernate.xml' label='Process Hibernate mapping descriptors'>
+  <description>
+    Process Hibernate (Object-Relational persistence) framework.
+    Hibernate mapping descriptors (.hbm.xml), and java classes with JPA/Hibernate mapping annotations or
+    queries via Hibernate API calls are processed.
+    <br/>
+    Dependencies between Java classes and database items (tables or views) are resolved using
+    the global database resolver (if any), either the <code>dbname</code> / <code>dbsystem</code> pair
+    is used for the container of the database items found.
+  </description>
+
+  <dependencies>
+    <dependency>j2ee/java</dependency>
+  </dependencies>
+
+  <properties>
+
+    <property id='aim.hibernate.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>If true, Hibernate mapping descriptors are processed.</description>
+    </property>
+
+    <property id='aim.hibernate.java.rule.active' type='bool'>
+      <name>java.active</name>
+      <example>false</example>
+      <description>If true, Hibernate java code is processed for analyzing mapping annotations or API code.</description>
+    </property>
+
+    <property id='aim.hibernate.rule.hibernateMappingsPattern' type='list' subtype='antPattern'>
+      <name>hibernateMappingsPattern</name>
+      <example>**/*.hbm,**/*.hbm.xml</example>
+      <description>Ant pattern(s) for hibernate descriptors.</description>
+    </property>
+
+    <property id='aim.hibernate.filter.javaSource' type='list' subtype='antPattern'>
+      <name>javaSourcePatterns</name>
+      <example>**/*.java</example>
+      <description>Ant pattern(s) for java sources to analyze.</description>
+    </property>
+
+    <property id='aim.hibernate.software' type='string'>
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>The default software name to place classes found in descriptor (if no global resolver finds it).</description>
+    </property>
+
+    <property id='aim.j2ee.rule.hibernate.dbsystem' type='string'>
+      <name>dbsystem</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>The default database system (or database name) to use when the target database entity cannot be resolved.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.hibernate.dbname' type='string'>
+      <name>dbname</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>The default database name (or schema) to use when the target database entity cannot be resolved.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.hibernate.ignoreCase' type='string'>
+      <name>ignoreCase</name>
+      <example>${aim.common.ignoreCase}</example>
+      <description>
+        If true, case in database names are ignored in mappings between entity beans and tables
+      </description>
+    </property>
+
+    <property id='aim.j2ee.rule.hibernate.addCodeToRelations' type='bool'>
+      <name>addCodeToRelations</name>
+      <example>false</example>
+      <description>If true, matching HQL/SQL code will be added to relations.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.hibernate.addSqlToModel' type='bool'>
+      <name>addSqlToModel</name>
+      <example>false</example>
+      <description>If true, SQL nodes are added to model queries.</description>
+    </property>
+
+    <property id='aim.hibernate.java.rule.databaseMethods' type='list' subtype='string'>
+      <name>databaseMethods</name>
+      <example>createQuery,createSQLQuery</example>
+      <description>Database Session methods to be inspected for programmatic query execution.</description>
+    </property>
+
+    <property id='aim.hibernate.java.rule.hqlMethods' type='list' subtype='string'>
+      <name>hqlMethods</name>
+      <example>createQuery</example>
+      <description>Which of the database methods are taking HQL (Hibernate Query Language) code.</description>
+    </property>
+
+    <property id='aim.hibernate.java.rule.sessionClasses' type='list' subtype='string'>
+      <name>sessionClasses</name>
+      <example>com.myorg.MySession</example>
+      <description>
+        Additional classes (besides org.hibernate.Session) that will be checked as subclasses of hibernate sessions.
+        Could help if your are using a simple framework between application code and hibernate API.
+      </description>
+    </property>
+
+    <property id='aim.hibernate.java.rule.sessionFactoryClasses' type='list' subtype='string'>
+      <name>sessionFactoryClasses</name>
+      <example>com.myorg.MySessionFactory</example>
+      <description>
+        Additional classes (besides org.hibernate.SessionFactory) that will be checked for openSession() /
+        getCurrentSession() session factory method calls.
+        Could help if your are using a simple framework between application code and hibernate API.
+      </description>
+    </property>
+
+    <property id='aim.hibernate.java.rule.strictSessionCheck' type='bool'>
+      <name>strictSessionCheck</name>
+      <example>false</example>
+      <description>
+        If true, checks that database methods are invoked on org.hibernate.Session.
+        If false, any call on databaseMethods is inspected. This allows to process code that uses "wrapper"
+        frameworks that provide factories on Hibernate sessions.
+      </description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>configuration,class,table,view</values>
+    <description>
+      Creates a configuration component for each Hibernate descriptor processed, a class component for each persistent
+      class referenced in the descriptor mappings, and table and view components for the mapped database entities.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      configuration-configure->class,
+      class-contains->class[persistent collection],
+      class-association|any|many-to-any|many-to-many|many-to-one|one-to-many|one-to-one->class[association target],
+      class-uses->class,
+      class-insert|update|delete->class[persistent class]
+      class-uses->table|view
+    </values>
+    <description>
+      Creates a "configure" relation between configuration descriptor and Java class, a "uses" relation
+      between each persistent type and other persistent types referenced, an insert / update / delete relation
+      between a client class persisting a target persistent type, and dependencies between persistent classes
+      and the mapped tables / views (either in mapping description, or referenced in HQL/SQL queries).
+    </description>
+  </createdRelations>
+
+  <importantConfigurations activation="aim.hibernate.rule.active">
+    <alternative><value>aim.hibernate.java.rule.active=true</value></alternative>
+  </importantConfigurations>
+
+</block>

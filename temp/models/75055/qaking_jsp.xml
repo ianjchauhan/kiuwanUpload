@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_jsp" updated="">
+  <description>EDCAST_MOBILE</description>
+  <rule name="OPT.JSP.SEC_JSP.ExpressionLanguageInjection" message="ExpressionLanguageInjection: Expression Language (EL / OGNL) injection" class="com.als.clases.ncj2ee.cffjsp.ExpressionLanguageInjection" technology="JSP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.4,ASVS-v4.0.2:5.5.4,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,el-injection,ognl-injection]]></tags>
+    <description><![CDATA[The software constructs all or part of an expression language (EL) statement in a Java Server Page (JSP) using
+externally-influenced input from an upstream component, but it does not neutralize or incorrectly neutralizes
+special elements that could modify the intended EL statement before it is executed.
+
+In frameworks like Spring MVC, EL tags are evaluated twice (one by the application server and the result is
+evaluated as EL expression again by the Spring tag implementation), which allows an attacker to pass in the HTTP
+request message a value (header, cookie, message parameter) containing EL expression that could be executed.
+Depending on the context, this may allow execution of arbitrary code, modification of unintended session or
+application attributes, or even downloading remote malicious Java classes with custom classloaders.
+
+Other frameworks, like Struts, use a similar expression language (OGNL) that in certain cases allow double
+execution of OGNL. In particular, when the struts.url.includeParams is set to 'all' or 'get', the Struts
+<s:a> and <s:url> tags are vulnerable to OGNL injection, as the tag implementation re-evaluates the parameters
+passed to the tag as OGNL expressions.
+
+The rule also reports certain insecure configuration properties in the struts.properties / struts.xml
+configuration files, like struts.devMode, struts.ognl.allowStaticMethodAccess, or struts.enable.DynamicMethodInvocation.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid expression injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[In struts.xml configuration file:
+
+<struts>
+  ...
+  <!-- VIOLATION, devMode should be disabled in production -->
+  <constant name="struts.devMode" value="true"/>
+  <!-- VIOLATION, could allow arbitrary code execution -->
+  <constant name="struts.ognl.allowStaticMethodAccess" value="true"/>
+  <!-- VIOLATION, unexpected methods in Struts actions could be invoked with user-controller data -->
+  <constant name="struts.enable.DynamicMethodInvocation" value="true"/>
+  <!-- activates OGNL injection in Struts a/url tags -->
+  <constant name="struts.url.includeParams" value="all"/>
+</struts>
+
+In any Struts JSP view, the <a> and <url> tags are vulnerable:
+<%@ taglib prefix="s" uri="/struts-tags"%>
+<s:url id="url" action="HelloWorld"><!-- VIOLATION -->
+  <s:param name="request_locale"><s:property value="message"/></s:param>
+</s:url>]]></example>
+    <repair><![CDATA[<struts>
+  ...
+  <constant name="struts.devMode" value="false"/>
+  <constant name="struts.ognl.allowStaticMethodAccess" value="false"/>
+  <constant name="struts.enable.DynamicMethodInvocation" value="false"/>
+  <constant name="struts.url.includeParams" value="none"/>
+</struts>]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Expression_Language_Injection,Struts dynamic method execution: http://security.coverity.com/blog/2013/Oct/making-struts2-app-more-secure-disable-dynamic-method-invocation.html,Milking a horse or executing remote code in modern Java frameworks,EL injection in Spring: http://www.mindedsecurity.com/fileshare/Ex]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:917,CWE:95,CWETOP25:2021:30,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.JSP.SEC_JSP.FileInclusionVulnerability" message="FileInclusionVulnerability: JSP File Inclusion vulnerability" class="com.als.clases.ncj2ee.cffjsp.FileInclusionVulnerability" technology="JSP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.5,ASVS-v4.0.2:5.2.8,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,el-injection,ognl-injection]]></tags>
+    <description><![CDATA[JSP technology provides the <jsp:include> action (or JSTL <c:import>) for including content
+in the current page, either from a local (web application) resource or from an URL, respectively.
+
+When the page path or URL is formed using untrusted input, an attacker may provide the input
+in the HTTP request to force the J2EE application server to include an unintended resource, which
+opens the way to either sensitive local file disclosure (like a /WEB-INF configuration file), or
+catastrophic remote file injection (e.g. remote attacker-controlled content with embedded malicious
+JavaScript code for CSRF attacks, or Java code in scriptlet to execute unexpected server-side operations,
+including operating system commands).]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid unintended leakage of sensitive local/remote files, or remote file include attacks, in JSP dynamic include actions.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<!--
+  VIOLATION, attacker may choose which local webapp file to be included
+  ("local file include")
+-->
+<jsp:include page='<%= (String)request.getParameter("page_header")%>' />
+<!--
+  VIOLATION, the URL could be remote, so attacker may provide malicious JSP code
+  ("remote file include")
+-->
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<c:import url='<%= request.getParameter("page_header")%>' />]]></example>
+    <repair><![CDATA[Use the "compile-time" <%@ include %> directive if the included page is local and non dynamic.
+
+If included page should be dynamic, never let untrusted input to directly form part
+of the page path (for <jsp:include>) or page URL (for <c:import>).]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/94.htm]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:94,CWETOP25:2021:28,OWASP:2021:A3,PCI-DSS:6.5.8,WASC:5]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.JSP.SEC_JSP.InformationExposureInGetRequest" message="InformationExposureInGetRequest: Information exposure through strings sent by GET" class="com.als.clases.ncj2ee.cffjsp.InformationExposureInGetRequest" technology="JSP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.3,ASVS-v4.0.2:3.1.1,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Web application uses GET method to process requests containing sensitive information, so information could be exposed in the browser's history, logs, etc.
+
+At least, an attacker could obtain information from the query string that will be used to improve its attack method (finding out information about the application internal processes
+or database column names). The exploitation of the parameters vulnerabilities in the request chains could lead to an attacker impersonating a legitimate user, obtaining private date or 
+executing actions not intended by the application developers.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<form id="form" name="form" method="get" action="password-test-servlet">   <!-- VIOLATION -->
+  Username: <input name="username" type="text" tabindex="10" /><br><br>
+  Password: <input name="password" type="password" tabindex="10" />
+  <input type="submit" name="submit" value="Login-bad" />
+</form>]]></example>
+    <repair><![CDATA[       
+<form id="form" name="form" method="post" action="password-test-servlet">    <!-- OK --> 
+  Username: <input name="username" type="text" tabindex="10" /><br><br>
+  Password: <input name="password" type="password" tabindex="10" />
+  <input type="submit" name="submit" value="Login-bad" />
+</form>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/598.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:598]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.JSP.SEC_JSP.MissingPasswordFieldMasking" message="MissingPasswordFieldMasking: Password input field is not masked" class="com.als.clases.ncj2ee.cffjsp.MissingPasswordFieldMasking" technology="JSP" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,infoleak,privacy]]></tags>
+    <description><![CDATA[When a form contains a password input field, the type attribute must be set to "password". Otherwise an attacker
+directly or indirectly watching the user might capture it.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<form id="login">
+  Username: <input name="user_name" type="text"/>
+  <!-- VIOLATION -->
+  Password: <input name="user_password" type="text"/>
+</form>]]></example>
+    <repair><![CDATA[<!-- FIXED -->
+<form id="login">
+  Username: <input name="user_name" type="text"/>
+  Password: <input name="user_password" type="password"/>
+</form>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/549.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:549]]></security>
+    </normatives>
+    <properties>
+      <property name="pattern" descname="Pattern to use. If blank, the default pattern is used." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.JSP.SEC_JSP.PathRelativeStylesheetImport" message="PathRelativeStylesheetImport: Path-Relative Stylesheet Import." class="com.als.clases.ncj2ee.cffjsp.PathRelativeStylesheetImport" technology="JSP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:AccessControl,CWEScope:Availability,CWEScope:Integrity]]></tags>
+    <description><![CDATA[A Path-Relative Stylesheet Import (PRSSI) vulnerability occurs when a web application uses relative URLs for importing
+CSS stylesheets. By abusing the path handling features of certain web languages and frameworks, an attacker might
+perform cross-site scripting injection.
+
+Imagine that a vulnerable page has a <link rel='stylesheet' href='style.css'> for importing a stylesheet.
+
+An attacker may provide an extra path following the vulnerable HTML page URL, so the same page could be loaded a second time
+in the context of the link, and the browser will try to parse it as a CSS stylesheet.
+
+When the browser renders the page in quirks mode (either because of no DOCTYPE, or an old one, in the page; or
+because the vulnerable page, without anti-framing measures, is loaded through iframes), a resource with invalid
+content-type for a CSS (e.g. text/html) will be accepted. If the attacker can force the page to reflect content
+he controls (e.g. for URL parameters or from session-stored data), he/she may succeed with the victim's browser
+executing malicious CSS code. For example, @import url(//evil.com), using CSS selectors to steal CSRF tokens,
+executing JavaScript code via expression() function, etc.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- Quirks mode triggered, use standard mode when possible -->
+
+<!-- VIOLATION -->
+<link href="styles/theme/print.css" rel="stylesheet" type="text/css"/>]]></example>
+    <repair><![CDATA[<!DOCTYPE html>
+
+<!-- FIXED, non-relative  -->
+<link href="/myapp/styles/theme/print.css" rel="stylesheet" type="text/css"/>]]></repair>
+    <reference><![CDATA[https://portswigger.net/research/detecting-and-exploiting-path-relative-stylesheet-import-prssi-vulnerabilities,https://owasp.org/www-pdf-archive//OWASP-Ionut-Popescu-Less-Known-Web-Application-Vulnerabilities-Stripped.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.7,WASC:08]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.JSP.SEC_JSP.SpecifyIntegrityAttribute" message="SpecifyIntegrityAttribute: Specify a integrity attribute on the &lt;script&gt; and &lt;link&gt; elements" class="com.als.clases.ncj2ee.cffjsp.SpecifyIntegrityAttribute" technology="JSP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.14.2,HTML5]]></tags>
+    <description><![CDATA[The "integrity" attribute on <script> and <link> elements (pointing to cross-origin resources) must be specified,
+so the browser can check the integrity of the linked resources, avoiding to use scripts or CSS files with potentially malicious code.
+
+The "integrity" attribute is defined in the Sub-Resource Integrity (SRI) W3C standard.
+The browser automatically will verify the hash of the fetched resource (typically downloaded from a remote content-delivery network or CDN).
+To avoid potential compromise of the CDN, SRI provides a simple hash verification (for any attacker is extermely hard to perform
+any modification on the resource contents, while keeping the same cryptographic hash).
+
+The rule checks for <script src="URL"> or <link rel="stylesheet" href="URL"> elements, without integrity attribute,
+referencing a resource matching the unsafeURLs pattern (any non-local, cross-origin URL, by default).]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[To check the script integrity improves the security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script><!-- VIOLATION -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"><!-- VIOLATION -->]]></example>
+    <repair><![CDATA[<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"
+        integrity="sha256-ivk71nXhz9nsyFDoYoGf2sbjrR9ddh+XDkCcfZxjvcM="
+        crossorigin="anonymous"></script><!-- OK -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"
+      integrity="sha256-8EtRe6XWoFEEhWiaPkLawAD1FkD9cbmGgEy6F46uQqU="
+      crossorigin="anonymous"><!-- OK -->]]></repair>
+    <reference><![CDATA[https://www.w3.org/TR/SRI/],https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity,https://scotthelme.co.uk/protect-site-from-cryptojacking-csp-sri/,https://scotthelme.co.uk/subresource-integrity/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:494,OWASP:2021:A8,WASC:15]]></security>
+    </normatives>
+    <properties>
+      <property name="unsafeURLs" descname="Regular expression for resource URLs that should need integrity protection (default: &quot;^https?://&quot;)." value="^https?://"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.JSP.SEC_JSP.TargetBlankVulnerability" message="TargetBlankVulnerability: Improper Neutralization of links to external sites" class="com.als.clases.ncj2ee.cffjsp.TargetBlankVulnerability" technology="JSP" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When an user clicks a link to an external site, and that link has the target="_blank" attribute,
+then the new site will be opened into a new tab or window, but will share its process with the original tab or window.
+
+The window.opener object stores information from the original window, so if a malicious attacker achieves to run code into
+the target site then he/she might read or modify the properties included into the window.opener object, even when the
+original and the target sites have different origin.
+
+After that, the attacker might change the original windows for a malicious copy of it, where the user can be tricked
+to login, or to input his/her bank account information or some other sensitive information.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid malicious redirections to sites controlled by the attacker]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<a href="http://attacker-site.example.com/useful-page.html" target="_blank">    <!-- VIOLATION -->]]></example>
+    <repair><![CDATA[<a href="http://attacker-site.example.com/useful-page.html" target="_blank" rel="noopener noreferrer">]]></repair>
+    <reference><![CDATA[https://dev.to/ben/the-targetblank-vulnerability-by-example,https://owasp.org/www-community/attacks/Reverse_Tabnabbing,https://cwe.mitre.org/data/definitions/1022.html,https://mathiasbynens.github.io/rel-noopener/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:1022,OWASP:2021:A5]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedHref" descname="Separated comma list of allowed href values which, when used, exclude that element from
+            being reported" value="#,javascript:void(0);"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.JSP.SEC_JSP.UnprotectedTransportCredential" message="UnprotectedTransportCredential: Unprotected transport of credentials" class="com.als.clases.ncj2ee.cffjsp.UnprotectedTransportCredentials" technology="JSP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.4.5,ASVS-v4.0.2:2.7.4,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Login pages should implement protection measures for credentials travelling from the client to the server.
+SSL should be used (by using 'https') for credentials transmission. Even if not the entire site uses it, SSL has to be used for this case.
+
+By using SSL the client could verify the server identity to which they are connecting, so ensures to be talking to the proper end system and avoids being the victim of a phishing attack,
+which tipicaly redirects the user to a site that does not have a secure server certificate issued by an authorized provider.]]></description>
+    <priority>1</priority>
+    <effort>1</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<!-- VIOLATION -->        
+<form action='http://hostname.com/j_security_check' method='post'>
+  <table>
+    <tr><td>Name:</td>
+      <td><input type='text' name='j_username'></td></tr>
+    <tr><td>Password:</td>
+      <td><input type='password' name='j_password' size='8'></td>
+    </tr>
+  </table><br />
+  <input type='submit' value='login'>
+</form>]]></example>
+    <repair><![CDATA[<!-- FIXED -->        
+<form action='https://hostname.com/j_security_check' method='post'>
+  <table>
+    <tr><td>Name:</td>
+      <td><input type='text' name='j_username'></td></tr>
+    <tr><td>Password:</td>
+      <td><input type='password' name='j_password' size='8'></td>
+    </tr>
+  </table><br />
+  <input type='submit' value='login'>
+</form>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/523.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:523]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="JSP" technology="JSP" active="true" weight="1.0">
+      <description><![CDATA[JSP rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="JSP" active="true" weight="0.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="JSP" active="true" weight="0.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="JSP" active="true" weight="0.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="JSP" active="true" weight="0.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="JSP" active="true" weight="10.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="os">
+
+  <module name="os" >
+    <description url="https://pkg.go.dev/os">Provides a platform-independent interface to operating system functionality</description>
+
+    <globalObject name="os.Args" type="go.slice" >
+      <source argpos="-1" kind="user_input" resource="gui" />
+    </globalObject>
+    <function name="os.NewFile" signature="os.NewFile(go.uintptr, go.string)">
+      <sink kind="path_traversal" argpos="0" resource="filesystem" />
+    </function>
+    <function name="os.Open" signature="os.Open(go.string)">
+      <return type="os.File,go.error" />
+      <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      <source argpos="-1" kind="file_input" resource="filesystem" />
+    </function>
+    <function name="os.OpenFile" signature="os.OpenFile(go.string, go.int, os.FileMode)">
+      <return type="os.File,go.error" />
+      <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      <source argpos="-1" kind="file_input" resource="filesystem" />
+    </function>
+    <function name="os.Mkdir" signature="os.Mkdir(go.string, os.FileMode)">
+      <return type="go.error" />
+      <sink kind="path_traversal" argpos="0" resource="filesystem" />
+    </function>
+    <function name="os.MkdirAll" signature="os.MkdirAll(go.string, os.FileMode)">
+      <return type="go.error" />
+      <sink kind="path_traversal" argpos="0" resource="filesystem" />
+    </function>
+    <function name="os.Getenv" signature="os.Getenv(go.string)">
+      <return type="go.string"/>
+      <source argpos="-1" kind="environment_input" resource="environment"/>
+    </function>
+  </module>
+
+  <module name="os.exec" >
+    <description url="https://pkg.go.dev/os/exec">Runs external commands</description>
+
+    <function name="os.exec.Command" signature="os.exec.Command(go.string, ...go.string)">
+      <return type="os.exec.Cmd"/>
+      <sink kind="command_injection" argpos="0" resource="os" >
+        <tags>command_injection.checkCommand</tags>
+      </sink>
+    </function>
+    <function name="os.exec.CommandContext" signature="os.exec.CommandContext(context.Context, go.string, ...go.string)">
+      <return type="os.exec.Cmd"/>
+      <sink kind="command_injection" argpos="1" resource="os" >
+        <tags>command_injection.checkCommand</tags>
+      </sink>
+    </function>
+
+    <class name="os.exec.Cmd" >
+      <method name="Output" signature="Output()" >
+        <return type="go.slice,go.error" />
+        <source argpos="-1" kind="system_input" resource="environment" />
+      </method>
+      <method name="StderrPipe" signature="StderrPipe()" >
+        <return type="io.ReadCloser,go.error" />
+        <source argpos="-1" kind="system_input" resource="environment" />
+      </method>
+      <method name="StdinPipe" signature="StdinPipe()" >
+        <return type="io:ReadCloser,go.error" />
+        <sink argpos="-1" kind="command_injection" resource="environment" />
+      </method>
+      <method name="StdoutPipe" signature="StdoutPipe()" >
+        <return type="io.ReadCloser,go.error" />
+        <source argpos="-1" kind="system_input" resource="environment" />
+      </method>
+    </class>
+  </module>
+</library>

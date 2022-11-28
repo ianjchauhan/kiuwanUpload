@@ -1,0 +1,797 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="apache.spark"  technology="java" standard="Apache_Spark">
+
+  <description url="https://spark.apache.org/">Unified analytics engine for Big-Data</description>
+
+  <module name="apache.spark" >
+    <class name="org.apache.spark.SparkContext" supertypes="org.apache.spark.internal.Logging" >
+      <constructor name="SparkContext" signature="SparkContext()" />
+      <constructor name="SparkContext" signature="SparkContext(org.apache.spark.SparkConf)" />
+      <constructor name="SparkContext" signature="SparkContext(java.lang.String,java.lang.String,org.apache.spark.SparkConf)" >
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </constructor>
+      <constructor name="SparkContext" signature="SparkContext(java.lang.String,java.lang.String,java.lang.String,scala.collection.Seq,scala.collection.Map)" >
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </constructor>
+
+      <method name="addFile" signature="addFile(java.lang.String)" match="name" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="addJar" signature="addJar(java.lang.String)" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="binaryFiles" signature="binaryFiles(java.lang.String,int)" match="name" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="binaryRecords" signature="binaryRecords(java.lang.String,int,org.apache.hadoop.conf.Configuration)" match="name" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="cancelJob" signature="cancelJob(int)" match="name" >
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+      <method name="cancelJobGroup" signature="cancelJobGroup(int)" match="name" >
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+      <method name="cancelStage" signature="cancelStage(int)" match="name" >
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+      <method name="getConf" signature="getConf()" >
+        <return type="org.apache.spark.SparkConf" />
+      </method>
+      <method name="getOrCreate" signature="getOrCreate()" match="name" >
+        <return type="org.apache.spark.SparkContext" />
+      </method>
+      <method name="getPoolForName" signature="getPoolForName(java.lang.String)" >
+        <return type="scala.Option" />
+      </method>
+      <method name="hadoopConfiguration" signature="hadoopConfiguration()" match="name" >
+        <return type="org.apache.hadoop.conf.Configuration" />
+      </method>
+      <method name="hadoopFile" signature="hadoopFile(java.lang.String,java.lang.Class)" match="name" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="newAPIHadoopFile" signature="hadoopFile(java.lang.String,java.lang.Class,java.lang.Class,java.lang.Class,org.apache.hadoop.conf.Configuration)" match="name" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="objectFile" signature="objectFile(java.lang.String,int,scala.reflect.ClassTag)" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="sequenceFile" signature="sequenceFile(java.lang.String,java.lang.Class,java.lang.Class)" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="textFile" signature="textFile(java.lang.String,int)" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="wholeTextFiles" signature="wholeTextFiles(java.lang.String,int)" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+    </class>
+    <class name="org.apache.spark.SparkConf" >
+      <method name="setAppName" signature="setAppName(java.lang.String)" >
+        <return type="org.apache.spark.SparkConf" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setJars" signature="setJars(java.lang.String[])" >
+        <return type="org.apache.spark.SparkConf" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setMaster" signature="setMaster(java.lang.String)" >
+        <return type="org.apache.spark.SparkConf" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setSparkHome" signature="setSparkHome(java.lang.String)" >
+        <return type="org.apache.spark.SparkConf" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+    </class>
+    <class name="org.apache.spark.util.CommandLineUtils" >
+      <method name="printErrorAndExit" signature="printErrorAndExit(java.lang.String)" >
+        <tags>write,needs_error_handling</tags>
+        <sink kind="log_forging" argpos="0" resource="other" />
+      </method>
+      <method name="printMessage" signature="printMessage(java.lang.String)" >
+        <sink kind="log_forging" argpos="0" resource="other" />
+      </method>
+    </class>
+  </module>
+
+  <module name="apache.spark.sql" >
+    <class name="org.apache.spark.sql.SparkSession" supertypes="java.io.Closeable,java.io.Serializable,AutoCloseable,org.apache.spark.internal.Logging" >
+      <method name="builder" signature="builder()" >
+        <return type="org.apache.spark.sql.SparkSession.Builder" />
+      </method>
+      <method name="catalog" signature="catalog" >
+        <return type="org.apache.spark.sql.catalog.Catalog" />
+      </method>
+      <method name="conf" signature="conf()" >
+        <return type="org.apache.spark.sql.RuntimeConfig" />
+      </method>
+      <method name="createDataFrame" signature="createDataFrame()" match="name" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="emptyDataFrame" signature="emptyDataFrame()" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="getActiveSession" signature="getActiveSession()" alias="getDefaultSessions" >
+        <return type="scala.Option" elementType="org.apache.spark.sql.SparkSession" />
+      </method>
+      <method name="newSession" signature="newSession()" >
+        <return type="org.apache.spark.sql.SparkSession" />
+      </method>
+      <method name="range" signature="range()" match="name" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="read" signature="read()" >
+        <return type="org.apache.spark.sql.DataFrameReader" />
+      </method>
+      <method name="readStream" signature="readStream()" >
+        <return type="org.apache.spark.sql.DataFrameReader" />
+      </method>
+      <method name="sessionState" signature="sessionState()" >
+        <return type="org.apache.spark.sql.internal.SessionState" />
+      </method>
+      <method name="sharedState" signature="sharedState()" >
+        <return type="org.apache.spark.sql.internal.SharedState" />
+      </method>
+      <method name="sparkContext" signature="sparkContext()" >
+        <return type="org.apache.spark.SparkContext" />
+      </method>
+      <method name="sql" signature="sql(java.lang.String)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="sql_injection" argpos="0" resource="database" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="sqlContext" signature="sqlContext()" >
+        <return type="org.apache.spark.sql.SQLContext" />
+      </method>
+      <method name="streams" signature="streams()" >
+        <return type="org.apache.spark.sql.streaming.StreamingQueryManager" />
+      </method>
+      <method name="table" signature="table(java.lang.String)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="resource_injection" argpos="0" />
+      </method>
+    </class>
+
+    <class name="org.apache.spark.sql.SparkSession.Builder" >
+      <method name="appName" signature="appname(java.lang.String)" >
+        <return type="org.apache.spark.sql.SparkSession.Builder" />
+        <sink kind="resource_injection" argpos="0" />
+      </method>
+      <method name="config" signature="config(org.apache.spark.SparkConf)" >
+        <return type="org.apache.spark.sql.SparkSession.Builder" />
+      </method>
+      <method name="config" signature="config(java.lang.String, boolean)" >
+        <return type="org.apache.spark.sql.SparkSession.Builder" />
+      </method>
+      <method name="enableHiveSupport" signature="enableHiveSupport()" >
+        <return type="org.apache.spark.sql.SparkSession.Builder" />
+      </method>
+      <method name="master" signature="master(java.lang.String)" >
+        <return type="org.apache.spark.sql.SparkSession.Builder" />
+        <sink kind="resource_injection" argpos="0" />
+      </method>
+      <method name="withExtensions" signature="withExtensions()" match="name" >
+        <return type="org.apache.spark.sql.SparkSession.Builder" />
+      </method>
+      <method name="getOrCreate" signature="getOrCreate()" match="name" >
+        <return type="org.apache.spark.sql.SparkSession" />
+      </method>
+    </class>
+
+    <class name="org.apache.spark.sql.Dataset" supertypes="java.io.Serializable" />
+
+    <class name="org.apache.spark.sql.DataFrameReader" supertypes="org.apache.spark.internal.Logging" >
+      <method name="csv" signature="csv(org.apache.spark.sql.Dataset)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="csv" signature="csv(...java.lang.String)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="format" signature="format(java.lang.String)" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="jdbc" signature="jdbc(java.lang.String,java.lang.String,java.util.Properties)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="resource_injection" argpos="0,1" />
+      </method>
+      <method name="jdbc" signature="jdbc(java.lang.String,java.lang.String,java.util.Properties)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="resource_injection" argpos="0,1" />
+      </method>
+      <method name="jdbc" signature="jdbc(java.lang.String,java.lang.String,java.lang.String[],java.util.Properties)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="resource_injection" argpos="0,1,2" />
+      </method>
+      <method name="jdbc" signature="jdbc(java.lang.String,java.lang.String,java.lang.String,long,long,int,java.util.Properties)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="resource_injection" argpos="0,1,2" />
+      </method>
+      <method name="json" signature="json(org.apache.spark.sql.Dataset)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="json" signature="json(org.apache.spark.api.java.JavaRDD)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="json" signature="json(org.apache.spark.rdd.RDD)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="json" signature="json(scala.collection.Seq)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="json" signature="json(...java.lang.String)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="load" signature="load()" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="load" signature="load(scala.collection.Seq)" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="load" signature="load(...java.lang.String)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="option" signature="option(java.lang.String,boolean)" match="name" >
+        <return type="org.apache.spark.sql.DataFrameReader" />
+        <sink kind="resource_injection" argpos="1" />
+      </method>
+      <method name="options" signature="options()" match="name" >
+        <return type="org.apache.spark.sql.DataFrameReader" />
+      </method>
+      <method name="orc" signature="orc(scala.collection.Seq)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="orc" signature="orc(...java.lang.String)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="parquet" signature="parquet(scala.collection.Seq)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="parquet" signature="parquet(...java.lang.String)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="schema" signature="schema(scala.collection.Seq)" match="name" >
+        <return type="org.apache.spark.sql.DataFrameReader" />
+        <sink kind="resource_injection" argpos="0" />
+      </method>
+      <method name="table" signature="table(scala.collection.Seq)" match="name" >
+        <return type="org.apache.spark.sql.DataFrameReader" />
+      </method>
+      <method name="text" signature="text(scala.collection.Seq)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="text" signature="text(...java.lang.String)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="textFile" signature="textFile(scala.collection.Seq)" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="textFile" signature="textFile(...java.lang.String)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+    </class>
+
+    <class name="org.apache.spark.sql.SQLContext" supertypes="org.apache.spark.internal.Logging,scala.Serializable" >
+      <method name="createDataFrame" signature="createDataFrame()" match="name" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="createExteralTable" signature="createExteralTable()" match="name" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="emptyDataFrame" signature="emptyDataFrame()" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="jdbc" signature="jdbc(java.lang.String,java.lang.String)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="resource_injection" argpos="0,1" />
+      </method>
+      <method name="jdbc" signature="jdbc(java.lang.String,java.lang.String,java.lang.String[])" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="resource_injection" argpos="0,1" />
+      </method>
+      <method name="jdbc" signature="jdbc(java.lang.String,java.lang.String,java.lang.String,long,long,int)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="resource_injection" argpos="0,1" />
+      </method>
+      <method name="jsonFile" signature="jsonFile(java.lang.String)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="jsonFile" signature="jsonFile(java.lang.String,double)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="jsonRDD" signature="jsonRDD(org.apache.spark.api.javaJavaRDD)" match="name" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="load" signature="load(java.lang.String)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="load" signature="load(java.lang.String,java.lang.String)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="load" signature="load(java.lang.String,scala.collection.immutable.Map)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="load" signature="load(java.lang.String,org.apache.spark.sql.types.StructType,java.util.Map)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="load" signature="load(java.lang.String,org.apache.spark.sql.types.StructType,scala.collection.immutable.Map)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="newSession" signature="newSession()" >
+        <return type="org.apache.spark.sql.SQLContext" />
+      </method>
+      <method name="parquetFile" signature="parquetFile(scala.collection.Seq)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="parquetFile" signature="parquetFile(...java.lang.String)" match="fullsignature" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="range" signature="range()" match="name" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="read" signature="read()" >
+        <return type="org.apache.spark.sql.DataFrameReader" />
+      </method>
+      <method name="readStream" signature="readStream()" >
+        <return type="org.apache.spark.sql.DataFrameReader" />
+      </method>
+      <method name="sparkContext" signature="sparkContext()" >
+        <return type="org.apache.spark.SparkContext" />
+      </method>
+      <method name="sparkSession" signature="sparkSession()" >
+        <return type="org.apache.spark.sql.SparkSession" />
+      </method>
+      <method name="sql" signature="sql(java.lang.String)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="sql_injection" argpos="0" resource="database" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="streams" signature="streams()" >
+        <return type="org.apache.spark.sql.streaming.StreamingQueryManager" />
+      </method>
+      <method name="table" signature="table(java.lang.String)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="resource_injection" argpos="0" />
+      </method>
+      <method name="tables" signature="tables()" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="tables" signature="tables(java.lang.String)" >
+        <return type="org.apache.spark.sql.Dataset" />
+        <sink kind="resource_injection" argpos="0" />
+      </method>
+    </class>
+
+    <class name="org.apache.spark.sql.hive.HiveContext" supertypes="org.apache.spark.sql.SQLContext" />
+
+    <class name="org.apache.spark.sql.catalog.Catalog" >
+      <method name="cacheTable" signature="cacheTable(java.lang.String)" match="name" >
+      </method>
+      <method name="createExternalTable" signature="createExternalTable(java.lang.String,java.lang.String)" match="name" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="createTable" signature="createTable(java.lang.String,java.lang.String)" match="name" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="dropGlobalTempView" signature="dropGlobalTempView(java.lang.String)" >
+        <return type="boolean" />
+        <sink kind="resource_injection" argpos="0" />
+      </method>
+      <method name="dropTempView" signature="dropTempView(java.lang.String)" >
+        <return type="boolean" />
+        <sink kind="resource_injection" argpos="0" />
+      </method>
+      <method name="getDatabase" signature="getDatabase(java.lang.String)" >
+        <return type="org.apache.spark.sql.catalog.Database" />
+      </method>
+      <method name="getFunction" signature="getFunction(java.lang.String)" >
+        <return type="org.apache.spark.sql.catalog.Function" />
+      </method>
+      <method name="getFunction" signature="getFunction(java.lang.String,java.lang.String)" >
+        <return type="org.apache.spark.sql.catalog.Function" />
+      </method>
+      <method name="listColumns" signature="listColumns(java.lang.String)" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="listColumns" signature="listColumns(java.lang.String,java.lang.String)" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="listDatabases" signature="listDatabases()" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="listFunctions" signature="listFunctions()" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="listFunctions" signature="listFunctions(java.lang.String)" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="listTables" signature="listTables()" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="listTables" signature="listTables(java.lang.String)" >
+        <return type="org.apache.spark.sql.Dataset" />
+      </method>
+      <method name="recoverPartitions" signature="recoverPartitions(java.lang.String)" >
+        <sink kind="resource_injection" argpos="0" />
+      </method>
+      <method name="refreshByPath" signature="refreshByPath(java.lang.String)" >
+        <sink kind="resource_injection" argpos="0" />
+      </method>
+      <method name="refreshTable" signature="refreshTable(java.lang.String)" >
+        <sink kind="resource_injection" argpos="0" />
+      </method>
+      <method name="setCurrentDatabase" signature="setCurrentDatabase(java.lang.String)" >
+        <sink kind="configuration_setting_injection" argpos="0" />
+      </method>
+      <method name="uncacheTable" signature="uncacheTable(java.lang.String)" >
+        <sink kind="resource_injection" argpos="0" />
+      </method>
+    </class>
+
+    <class name="org.apache.spark.sql.catalog.Database" />
+    <class name="org.apache.spark.sql.catalog.Function" />
+
+    <class name="org.apache.spark.sql.hive.client.HiveClient" >
+      <method name="addJar" signature="addJar(java.lang.String)" >
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+      <method name="alterDatabase" signature="alterDatabase(org.apache.spark.sql.catalyst.catalog.CatalogDatabase)" >
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="alterFunction" signature="alterFunction(java.lang.String,org.apache.spark.sql.catalyst.catalog.CatalogFunction)" >
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="alterPartitions" signature="alterPartitions(java.lang.String,java.lang.String,scala.collection.Seq)" >
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="alterTable" signature="alterTable(org.apache.spark.sql.catalyst.catalog.CatalogTable)" >
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="alterTable" signature="alterTable(java.lang.String,java.lang.String,org.apache.spark.sql.catalyst.catalog.CatalogTable)" >
+        <sink kind="resource_injection" argpos="0,1,2" resource="database" />
+      </method>
+      <method name="alterTableDataSchema" signature="alterTableDataSchema(java.lang.String,java.lang.String,org.apache.spark.sql.types.StructType,scala.collection.immutable.Map)" >
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+      </method>
+      <method name="createDatabase" signature="createDatabase(org.apache.spark.sql.catalyst.catalog.CatalogDatabase,boolean)" >
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="createFunction" signature="createFunction(java.lang.String,org.apache.spark.sql.catalyst.catalog.CatalogFunction)" >
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="createPartitions" signature="createPartitions(java.lang.String,java.lang.String,scala.collection.Seq,boolean)" >
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+      </method>
+      <method name="createTable" signature="createTable(org.apache.spark.sql.catalyst.catalog.CatalogTable,boolean)" >
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+      </method>
+      <method name="dropDatabase" signature="dropDatabase(java.lang.String,boolean,boolean)" >
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="dropFunction" signature="dropFunction(java.lang.String,java.lang.String)" >
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+      </method>
+      <method name="dropPartitions" signature="dropPartitions(java.lang.String,java.lang.String,scala.collection.Seq)" >
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+      </method>
+      <method name="dropTable" signature="dropTable(java.lang.String,java.lang.String,boolean,boolean)" >
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+      </method>
+      <method name="getDatabase" signature="getDatabase(java.lang.String)" >
+        <return type="org.apache.spark.sql.catalyst.catalog.CatalogDatabase" />
+      </method>
+      <method name="getFunction" signature="getFunction(java.lang.String,java.lang.String)" >
+        <return type="org.apache.spark.sql.catalyst.catalog.CatalogFunction" />
+      </method>
+      <method name="getFunctionOption" signature="getFunctionOption(java.lang.String,java.lang.String)" >
+        <return type="scala.Option" elementType="org.apache.spark.sql.catalyst.catalog.CatalogFunction" />
+      </method>
+      <method name="getPartition" signature="getPartition(java.lang.String,java.lang.String,scala.collection.immutable.Map)" >
+        <return type="org.apache.spark.sql.catalyst.catalog.CatalogTablePartition" />
+      </method>
+      <method name="getPartitionNames" signature="getPartitionNames(org.apache.spark.sql.catalyst.catalog.CatalogTable,scala.Option)" >
+        <return type="scala.collection.Seq" />
+      </method>
+      <method name="getPartitionOption" signature="getPartitionOption(org.apache.spark.sql.catalyst.catalog.CatalogTable,scala.collection.immutable.Map)" >
+        <return type="scala.Option" elementType="org.apache.spark.sql.catalyst.catalog.CatalogTablePartition" />
+      </method>
+      <method name="getPartitionOption" signature="getPartitionOption(java.lang.String,java.lang.String,scala.collection.immutable.Map)" >
+        <return type="scala.Option" elementType="org.apache.spark.sql.catalyst.catalog.CatalogTablePartition" />
+      </method>
+      <method name="getPartitions" signature="getPartitions(org.apache.spark.sql.catalyst.catalog.CatalogTable,scala.Option)" >
+        <return type="scala.collection.Seq" elementType="org.apache.spark.sql.catalyst.catalog.CatalogTablePartition" />
+      </method>
+      <method name="getPartitions" signature="getPartitions(java.lang.String,java.lang.String,scala.Option)" >
+        <return type="scala.collection.Seq" elementType="org.apache.spark.sql.catalyst.catalog.CatalogTablePartition" />
+      </method>
+      <method name="getPartitionsByFilter" signature="getPartitionsByFilter(org.apache.spark.sql.catalyst.catalog.CatalogTable,scala.collection.Seq)" >
+        <return type="scala.collection.Seq" elementType="org.apache.spark.sql.catalyst.catalog.CatalogTablePartition" />
+      </method>
+      <method name="getTable" signature="getTable(java.lang.String,java.lang.String)" >
+        <return type="org.apache.spark.sql.catalyst.catalog.CatalogTable" />
+      </method>
+      <method name="getTableOption" signature="getTableOption(java.lang.String,java.lang.String)" >
+        <return type="scala.Option" elementType="org.apache.spark.sql.catalyst.catalog.CatalogTable" />
+      </method>
+      <method name="listDatabases" signature="listDatabases(java.lang.String)" >
+        <return type="scala.collection.Seq" />
+      </method>
+      <method name="listFunctions" signature="listFunctions(java.lang.String,java.lang.String)" >
+        <return type="scala.collection.Seq" />
+      </method>
+      <method name="listTables" signature="listTables(java.lang.String)" >
+        <return type="scala.collection.Seq" />
+      </method>
+      <method name="listTables" signature="listTables(java.lang.String,java.lang.String)" >
+        <return type="scala.collection.Seq" />
+      </method>
+      <method name="loadDynamicPartitions" signature="loadDynamicPartitions(java.lang.String,java.lang.String,java.lang.String,java.util.List,boolean,int)" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="loadPartition" signature="loadPartition(java.lang.String,java.lang.String,java.lang.String,java.util.List,boolean,boolean,boolean)" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="loadTable" signature="loadTable(java.lang.String,java.lang.String,,boolean,boolean)" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="newSession" signature="newSession()" >
+        <return type="org.apache.spark.sql.hive.client.HiveClient" />
+      </method>
+      <method name="renameFunction" signature="renameFunction(java.lang.String,java.lang.String,java.lang.String)" >
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="renamePartitions" signature="renamePartitions(java.lang.String,java.lang.String,scala.collection.Seq,scala.collection.Seq)" >
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+      </method>
+      <method name="runSqlHive" signature="runSqlHive(java.lang.String)" >
+        <return type="scala.collection.Seq" />
+        <sink kind="sql_injection" argpos="0" resource="database" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+      <method name="setCurrentDatabase" signature="setCurrentDatabase(java.lang.String)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="database" />
+      </method>
+    </class>
+  </module>
+
+  <module name="apache.spark.api" >
+    <class name="org.apache.spark.api.java.JavaSparkContext" >
+      <constructor name="JavaSparkContext" signature="JavaSparkContext(org.apache.spark.SparkConf)" />
+      <constructor name="JavaSparkContext" signature="JavaSparkContext(org.apache.spark.SparkContext)" />
+      <constructor name="JavaSparkContext" signature="JavaSparkContext(java.lang.String,java.lang.String,java.lang.String,java.lang.String)" >
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </constructor>
+      <constructor name="JavaSparkContext" signature="JavaSparkContext(java.lang.String,java.lang.String,java.lang.String,java.lang.String[])" >
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </constructor>
+      <constructor name="JavaSparkContext" signature="JavaSparkContext(java.lang.String,java.lang.String,java.lang.String,java.lang.String[],java.util.Map" >
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </constructor>
+
+      <method name="addFile" signature="addFile()" match="name" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="addJar" signature="addJar(java.lang.String)" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="binaryFiles" signature="binaryFiles(java.lang.String,int)" match="name" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="binaryRecords" signature="binaryRecords(java.lang.String,int)" match="name" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="getConf" signature="getConf()" >
+        <return type="org.apache.spark.SparkConf" />
+      </method>
+      <method name="hadoopConfiguration" signature="hadoopConfiguration()" match="name" >
+        <return type="org.apache.hadoop.conf.Configuration" />
+      </method>
+      <method name="hadoopFile" signature="hadoopFile(java.lang.String,java.lang.Class)" match="name" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="newAPIHadoopFile" signature="hadoopFile(java.lang.String,java.lang.Class,java.lang.Class,java.lang.Class,org.apache.hadoop.conf.Configuration)" match="name" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="objectFile" signature="objectFile(java.lang.String)" match="name" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="sequenceFile" signature="sequenceFile(java.lang.String,java.lang.Class,java.lang.Class)" match="name" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="textFile" signature="textFile(java.lang.String)" match="name" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+      <method name="wholeTextFiles" signature="wholeTextFiles(java.lang.String)" match="name" >
+        <return type="org.apache.spark.rdd.RDD" />
+        <sink kind="path_traversal" argpos="0" />
+      </method>
+    </class>
+  </module>
+
+  <module name="apache.spark.streaming" >
+    <class name="org.apache.spark.streaming.api.java.JavaStreamingContext" >
+      <constructor name="JavaStreamingContext" signature="JavaStreamingContext(org.apache.spark.api.java.JavaSparkContext,org.apache.spark.streaming.Duration)" />
+      <constructor name="JavaStreamingContext" signature="JavaStreamingContext(org.apache.spark.SparkConf,org.apache.spark.streaming.Duration)" />
+      <constructor name="JavaStreamingContext" signature="JavaStreamingContext(org.apache.spark.streaming.StreamingContext)" />
+      <constructor name="JavaStreamingContext" signature="JavaStreamingContext(java.lang.String)" >
+        <sink kind="path_traversal" argpos="0" resource="other" />
+      </constructor>
+      <constructor name="JavaStreamingContext" signature="JavaStreamingContext(java.lang.String,org.apache.hadoop.conf.Configuration)" >
+        <sink kind="path_traversal" argpos="0" resource="other" />
+      </constructor>
+      <constructor name="JavaStreamingContext" signature="JavaStreamingContext(java.lang.String,java.lang.String,org.apache.spark.streaming.Duration)" >
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </constructor>
+      <constructor name="JavaStreamingContext" signature="JavaStreamingContext(java.lang.String,java.lang.String,org.apache.spark.streaming.Duration,java.lang.String,java.lang.String)" >
+        <sink kind="resource_injection" argpos="0,1,3,4" resource="other" />
+      </constructor>
+      <constructor name="JavaStreamingContext" signature="JavaStreamingContext(java.lang.String,java.lang.String,org.apache.spark.streaming.Duration,java.lang.String,java.lang.String[])" >
+        <sink kind="resource_injection" argpos="0,1,3,4" resource="other" />
+      </constructor>
+      <constructor name="JavaStreamingContext" signature="JavaStreamingContext(java.lang.String,java.lang.String,org.apache.spark.streaming.Duration,java.lang.String,java.lang.String[],java.util.Map)" >
+        <sink kind="resource_injection" argpos="0,1,3,4,5" resource="other" />
+      </constructor>
+
+      <method name="binaryRecordsStream" signature="binaryRecordsStream(java.lang.String,int)" >
+        <return type="org.apache.spark.streaming.api.java.JavaDStream" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="checkpoint" signature="checkpoint(java.lang.String)" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="filestream" signature="filestream(java.lang.String,java.lang.Class,java.lang.Class,java.lang.Class)" match="name" >
+        <return type="org.apache.spark.streaming.api.java.JavaPairInputDStream" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="getOrCreate" signature="getOrCreate(java.lang.String,org.apache.spark.api.java.function.Function0)" match="name" >
+        <return type="org.apache.spark.streaming.api.java.JavaStreamingContext" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="getState" signature="getState()" >
+        <return type="org.apache.spark.streaming.StreamingContextState" />
+      </method>
+      <method name="queueStream" signature="queueStream(java.util.Queue)" >
+        <return type="org.apache.spark.streaming.api.java.JavaDStream" />
+      </method>
+      <method name="queueStream" signature="queueStream(java.util.Queue,boolean)" >
+        <return type="org.apache.spark.streaming.api.java.JavaInputDStream" />
+      </method>
+      <method name="queueStream" signature="queueStream(java.util.Queue,boolean)" >
+        <return type="org.apache.spark.streaming.api.java.JavaInputDStream" />
+      </method>
+      <method name="rawSocketStream" signature="rawSocketStream(java.lang.String,int)" >
+        <return type="org.apache.spark.streaming.api.java.JavaReceiverInputDStream" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="rawSocketStream" signature="rawSocketStream(java.lang.String,int,org.apache.spark.storage.StorageLevel)" >
+        <return type="org.apache.spark.streaming.api.java.JavaReceiverInputDStream" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="receiverStream" signature="receiverStream(org.apache.spark.streaming.receiver.Receiver)" >
+        <return type="org.apache.spark.streaming.api.java.JavaReceiverInputDStream" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="socketStream" signature="socketStream(java.lang.String,int,org.apache.spark.api.java.function.Function,org.apache.spark.storage.StorageLevel)" >
+        <return type="org.apache.spark.streaming.api.java.JavaReceiverInputDStream" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="socketTextStream" signature="socketTextStream(java.lang.String,int)" >
+        <return type="org.apache.spark.streaming.api.java.JavaReceiverInputDStream" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="socketTextStream" signature="socketTextStream(java.lang.String,int,org.apache.spark.storage.StorageLevel)" >
+        <return type="org.apache.spark.streaming.api.java.JavaReceiverInputDStream" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="sparkContext" signature="sparkContext()" >
+        <return type="org.apache.spark.api.java.JavaSparkContext" />
+      </method>
+      <method name="ssc" signature="ssc()" >
+        <return type="org.apache.spark.streaming.StreamingContext" />
+      </method>
+      <method name="textFileStream" signature="textFileStream(java.lang.String)" >
+        <return type="org.apache.spark.streaming.api.java.JavaDStream" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+    </class>
+
+    <class name="org.apache.spark.streaming.StreamingContext" >
+      <constructor name="JavaStreamingContext" signature="JavaStreamingContext(org.apache.spark.SparkConf,org.apache.spark.streaming.Duration)" />
+      <constructor name="JavaStreamingContext" signature="JavaStreamingContext(org.apache.spark.SparkContext,org.apache.spark.streaming.Duration)" />
+      <constructor name="StreamingContext" signature="StreamingContext(java.lang.String)" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </constructor>
+      <constructor name="StreamingContext" signature="StreamingContext(java.lang.String,org.apache.hadoop.conf.Configuration)" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </constructor>
+      <constructor name="StreamingContext" signature="StreamingContext(java.lang.String,org.apache.spark.SparkContext)" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </constructor>
+      <constructor name="StreamingContext" signature="StreamingContext(java.lang.String,java.lang.String,org.apache.spark.streaming.Duration,java.lang.String,scala.collection.Seq,scala.collection.Map)" >
+        <sink kind="resource_injection" argpos="0,1" resource="filesystem" />
+      </constructor>
+
+      <method name="binaryRecordsStream" signature="binaryRecordsStream(java.lang.String,int)" >
+        <return type="org.apache.spark.streaming.dstream.DStream" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="checkpoint" signature="checkpoint(java.lang.String)" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="filestream" signature="filestream(java.lang.String,scala.reflect.ClassTag,scala.reflect.ClassTag,scala.reflect.ClassTag)" match="name" >
+        <return type="org.apache.spark.streaming.dstream.InputDStream" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="getActiveOrCreate" signature="getActiveOrCreate(scala.Function0)" >
+        <return type="org.apache.spark.streaming.StreamingContext" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="getOrCreate" signature="getOrCreate(java.lang.String,org.apache.spark.api.java.function.Function0)" match="name" >
+        <return type="org.apache.spark.streaming.StreamingContext" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="getState" signature="getState()" >
+        <return type="org.apache.spark.streaming.StreamingContextState" />
+      </method>
+      <method name="queueStream" signature="queueStream(scala.collection.mutable.Queue,boolean,org.apache.spark.rdd.RDD,scala.reflect.ClassTag)" match="name" >
+        <return type="org.apache.spark.streaming.dstream.InputDStream" />
+      </method>
+      <method name="rawSocketStream" signature="rawSocketStream(java.lang.String,int,org.apache.spark.storage.StorageLevel,scala.reflect.ClassTag)" >
+        <return type="org.apache.spark.streaming.dstream.ReceiverInputDStream" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="receiverStream" signature="receiverStream(org.apache.spark.streaming.receiver.Receiver,scala.reflect.ClassTag)" >
+        <return type="org.apache.spark.streaming.dstream.ReceiverInputDStream" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="socketStream" signature="socketStream(java.lang.String,int,org.apache.spark.api.java.function.Function,org.apache.spark.storage.StorageLevel,scala.reflect.ClassTa)" match="name" >
+        <return type="org.apache.spark.streaming.api.java.JavaReceiverInputDStream" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="socketTextStream" signature="socketTextStream(java.lang.String,int,org.apache.spark.storage.StorageLevel)" >
+        <return type="org.apache.spark.streaming.api.java.JavaReceiverInputDStream" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+      </method>
+      <method name="sparkContext" signature="sparkContext()" >
+        <return type="org.apache.spark.api.java.JavaSparkContext" />
+      </method>
+      <method name="textFileStream" signature="textFileStream(java.lang.String)" >
+        <return type="org.apache.spark.streaming.api.java.JavaDStream" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+    </class>
+  </module>
+</library>

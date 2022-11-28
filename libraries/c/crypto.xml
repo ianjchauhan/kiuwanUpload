@@ -1,0 +1,854 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="cpp.crypto" standard="crypto" technology="cpp">
+  <description>C/C++ cryptographic libraries</description>
+  
+  <module name="libsodium">
+    <description url="https://github.com/jedisct1/libsodium">Implementation of NaCl API. Robust and modern crypto lib</description>
+    <!-- random -->
+    <function name="randombytes_random" signature="uint32_t randombytes_random(void)">
+      <tags>prng, out:-1</tags>
+    </function>
+    <function name="randombytes_uniform" signature="uint32_t randombytes_uniform(const uint32_t upper_bound)">
+      <tags>prng, out:-1</tags>
+    </function>
+    <function name="randombytes_buf" signature="void randombytes_buf(void * const buf, const size_t size)">
+      <tags>prng, out:0</tags>
+    </function>
+    <function name="randombytes_buf_deterministic" signature="void randombytes_buf_deterministic(void * const buf, const size_t size. const unsigned char *seed)">
+      <tags>prng, out:0</tags>
+    </function>
+
+    <!-- hash -->
+    <function name="crypto_generichash" signature="int crypto_generichash(unsigned char *out, size_t outlen, const unsigned char *in, unsigned long long inlen, const unsigned char *key, size_t keylen)">
+      <tags>hash, algo:blake2b, data:2, key:4</tags>
+      <neutralization kind="hash" argpos="0" resource="crypto"/>
+    </function>
+    <function name="crypto_generichash_init" signature="int crypto_generichash_init(crypto_generichash_state *state, const unsigned char *key, const size_t keylen, const size_t outlen)">
+      <tags>hash, algo:blake2b, key:1</tags>
+    </function>
+    <function name="crypto_generichash_update" signature="int crypto_generichash_update(crypto_generichash_state *state, const unsigned char *in, unsigned long long inlen)">
+      <tags>hash, algo:blake2b, data:1</tags>
+    </function>
+    <function name="crypto_generichash_final" signature="int crypto_generichash_final(crypto_generichash_state *state, unsigned char *out, const size_t outlen)">
+      <tags>hash, algo:blake2b</tags>
+      <neutralization kind="hash" argpos="1" resource="crypto"/>
+    </function>
+    <function name="crypto_shorthash" signature="int crypto_shorthash(unsigned char *out, const unsigned char *in, unsigned long long inlen, const unsigned char *k)"
+              alias="crypto_shorthash_siphashx24">
+      <tags>hash, algo:siphash-2-4, data:1, key:3</tags>
+      <neutralization kind="hash" argpos="0" resource="crypto"/>
+    </function>
+    <function name="crypto_hash" signature="int crypto_hash(unsigned char *out, const unsigned char *in, long long inlen)"
+              alias="crypto_hash_sha512">
+      <tags>hash, algo:sha512, data:1</tags>
+      <neutralization kind="hash" argpos="0" resource="crypto"/>
+    </function>
+    <function name="crypto_hash_sha512_init" signature="int crypto_hash_sha512_init(crypto_generichash_state *state, const unsigned char *key, const size_t keylen, const size_t outlen)">
+      <tags>hash, algo:sha512, key:1</tags>
+    </function>
+    <function name="crypto_hash_sha512_update" signature="int crypto_hash_sha512_update(crypto_generichash_state *state, const unsigned char *in, unsigned long long inlen)">
+      <tags>hash, algo:sha512, data:1</tags>
+    </function>
+    <function name="crypto_hash_sha512_final" signature="int crypto_hash_sha512_final(crypto_generichash_state *state, unsigned char *out, const size_t outlen)">
+      <tags>hash, algo:sha512</tags>
+      <neutralization kind="hash" argpos="1" resource="crypto"/>
+    </function>
+    <function name="crypto_hash_sha256" signature="int crypto_hash_sha256(unsigned char *out, const unsigned char *in, long long inlen)">
+      <tags>hash, algo:sha256, data:1</tags>
+      <neutralization kind="hash" argpos="0" resource="crypto"/>
+    </function>
+    <function name="crypto_hash_sha256_init" signature="int crypto_hash_sha256_init(crypto_generichash_state *state, const unsigned char *key, const size_t keylen, const size_t outlen)">
+      <tags>hash, algo:sha256, key:1</tags>
+    </function>
+    <function name="crypto_hash_sha256_update" signature="int crypto_hash_sha256_update(crypto_generichash_state *state, const unsigned char *in, unsigned long long inlen)">
+      <tags>hash, algo:sha256, data:1</tags>
+    </function>
+    <function name="crypto_hash_sha256_final" signature="int crypto_hash_sha256_final(crypto_generichash_state *state, unsigned char *out, const size_t outlen)">
+      <tags>hash, algo:sha256</tags>
+      <neutralization kind="hash" argpos="1" resource="crypto"/>
+    </function>
+    
+    <!-- hmac -->
+    <function name="crypto_auth_hmacsha512_keygen" signature="void crypto_auth_hmacsha512_keygen(char *k)"
+              alias="crypto_auth_hmac512256_keygen">
+      <tags>key_generation, key:0, algo:sha512, keylen:256</tags>
+    </function>
+    <function name="crypto_auth_hmacsha512" signature="int crypto_auth_hmacsha512(char *out, const char *in, long long inlen, const char *k)"
+              alias="crypto_auth_hmacsha512256">
+      <tags>hmac, algo:sha512, keylen:256, data:1, mac:0</tags>
+      <neutralization kind="hash" argpos="1" resource="crypto"/>
+    </function>
+    <function name="crypto_auth_hmacsha512_verify" signature="int crypto_auth_hmacsha512_verify(const char *out, const char *in, long long inlen, const char *k)"
+              alias="crypto_auth_hmacsha512256_verify">
+      <tags>hmac, algo:sha512, keylen:256, data:1, mac:0, key:3</tags>
+    </function>
+    <function name="crypto_auth_hmacsha512_init" signature="int crypto_auth_hmacsha512_init(crypto_auth_hmacsha512_state *state, const char *k, size_t klen)"
+              alias="crypto_auth_hmacsha512256_init">
+      <tags>hmac, algo:sha512, key:1, keylen:$1</tags>
+    </function>
+    <function name="crypto_auth_hmacsha512_update" signature="int crypto_auth_hmacsha512_update(crypto_auth_hmacsha512_state *state, const char *in, size_t inlen)"
+              alias="crypto_auth_hmacsha512256_update">
+      <tags>hmac, algo:sha512, data:1</tags>
+    </function>
+    <function name="crypto_auth_hmacsha512_final" signature="int crypto_auth_hmacsha512_final(crypto_auth_hmacsha512_state *state, char *mac)"
+              alias="crypto_auth_hmacsha512256_final">
+      <tags>hmac, algo:sha512, mac:1</tags>
+      <neutralization kind="hash" argpos="1" resource="crypto"/>
+    </function>
+    <function name="crypto_auth_hmacsha256_keygen" signature="void crypto_auth_hmacsha256_keygen(char *k)">
+      <tags>key_generation, key:0, algo:sha256, keylen:256</tags>
+    </function>
+    <function name="crypto_auth_hmac256" signature="int crypto_auth_hmac256(char *out, const char *in, long long inlen, const char *k)">
+      <tags>hmac, algo:sha256, keylen:256, data:1, mac:0</tags>
+      <neutralization kind="hash" argpos="1" resource="crypto"/>
+    </function>
+    <function name="crypto_auth_hmacsha256_verify" signature="int crypto_auth_hmacsha256_verify(const char *out, const char *in, long long inlen, const char *k)">
+      <tags>hmac, algo:sha256, keylen:256, data:1, mac:0, key:3</tags>
+    </function>
+    <function name="crypto_auth_hmacsha256_init" signature="int crypto_auth_hmacsha256_init(crypto_auth_hmacsha256_state *state, const char *k, size_t klen)">
+      <tags>hmac, algo:sha512, key:1, keylen:$1</tags>
+    </function>
+    <function name="crypto_auth_hmacsha256_update" signature="int crypto_auth_hmacsha256_update(crypto_auth_hmacsha256_state *state, const char *in, size_t inlen)">
+      <tags>hmac, algo:sha256, data:1</tags>
+    </function>
+    <function name="crypto_auth_hmacsha256_final" signature="int crypto_auth_hmacsha256_final(crypto_auth_hmacsha256_state *state, char *mac)">
+      <tags>hmac, algo:sha256, mac:1</tags>
+      <neutralization kind="hash" argpos="1" resource="crypto"/>
+    </function>
+
+    <!-- password hashing -->
+
+    <!-- secret key ciphers -->
+    <function name="crypto_secretbox_easy" signature="int crypto_secretbox_easy(unsigned char *c, const unsigned char *m, unsigned long long mlen, const unsigned char *n, const unsigned char *k)">
+      <tags>cipher, encrypt, decrypt, algo:XSalsa20-Poly1305, data:1, cipherText:0, nonce:3, key:4</tags>
+      <!-- no easy way to discriminate between encryption / decryption -->
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </function>
+    <function name="crypto_secretbox_keygen" signature="void crypto_secretbox_keygen(unsigned char k[crypto_secretbox_KEYBYTES])">
+      <tags>key_generation, algo:XSalsa20</tags>
+    </function>
+
+    <!--
+    <function name="crypto_secretstream" signature="crypto_secretstream(char *c, long long clen, const char *n, const char *k)">
+      <tags>cipher, encrypt</tags>
+      <neutralization kind="encryption" argpos="0" resource="crypto"/>
+    </function>
+    -->
+    <function name="crypto_secretstream_xchacha20poly1305_keygen" match="name">
+      <tags>key_generation, key:0, algo:XChaCha20-Poly1305, keylen:256</tags>
+    </function>
+    <function name="crypto_secretstream_xchacha20poly1305_init_push" match="name" alias="crypto_secretstream_xchacha20poly1305_init_pull">
+      <tags>cipher, algo:XChaCha20-Poly1305, key:2, keylen:256</tags>
+      <sink kind="hardcoded_key" argpos="2" resource="crypto"/>
+    </function>
+    <function name="crypto_secretstream_xchacha20poly1305_push" match="name">
+      <tags>cipher, encrypt, cipherText:1, data:3, keylen:256</tags>
+      <neutralization argpos="1" kind="encryption" resource="crypto"/>
+    </function>
+    <function name="crypto_secretstream_xchacha20poly1305_pull" match="name">
+      <tags>cipher, decrypt, data:1, cipherText:3, keylen:256</tags>
+      <neutralization argpos="1" kind="decryption" resource="crypto"/>
+    </function>
+    
+    <function name="crypto_aead_aes256gcm_encrypt" match="name">
+      <tags>cipher, block, aead, encrypt, algo:aes, mode:gcm, cipherText:0, data:2, authdata:4, nonce:7, key:8, keylen:256</tags>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </function>
+    <function name="crypto_aead_aes256gcm_decrypt" match="name">
+      <tags>cipher, block, aead, decrypt, algo:aes, mode:gcm, data:0, cipherText:3, authdata:5, nonce:7, key:8, keylen:256</tags>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </function>
+    <function name="crypto_aead_aes256gcm_keygen" match="name">
+      <tags>key_generation, block, aead, algo:aes, key:0, keylen:256</tags>
+    </function>
+
+    <function name="crypto_aead_chacha20poly1305_encrypt" match="name"
+              alias="crypto_aead_chacha20poly1305_ietf_encrypt, crypto_aead_xchacha20poly1305_ietf_encrypt">
+      <!-- ietf and regular chacha20poly1305 only differ in nonce length -->
+      <tags>cipher, block, encrypt, algo:ChaCha20-Poly1305, cipherText:0, data:2, ad:4, nonce:7, key:8, keylen:256</tags>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </function>
+    <function name="crypto_aead_chacha20poly1305_encrypt_detached" match="name"
+              alias="crypto_aead_chacha20poly1305_ietf_encrypt_detached, crypto_aead_xchacha20poly1305_ietf_encrypt_detached">
+      <tags>cipher, block, encrypt, algo:ChaCha20-Poly1305, cipherText:0, mac:1, data:3, ad:5, nonce:8, key:9, keylen:256</tags>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </function>
+    <function name="crypto_aead_chacha20poly1305_decrypt" match="name"
+              alias="crypto_aead_chacha20poly1305_ietf_decrypt, crypto_aead_xchacha20poly1305_ietf_decrypt">
+      <!-- ietf and regular chacha20poly1305 only differ in nonce length -->
+      <tags>cipher, block, decrypt, algo:ChaCha20-Poly1305, data:0, cipherText:3, ad:5, nonce:7, key:8, keylen:256</tags>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </function>
+    <function name="crypto_aead_chacha20poly1305_decrypt_detached" match="name"
+              alias="crypto_aead_chacha20poly1305_ietf_decrypt_detached, crypto_aead_xchacha20poly1305_ietf_decrypt_detached">
+      <tags>cipher, block, decrypt, algo:ChaCha20-Poly1305, data:0, cipherText:2, mac:4, ad:5, nonce:7, key:8, keylen:256</tags>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </function>
+    <function name="crypto_aead_chacha20poly1305_keygen" match="name"
+              alias="crypto_aead_chacha20poly1305_ietf_keygen, crypto_aead_xchacha20poly1305_ietf_keygen">
+      <tags>key_generation, stream, aead, algo:ChaCha20-Poly1305, key:0, keylen:256</tags>
+    </function>
+    
+    <function name="crypto_aead_aegis256_encrypt" match="name">
+      <tags>cipher, block, encrypt, algo:aegis, cipherText:0, data:2, ad:4, nonce:7, key:8, keylen:256</tags>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </function>
+    <function name="crypto_aead_aegis256_encrypt_detached" match="name">
+      <tags>cipher, block, encrypt, algo:aegis, cipherText:0, mac:1, data:3, ad:5, nonce:8, key:9, keylen:256</tags>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </function>
+    <function name="crypto_aead_aegis256_decrypt" match="name">
+      <tags>cipher, block, encrypt, algo:aegis, data:0, cipherText:3, ad:5, nonce:7, key:8, keylen:256</tags>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </function>
+    <function name="crypto_aead_aegis256_decrypt_detached" match="name">
+      <tags>cipher, block, encrypt, algo:aegis, data:0, cipherText:2, mac:4, ad:5, nonce:7, key:8, keylen:256</tags>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </function>
+    <function name="crypto_aead_aegis256_keygen" match="name">
+      <tags>key_generation, stream, aead, algo:ChaCha20-Poly1305, key:0, keylen:256</tags>
+    </function>
+
+    <!-- keyExch + secret key crypto -->
+    <function name="crypto_box_keypair" signature="int crypto_box_keypair(char *pk, char *sk)" alias="crypto_scalarmult_base">
+      <tags>pubkey_generation, pubKey:0, privKey:1</tags>
+    </function>
+    <function name="crypto_box_keypair_seed" signature="int crypto_box_keypair_seed(char *pk, char *sk, const char *seed)">
+      <tags>pubkey_generation, pubKey:0, privKey:1</tags>
+    </function>
+    <function name="crypto_box_easy" signature="int crypto_box_easy()" match="name">
+      <description>Encrypts with recipient pubkey, authenticating with sender privkey (using XSalsa20 stream cipher, and Poly1305 for authentication tag)</description>
+      <tags>cipher, encryption, algo:XSalsa20-Poly1305, keyAlgo: X25519, keylen:256, cipherText:0, data:1, nonce:3, pubKey:4, privKey:5</tags>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </function>
+    <function name="crypto_box_open_easy" signature="int crypto_box_open_easy()" match="name">
+      <description>Encrypts with recipient pubkey, authenticating with sender privkey (using XSalsa20 stream cipher, and Poly1305 for authentication tag)</description>
+      <tags>cipher, encryption, algo:XSalsa20-Poly1305, keyAlgo: X25519, keylen:256, data:0, cipherText:1, nonce:3, pubKey:4, privKey:5</tags>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </function>
+  </module>
+
+  <module name="nacl" standard="NaCl">
+    <description url="https://nacl.cr.yp.to/">NaCl - Networking and Cryptography library</description>
+    <function name="crypto_secretbox" signature="int crypto_secretbox(char *c, const char *m, size_t mlen, const char *n, const char *k)"  match="numargs"
+              alias="crypto_secretbox_xsalsa20poly1305">
+      <tags>cipher, encrypt, algo:XSalsa20-Poly1305, mode:aead, keylen:256, data:1, cipherText:0, nonce:3, key:4</tags>
+      <neutralization kind="encryption" argpos="0" resource="crypto"/>
+      <sink kind="hardcoded_key" argpos="4" resource="crypto"/>
+    </function>
+    <function name="crypto_secretbox_open" signature="int crypto_secretbox_open(char *m, const char *c, size_t clen, const char *n, const char *k)"  match="numargs"
+              alias="crypto_secretbox_xsalsa20poly1305_open">
+      <tags>cipher, decrypt, algo:XSalsa20-Poly1305, mode:aead, keylen:256, data:0, cipherText:1, nonce:3, key:4</tags>
+      <neutralization kind="decryption" argpos="0" resource="crypto"/>
+      <sink kind="hardcoded_key" argpos="4" resource="crypto"/>
+    </function>
+    <function name="crypto_secretbox_xchacha20poly1305" signature="int crypto_secretbox_xchacha20poly1305(char *c, const char *m, size_t mlen, const char *n, const char *k)"  match="numargs">
+      <tags>cipher, encrypt, algo:XChaCha20-Poly1305, mode:aead, keylen:256, data:1, cipherText:0, nonce:3, key:4</tags>
+      <neutralization kind="encryption" argpos="0" resource="crypto"/>
+      <sink kind="hardcoded_key" argpos="4" resource="crypto"/>
+    </function>
+    <function name="crypto_secretbox_xchacha20poly1305_open" signature="int crypto_secretbox_xchacha20poly1305_open(char *m, const char *c, size_t clen, const char *n, const char *k)"  match="numargs">
+      <tags>cipher, decrypt, algo:XChaCha20-Poly1305, mode:aead, keylen:256, data:0, cipherText:1, nonce:3, key:4</tags>
+      <neutralization kind="decryption" argpos="0" resource="crypto"/>
+      <sink kind="hardcoded_key" argpos="4" resource="crypto"/>
+    </function>
+    <function name="crypto_secretbox_aes256gcm" signature="int crypto_secretbox_aes256gcm(char *c, const char *m, size_t mlen, const char *n, const char *k)">
+      <tags>cipher, encrypt, algo:aes, mode:gcm, keylen:128, data:1, cipherText:0, nonce:3, key:4</tags>
+      <neutralization kind="encryption" argpos="0" resource="crypto"/>
+      <sink kind="hardcoded_key" argpos="4" resource="crypto"/>
+    </function>
+    <function name="crypto_secretbox_aes256gcm_open" signature="int crypto_secretbox_aes256gcm_open(char *m, const char *c, size_t clen, const char *n, const char *k)">
+      <tags>cipher, decrypt, algo:aes, mode:gcm, keylen:128, data:0, cipherText:1, nonce:3, key:4</tags>
+      <neutralization kind="decryption" argpos="0" resource="crypto"/>
+      <sink kind="hardcoded_key" argpos="4" resource="crypto"/>
+    </function>
+    <!-- c++ binding -->
+    <function name="crypto_secretbox_c++" signature="string crypto_secretbox(string m, string n, string k)" match="numargs">
+      <tags>cipher, encrypt, algo:XSalsa20-Poly1305, data:0, cipherText:-1, nonce:1, key:2</tags>
+      <neutralization kind="encryption" argpos="-1" resource="crypto"/>
+      <sink kind="hardcoded_key" argpos="2" resource="crypto"/>
+    </function>
+    <function name="crypto_secretbox_open_c++" signature="string crypto_secretbox_open(string c, string n, string k)" match="numargs"
+              alias="crypto_secretbox_open_xsalsa20poly1305">
+      <tags>cipher, decrypt, algo:XSalsa20-Poly1305, data:-1, cipherText:0, nonce:1, key:2</tags>
+      <neutralization kind="decryption" argpos="-1" resource="crypto"/>
+      <sink kind="hardcoded_key" argpos="2" resource="crypto"/>
+    </function>
+  </module>
+
+  <module name="openssl" standard="OpenSSL">
+    <description url="https://www.openssl.org/">OpenSSL - Cryptography and SSL/TLS toolkit</description>
+    <!-- random -->
+    <function name="BN_rand" match="name"
+              alias="BN_rand_ex, BN_rand_range, BN_rand_range_ex, BN_priv_rand, BN_priv_rand_ex, BN_priv_rand_range, BN_priv_rand_range_ex, BN_pseudo_rand, BN_pseudo_rand_range">
+      <tags>prng, out:0</tags>
+    </function>
+    
+    <!-- hash -->
+    <function name="EVP_MD_fetch" signature="EVP_MD *EVP_MD_fetch(OPENSSL_CTX *ctx, const char *algorithm, const char *properties)">
+      <tags>hash. algo:1</tags>
+    </function>
+    <function name="EVP_get_digestbyname" signature="EVP_MD *EVP_get_digestbyname(const char *name)">
+      <tags>hash, algo:0</tags>
+    </function>
+    <function name="EVP_Digest" signature="int EVP_Digest(const void *data, size_t count, char *md, size_t *size, const EVP_MD *type, ENGINE *impl)">
+      <tags>hash, data:0, algo:4</tags>
+      <neutralization argpos="2" kind="hash" resource="crypto"/>
+    </function>
+    <function name="EVP_DigestInit" signature="int EVP_DigestInit_ex(EVP_MD_CTX *ctx, const EVP_MD *type)">
+      <tags>hash, algo:1</tags>
+    </function>
+    <function name="EVP_DigestInit_ex" signature="int EVP_DigestInit_ex(EVP_MD_CTX *ctx, const EVP_MD *type, ENGINE *impl)">
+      <tags>hash, algo:1</tags>
+    </function>
+    <function name="EVP_DigestUpdate" signature="int EVP_DigestUpdate_ex(EVP_MD_CTX *ctx, const void *d, size_t cnt)">
+      <tags>hash, data:1</tags>
+    </function>
+    <function name="EVP_DigestFinal" signature="int EVP_DigestFinal_ex(EVP_MD_CTX *ctx, char *md, size_t *sz)" alias="EVP_DigestFinal_ex. EVP_DigestFinalXOF">
+      <tags>hash</tags>
+      <neutralization argpos="1" kind="hash" resource="crypto"/>
+    </function>
+    <function name="EVP_blake2b512"><tags>hash, algo:blake2b</tags></function>
+    <function name="EVP_blake2s512"><tags>hash, algo:blake2s</tags></function>
+    <function name="EVP_md2"><tags>hash, algo:md2</tags></function>
+    <function name="EVP_md4"><tags>hash, algo:md4</tags></function>
+    <function name="EVP_md5"><tags>hash, algo:md5</tags></function>
+    <function name="EVP_mdc2"><tags>hash, algo:mdc2</tags></function>
+    <function name="EVP_ripemd160"><tags>hash, algo:ripemd160</tags></function>
+    <function name="EVP_sha1"><tags>hash, algo:sha1</tags></function>
+    <function name="SHA1" signature="char *SHA1(const char *d, size_t n, char *md)">
+      <tags>hash, algo:sha1, data:0</tags>
+      <neutralization argpos="2" kind="hash" resource="crypto"/>
+    </function>
+    <function name="SHA1_Final" signature="int SHA1_Final(char *md, SHA_CTX *c)">
+      <tags>hash, algo:sha1</tags>
+      <neutralization argpos="0" kind="hash" resource="crypto"/>
+    </function>
+    <function name="EVP_sha224"><tags>hash, algo:sha224</tags></function>
+    <function name="EVP_sha256"><tags>hash, algo:sha256</tags></function>
+    <function name="EVP_sha512_224"><tags>hash, algo:sha224</tags></function>
+    <function name="EVP_sha512_256"><tags>hash, algo:sha256</tags></function>
+    <function name="EVP_sha384"><tags>hash, algo:sha384</tags></function>
+    <function name="EVP_sha512"><tags>hash, algo:sha512</tags></function>
+    <function name="EVP_sha3_224"><tags>hash, algo:sha3-224</tags></function>
+    <function name="EVP_sha3_256"><tags>hash, algo:sha3-256</tags></function>
+    <function name="EVP_sha3_384"><tags>hash, algo:sha3-384</tags></function>
+    <function name="EVP_sha3_512"><tags>hash, algo:sha3-512</tags></function>
+    <function name="EVP_shake128"><tags>hash, algo:shake128</tags></function>
+    <function name="EVP_shake256"><tags>hash, algo:shake256</tags></function>
+    <function name="EVP_sm3"><tags>hash, algo:sm3</tags></function>
+    <function name="EVP_EVP_whirlpool"><tags>hash, algo:whirlpool</tags></function>
+
+    <function name="MD2" signature="char *MD2(const char *d, size_t n, char *md)">
+      <tags>hash, algo:md2, data:0</tags>
+      <neutralization argpos="2" kind="hash" resource="crypto"/>
+    </function>
+    <function name="MD2_Final" signature="int MD2_Final(char *md, MD2_CTX *c)">
+      <tags>hash, algo:md2</tags>
+      <neutralization argpos="0" kind="hash" resource="crypto"/>
+    </function>
+    <function name="MD4" signature="char *MD4(const char *d, size_t n, char *md)">
+      <tags>hash, algo:md4, data:0</tags>
+      <neutralization argpos="2" kind="hash" resource="crypto"/>
+    </function>
+    <function name="MD4_Final" signature="int _Final(char *md, MD4_CTX *c)">
+      <tags>hash, algo:md4</tags>
+      <neutralization argpos="0" kind="hash" resource="crypto"/>
+    </function>
+    <function name="MD5" signature="char *MD5(const char *d, size_t n, char *md)">
+      <tags>hash, algo:md5, data:0</tags>
+      <neutralization argpos="2" kind="hash" resource="crypto"/>
+    </function>
+    <function name="MD5_Final" signature="int _Final(char *md, MD5_CTX *c)">
+      <tags>hash, algo:md5</tags>
+      <neutralization argpos="0" kind="hash" resource="crypto"/>
+    </function>
+    <function name="SHA1" signature="char *SHA1(const char *d, size_t n, char *md)">
+      <tags>hash, algo:sha1, data:0</tags>
+      <neutralization argpos="2" kind="hash" resource="crypto"/>
+    </function>
+    <function name="SHA1_Final" signature="int SHA1_Final(char *md, SHA_CTX *c)">
+      <tags>hash, algo:sha1</tags>
+      <neutralization argpos="0" kind="hash" resource="crypto"/>
+    </function>
+    <function name="SHA224" signature="char *SHA224(const char *d, size_t n, char *md)">
+      <tags>hash, algo:sha224, data:0</tags>
+      <neutralization argpos="2" kind="hash" resource="crypto"/>
+    </function>
+    <function name="SHA224_Final" signature="int SHA224_Final(char *md, SHA256_CTX *c)">
+      <tags>hash, algo:sha224</tags>
+      <neutralization argpos="0" kind="hash" resource="crypto"/>
+    </function>
+    <function name="SHA256" signature="char *SHA256(const char *d, size_t n, char *md)">
+      <tags>hash, algo:sha256, data:0</tags>
+      <neutralization argpos="2" kind="hash" resource="crypto"/>
+    </function>
+    <function name="SHA256_Final" signature="int SHA256_Final(char *md, SHA256_CTX *c)">
+      <tags>hash, algo:sha256</tags>
+      <neutralization argpos="0" kind="hash" resource="crypto"/>
+    </function>
+    <function name="SHA384" signature="char *SHA384(const char *d, size_t n, char *md)">
+      <tags>hash, algo:sha384, data:0</tags>
+      <neutralization argpos="2" kind="hash" resource="crypto"/>
+    </function>
+    <function name="SHA384_Final" signature="int SHA384_Final(char *md, SHA512_CTX *c)">
+      <tags>hash, algo:sha384</tags>
+      <neutralization argpos="0" kind="hash" resource="crypto"/>
+    </function>
+    <function name="SHA512" signature="char *SHA512(const char *d, size_t n, char *md)">
+      <tags>hash, algo:sha512, data:0</tags>
+      <neutralization argpos="2" kind="hash" resource="crypto"/>
+    </function>
+    <function name="SHA512_Final" signature="int SHA512_Final(char *md, SHA512_CTX *c)">
+      <tags>hash, algo:sha512</tags>
+      <neutralization argpos="0" kind="hash" resource="crypto"/>
+    </function>
+
+    <!-- secretkey ciphers -->
+    <function name="EVP_CIPHER_CTX_new" signature="EVP_CIPHER_CTX_new()"><return type="EVP_CIPHER_CTX*"/></function>
+
+    <function name="EVP_EncryptInit" signature="int EVP_EncryptInit(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *type, const unsigned char *key, const unsigned char *iv)">
+      <tags>cipher, encrypt, key:2, iv:3</tags>
+    </function>
+    <function name="EVP_EncryptInit_ex" signature="EVP_EncryptInit_ex(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *type, ENGINE *impl, const unsigned char *key, const unsigned char *iv)">
+      <tags>cipher, encrypt, key:3, iv:4</tags>
+    </function>
+    <function name="EVP_EncryptUpdate" signature="EVP_EncryptUpdate(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl, const unsigned char *in, int inl)">
+      <tags>cipher, encrypt, data:3, cipherText:1</tags>
+      <neutralization argpos="1" resource="crypto" kind="encryption"/>
+    </function>
+    <function name="EVP_EncryptFinal" match="name" alias="EVP_EncryptFinal_ex">
+      <tags>cipher, encrypt, cipherText:1</tags>
+      <neutralization argpos="1" resource="crypto" kind="encryption"/>
+    </function>
+
+    <function name="EVP_DecryptInit" signature="int EVP_DecryptInit(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *type, const unsigned char *key, const unsigned char *iv)">
+      <tags>cipher, decrypt, key:2, iv:3</tags>
+    </function>
+    <function name="EVP_DecryptInit_ex" signature="EVP_DecryptInit_ex(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *type, ENGINE *impl, const unsigned char *key, const unsigned char *iv)">
+      <tags>cipher, decrypt, key:3, iv:4</tags>
+    </function>
+    <function name="EVP_DecryptUpdate" signature="EVP_DecryptUpdate(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl, const unsigned char *in, int inl)">
+      <tags>cipher, decrypt, data:1, cipherText:3</tags>
+      <neutralization argpos="1" resource="crypto" kind="decryption"/>
+    </function>
+    <function name="EVP_DecryptFinal" match="name" alias="EVP_DecryptFinal_ex">
+      <tags>cipher, decrypt, cipherText:1</tags>
+      <neutralization argpos="1" resource="crypto" kind="decryption"/>
+    </function>
+
+    <function name="EVP_CipherInit" signature="int EVP_CipherInit(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *type, const unsigned char *key, const unsigned char *iv, int enc)">
+      <tags>cipher, encrypt, decrypt, key:2, iv:3. op:4</tags>
+    </function>
+    <function name="EVP_CipherInit_ex" signature="EVP_CipherInit_ex(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *type, ENGINE *impl, const unsigned char *key, const unsigned char *iv, int op)">
+      <tags>cipher, encrypt, key:3, iv:4, op:4</tags>
+    </function>
+    <function name="EVP_CipherUpdate" signature="EVP_EncryptUpdate(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl, const unsigned char *in, int inl)">
+      <tags>cipher, encrypt, decrypt, data:3, cipherText:1</tags>
+      <neutralization argpos="1" resource="crypto" kind="encryption"/>
+      <neutralization argpos="1" resource="crypto" kind="decryption"/>
+    </function>
+    <function name="EVP_CipherFinal" match="name" alias="EVP_CipherFinal_ex">
+      <tags>cipher, encrypt, cipherText:1</tags>
+      <neutralization argpos="1" resource="crypto" kind="encryption"/>
+    </function>
+
+    <function name="EVP_CIPHER_fetch" signature="EVP_CIPHER *EVP_CIPHER_fetch(OPENSSL_CTX *ctx, const char *algorithm, const char *properties)">
+      <tags>cipher, algo:1</tags>
+    </function>
+
+    <function name="EVP_aes_128_ccm" alias="EVP_aes_192_ccm, EVP_aes_256_ccm"><tags>cipher, algo:aes, mode:ccm</tags></function>
+    <function name="EVP_aes_128_gcm" alias="EVP_aes_192_gcm, EVP_aes_256_gcm"><tags>cipher, algo:aes, mode:gcm</tags></function>
+    <function name="EVP_aes_128_ocb" alias="EVP_aes_192_ocb, EVP_aes_256_ocb"><tags>cipher, algo:aes, mode:ocb</tags></function>
+    <function name="EVP_aes_128_cbc" alias="EVP_aes_192_cbc, EVP_aes_256_cbc"><tags>cipher, algo:aes, mode:cbc</tags></function>
+    <function name="EVP_aes_128_cfb" alias="EVP_aes_192_cfb, EVP_aes_256_cfb"><tags>cipher, algo:aes, mode:cfb</tags></function>
+    <function name="EVP_aes_128_cfb1" alias="EVP_aes_192_cfb1, EVP_aes_256_cfb1"><tags>cipher, algo:aes, mode:cfb</tags></function>
+    <function name="EVP_aes_128_cfb8" alias="EVP_aes_192_cfb8, EVP_aes_256_cfb8"><tags>cipher, algo:aes, mode:cfb</tags></function>
+    <function name="EVP_aes_128_cfb128" alias="EVP_aes_192_cfb128, EVP_aes_256_cfb128"><tags>cipher, algo:aes, mode:cfb</tags></function>
+    <function name="EVP_aes_128_ctr" alias="EVP_aes_192_ctr, EVP_aes_256_ctr"><tags>cipher, algo:aes, mode:ctr</tags></function>
+    <function name="EVP_aes_128_ecb" alias="EVP_aes_192_ecb, EVP_aes_256_ecb"><tags>cipher, algo:aes, mode:ecb</tags></function>
+    <function name="EVP_aes_128_ofb" alias="EVP_aes_192_ofb, EVP_aes_256_ofb"><tags>cipher, algo:aes, mode:ofb</tags></function>
+    <function name="EVP_aes_128_cbc_hmac_sha1" alias="EVP_aes_256_cbc_hmac_sha1, EVP_aes_128_cbc_hmac_sha256, EVP_aes_256_cbc_hmac_sha256"><tags>cipher, algo:aes, mode:cbc</tags></function>
+    <function name="EVP_aes_128_xts" alias="EVP_aes_256_xts"><tags>cipher, algo:aes, mode:xts</tags></function>
+
+    <function name="EVP_aria_128_gcm"><tags>cipher, algo:aria, mode:gcm, keylen:128</tags></function>
+    <function name="EVP_bf_cbc"><tags>cipher, algo:blowfish, mode:cbc</tags></function>
+    <function name="EVP_camellia_128_ecb"><tags>cipher, algo:camellia, mode:ecb, keylen:128</tags></function>
+    <function name="EVP_cast5_cbc"><tags>cipher, algo:cast5, mode:cbc</tags></function>
+    <function name="EVP_chacha20"><tags>cipher, algo:chacha20, keylen:256</tags></function>
+    <function name="EVP_des_cbc"><tags>cipher, algo:des, mode:cbc, keylen:56</tags></function>
+
+    <function name="EVP_desx_cbc"><tags>cipher, algo:3des, mode:cbc</tags></function>
+    <function name="EVP_idea_cbc"><tags>cipher, algo:idea, mode:cbc</tags></function>
+    <function name="EVP_rc2_cbc"><tags>cipher, algo:rc2, mode:cbc</tags></function>
+    <function name="EVP_rc4"><tags>cipher, algo:rc4</tags></function>
+    <function name="EVP_rc5_32_12_16_cbc"><tags>cipher, algo:rc5, mode:cbc, keylen:128</tags></function>
+    <function name="EVP_rc5_32_12_16_cfb" alias="EVP_rc5_32_12_16_cfb64"><tags>cipher, algo:rc5, mode:cfb, keylen:128</tags></function>
+    <function name="EVP_rc5_32_12_16_ecb"><tags>cipher, algo:rc5, mode:ecb, keylen:128</tags></function>
+    <function name="EVP_rc5_32_12_16_ofb"><tags>cipher, algo:rc5, mode:ofb, keylen:128</tags></function>
+
+    <function name="EVP_seed_cbc"><tags>cipher, algo:seed, mode:cbc, keylen:128</tags></function>
+    <function name="EVP_seed_cfb" alias="EVP_seed_cfb128"><tags>cipher, algo:seed, mode:cfb, keylen:128</tags></function>
+    <function name="EVP_seed_ecb"><tags>cipher, algo:seed, mode:ecb, keylen:128</tags></function>
+    <function name="EVP_seed_ofb"><tags>cipher, algo:seed, mode:ofb, keylen:128</tags></function>
+
+    <function name="EVP_sm4_cbc"><tags>cipher, algo:sm4, mode:cbc</tags></function>
+    
+    <function name="BF_ecb_encrypt">
+      <tags>cipher, encrypt, decrypt, algo:blowfish, mode:ecb, data:0, cipherText:1, key:2, op:3</tags>
+    </function>
+    <function name="BF_cbc_encrypt">
+      <tags>cipher, encrypt, decrypt, algo:blowfish, mode:cbc, data:0, cipherText:1, key:3, iv:4, op:5</tags>
+    </function>
+    <function name="BF_cfb64_encrypt">
+      <tags>cipher, encrypt, decrypt, algo:blowfish, mode:cfb, data:0, cipherText:1, key:3, iv:4, op:6</tags>
+    </function>
+    <function name="BF_ofb64_encrypt">
+      <tags>cipher, encrypt, decrypt, algo:blowfish, mode:ofb, data:0, cipherText:1, key:3, iv:4</tags>
+    </function>
+    <function name="BF_encrypt" signature="void BF_encrypt(BF_LONG *data, const BF_KEY *key)">
+      <tags>cipher, encrypt, algo:blowfish, data:0, key:1</tags>
+    </function>
+    <function name="BF_decrypt" signature="void BF_decrypt(BF_LONG *data, const BF_KEY *key)">
+      <tags>cipher, decrypt, algo:blowfish, </tags>
+    </function>
+    <function name="BF_set_key" signature="void BF_set_key(BF_KEY *key, int len, const unsigned char *data)">
+      <tags>key_exchange, algo:blowfish, key:2</tags>
+      <sink kind="hardcoded_key" argpos="2" resource="crypto"/>
+    </function>
+
+    <function name="DES_random_key" signature="void DES_random_key(DEX_cblock *key)"><tags>key_generation, algo:des, keylen:56, key:0</tags></function>
+    <function name="DES_ecb_encrypt" signature="void DES_ecb_encrypt(const char *in, char *out, DES_key_schedule *key, int op)">
+      <tags>cipher, encrypt, decrypt, algo:des, mode:ecb, keylen:56, data:0, cipherText:1, key:2, op:3</tags>
+    </function>
+    <function name="DES_ncbc_encrypt" signature="void DES_ncbc_encrypt(const char *in, char *out, long len, DES_key_schedule *key, DES_cblock *iv, int op)" match="name"
+              alias="DES_pcbc_encrypt, DES_xcbc_encrypt">
+      <tags>cipher, encrypt, decrypt, algo:des, mode:cbc, keylen:56, data:0, cipherText:1, key:3, iv:4, op:5</tags>
+    </function>
+    <function name="DES_ecb2_encrypt" signature="void DES_ecb2_encrypt(const char *in, char *out, DES_key_schedule *k1, DES_key_schedule *k2, int op)">
+      <tags>cipher, encrypt, decrypt, algo:3des, mode: ecb, keylen:112, data:0, cipherText:1, key:2, op:4</tags>
+    </function>
+    <function name="DES_ecb3_encrypt" signature="void DES_ecb3_encrypt(const char *in, char *out, DES_key_schedule *k1, DES_key_schedule *k2, DES_key_schedule *k3, int op)">
+      <tags>cipher, encrypt, decrypt, algo:3des, mode: ecb, keylen:168, data:0, cipherText:1, key:2, op:5</tags>
+    </function>
+    <function name="DES_ede2_cbc_encrypt" signature="void DES_ede2_cbc_encrypt(const char *in, char *out, DES_key_schedule *k1, DES_key_schedule *k2, const char *iv, int op)">
+      <tags>cipher, encrypt, decrypt, algo:3des, mode:cbc, keylen:112, data:0, cipherText:1, key:2, iv:4, op:5</tags>
+    </function>
+    <function name="DES_ede3_cbc_encrypt" signature="void DES_ede3_cbc_encrypt(const char *in, char *out, DES_key_schedule *k1, DES_key_schedule *k2, DES_key_schedule *k3, const char *iv, int op)">
+      <tags>cipher, encrypt, decrypt, algo:3des, mode:cbc, keylen:168, data:0, cipherText:1, key:2, iv:5, op:6</tags>
+    </function>
+    <!-- more modes... -->
+
+    <function name="DES_string_to_key" alias="DES_string_to_2keys" match="name">
+      <tags>key_derivation, algo:des, password:0, key:1, keylen:56</tags>
+      <sink kind="hardcoded_password" argpos="0"/>
+    </function>
+    <function name="DES_fcrypt" signature="char *DES_fcrypt(char *buf, char *salt, char *ret)">
+      <tags>password_hash, algo:crypt, password:0, salt:1</tags>
+      <sink kind="hardcoded_password" argpos="0"/>
+      <sink kind="hardcoded_salt" argpos="1"/>
+    </function>
+    <function name="DES_crypt" signature="char *DES_crypt(char *buf, char *salt)">
+       <tags>password_hash, algo:crypt, password:0, salt:1</tags>
+      <sink kind="hardcoded_password" argpos="0"/>
+      <sink kind="hardcoded_salt" argpos="1"/>
+    </function>
+
+  </module>
+
+  <module name="openbsd" standard="OpenBSD">
+    <description url="https://man.openbsd.org/">OpenBSD cryptography</description>
+    <function name="arc4random" signature="uint32_t arc4random(void)">
+      <description>crypto-grade PRNG. Uses stream cipher (currently ChaCha20)</description>
+      <tags>prng, out:-1</tags>
+    </function>
+    <function name="arc4random_buf" signature="void arc4random_buf(void *buf, size_t nbytes)">
+      <tags>prng, out:0</tags>
+    </function>
+    <function name="arc4random_uniform" signature="uint32_t arc4random_uniform(uint_t upperBound)">
+      <tags>prng, out:-1</tags>
+    </function>
+    <function name="getentropy" signature="int getentropy(void *buf, size_t buflen)">
+      <errorProcessing kind="errno"/>
+    </function>
+  </module>
+
+  <module name="wincrypt.h" standard="CryptoAPI">
+    <description url="https://docs.microsoft.com/en-us/windows/win32/seccrypto/cryptoapi-system-architecture">Microsoft Cryptographic Application Programming Interface</description>
+
+    <function name="CryptAcquireContext" match="name">
+      <description>Acquire a handle to a particular key container within a particular cryptographic service provider (CSP)</description>
+      <tags>provHandle:0, name:1, provName:2, provType:3</tags>
+      <sink kind="resource_injection" resource="crypto" argpos="1,2"/>
+    </function>
+
+    <function name="CryptGenRandom">
+      <tags>prng, provHandle:0, out:2</tags>
+    </function>
+    
+    <function name="CryptCreateHash" match="name">
+      <tags>hash, hmac, algo:1, key:2, hashObj:4</tags>
+    </function>
+    <function name="CryptHashData" match="name">
+      <tags>hash, hmac, hashObj:0, data:1</tags>
+    </function>
+    <function name="CryptGetHashParam" match="name">
+      <tags>hash, hmac, hashObj:0, mac:2</tags>
+      <neutralization kind="hash" argpos="2" resource="crypto"/>
+    </function>
+
+    <class name="CRYPT_ENCRYPT_MESSAGE_PARA" kind="struct">
+      <field name="cbSize" type="uint32_t"/>
+      <field name="dwMsgEncodingType" type="uint32_t"><tags>encoding</tags></field>
+      <field name="hCryptProv" type="HCRYPTPROV_LEGACY"><tags>provHandle</tags></field>
+      <field name="ContentEncryptionAlgorithm" type="int"><tags>algo</tags></field>
+    </class>
+    
+    <function name="CryptEncryptMessage"
+              signature="bool CryptEncryptMessage(CRYPT_ENCRYPT_MESSAGE_PARA *param, uint32_t certsSize, CERT_CONTEXT *certs[], const uint8_t *plain, size_t plainSz, uint8_t *enc, size_t *encSz)">
+      <tags>cipher, encrypt, algoObj:0, data:3, cipherText:5</tags>
+      <neutralization argpos="5" kind="encryption" resource="crypto"/>
+    </function>
+    <function name="CryptEncrypt" signature="bool CryptEncrypt(HCRYPTKEY hKey, HCRYPTHASH hHash, bool last, uint32_t flags, uint8_t *plain, size_t *len, size_t plainSz) ">
+      <tags>cipher, encrypt, keyHandle:0, hashHandle:1, data:4, cipherText:4</tags>
+      <neutralization argpos="4" kind="encryption" resource="crypto"/>
+    </function>
+    <function name="CryptDecryptMessage"
+              signature="bool CryptDecryptMessage(CRYPT_DECRYPT_MESSAGE_PARA *param, const uint8_t *enc, size_t encSz, uint8_t *plain, size_t *plainSz, uint32_t certsSize, CERT_CONTEXT *certs[])">
+      <description>The algorithm is encoded in the cipher blob, so it cannot be inferred statically</description>
+      <tags>cipher, decrypt, cipherText:1, data:3</tags>
+      <neutralization argpos="3" kind="decryption" resource="crypto"/>
+    </function>
+    <function name="CryptDecrypt" signature="bool CryptDecrypt(HCRYPTKEY hKey, HCRYPTHASH hHash, bool last, uint32_t flags, uint8_t *enc, size_t *len, size_t encSz) ">
+      <tags>cipher, encrypt, keyHandle:0, hashHandle:1, data:4, cipherText:4</tags>
+      <neutralization argpos="4" kind="decryption" resource="crypto"/>
+    </function>
+    <function name="CryptGenKey" signature="bool CryptGenKey(HCRYPTPROV hProv, int algId, uint32_t flags, HCRYPTKEY *hKey)">
+      <tags>key_generation, provHandle:0, algo:1, keyHandle:3</tags>
+    </function>
+    <function name="CryptDeriveKey" signature="bool CryptDeriveKey(HCRYPTPROV hProv, int algid, HCRYPTHASH hash, uint32_t flags, HCRYPTKEY *key)">
+      <tags>key_derivation, provHandle:0, algo:1, password:2, hashHandle:2, keyHandle:4</tags>
+      <sink kind="hardcoded_key" argpos="2" resource="crypto"/>
+    </function>
+    <function name="CryptImportKey" signature="bool CryptImportKey(HCRYPTPROV hProv, const uint8_t *blob, size_t blobSz, HCRYPTKEY impKey, uint32_t flags, HCRYPTKEY *key)">
+      <tags>key_exchange, provHandle:0, key:1, impKeyHandle:3, keyHandle:5</tags>
+    </function>
+    <function name="CryptExportKey" signature="bool CryptExportKey(HCRYPTKEY key, HCRYPTKEY expKey, uint32_t blobType, uint32_t flags, uint8_t *blob, size_t *blobSz)">
+      <tags>key_exchange, keyHandle:0, expKeyHandle:1, key:4</tags>
+    </function>
+  </module>
+  
+  <module name="bcrypt.h" standard="CryptoAPI-NG">
+    <description url="https://docs.microsoft.com/en-us/windows/win32/seccng/cng-portal">Microsoft CryptoAPI Next Gen</description>
+    
+    <function name="BCryptOpenAlgorithmProvider" match="name">
+      <tags>algoHandle:0, algo:1</tags>
+    </function>
+    
+    <function name="BCryptGenRandom" match="name">
+      <tags>prng, algoHandle:0, out:1</tags>
+    </function>
+    
+    <function name="BCryptCreateHash" match="name">
+      <tags>hash, algoHandle:0</tags>
+    </function>
+    
+    <function name="BCryptGenerateSymmetricKey" match="name">
+     <tags>key_generation, algoHandle:0, keyHandle:1, key:2, secret:4</tags>
+      <!-- key is a handle, secret is equivalent to the key itself -->
+      <sink kind="hardcoded_key" argpos="4" resource="crypto"/>
+    </function>
+    <function name="BCryptImportKey" match="name">
+      <tags>key_exchange, algoHandle:0, importKeyHandle:1, keyHandle:3, key:6</tags>
+      <sink kind="hardcoded_key" argpos="6" resource="crypto"/>
+    </function>
+    <function name="BCryptExportKey" match="name">
+      <tags>key_exchange, algoHandle:0, importKeyHandle:1, key:3</tags>
+    </function>
+    <function name="BCryptImportKeyPair" match="name">
+      <tags>key_exchange, algoHandle:0, exportKeyHandle:1, keyHandle:3, keypair:6</tags>
+      <sink kind="hardcoded_key" argpos="6" resource="crypto"/>
+    </function>
+    <function name="BCryptEncrypt" match="name">
+      <tags>cipher, encrypt, keyHandle:0, data:1, iv:4, cipherText:6</tags>
+      <neutralization kind="encryption" argpos="6"/>
+    </function>
+    <function name="BCryptDecrypt" match="name">
+      <tags>cipher, decrypt, keyHandle:0, cipherText:1, iv:4, data:6</tags>
+      <neutralization kind="decryption" argpos="6"/>
+    </function>
+    
+  </module>
+
+  <module name="Poco.crypto">
+    <description url="https://pocoproject.org/docs/Poco.Crypto.html">Cryptographic API in POCO C++ libraries</description>
+
+    <class name="Poco.Random">
+      <method name="next" signature="next()" match="name">
+        <tags>prng</tags>
+        <return type="uint32_t"/>
+        <sink kind="insecure_random" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="nextBool" signature="nextBool()" match="name">
+        <tags>prng</tags><return type="bool"/>
+        <sink kind="insecure_random" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="nextFloat" signature="nextFloat()"><tags>prng</tags>
+        <return type="float"/>
+        <sink kind="insecure_random" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="nextDouble" signature="nextDouble()">
+        <tags>prng</tags><return type="double"/>
+        <sink kind="insecure_random" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="seed" signature="seed(uint32_t seed)">
+        <tags>prng-seed, seed:0</tags>
+      </method>
+    </class>
+
+    <class name="Poco.DigestEngine.Digest" supertypes="vector"/>
+
+    <class name="Poco.DigestEngine" kind="abstract_class">
+      <method name="constantTimeEquals" instance="false" signature="constantTimeEquals(Poco.DigestEngine.Digest&amp; d1, Poco.DigestEngine.Digest&amp; d2)">
+        <return type="bool"/>
+      </method>
+      <method name="update" signature="update(void* data, size_t len)">
+        <tags>hash, data:0</tags>
+      </method>
+      <method name="digest" signature="digest()">
+        <tags>hash, digest:-1</tags>
+        <return type="Poco.DigestEngine.Digest&amp;"/>
+        <neutralization kind="hash" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="digestToHex" signature="digestToHex(const Poco.DigestEngine.Digest&amp; bytes)">
+        <return type="string&amp;"/>
+      </method>
+      <method name="digestFromHex" signature="digestFromHex(const string&amp; digest)" instance="false">
+        <return type="Poco.DigestEngine.Digest&amp;"/>
+      </method>
+    </class>
+
+    <class name="Poco.Crypto.DigestEngine" supertypes="Poco.DigestEngine">
+      <constructor name="DigestEngine" signature="DigestEngine(string&amp; algo)">
+        <tags>hash, algo:0</tags>
+      </constructor>
+    </class>
+    <class name="Poco.Crypto.RSADigestEngine" supertypes="Poco.DigestEngine">
+      <constructor name="RSADigestEngine" signature="RSADigestEngine(Poco.Crypto.RSAKey&amp; key)" match="numargs">
+        <tags>hash, sign, key:0, algo:sha1</tags>
+      </constructor>
+      <constructor name="RSADigestEngine" signature="RSADigestEngine(Poco.Crypto.RSAKey&amp; key, const string&amp; name)" match="numargs">
+        <tags>hash, sign, key:0, algo:1</tags>
+      </constructor>
+      <method name="signature" signature="signature()"><return type="Poco.DigestEngine.Digest&amp;"/></method>
+      <method name="verify" signature="verify(Poco.DigestEngine.Digest&amp;)"><return type="bool"/></method>
+    </class>
+    <class name="Poco.Crypto.ECDSADigestEngine" supertypes="Poco.DigestEngine">
+      <constructor name="ECDSADigestEngine" signature="ECDSADigestEngine()">
+        <tags>hash, sign, key:0, algo:1</tags>
+      </constructor>
+      <method name="signature" signature="signature()"><return type="Poco.DigestEngine.Digest&amp;"/></method>
+      <method name="verify" signature="verify(Poco.DigestEngine.Digest&amp;)"><return type="bool"/></method>
+    </class>
+    <class name="Poco.MD4Engine" supertypes="Poco.DigestEngine">
+      <constructor name="MD4Engine" signature="MD4Engine()">
+        <tags>hash, algo:md4</tags>
+      </constructor>
+    </class>
+    <class name="Poco.MD5Engine" supertypes="Poco.DigestEngine">
+      <constructor name="MD5Engine" signature="MD5Engine()">
+        <tags>hash, algo:md5</tags>
+      </constructor>
+    </class>
+    <class name="Poco.SHA1Engine" supertypes="Poco.DigestEngine">
+      <constructor name="SHA1Engine" signature="SHA1Engine()">
+        <tags>hash, algo:sha1</tags>
+      </constructor>
+    </class>
+    <class name="Poco.SHA1Engine" supertypes="Poco.DigestEngine">
+      <constructor name="SHA1Engine" signature="SHA1Engine()">
+        <tags>hash, algo:sha1</tags>
+      </constructor>
+    </class>
+    <class name="Poco.SHA2Engine" supertypes="Poco.DigestEngine">
+      <constructor name="SHA2Engine" signature="SHA2Engine()" match="numargs">
+        <tags>hash, algo:sha256</tags>
+      </constructor>
+      <constructor name="SHA2Engine" signature="SHA2Engine(T algo)" match="numargs">
+        <tags>hash, algo:0</tags>
+      </constructor>
+    </class>
+    <class name="Poco.PBKDF2Engine" supertypes="Poco.DigestEngine">
+      <constructor name="PBKDF2Engine" signature="PBKDF2Engine()" match="name">
+        <tags>key_derivation, hash, algo:pbkdf2, salt:0, iterations:1, keylen:2</tags>
+        <sink kind="hardcoded_salt" argpos="0"/>
+      </constructor>
+    </class>
+    <class name="Poco.HMACEngine" supertypes="Poco.DigestEngine">
+      <constructor name="HMACEngine" signature="HMACEngine(const string&amp; password)" match="name">
+        <tags>hmac, key:0</tags>
+        <sink kind="hardcoded_key" argpos="0" resource="crypto"/>
+      </constructor>
+    </class>
+
+    <class name="Poco.Crypto.CipherKey">
+      <constructor name="CipherKey" signature="CipherKey(const string&amp; name)" match="numargs">
+        <tags>cipher, key_generation, algo:0</tags>
+      </constructor>
+      <constructor name="CipherKey" signature="CipherKey(const string&amp; name, const vector&amp; key, const vector&amp; iv)" match="numargs">
+        <tags>cipher, key_generation, algo:0, key:1, iv:2</tags>
+        <sink kind="hardcoded_key" argpos="1" resource="crypto"/>
+      </constructor>
+      <constructor name="CipherKey" signature="CipherKey(const string&amp; name, const string&amp; password, const string&amp; salt, int its)" match="numargs">
+        <tags>cipher, key_generation, algo:0, password:1, salt:2</tags>
+        <sink kind="hardcoded_password" argpos="1" resource="crypto"/>
+        <sink kind="hardcoded_salt" argpos="2" resource="crypto"/>
+      </constructor>
+    </class>
+
+    <class name="Poco.Crypto.Cipher.Encoding" kind="enum"/>
+
+    <class name="Poco.Crypto.Cipher">
+      <method name="encrypt" signature="encrypt(istream&amp; source, ostream&amp; sink, Poco.Crypto.Cipher.Encoding encoding)" match="name">
+        <tags>cipher, encrypt, data:0, cipherText:1</tags>
+        <propagate from="0" to="1"/>
+        <neutralization argpos="1" kind="encryption" resource="crypto"/>
+      </method>
+      <method name="encryptString" signature="string encryptString(const string&amp; str, Poco.Crypto.Cipher.Encoding encoding)" match="name">
+        <tags>cipher, encrypt, data:0, cipherText:-1</tags>
+        <return type="string"/>
+        <propagate from="0" to="-1"/>
+        <neutralization argpos="-1" kind="encryption" resource="crypto"/>
+      </method>
+      <method name="decrypt" signature="decrypt(istream&amp; source, ostream&amp; sink, Poco.Crypto.Cipher.Encoding encoding)" match="name">
+        <tags>cipher, decrypt, cipherText:0, data:1</tags>
+        <propagate from="0" to="1"/>
+        <neutralization argpos="1" kind="decryption" resource="crypto"/>
+      </method>
+      <method name="decryptString" signature="string decryptString(const string&amp; str, Poco.Crypto.Cipher.Encoding encoding)" match="name">
+        <tags>cipher, decrypt, cipherText:0, data:-1</tags>
+        <return type="string"/>
+        <propagate from="0" to="1"/>
+        <neutralization argpos="-1" kind="decryption" resource="crypto"/>
+      </method>
+    </class>
+
+    <class name="Poco.Crypto.CipherFactory">
+      <method name="defaultFactory" signature="defaultFactory()">
+        <return type="Poco.Crypto.CipherFactory"/>
+      </method>
+      <method name="createCipher" signature="createCipher(Poco.Crypto.CipherKey&amp; key)">
+        <tags>cipher, key:0</tags>
+        <return type="Poco.Crypto.Cipher*"/>
+      </method>
+      <method name="createCipher" signature="createCipher(Poco.Crypto.RSAKey&amp; key, RSAPaddingMode padding)">
+        <tags>cipher, key:0, algo:rsa, padding:1</tags>
+        <return type="Poco.Crypto.Cipher*"/>
+      </method>
+    </class>
+  </module>
+
+</library>  

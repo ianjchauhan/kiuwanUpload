@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.optimyth.com/schema/definitions/metric" version="1.1">
+
+  <metric id="OPT.autoCodeLines" unit="" aggregation="sum" aggregationScope="program"> 
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.SIZE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.SIZE.CODE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <!-- 
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL" />
+      -->
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT" />    
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="1000.00" meaning="good" />
+        <threshold from="1000.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+<!-- 
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <internal-name id="OPT.ABAP.USELESSLINES.AUTOCODE" />
+        <java-class></java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+        <internal-name id="OPT.COBOL.USELESSLINES.AUTOCODE" />
+        <java-class></java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+ -->
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.USELESSLINES.AUTOCODE" />
+        <java-class>com.optimyth.csharp.metrics.uselessLines.AutoCodeLinesMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+ 
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.USELESSLINES.AUTOCODE" />
+        <java-class>com.als.java.metrics.uselessLines.AutoCodeLinesMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+        <internal-name id="OPT.JS.USELESSLINES.AUTOCODE" />
+        <java-class>com.optimyth.qaking.javascript.metrics.uselessLines.AutoCodeLinesMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>      
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.USELESSLINES.AUTOCODE" />
+        <java-class>com.optimyth.vbnet.metrics.uselessLines.AutoCodeLinesMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>      
+     
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+
+    </implementations>
+
+	  <!-- Code examples for each language parser -->
+	  <code-examples>
+<!-- 	
+			<language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+				<code-example name="metricCodeExampleAbap" result-value="">
+				<![CDATA[
+				]]>
+				</code-example>
+			</language-parser>
+		
+			<language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+				<code-example name="metricCodeExampleCobol" result-value="">
+				<![CDATA[
+				]]>
+				</code-example>
+			</language-parser>
+-->	
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="GetterAndSetter" result-value="13.0">
+        <![CDATA[
+    class MyClass 
+    {
+
+        string _myProperty { get; set; }   // inline getter/setter
+
+        string _myProperty2;
+
+        public string myProperty2         // getter/setter - 5 lines
+        {
+            get { return _myProperty2; }
+            set { _myProperty2 = value; }
+        } 
+        
+        string _myProperty3;
+
+        public string getMyProperty3()      // getter - 4 lines
+        {
+          return this._myProperty3;
+        }
+
+        public void setMyProperty3(string value)   // setter - 4 lines
+        {
+          this._myProperty3 = value;
+        }               
+
+        public static void Main() 
+        {
+          // ...
+        }
+    }        
+        
+        ]]>
+        </code-example>
+      </language-parser>
+      
+			<language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="GetterAndSetter" result-value="15.0">
+        <![CDATA[
+public class Myclass {
+  
+  public String myMethod() {    // Method name is different
+    return "Hello";
+  }
+
+  public int getA() {           // 3 lines 
+    return a;
+  }
+
+  public int getAA() {          // 3 lines
+    return this.a;
+  }
+
+  private int getA2() {         // Getter is a public method
+    return a;
+  }
+
+  public int getA3() {          // Getter has only one statement
+    a = a * 2;
+    return a;
+  }
+
+  public int getA4() {          // Getter has one statement
+  }
+  
+  public int getA5(int b) {     // Getter has no arguments
+    return a;
+  }
+
+  public int getA6() {          // Getter only has a 'return' statement
+    System.out.println(a);
+  }
+  
+  public void setA(int aa) {    // 3 lines
+    // Comments do not matter
+    this.a = aa;
+  }
+
+  public void setB(float bb) {  // 3 lines 
+    b = bb;
+  }
+  
+  private void setA3(int aa) {  // Setter is a public method
+    this.a = aa;
+  }
+
+  public void setA4(int aa, int bb) {   // Setter has only one argument
+    a = aa;
+  }
+
+  public void setA5() {           // Setter has one argument
+    a = aa;
+  }
+  
+  public void setA6(int aa) {     // Setter has only one statement
+    a = a + 2;
+    a = aa;
+  }
+
+  public void setA7(int aa) {     // Setter has one statement
+  }
+
+  public void setA8(int aa) {     // Setter only has an assignment statement
+    System.out.println(aa);
+  }
+
+  public boolean isMyflag() {     // 3 lines
+
+    // more empty space
+    return myflag;
+    
+  }
+
+  public boolean setMyflag(boolean myFlag) {    // Setter returns nothing
+    this.myflag = myFlag;
+  }
+}        
+        ]]>
+        </code-example>			
+			</language-parser>
+			
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+        <code-example name="GetterAndSetter" result-value="12.0">
+        <![CDATA[
+var person = {
+    firstName: 'Jimmy',
+    lastName: 'Smith',
+    get fullName() {                                  // no simple-getter
+        return this.firstName + ' ' + this.lastName;
+    },
+    set fullName (name) {                             // no simple-setter
+        var words = name.toString().split(' ');
+        this.firstName = words[0] || '';
+        this.lastName = words[1] || '';
+    }
+}       
+
+Object.defineProperty(person, 'completeName', {
+    get: function() {                                // no simple-getter
+        return firstName + ' ' + lastName;
+    },
+    set: function(name) {                            // no simple-setter
+        var words = name.split(' ');
+        this.firstName = words[0] || '';
+        this.lastName = words[1] || '';
+    }
+}); 
+
+
+var man = {
+      firstName: 'Jimmy',
+      lastName: 'Smith',
+      gender: 'male',
+      get gender() {               // unnecessary getter - 3 lines
+          return this.gender;
+      },
+      set gender (name) {          // unncessary setter - 3 lines
+          this.gender = name;
+      }
+}
+
+Object.defineProperty(man, 'genderMan', {
+    get: function() {          // unnecessary getter - 3 lines
+        return gender;
+    },
+    set: function(name) {      // unnecessary setter - 3 lines
+        this.gender = name;
+    }
+});
+        ]]>
+        </code-example>
+      </language-parser>			
+			
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="GetterAndSetter" result-value="22.0">
+        <![CDATA[
+Namespace MyExample
+    ' Program start class
+    Class Example
+
+        public property FirstName as String ' inline getter/setter in VB.NET
+        
+        Private myProperty As String  
+
+        Public Property myProperty() As String  ' getter/setter - 8 lines
+            Get
+                Return myProperty
+            End Get
+            Set
+                myProperty = Value
+            End Set
+        End Property
+
+        Private myProperty2 As String
+
+        Public Property myProperty2() As String  ' getter/setter - 8 lines
+            Get
+                Return myProperty2
+            End Get
+            Set
+                myProperty2 = Value
+            End Set
+        End Property
+
+        Private myProperty3 As String
+
+        Public Function getMyProperty3() As String    ' getter - 3 lines
+            Return Me.myProperty3
+        End Function
+
+        Public Sub setMyProperty3(value As String)    ' setter - 3 lines
+            Me.myProperty3 = value
+        End Sub
+
+        ' Main begins program execution.
+        Public Shared Sub Main()
+            ' ...
+        End Sub
+    End Class
+End Namespace
+        ]]>
+        </code-example>
+      </language-parser>			
+	      
+	  </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    
+	    <i18n ref="OPT.LANGUAGE.SPANISH">
+	      <name><![CDATA[Código autogenerado]]></name>
+		    <description><![CDATA[
+La métrica cuenta el número de líneas de código autogenerado contenidas en los archivos analizados.
+NOTA: no se tienen en cuenta líneas en blanco o de comentarios.
+	      ]]></description>
+		    
+		    <implementation-descriptions>
+<!--
+			    <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+	        <![CDATA[
+	        ]]>
+			    </implementation-description>
+			    <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+	        <![CDATA[
+	        ]]>
+			    </implementation-description>
+  -->			    
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+          <![CDATA[
+Se entiende por código autogenerado:
+ - métodos getter (público, cuyo nombre comienza con get/is/has, sin argumentos, con una única sentencia 'return').
+ - métodos setter (público, cuyo nombre comienza con set, con un único argumento, con una única sentencia asignación).
+ - propiedad getter (con una única sentencia 'return').
+ - propiedad setter (con una única sentencia asignación).         
+          ]]>
+          </implementation-description>
+			    <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+	        <![CDATA[
+Se entiende por código autogenerado:
+ - métodos getter (público, cuyo nombre comienza con get/is/has, sin argumentos, con una única sentencia 'return').
+ - métodos setter (público, cuyo nombre comienza con set, con un único argumento, con una única sentencia asignación).    
+	        ]]>
+			    </implementation-description>
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+          <![CDATA[
+Se entiende por código autogenerado:
+ - propiedad getter (definición de getter de propiedad, con una única sentencia 'return' simple, de devolución de valor).
+ - propiedad setter (definición de setter de propiedad, con una única sentencia de asignación simple, de establecimiento de valor).          
+          ]]>
+          </implementation-description>			    
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+          <![CDATA[
+Se entiende por código autogenerado:
+ - métodos getter (público, cuyo nombre comienza con get/is/has, sin argumentos, con una única sentencia 'return').
+ - métodos setter (público, cuyo nombre comienza con set, con un único argumento, con una única sentencia asignación).
+ - propiedad getter (con una única sentencia 'return').
+ - propiedad setter (con una única sentencia asignación).          
+          ]]>
+          </implementation-description>			    
+          
+	      </implementation-descriptions>
+	      <parameters />
+	    </i18n>
+	
+	    <i18n ref="OPT.LANGUAGE.ENGLISH">
+	      <name><![CDATA[Autogenerated code]]></name>
+	      <description><![CDATA[
+The metric counts the number of auto-generated code lines contained in the analyzed files.
+NOTE: do not take into account blank lines or comments.	      
+	      ]]></description>
+	
+	      <implementation-descriptions>
+	<!-- 
+	        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+	        <![CDATA[
+	        ]]>
+	        </implementation-description>
+	        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+	        <![CDATA[
+	        ]]>
+	        </implementation-description>
+ -->	       
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+          <![CDATA[
+Auto-generated code is:
+  - getter methods (public, name starting with get/is/has, without arguments, single 'return' statement).
+  - setter methods (public, name starting with set, only one argument, single assignment statement).
+  - getter property (single 'return' statement).
+  - setter property (single assignment statement).          
+          ]]>
+          </implementation-description> 
+	        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+	        <![CDATA[
+Auto-generated code is:
+  - getter methods (public, name starting with get/is/has, without arguments, single 'return' statement).
+  - setter methods (public, name starting with set, only one argument, single assignment statement).	        
+	        ]]>
+	        </implementation-description>
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+          <![CDATA[
+Auto-generated code is:
+ - getter property  (property getter definition, with single 'return' simple statement, returning value).
+ - setter property (property setter definition, with single assignment simple statement, setting value).       
+          ]]>
+          </implementation-description>	        
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+          <![CDATA[
+Auto-generated code is:
+  - getter methods (public, name starting with get/is/has, without arguments, single 'return' statement).
+  - setter methods (public, name starting with set, only one argument, single assignment statement).
+  - getter property (single 'return' statement).
+  - setter property (single assignment statement).          
+          ]]>
+          </implementation-description>	        	
+	      </implementation-descriptions>
+	
+	      <parameters />
+	    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

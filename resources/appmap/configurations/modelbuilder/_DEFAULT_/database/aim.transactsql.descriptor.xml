@@ -1,0 +1,121 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='database' subtech='transactsql' descriptor='database/aim.transactsql.xml' label='Process Transact-SQL code'>
+  <description>
+    Models database entities found in Transact-SQL (T-SQL) code (Microsoft SQL-Server syntax).
+    Process sql files (extracted from database or created manually) and registers them as programs.
+    All entities detected in each sql file belong to a databaseInstance (for the resolved database).
+  </description>
+
+  <properties>
+    <property id='aim.transactsql.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>
+        Activates processing of Transact-SQL code.
+      </description>
+    </property>
+
+    <property id='aim.transactsql.database' type='string'>
+      <name>databaseName</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>
+        The default database name.
+      </description>
+    </property>
+
+    <property id='aim.transactsql.database.dbname' type='string'>
+      <name>dbname</name>
+      <example>SQLServer</example>
+      <description>
+        The default database name or database schema
+      </description>
+    </property>
+
+    <property id='aim.transactsql.caseSensitive' type='bool'>
+      <name>caseSensitive</name>
+      <example>false</example>
+      <description>
+        If true, entity names case is maintained. If false, all database entities are converted to uppercase.
+        As typical SQL/T-SQL code is case insensitive, it is recommended to set this property to false.
+      </description>
+    </property>
+
+    <property id='aim.transactsql.dbresolver' type='enum'>
+      <name>dbresolver</name>
+      <example>default</example>
+      <description>
+        The database resolver to use.
+      </description>
+      <possible>
+        <enumval name="default">Uses <code>databaseName</code> property as database name.</enumval>
+        <enumval name="directories">Database name is resolved from the name of the children directory in the databasesDirectory.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.transactsql.databasesDirectory' type='string'>
+      <name>databasesDirectory</name>
+      <example>${aim.common.srcdir}/sql</example>
+      <description>
+        The directory where database files are stored. Used when dbresolver=directories.
+        The database name is the name of the subdirectory below this directory.
+      </description>
+    </property>
+
+    <property id='aim.transactsql.filter' type='enum'>
+      <name>filter</name>
+      <example>default</example>
+      <description>
+        Which files to analyze. Use the default filter (based on extensions in language info) or explicit patterns.
+      </description>
+      <possible>
+        <enumval name="default">Uses the extensions configured in checKing for transactsql technology.</enumval>
+        <enumval name="pattern">Uses patterns in <code>pattern</code> property.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.transactsql.filter.pattern' type='list' subtype='antPattern'>
+      <name>pattern</name>
+      <example>**/*.sql</example>
+      <description>
+        Pattern for T-SQL sources (used if <code>filter</code> set to pattern)
+        Some usual T-SQL extensions: sql, tsql.
+      </description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>program,databaseInstance,schema,table,view,index,primaryKey,storedProcedure,function,trigger,sequence,userType</values>
+    <description>
+      Creates a program for each sql file processed. For each database found, a databaseInstance component is created.
+      Tables, views, sequences, stored procedures / functions, triggers, user types, indexes and primary keys are modeled.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      databaseInstance|schema-contains->*,
+      view-select->table,
+      storedProcedure|function|view-calls->storedProcedure|function,
+      table-contains->primaryKey|index,
+      table-foreignKey->table,
+      userType-inherits->userType,
+      program-creates->*
+    </values>
+    <description>
+      Creates the following relations:
+      <ul>
+        <li>databaseInstance, schema -contains-> (any db entity)</li>
+        <li>view -select-> table</li>
+        <li>storedProcedure, function or view -calls-> storedProcedure or function</li>
+        <li>table -contains-> primaryKey or index</li>
+        <li>table -foreignKey-> table</li>
+        <li>userType-inherits->userType</li>
+        <li>program -creates-> (any db entity)</li>
+      </ul>
+    </description>
+  </createdRelations>
+
+  <importantConfigurations activation="aim.transactsql.rule.active" />
+
+</block>

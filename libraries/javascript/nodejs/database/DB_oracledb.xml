@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/DB_oracledb" standard="nodejs">
+
+  <module name="nodejs/DB_oracledb" standard="database/node-oracledb">
+    <description url="https://oracle.github.io/node-oracledb/">Oracle Database driver for Node.js</description>
+
+    <class name="nodejs/oracledb">
+      <function name="getConnection">
+        <parameters>
+          <param type="Object"/>
+          <param type="function(Error, nodejs/oracledb.Connection)" callback="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <sink kind="sensitive_data" resource="database">
+          <arg pos="0" field="user"/>
+          <arg pos="0" field="password"/>
+        </sink>
+        <sink kind="connection_string_injection" resource="database">
+          <arg pos="0" field="connectString"/>
+        </sink>
+      </function>
+      <function name="createPool">
+        <parameters>
+          <param type="Object"/>
+          <param type="function(Error, nodejs/oracledb.Pool)" callback="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <sink kind="sensitive_data" resource="database">
+          <arg pos="0" field="user"/>
+          <arg pos="0" field="password"/>
+        </sink>
+        <sink kind="connection_string_injection" resource="database">
+          <arg pos="0" field="connectString"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/oracle" supertypes="nodejs/oracledb">
+      <!-- deprecated version -->
+    </class>
+
+    <class name="nodejs/oracledb.Connection">
+      <function name="execute">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,nodejs/oracledb.Result)" last="true"><!-- last is ok -->
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="Promise"/>
+        <sink kind="sql_injection" argpos="0"/>
+      </function>
+      <function name="queryStream">
+        <return type="nodejs/stream.Readable"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <sink kind="sql_injection" argpos="0"/>
+      </function>
+      <function name="close" alias="break,release,commit,rollback">
+        <parameters>
+          <param type="function(Error)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+    </class>
+
+    <class name="nodejs/oracledb.Pool">
+      <function name="getConnection">
+        <parameters>
+          <param type="function(Error,nodejs/oracledb.Connection)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="Promise"/><!-- .then(function(nodejs/oracledb.Connection)) -->
+      </function>
+      <function name="close" alias="terminate">
+        <parameters>
+          <param type="function(Error)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+    </class>
+
+    <class name="nodejs/oracledb.Result">
+      <field name="rows" type="Array">
+        <source kind="database_input" resource="database"/>
+      </field>
+      <field name="resultSet" type="nodejs/oracledb.ResultSet"/>
+    </class>
+
+    <class name="nodejs/oracledb.ResultSet">
+      <function name="getRow">
+        <parameters>
+          <param type="function(Error,Object)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="getRows">
+        <parameters>
+          <param type="Number"/>
+          <param type="function(Error,Array)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="toQueryStream">
+        <return type="nodejs/stream.Readable"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </function>
+      <function name="close">
+        <parameters>
+          <param type="function(Error)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+    </class>
+  </module>
+
+</library>

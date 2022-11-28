@@ -1,0 +1,207 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='php' subtech='php' descriptor='php/aim.php.xml' label='Process PHP classes'>
+  <description>
+    Models PHP programs and functions, classes (and optionally, methods), resolving dependencies in the PHP language:
+    method calls, object instantiations, inheritance, reference to type fields.
+    <br/>
+    To activate registration of methods in the model, the property <code>methodsPredicate</code> could be set.
+    Registering all class methods as components is discouraged, as model could have a huge number of components.
+  </description>
+
+  <properties>
+    <property id='aim.php.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>Activation for PHP analysis.</description>
+    </property>
+
+    <property id='aim.php.software' type='string'>
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>
+        Default (fallback) software name. Please note that global software resolvers could be used to
+        resolve the software where each PHP file lives.
+      </description>
+    </property>
+
+    <property id='aim.php.registerMethods' type='bool'>
+      <name>registerMethods</name>
+      <example>true</example>
+      <description>Register class methods and their dependencies (calls).</description>
+    </property>
+
+    <property id='aim.php.registerFunctions' type='bool'>
+      <name>registerFunctions</name>
+      <example>true</example>
+      <description>Register functions and their dependencies (calls).</description>
+    </property>
+
+    <property id='aim.php.resolveCalls' type='bool'>
+      <name>resolveCalls</name>
+      <example>true</example>
+      <description>When true, function/method calls between PHP entities are processed.</description>
+    </property>
+
+    <property id='aim.php.resolveFieldReferences' type='bool'>
+      <name>resolveFieldReferences</name>
+      <example>true</example>
+      <description>When true, class field usages are processed.</description>
+    </property>
+
+    <property id='aim.php.resolveInheritance' type='bool'>
+      <name>resolveInheritance</name>
+      <example>true</example>
+      <description>When true, class/trait/interface inheritance dependencies are processed (extends from parent class, inherits from interface).</description>
+    </property>
+
+    <property id='aim.php.resolveInstantiations' type='bool'>
+      <name>resolveInstantiations</name>
+      <example>true</example>
+      <description>hen true, object instantiations are processed (usages of the <code>new</code> operator).</description>
+    </property>
+
+    <property id='aim.php.addCodeToRelations' type='bool'>
+      <name>addCodeToRelations</name>
+      <example>${aim.common.addCodeToRelations}</example>
+      <description>If true, matching PHP code will be added to relations.</description>
+    </property>
+
+    <property id='aim.php.resolveArtifacts' type='bool'>
+      <name>resolveArtifacts</name>
+      <example>${aim.common.resolveArtifacts}</example>
+      <description>If true, artifacts will be resolved.</description>
+    </property>
+
+    <property id='aim.php.resolver' type='enum'>
+      <name>resolver</name>
+      <example>existing</example>
+      <description>
+        Which class resolver to use for resolving dependencies on target classes.
+      </description>
+      <possible>
+        <enumval name="existing">Resolve only relations to classes found in analyzed code.</enumval>
+        <enumval name="matching">Resolve only relations to classes matching <code>matching.patterns</code>.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.php.matching.patterns' type='list' subtype='regexp'>
+      <name>matching.patterns</name>
+      <example>.+</example>
+      <description>
+        If <code>resolver</code> is set to <i>matching</i>, the package patterns (regular expressions) to use.
+      </description>
+    </property>
+
+    <property id="aim.php.methodPredicate" type="enum">
+      <name>methodPredicate</name>
+      <example>nonPrivateMagicGetterSetter</example>
+      <description>Which methods to model? (when registerMethods=true)</description>
+      <possible>
+        <enumval name="nonPrivateMagicGetterSetter">ignore private, "magic" and getter/setter methods</enumval>
+        <enumval name="nonPrivateMagic">ignore private or "magic" methods</enumval>
+        <enumval name="any">register all methods</enumval>
+      </possible>
+    </property>
+
+    <property id="aim.php.filter" type="enum">
+      <name>filter</name>
+      <example>default</example>
+      <description>Filter to use (default, pattern) for PHP code files</description>
+      <possible>
+        <enumval name="default">Use PHP extensions to match PHP source files.</enumval>
+        <enumval name="pattern">Use Ant patterns given in the <code>filter.pattern</code> property.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.php.filter.pattern' type='list' subtype='antPattern'>
+      <name>filter.pattern</name>
+      <example>**/*.php, **/*.php3, **/*.php4, **/*.php5, **/*.php6, **/*.phps, **/*.phtml</example>
+      <description>Filter (Ant patterns) for PHP sources, when filter = pattern</description>
+    </property>
+
+    <property id="aim.php.resolveSQL" type="bool">
+      <name>resolveSQL</name>
+      <example>true</example>
+      <description>If true, resolve dependencies in embedded SQL code; if false, no SQL code is processed</description>
+    </property>
+
+    <property id="aim.php.createSqlComponents" type="bool">
+      <name>createSqlComponents</name>
+      <example>true</example>
+      <description>If true, create intermediate component for each SQL statement detected, linked to the source component and to the database objects.
+       If false, no component is created for SQL statement, and direct dependencies are created between source component and database objects.</description>
+    </property>
+
+    <property id="aim.php.dbtype" type="enum">
+      <name>dbtype</name>
+      <example>sql92</example>
+      <description>The dialect of embedded SQL in PHP code (sql92 or oracle)</description>
+      <possible>
+        <enumval name="sql92">SQL-92 SQL code</enumval>
+        <enumval name="oracle">Oracle SQL code</enumval>
+      </possible>
+    </property>
+
+    <property id="aim.php.dbsystem" type="string">
+      <name>dbsystem</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>The name for default software to contain database objects, when not resolved by a global database resolver.</description>
+    </property>
+
+    <property id="aim.php.dbname" type="string">
+      <name>dbname</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>The name for database component to contain database objects, when not resolved by a global database resolver.</description>
+    </property>
+
+    <property id="aim.php.ignoreSQLCase" type="bool">
+      <name>ignoreSQLCase</name>
+      <example>true</example>
+      <description>If true, ignore case for database objects; if false, keep case found in SQL statements.</description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>program, function, class, operation (method), sql, table|view</values>
+    <description>
+      Creates program components for each PHP file.
+      For classes, create class components and, if <code>registerMethods=true</code>, methods are registered.
+      If <code>registerFunctions=true</code>, function components are registered.
+      If <code>resolveSQL=true</code>, embedded SQL is processed and dependencies with database objects resolved.
+      (when <code>createSqlComponents=true</code>, intermediate sql components are created).
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      program-includes->program,
+      program-contains->class,
+      class-contains->operation,
+      class|operation-inherits|calls|uses|instantiates|references->class|operation,
+
+    </values>
+    <description>
+      Between classes, resolves inheritance, method calls, variable references, object instantiations and type references.
+      When an operation is modeled (according to the <code>registerMethods</code> and <code>registerFunctions</code>),
+      it acts as the source/target of the relation. Operation is contained in the class that declares the method, or
+      in the PHP program that declares a normal function.
+    </description>
+  </createdRelations>
+  
+  
+  <!--importantConfigurations activation="aim.php.rule.active" /-->
+  <importantConfigurations>
+    <alternative>
+      <value>aim.php.rule.active=true</value>
+      <value>aim.php.registerMethods=false</value>
+      <value>aim.php.registerFunctions=false</value>
+    </alternative>
+    <alternative>
+      <value>aim.php.rule.active=true</value>
+      <value>aim.php.registerMethods=true</value>
+      <value>aim.php.registerFunctions=true</value>
+    </alternative>
+  </importantConfigurations>
+  
+</block>

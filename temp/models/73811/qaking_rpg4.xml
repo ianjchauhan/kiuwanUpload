@@ -1,0 +1,1673 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_rpg4" updated="">
+  <description>Nykaa_Web</description>
+  <rule name="OPT.RPG4.REL.AllocHeapMisuse" message="AllocHeapMisuse: Check that allocated memory is properly freed" class="com.optimyth.rpg4.rules.reliability.AllocHeapMisuse" technology="RPG4" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Check that each allocated memory block is deallocated explicitly (CWE-401), not deallocated twice (CWE-415),
+and area is not reused after deallocated (CWE.416).
+
+The check looks that blocks allocated in heap memory (ALLOC operation or %ALLOC built-in) are not deallocated twice,
+and that area is not reused (thru its pointer) after deallocation.
+
+If checkDealloc is true, a DEALLOC on the previously allocated block should be performed in the same scope
+(subroutine or procedure) than the ALLOC operation.
+
+If checkAllocStatus is true, allocation (ALLOC or %ALLOC) must be enclosed in a MONITOR operation that controls
+the exceptions for memory allocation (codes 425 or 426).
+
+RPG specification states that system implicitly frees allocated storage when the activation group ends,
+so the check for explicit DEALLOC is optional.
+
+Remember that the target pointer is set to *NULL after DEALLOC, so usages of the pointer without reassigning it
+to another valid area may produce illegal memory access.
+
+Heap misuse may produce:
+- memory corruption (when a deallocated area is deallocated again, or reused thru its pointer)
+- program termination (depends on the operating system) 
+- memory leaks (for long running programs that allocate temporary blocks in heap without explicit DEALLOC).]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Pointer and reference handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid memory problems that may end with abnormal program termination.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[     D Fld1            S              25A  BASED(Ptr1)
+     D Ptr1            S                *
+      /free
+         Ptr1 = %alloc(25); // no check of allocation errors
+
+         if someCondition();
+           dealloc Ptr1;
+         endif;
+
+         exsr doSomething;
+         Fld1 = *ALL'a'; // Ptr1 possibly dereferenced, illegal memory access
+
+         dealloc Ptr1; // potential second deallocation of heap area
+
+         // if memory not deallocated explicitly, a violation may be reported as well
+      /end-free]]></example>
+    <repair><![CDATA[     D Fld1            S              25A  BASED(Ptr1)
+     D Ptr1            S                *
+      /free
+         monitor;
+           Ptr1 = %alloc(25); // allocation errors are checked
+         on-error 425:426;
+           exsr handleError;
+           return;
+         endmon;
+
+         if not someCondition();
+           exsr doSomething;
+           Fld1 = *ALL'a'; // valid memory access to allocated memory
+         endif;
+
+         dealloc Ptr1; // explicit single deallocation
+      /end-free]]></repair>
+    <reference><![CDATA["Memory Management Operations", RPG ILE reference (IBM)]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:401,CWE:415,CWE:416,CWETOP25:2020:38,CWETOP25:2021:32,CWETOP25:2021:7]]></security>
+    </normatives>
+    <properties>
+      <property name="checkAllocStatus" descname="If true, allocation must be done inside a MONITOR operation for controlling errors." value="false"/>
+      <property name="checkDealloc" descname="If true, explicit DEALLOC operation is required for each allocated memory block." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.CheckCryptoReturnCode" message="CheckCryptoReturnCode: Validate return code for cryptographic operations" class="com.optimyth.rpg4.rules.security.CheckCryptoReturnCode" technology="RPG4" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Return value from a cryptographic API call is not checked, which can prevent it from detecting unexpected states and conditions.
+
+As potential errors go unchecked, the results from cryptographic operation should not be trusted, and subsequent operations
+may fail.
+
+The rule supports the iSeries Cryptographic Services API.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid wrong results in cryptographic operations due to uncontrolled errors.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[     **-- Encrypt data API:
+     **-- Qc3EncryptData in iSeries Cryptographic API
+     D EncryptData     Pr                  ExtProc( 'Qc3EncryptData' )
+     D  ClrDta                    65535a   Const  Options( *VarSize )
+     D  ClrDtaLen                    10i 0 Const
+     D  ClrDtaFmt                     8a   Const
+     D  AlgDsc                     1024a   Const  Options( *VarSize )
+     D  AlgDscFmt                     8a   Const
+     D  KeyDsc                     1024a   Const  Options( *VarSize )
+     D  KeyDscFmt                     8a   Const
+     D  CrpSrvPrv                     1a   Const
+     D  CrpDevNam                    10a   Const
+     D  EncDta                    65535a          Options( *VarSize )
+     D  EncDtaLen                    10i 0 Const
+     D  EncRtnLen                    10i 0
+     D  Error                     32767a          Options( *VarSize )
+     **-- Error structure
+     D ERRC0100        Ds                  Qualified
+     D  BytPrv                       10i 0 Inz( %Size( ERRC0100 ))
+     D  BytAvl                       10i 0
+     D  MsgId                         7a
+     D                                1a
+     D  MsgDta                     1024a
+      /FREE
+        // ... setup of data structures not shown ...
+        // VIOLATION, ERRC0100 not checked
+        EncryptData( PxDtaStr
+                   : %Len( PxDtaStr )
+                   : 'DATA0100'
+                   : ALGD0200
+                   : 'ALGD0200'
+                   : KEYD0200
+                   : 'KEYD0200'
+                   : CSP_SFW
+                   : *Blanks
+                   : EncDtaStr
+                   : %Size( EncDtaStr )
+                   : EncRtnLen
+                   : ERRC0100
+                   );
+        // return type (last param) is not checked for errors
+        Return  %Subst( EncDtaStr: 1: EncRtnLen );
+      /END-FREE]]></example>
+    <repair><![CDATA[      /FREE
+        // ... setup of data structures not shown ...
+        EncryptData( PxDtaStr
+                   : %Len( PxDtaStr )
+                   : 'DATA0100'
+                   : ALGD0200
+                   : 'ALGD0200'
+                   : KEYD0200
+                   : 'KEYD0200'
+                   : CSP_SFW
+                   : *Blanks
+                   : EncDtaStr
+                   : %Size( EncDtaStr )
+                   : EncRtnLen
+                   : ERRC0100
+                   );
+        // FIXED, ERRC0100 checked for errors
+        If  ERRC0100.BytAvl > *Zero;
+          Return  NULL;
+        EndIf;
+        // return type (last param) is not checked for errors
+        Return  %Subst( EncDtaStr: 1: EncRtnLen );
+      /END-FREE]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/252.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:252,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.ConnectionStringParameterPollution" message="ConnectionStringParameterPollution: Connection string polluted with untrusted input" class="com.optimyth.rpg4.rules.security.ConnectionStringParameterPollution" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.7,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When the connection string for an application resource (like database, remote server, persistence entity manager...) could
+be affected by an untrusted source, not properly neutralized, the application is vulnerable to a Connection String Parameter Pollution attack.
+
+An attack targeted at this vulnerability may use special characters (like ';' or ':') to add unexpected parts to the connection string,
+for example to gain extra privileges, or to deactivate security features.
+
+"Untrusted input" means, in this context, a user-controlled application input, an environment variable, or data fetched
+from an external web source.
+
+It should be suspicious that a connection string depends on untrusted input. Normally the application configuration uses
+a fixed connection string, but other attacks, depending on where the connection string is stored (like an SQL injection or
+path traversal attack) may affect the configuration item. This rule only checks for connection strings that are constructed
+programmatically with untrusted input.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[      /copy JDBC_H
+     D CONN_DRIVER     s             50a
+     D conn            s                   like(Connection)
+     D* CONN_DRIVER is external parameter, considered untrusted input
+      /free
+        DCL-PROC Connect;
+          DCL-PI *N EXTPGM;
+            conn like(Connection);
+            CONN_DRIVER CHAR(10);
+          END-PI;
+
+         conn = JDBC_Connect(CONN_DRIVER // VIOLATION
+                   :'jdbc:mysql://localhost/maBase'
+                   :%trim(param1):%trim(param2) );
+        END-PROC;
+      /end-free]]></example>
+    <repair><![CDATA[// Validate (white-list approach) the untrusted input combined into the connection string.]]></repair>
+    <reference><![CDATA[https://www.blackhat.com/presentations/bh-dc-10/Alonso_Chema/Blackhat-DC-2010-Alonso-Connection-String-Parameter-Pollution-wp.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:15,OWASP:2021:A5,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.CrossSiteScripting" message="CrossSiteScripting: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')" class="com.optimyth.rpg4.rules.security.CrossSiteScripting" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,essential]]></tags>
+    <description><![CDATA[Software places user-controlled input in page content. An attacker could inject browser script code that is executed
+in the client browser. The end-user is the attacked subject, and the software is the vehicle for the attack.
+There are two main kinds of XSS:
+
+* Reflected XSS: Attacker causes victim to supply malicious content to a vulnerable web application, which
+  renders HTML content embedding a malicious script executed in victim's browser. A variation of this is named
+  DOM-based XSS, where the vulnerable software does not generate content depending on user input but include
+  script code that use user-controlled input.
+
+* Persisted XSS: Attacker provides malicious content to vulnerable application. When other user access to
+  vulnerable pages that embed without proper neutralization the attacker content, script code is executed in the
+  victim's browser.
+
+The script executed in the victim's browser could perform malicious activities.
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but user browsers
+generally allow scripting languages (e.g. JavaScript) in their browsers (disabling JavaScript severely limits
+a web site).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[ * Generates HTML content using CGIDEV2 library
+ /copy CGIDEV2/qrpglesrc,prototypeb
+ /copy CGIDEV2/qrpglesrc,usec
+
+ * Saved query string
+Dsavedquerystring...
+D                 s          32767    varying
+ * Client input variables
+D custname        s             40
+
+ /free
+   zhbGetInput(savedquerystring : qusec);
+   custname = zhbGetVar('custname'); // user-controlled data
+   updHtmlVar('CUSTOMER' : custname : '0'); // VIOLATION
+   wrtSection('TOP');
+ /end-free]]></example>
+    <repair><![CDATA[ * Generates HTML content using CGIDEV2 library
+ /copy CGIDEV2/qrpglesrc,prototypeb
+ /copy CGIDEV2/qrpglesrc,usec
+
+ * Saved query string
+Dsavedquerystring...
+D                 s          32767    varying
+ * Client input variables
+D custname        s             40
+
+ /free
+   zhbGetInput(savedquerystring : qusec);
+   custname = zhbGetVar('custname'); // user-controlled data
+   custname = encode2(custname); // FIXED, encode HTML metacharacters
+   updHtmlVar('CUSTOMER' : custname : '0');
+   wrtSection('TOP');
+ /end-free]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/79.html,https://www.google.es/about/appsecurity/learning/xss/,https://www.owasp.org/index.php/XSS_(Cross_Site_Scripting)_Prevention_Cheat_Sheet]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.7,WASC:08]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input)" value="user_input, database_input, file_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.FormatStringInjection" message="FormatStringInjection: Exclude unsanitized user input from format strings" class="com.optimyth.rpg4.rules.security.FormatStringInjection" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.4.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Formatting functions that format a sequence of values according to a format string wich is
+constructed with untrusted input may produce unexpected application behaviour if an attacker achieves to gain control
+over it.
+
+Consequently, unsanitized input from untrusted source should never be incorporated into format strings.
+
+Note: The risks here are much lower that the equivalent vulnerability in C/C++ and the %n format modifier, anyway.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid denial of service.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[      ***********************************************************
+      * Joblog() - Write to the joblog.
+      ***********************************************************
+     P Joblog          B                   Export
+      *
+     D Joblog          PI
+     D  szInputStg                     *   value options(*string)
+     D  szInputParm01                  *   value options(*string:*nopass)
+
+      /free
+
+       Qp0zLprintf(szInputStg:'a');  // VIOLATION
+
+       return;
+
+      /end-free
+
+     P Joblog          E]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/134.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:134,CWETOP25:2011:23,OWASP:2004:A5,PCI-DSS:6.5.1,WASC:10]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input, hardcoded_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.HardcodedCredential" message="HardcodedCredential: Use of Hard-coded Credentials" class="com.optimyth.rpg4.rules.security.HardcodedCredential" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.4,ASVS-v4.0.2:3.5.2,ASVS-v4.0.2:6.4.1,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,credentials,essential]]></tags>
+    <description><![CDATA[Hardcoded credentials (username / password) are visible to any person reading the source code.
+If the resource protected by such hardcoded credentials is important, this may compromise system security.
+
+With hardcoded credentials, change is difficult. If the target account is compromised, and the software
+is deployed in production, a code change is needed, which forces a redeployment.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credential leakage.
+If an account is compromised, changing credentials in an external repository does not need changes in code plus software deployment.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[      **********************************************************************
+      *    HARCODED CREDENTIAL TESTSAMPLE                                  *
+      **********************************************************************
+     H DATEDIT(*YMD) DATFMT(*ISO)
+      **********************************************************************
+     FGSFM223   UF A E           K DISK
+     FGSFM11    IF   E           K DISK
+     FPFFM117   IF   E           K DISK
+     FGSD867    CF   E             WORKSTN
+     F                                     SFILE(FMTD:NRR)
+      *--------------------------------------------------------------*
+      * Definición de la tabla de errores y variables                *
+      *--------------------------------------------------------------*
+     D FECHASYS        S               D   DATFMT(*EUR)
+     C* VIOLATION
+     D password        S             6     inz('ABD123')]]></example>
+    <repair><![CDATA[// Don't hardcode credentials]]></repair>
+    <reference><![CDATA[https://www.kiuwan.com/docs/display/K5/Avoid+hard-coded+or+in-comment+passwords+in+code,http://cwe.mitre.org/data/definitions/798.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:798,CWETOP25:2021:16,OWASP:2021:A7,PCI-DSS:6.5.3,WASC:01]]></security>
+    </normatives>
+    <properties>
+      <property name="passwordPattern" descname="Regular expression for matching field names containing passwords." value=""/>
+      <property name="usernamePattern" descname="Regular expression for matching field names containing user ids." value=".*(user|username).*|(^|.*_)id(_.*|$)"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.HardcodedCryptoKey" message="HardcodedCryptoKey: Use of Hard-coded Cryptographic Key" class="com.optimyth.rpg4.rules.security.HardcodedCryptoKey" technology="RPG4" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,crypto,essential]]></tags>
+    <description><![CDATA[Never hard-code cryptographic keys (or passwords used to generate them) in your program.
+
+Crypto keys are used for encryption/decryption, for generation of message authentication codes (MAC), during generation
+of password-based encryption keys (the password is the "crypto key" that generates key material for the cipher), and other usages.
+Source code is the worst place for key storage, as any change in keys needs recompilation, and it is easy to reverse-engineer
+an application binary to learn any keys or secrets that may be embedded in it.
+
+Instead, store crypto keys in some private location. For non-critical web applications, a file with proper permissions,
+out of the resources served by the web application, could be enough for storing cryptographic keys.
+A crypto key should not be stored in configuration files, in general.
+
+Some data used in cryptographic operations (like initial vector for block ciphers, salt for password hashes, etc.)
+are not "private", and it is recommended to generate a good random instance at the origin, and add it to the message
+in plaintext, so the destination may use it. The security depends on properly protecting the "secret" thing
+(private key in a public/private keypair, encryption key in a symmetric cipher, key in an HMAC, etc.).
+
+Long-term cryptographic keys (in contrast with ephemeral ones), are better stored in a safe key storage.
+Private keys in a public/private keypair should NEVER be unprotected (in raw form) and they should be stored in an even
+safer key storage (the impact for a compromise of a private key is typically huge and brutal). For highly sensitive keys,
+a hardware security module, where the key is generated by the hardware and the private/symmetric key never leaves the
+hardware is a good alternative.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[ *******************************************************************
+ * Data definitions
+ *******************************************************************
+ * ALGD0200 algorithm description structure
+DQC3D0200         DS
+D QC3BCA                  1      4B 0
+D QC3BL                   5      8B 0
+D QC3MODE                 9      9
+D QC3PO                  10     10
+D QC3PC                  11     11
+D QC3ERVED               12     12
+D QC3MACL                13     16B 0
+D QC3EKS                 17     20B 0
+D QC3IV                  21     52
+
+ * KEYD0200 key description format structure
+DQC3D020000       DS
+D QC3KT                          4B 0
+D QC3KSL                         4B 0
+D QC3KF                          1A
+D QC3ERVED02                     3A             inz(x'000000')
+D QC3KS                        256A
+
+D clrDta          S            100a
+D clrDtaLen       S             10I 0
+D clrDtaFmt       S              8    inz('DATA0100')
+D algorithm       S                   like(QC3D0200)
+D algorithmFmt    S              8    inz('ALGD0200')
+D keyFmt          S              8    inz('KEYD0200')
+D srvProvider     S              1    inz('1')
+D deviceName      S             10    inz(*blanks)
+D encryptedData   S            100a
+D encryptedBufL   S             10I 0
+D encryptedRtnL   S             10I 0
+
+ * Hardcoded key, never do this.
+D KeyString       S             24    inz('012345670123456701234567')
+
+ *Encrypt Data (OPM, QC3ENCDT; ILE, Qc3EncryptData)
+D Qc3EncryptData  Pr                  ExtPgm('QC3ENCDT')
+D clrDta                       100a
+D clrDtaLen                     10I 0
+D clrDtaFmt                      8
+D algorithm                           like(QC3D0200)
+D algorithmFmt                   8
+D key                                 like(QC3D020000)
+D keyFmt                         8
+D srvProvider                    1
+D deviceName                    10
+D encryptedData                100a
+D encryptedBufL                 10I 0
+D encryptedRtnL                 10I 0
+D errcde                              like(APIERR)
+
+C* Block cipher algorithm - 20 DES, 21 Triple DES, 22 AES
+C                   Eval      QC3BCA = 21
+ * Block length: 8 (DES, 3DES), 16 (AES)
+C                   Eval      QC3BL  = 8
+ * Mode: 0 ECB, 1 CBC, 2 OFB, 3 CFB 1-bit, 4 CFB 8-bit, 5 CFB 64-bit
+C                   Eval      QC3MODE = '1'
+ * Pad Option - pad counter as pad char
+C                   Eval      QC3PO   = '2'
+ * Initialization vector (don't do this)
+C                   Eval      QC3IV = *AllX'00'
+C                   Eval      algorithm = QC3D0200
+ * Key type. 20 DES, 21 Triple DES, 22 AES, 30 RC4, 50 RSA public, 51 RSA private
+C                   Eval      QC3KT = 21
+ * Key Format: binary ("raw") key
+C                   Eval      QC3KF = '0'
+ * Set Key and Key Length
+C                   Eval      QC3KS = KeyString
+C                   Eval      QC3KSL = %size(KeyString)
+ * Encrypt
+C                   Eval      clrDta = pClrDta
+C                   Eval      clrDtaLen = %len(%trim(clrDta))
+C                   Eval      EncryptedData = *blanks
+C                   Eval      encryptedBufL = %size(encryptedData)
+ * VIOLATION - hardcoded key
+C                   callP     Qc3EncryptData(
+C                                clrDta : clrDtaLen : clrDtaFmt :
+C                                algorithm : algorithmFmt :
+C                                QC3D020000 : keyFmt :
+C                                srvProvider : deviceName :
+C                                encryptedData :
+C                                encryptedBufL : encryptedRtnL :
+C                                APIERR
+C                             )]]></example>
+    <repair><![CDATA[ * NEVER hard-code a cryptographic key.
+ * Use a key context with non-raw key, or reference a key stored in a key/certificate store.
+ * If you do need to use a session raw key, generate it with a cryptographically-robust random number generator.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/321.html,https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_74/apis/qc3KeyStore.htm]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:321,OWASP-M:2016:M5,OWASP:2021:A2,PCI-DSS:6.3.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.HardcodedIp" message="HardcodedIp: Do not write IP address in source code" class="com.optimyth.rpg4.rules.security.HardcodedIp" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality,infoleak]]></tags>
+    <description><![CDATA[Hardcoding an IP address can create a potential security breach if it is discovered by a malicious attacker who
+successfully access the code.
+
+Also maintainability and portability is deteriorated because the IP address must be directly modified into the code.
+
+The customizable parameter ipPattern contains the pattern used to identify the hardcoded IP.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid potential security breaches.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[      **********************************************************************
+      *    HARCODED IP TESTSAMPLE                                  *
+      **********************************************************************
+     **-- Control specification:  --------------------------------------------**
+     H Option( *SrcStmt )
+
+     **-- Global variables:
+     D ErrHdrLen       s             10i 0 Inz( 16 )
+     D ErrMsgF         s             10a   Inz( 'QCPFMSG' )
+     C* VIOLATION
+     D  char_addr      s               *   Inz( '192.168.66.21' )]]></example>
+    <repair><![CDATA[      * Avoid hardcoding IP addresses]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/200.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:200,CWETOP25:2021:20]]></security>
+    </normatives>
+    <properties>
+      <property name="ipPattern" descname="Pattern used to recognize harcoded IP addresses." value="(.*(^|\s|\\|//)(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\s|:|$).*|^(\p{XDigit}{1,4}(?:\:\p{XDigit}{1,4}){3,7}))"/>
+      <property name="strictMode" descname="When enabled only fully matched strings will be reported." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.InsecureRandomness" message="InsecureRandomness: Standard pseudo-random number generators cannot withstand cryptographic attacks" class="com.optimyth.rpg4.rules.security.InsecureRandomness" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.3.1,ASVS-v4.0.2:2.6.2,ASVS-v4.0.2:2.9.2,ASVS-v4.0.2:6.3.1,ASVS-v4.0.2:6.3.2,ASVS-v4.0.2:6.3.3,CWEScope:Access-Control,CWEScope:Confidentiality,crypto,prng]]></tags>
+    <description><![CDATA[Insecure randomness errors occur when a function that can produce predictable values is used as a source of randomness
+in a security-sensitive context: security tokens (like anti-CSRF or password-reset tokens), values used in cryptographic
+operations (session key material, initialization vector in block or stream ciphers), or password seeds.
+
+Computers are deterministic machines, and as such are unable to produce true randomness. Pseudo-Random Number Generators
+(PRNGs) approximate randomness algorithmically, starting with a seed from which subsequent values are calculated.
+
+There are two types of PRNGs: statistical and cryptographic. Statistical PRNGs provide useful statistical properties,
+but their output is highly predictable and forms an easy to reproduce numeric stream that is unsuitable for use
+in cases where security depends on generated values being unpredictable.
+
+Cryptographic PRNGs address this problem by generating output that is more difficult to predict. For a value to be
+cryptographically secure, it must be impossible or highly improbable for an attacker to distinguish between it
+and a truly random value.
+
+In general, if a PRNG algorithm is not advertised as being cryptographically secure, then it is probably a
+statistical PRNG and should not be used in security-sensitive contexts, where its use can lead to serious vulnerabilities
+such as easy-to-guess temporary passwords, predictable cryptographic keys, or session hijacking, among others.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[     H NoMain
+     P*------------------------------------------------------------------------
+     P* Gen_Rnd_Passwd : generate a random password
+     P*------------------------------------------------------------------------
+     P Gen_Rnd_Passwd    B                   Export
+     P*
+     D Gen_Rnd_Passwd    Pi            10i 0
+     D  e_IntMax                     10i 0 Value
+
+     D*--------
+
+     D*  Prototype for IBM C procedures
+     Drand             Pr            10I 0 ExtProc('rand')
+     D
+     Dsrand            Pr                  ExtProc('srand')
+     D                               10I 0  Value
+     D
+     C*
+     /Free
+        Return    %rem(rand(): e_IntMax) + 1; // VIOLATION
+     /End-free
+     P Get_RandInt     E]]></example>
+    <repair><![CDATA[     H dftactgrp(*no)
+     FRANDOM_F  O    E             DISK
+
+     D CEERAN0         PR
+     D                               10I 0
+     D                                8F
+     D                               12A   options(*omit)
+
+     D LowNbr          S                   like(KEY)
+     D HighNbr         S                   like(KEY)
+     D Range           S                   like(KEY)
+     D i               S             10U 0
+     D RandomNbr       S              8F
+     D Seed            S             10I 0
+     /free
+        HighNbr = 1000000 ;
+        LowNbr = 0 ;
+        Range = (HighNbr - LowNbr) + 1 ;
+
+        for i = 1 to 1000000 ;
+           CEERAN0(Seed:RandomNbr:*omit) ;
+           KEY = %int(RandomNbr * Range) ;
+           write RANDOM_FR ;
+        endfor;
+
+        *inlr = *on ;
+     /End-free]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/338.html,https://cwe.mitre.org/data/definitions/330.html/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:330,CWE:338,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="checkSecurityContext" descname="When this property is enabled only the usages under a security context will be reported. Else every usage will be reported." value="true"/>
+      <property name="pattern" descname="Regular expression for sensitive methods where non secure PRNG generation is not allowed" value="password|passwd|session|user|key|csrf|token|hash|digest|uuid|guid"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.InsufficientKeySize" message="InsufficientKeySize: Weak cryptography, insufficient key length" class="com.optimyth.rpg4.rules.security.InsufficientKeySize" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.6.1,ASVS-v4.0.2:1.6.2,ASVS-v4.0.2:1.6.3,ASVS-v4.0.2:1.6.4,ASVS-v4.0.2:2.6.3,ASVS-v4.0.2:2.7.6,ASVS-v4.0.2:2.8.2,ASVS-v4.0.2:2.8.3,ASVS-v4.0.2:2.9.1,ASVS-v4.0.2:6.2.1,ASVS-v4.0.2:6.2.3,ASVS-v4.0.2:6.2.4,ASVS-v4.0.2:6.2.5,ASVS-v4.0.2:6.2.6,ASVS-v4.0.2:6.2.7,ASVS-v4.0.2:6.4.2,ASVS-v4.0.2:9.1.2,ASVS-v4.0.2:9.1.3,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[A robust cryptographic algorithm (like RSA or AES) with a small key length could be vulnerable to brute-force type attacks.
+
+For symmetric ciphers, AES-CBC (FIPS 197) is the most often recommended algorithm nowadays, with a block size of at least
+64 bits (128 bits for the better). Recommended minimum key length for AES is 128 bits for most usages, but for long-range
+security, 192 bits or even 256 bits are often recommended.
+
+DES and DESede (or "triple-DES") are, nowadays, not robust enough for most applications. Many algorithms used in the past,
+like Blowfish or RC2, are now deemed insecure.
+
+For asymetric cryptography ("public key"), the algorithm most often used is RSA. Most experts consider 2048 as the
+most adequate key length for common needs, as its usage in digital signature and other applications demand cryptographic
+robustness for a long period of time. Experts now consider 1024 bits for RSA keys (modulus) not enough secure.
+
+Algoritms based on elliptic curves cryptography (like EC-DSA) typically require smaller key sizes, around 200 bits.
+
+See http://www.keylength.com for an interactive site showing current recommendations in cryptographic algorithms,
+key length and other issues to take into account.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[ *ALGD0200 algorithm description structure
+DQC3D0200         DS
+D QC3BCA                  1      4B 0
+D QC3BL                   5      8B 0
+D QC3MODE                 9      9
+D QC3PO                  10     10
+D QC3PC                  11     11
+D QC3ERVED               12     12
+D QC3MACL                13     16B 0
+D QC3EKS                 17     20B 0
+D QC3IV                  21     52
+
+ * DATA0200 array data format structure
+DQC3A0200         DS
+D QC3DP                   1     16*
+D QC3DL                  17     20B 0
+D QC3ERVED01             21     32
+
+ *KEYD0200 key description format structure
+DQC3D020000       DS
+D QC3KT                   1      4B 0
+D QC3KSL                  5      8B 0
+D QC3KF                   9      9
+D QC3ERVED02             10     12             inz(x'000000')
+
+ * API error structure
+D APIERR          DS
+D  ERRPRV                       10I 0 INZ(272)
+D  ERRLEN                       10I 0
+D  EXCPID                        7A
+D  RSRVD2                        1A
+D  EXCPDT                      256A
+
+D clrDta          S            100a
+D clrDtaLen       S             10I 0
+D clrDtaFmt       S              8    inz('DATA0100')
+D algorithm       S                   like(QC3D0200)
+D algorithmFmt    S              8    inz('ALGD0200')
+D key             S                   like(KeyC)
+D keyFmt          S              8    inz('KEYD0200')
+D srvProvider     S              1    inz('1')
+D deviceName      S             10    inz(*blanks)
+D encryptedData   S            100a
+D encryptedBufL   S             10I 0
+D encryptedRtnL   S             10I 0
+
+ * Hardcoded key, never do this. For illustration purposes only.
+D KeyString       S              8    inz('01234567')
+D KeyC            S            256
+
+ *Encrypt Data (OPM, QC3ENCDT; ILE, Qc3EncryptData)
+D Qc3EncryptData  Pr                  ExtPgm('QC3ENCDT')
+D clrDta                       100a
+D clrDtaLen                     10I 0
+D clrDtaFmt                      8
+D algorithm                           like(QC3D0200)
+D algorithmFmt                   8
+D key                                 like(KeyC)
+D keyFmt                         8
+D srvProvider                    1
+D deviceName                    10
+D encryptedData                100a
+D encryptedBufL                 10I 0
+D encryptedRtnL                 10I 0
+D errcde                              like(APIERR)
+
+C* Block cipher algorithm
+ * 20 DES, 21 Triple DES, 22 AES
+C                   Eval      QC3BCA = 21
+ * Block length: 8 (DES, 3DES), 16 (AES)
+C                   Eval      QC3BL  = 8
+ * Mode: 0 ECB, 1 CBC, 2 OFB, 3 CFB 1-bit, 4 CFB 8-bit, 5 CFB 64-bit
+C                   Eval      QC3MODE = '1'
+ * Pad Option: 2 The pad counter is used as the pad character.
+C                   Eval      QC3PO   = '2'
+ * Initialization vector (don't do this)
+C                   Eval      QC3IV = *AllX'00'
+C                   Eval      algorithm = QC3D0200
+ * Key type. 20 DES, 21 Triple DES, 22 AES, 30 RC4, 50 RSA public, 51 RSA private
+C                   Eval      QC3KT = 21
+ * Key Format: binary ("hardcoded") key
+C                   Eval      QC3KF = '0'
+ * Key Length
+C                   Eval      QC3KSL = %size(KeyString)
+C                   Eval      KeyC = QC3D020000 + KeyString
+C                   Eval      Key  = KeyC
+
+ * Encrypt
+C                   Eval      clrDta = pClrDta
+C                   Eval      clrDtaLen = %len(%trim(clrDta))
+C                   Eval      EncryptedData = *blanks
+C                   Eval      encryptedBufL = %size(encryptedData)
+ * VIOLATION - Triple-DES key has only 56 bits of effective length
+C                   callP     Qc3EncryptData(
+C                                clrDta : clrDtaLen : clrDtaFmt :
+C                                algorithm : algorithmFmt :
+C                                key : keyFmt :
+C                                srvProvider : deviceName :
+C                                encryptedData :
+C                                encryptedBufL : encryptedRtnL :
+C                                APIERR
+C                             )]]></example>
+    <repair><![CDATA[ * ... same code before ...
+
+ * Hardcoded key, never do this. For illustration purposes only.
+ * FIXED: Triple-DES key with 168 bits of effective length
+D KeyString       S             24    inz('012345670123456701234567')
+
+ * ... same code after ...]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/320.html,http://cwe.mitre.org/data/definitions/310.html,http://cwe.mitre.org/data/definitions/326.html,http://www.keylength.com/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:310,CWE:320,CWE:326,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="minKeySize" descname="Comma-separated list of minimum key size per algorithm" value="AES/128, TRIPLE_DES/112, RSA/2048, RC6/128"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.LdapInjection" message="LdapInjection: Avoid non-neutralized user-controlled input in LDAP search filters." class="com.optimyth.rpg4.rules.security.LdapInjection" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.7,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[constructs all or part of an LDAP query or search filter using externally-influenced input, but it does not neutralize
+ or incorrectly neutralizes special elements that could modify the intended LDAP query when sent to LDAP server.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[     F* Externally described DSPF for user input.
+     FINP       CF   E             WORKSTN
+     F*
+
+     d ldap_init       pr              *   extproc('ldap_init')
+     d   host                          *   value options(*string)
+     d   port                        10I 0 value
+
+     d ldap_search_s   pr            10i 0 extproc('ldap_search_s')
+     d   ld                            *   value
+     d   base                          *   value options(*string)
+     d   scope                       10I 0 value
+     d   filter                        *   value options(*string)
+     d   attrs                         *   value
+     d   attrsonly                   10I 0 value
+
+     d hLDAP           s               *
+     d res                             *
+     d basedn          c                   'o=My Company'
+     d filter          s             50    varying
+     d rc              s             10i 0
+     d hResult         s               *
+
+      /free
+        exfmt MyRec; // read input data (DEPTID is input field)
+
+        hLDAP = ldap_init('MYLDAPHOST': 389);
+        filter = '(cn=' + DEPTID + ')';
+        rc = ldap_search_s( // VIOLATION - LDAP injection
+          hLDAP : basedn: 2 : filter: %add(attributes): 0 : hRes
+        );
+      /end-free]]></example>
+    <repair><![CDATA[ * IBM does not provide any escape procedure for LDAP search filters
+ * In ldap search filters, chars '*', '(', ')', '\', and 0 (NULL)
+ * should be replaced by their \xx escape sequence
+ * For dn, escape ',','=', '+', '<','>',';', '\', '"', '#'.
+ * See RFC2254 for full details.
+
+P ldap_escape     b                   export
+D ldap_escape     pi         32767    varying
+D   input                    32767    const options(*varsize) varying
+
+D toEscape        c                   const('"&*()' + X'00')
+D res             s          32767    varying
+D i               s             10i 0
+D c               s              1
+
+  /free
+    for i=1 to %len(input);
+      c = %subst(input:i:1);
+      if %scan(c:toEscape) > 0;
+        select;
+          when c = X'00';
+            res = res + '\00';
+          when c = '"';
+            res = res + '\34';
+          when c = '&';
+            res = res + '\38';
+          when c = '*';
+            res = res + '\34';
+          when c = '(';
+            res = res + '\40';
+          when c = ')';
+            res = res + '\41';
+        endsl;
+      else;
+        res = res + c;
+      endif;
+    endfor;
+
+    return res;
+  /end-free
+P ldap_escape     e]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/90.html,https://owasp.org/www-project-cheat-sheets/cheatsheets/LDAP_Injection_Prevention_Cheat_Sheet.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:90,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:29]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.LogForging" message="LogForging: Improper Output Neutralization for Logs" class="com.optimyth.rpg4.rules.security.LogForging" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:7.3.1,ASVS-v4.0.2:7.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[When the application writes untrusted input to a log destination (using any RPG logging function),
+a "log forging" attack could be launched to inject false log entries, corrupt log entries,
+or even exploit a vulnerability in an external log viewer application.
+
+Corrupted log entries could hinder detection for malicious activity, or implicate another party
+in the commission of a malicious act.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[      ***********************************************************
+      * Joblog() - Write to the joblog.
+      ***********************************************************
+     P Joblog          B                   Export
+      *
+     D Joblog          PI
+     D  szInputStg                     *   value options(*string)
+     D  szInputParm01                  *   value options(*string:*nopass)
+
+      /free
+
+       Qp0zLprintf(szInputStg:szInputParm01);  // VIOLATION
+
+       return;
+
+      /end-free
+
+     P Joblog          E]]></example>
+    <repair><![CDATA[// Neutralize message with untrusted input, before passing to logging API]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/117.html,https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:117,OWASP:2021:A9,PCI-DSS:10.5.2,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.NoActiveDebugRule" message="NoActiveDebugRule: Information Exposure Through Debug Information" class="com.optimyth.rpg4.rules.security.NoActiveDebugRule" technology="RPG4" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[The application contains debugging code that can expose sensitive information to untrusted parties.
+
+This check detects programs that have debugging active and contain dump operations,
+that should not be deployed in production environments.
+
+Emits a violation when debug is active in a RPG program: DEBUG(*YES) keyword in program header, plus DUMP operations.
+If DUMP(A) operation extender is used, the DUMP is done unconditionally, and a violation is emitted irrespective of DEBUG keywords.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid sensitive information leakage, including system details that could be leveraged for further attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/489.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:215,OWASP:2021:A5]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.OSCommandInjection" message="OSCommandInjection: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')" class="com.optimyth.rpg4.rules.security.OSCommandInjection" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.5,ASVS-v4.0.2:5.3.8,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[This check looks for usages of OS command execution API (QCMDEXC, QCAPCMD, native System calls...) where
+the command and parameters passed could be affected by external inputs.
+
+An external command cannot contain external input concatenated, like in QACMDEXC DISPLB + argument, with
+argument depending on input variable(s).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid execution of unintended OS commands in RPG programs.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[     F* Externally described DSPF under user control.
+     FINTERPDSPFCF   E             WORKSTN USROPN                                 
+     F*                                                                           
+     D* Standalone field specifying the length of the command passed to QCMDEXC
+     DCOMMANDLEN       S             15P 5 INZ(80)                                
+     D*                                                                           
+     C                   OPEN      INTERPDSPF                                     
+     C*                                                                           
+     C* Do until the user presses <F3>                                            
+     C                   DOU       *IN93 = *ON                                    
+     C*                                                                           
+     C* Prompt user for a CL command and read response                              
+     C                   EXFMT     COMMANDREC                                       
+     C*                                                                             
+     C* VIOLATION: Execute an OS command, potentially controlled by end-user
+     C                   CALL      'QCMDEXC'                                        
+     C                   PARM                    COMMANDFLD                         
+     C                   PARM                    COMMANDLEN                         
+     C*                                                                             
+     C* Clear the DSPF record (clears out the last command the user keyed in)       
+     C                   CLEAR                   COMMANDREC                         
+     C*                                                                             
+     C* Exit loop if user pressed <F3>                                              
+     C                   ENDDO                                                      
+     C*                                                                             
+     C                   CLOSE     INTERPDSPF             
+     C*                          
+     C                   EVAL      *INLR = *ON]]></example>
+    <repair><![CDATA[     C* ... same as before ...
+     C* FIX: The COMMANDFLD is checked to contain certain characters
+     C                   IF        %CHECK(LEGALCHARS : COMMANDFLD) > 0
+     C     *MUSR0001     DSPLY     *EXT
+     C                   ELSE
+     C* Execute the command the user entered
+     C                   CALL      'QCMDEXC'
+     C                   PARM                    COMMANDFLD
+     C                   PARM                    COMMANDLEN
+     C*
+     C* Clear the DSPF record (clears out the last command the user keyed in)
+     C                   CLEAR                   COMMANDREC
+     C                   ENDIF
+     C* ... same as before ...]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/78.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:77,CWE:78,CWETOP25:2021:5,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:31]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.PasswordInComment" message="PasswordInComment: Avoid placing passwords and other sensitive info in code comments" class="com.optimyth.rpg4.rules.security.PasswordInComment" technology="RPG4" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,infoleak]]></tags>
+    <description><![CDATA[Passwords in code comments may provide unintended access to sensitive credentials to staff with access to the source code.
+This rule simply looks for specific keywords in code comments, that could be customized in the 'pattern' property.]]></description>
+    <priority>5</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Better credentials management]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[     C                   KFLD                    TIPTRA
+     C                   KFLD                    ZLINEA
+      *--------------------------------------------------------------*
+      * IN PARAMETERS:                                               *
+      * VIOLATION                                                    *
+      * ---> PASSWD : xrj785dfjkw                                    *
+      *--------------------------------------------------------------*
+     C     *ENTRY        PLIST
+     C                   PARM                    XPASSW           10]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/615.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:615,OWASP:2021:A7,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="pattern" descname="Pattern to use. If blank, the default pattern is used." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.PathManipulation" message="PathManipulation: External Control of File Name or Path" class="com.optimyth.rpg4.rules.security.PathManipulation" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.1,ASVS-v4.0.2:12.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Path manipulation flaws occur when an attacker can specify a path used in an operation on the filesystem.
+When the application uses the resource specified by that path, the attacker gains a capability that would not otherwise
+be permitted. For example, the program may give the attacker the ability to overwrite an unintended file or use
+a configuration file controlled by the attacker.
+
+RPG file processing typically use fixed filenames, typically using a "library" filesystem. But with the EXTFILE keyword,
+a variable filename could be passed, which the programmer may construct programmatically before a file OPEN operation.
+Under such mode of operation, if the file path could be influenced by untrusted input, a path manipulation attack is possible.
+
+Sometimes file processing under different file systems (like IFS, Integrated File System, under iSeries) need calls to API procedures,
+like _C_IFS_open() or open(), that receive a file path as argument. When that argument may be influenced by untrusted input,
+an attacker may launch a path manipulation attack to force the file operation on an unintended file, or read from a file
+controlled by the attacker.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[     F*ilename++IPEASFRlen+LKlen+AIDevice+.Keywords+++++++++++++++++++++++++++++
+     Ffile      IF   F   10        DISK    EXTFILE(filepath) USROPN
+      ** API call to open a stream file
+     D open            PR            10I 0 EXTPROC('open')
+     D   path                          *   VALUE OPTIONS(*STRING)
+     D   oflag                       10I 0 VALUE
+     D   mode                        10U 0 VALUE OPTIONS(*NOPASS)
+     D   codepage                    10U 0 VALUE OPTIONS(*NOPASS)
+
+     D filepath        S             21A
+     D fd              S             10I 0
+     D data            S             12A
+     D msg             S             52A
+
+     D writefile       PR                  EXTPGM('WRITEFILE')
+     D   filename                    15A
+
+     D* filename is external parameter, considered untrusted input
+     D writefile       PI
+     D   filename                    15A
+
+     C                   EVAL      filepath = 'MYLIB/' + filename
+     C* VIOLATION, RPG OPEN with dynamic filename affected by external input
+                         OPEN      file
+     C* VIOLATION, path manipulation using IFS
+     C                   EVAL      fd = open('/mydir/'+filename: 74 : 436)]]></example>
+    <repair><![CDATA[     D allowed         C                   'abcdefghijklmnopqrstuvwxyz-
+     D                                      ABCDEFGHIJKLMNOPQRSTUVWXYZ-
+     D                                      0123456789'
+     C* FIXED, input validation, only filename with proper chars allowed
+     C                   EVAL      filename = %trim(filename)
+     C                   IF        %check(valid : filename) = 0
+     C                   EVAL      fd = open('/mydir/'+filename: 74 : 436)
+     C*                  ....
+     C                   ELSE
+     C     errmsg        DSPLY
+     C                   ENDIF]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/22.html,https://cwe.mitre.org/data/definitions/73.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:22,CWE:73,CWETOP25:2021:8,OWASP:2021:A4,OWASP:2021:A5,PCI-DSS:6.5.8,WASC:33]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.PositionBeforeReadFile" message="PositionBeforeReadFile: Every READE command must be preceeded by SETLL" class="com.optimyth.rpg4.rules.security.PositionBeforeReadFile" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[For searching records in indexed files, SETLL + READE must be used in combination instead of READE alone.
+
+NOTE: As an alternative for files with unique keys, CHAIN is typically used. For files with no unique keys,
+SETLL positions file at next record with key greater or equal tnan the search argument (and %FOUND tells if a record exists).
+Then READE is typically placed in a DOW loop until %EOF, to retrieve all matching records.
+
+If SETLL does not preceed READE, a potential unintended record may leak if the check is not correct. With SETLL it is
+ensured that READE on same keys will produce an %EOF condition and no record will be returned.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid leaking unintended file records.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[The following pseudo-code violates the check:
+
+// VIOLATION, no preceding SETLL
+ReadE (KeyFields) FileName;
+DoW Not %EOF(FIleName);
+  ... process record ...
+  ReadE (KeyFields) FileName;
+EndDo;]]></example>
+    <repair><![CDATA[The following pseudo-code is conformant:
+
+SetLL (KeyFields) FileName;
+ReadE (KeyFields) FileName;
+DoW Not %EOF(FIleName);
+  ... process record ...
+  ReadE (KeyFields) FileName;
+EndDo;]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/200.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:200,CWETOP25:2021:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.PrivacyViolation" message="PrivacyViolation: Exposure of Private Information" class="com.optimyth.rpg4.rules.security.PrivacyViolation" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,privacy]]></tags>
+    <description><![CDATA[Software does not properly prevent private data from being accessed by actors who either (1) are not explicitly authorized
+to access the data or (2) do not have the implicit consent of the people to which the data is related.
+
+Privacy violations may occur when private user data are stored in an external location (console, logs, remote network services),
+or are displayed without access control to third parties.
+
+Private data includes identifiers like passport number or government ID, contact information, geoposition, employment history,
+health data, personal finantial data, personal images/audio/video, personal communications, behavioural data, etc.
+Credentials, like passwords, that could be used to access private information, also belong to this category.
+
+User private information should not be exposed. Depending on its location, an organization may be required to comply
+with state regulations related to private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[      **********************************************************************
+      *    HARCODED CREDENTIAL TESTSAMPLE                                  *
+      **********************************************************************
+     H DATEDIT(*YMD) DATFMT(*ISO)
+      **********************************************************************
+     FGSFM223   UF A E           K DISK
+     FGSFM11    IF   E           K DISK
+     FPFFM117   IF   E           K DISK
+     FGSD867    CF   E             WORKSTN
+     F                                     SFILE(FMTD:NRR)
+      *--------------------------------------------------------------*
+      * Definición de la tabla de errores y variables                *
+      *--------------------------------------------------------------*
+     D FECHASYS        S               D   DATFMT(*EUR)
+     D password        S             6     inz('ABD123')
+
+      ***********************************************************
+      * Joblog() - Write to the joblog.
+      ***********************************************************
+     P Joblog          B                   Export
+      *
+     D Joblog          PI
+     D  szInputStg                     *   value options(*string)
+
+      /free
+
+       Qp0zLprintf(szInputStg:password);  // VIOLATION
+
+       return;
+
+      /end-free
+
+     P Joblog          E]]></example>
+    <repair><![CDATA[// Do not write private data of the user in external locations]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/359.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.ProcessControl" message="ProcessControl: Avoid calling subprogram where its name could be controlled by user input" class="com.optimyth.rpg4.rules.security.ProcessControl" technology="RPG4" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Transferring program control to an untrusted application program or in an untrusted environment can cause an application to execute malicious commands on behalf of an attacker.
+
+Process control vulnerabilities take two forms:
+- An attacker can change the name of the program being invoked: the attacker explicitly controls what the name of the application program is.
+- An attacker can change the environment in which the program is invoked: the attacker implicitly controls a communication area made available to the invoked program.
+
+In this case we are primarily concerned with the first scenario, the possibility that an attacker may be able to control the name of the program that is invoked. Process control vulnerabilities of this type occur when:
+1. Data enters the application from an untrusted source.
+2. The data is used as or as part of a string representing a program that is invoked (and no proper validation of user input is done).
+3. By executing code from the invoked program, the application gives the attacker a privilege or capability that the attacker would not otherwise have.
+
+If an attacker can control the subprogram executed, then he/she can fool the application into running malicious code and take control of the system: it could allow an attacker to transfer control to a program of choice and potentially execute arbitrary code with the elevated privilege of the application.
+
+This check looks for dynamic calls (CALL and CALLB) where the name of the program/procedure name depends on external input.
+This could lead to the execution of unintended programs at runtime.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid unintended program execution in RPG programs]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/114.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:114,OWASP:2021:A1,PCI-DSS:6.5.8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.RegexInjection" message="RegexInjection: Prevent denial of service attack through malicious regular expression ('Regex Injection')" class="com.optimyth.rpg4.rules.security.RegexInjection" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.1.1,CWEScope:Access-Control,ReDoS,denial-of-service]]></tags>
+    <description><![CDATA[If the software creates a regular expression ("pattern", "regex") from untrusted input, an attacker may supply
+malicious input that produces a denial-of-service (DoS) condition during regular expression matching.
+
+Alternatively, if the regular expression is used for input validation, the attacker-controlled regular expression
+may fail to neutralize undesired input, which may bypass the intended restrictions or render useless
+a security control.
+
+If the attacker controls also the input to be matched, he/she could craft an input for the evil regex that
+takes an inordinate amount of time to match, consuming resources (like CPU).
+Evil regex typically has a group with repetition, and the repeated group has repetition or alternation with overlapping.
+For example: "(a+)+", "([a-z]+)*", "(a|aa)+" or "(aa|aab?)*".
+
+For example, a "(a+)+" regex will take long computing time when matching "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"
+takes many seconds to complete, and longer strings (with exponential time increase) may lead to DoS conditions.
+
+Please note that regular expressions are often used for security controls and input validation.
+
+The rule checks for potential injection of untrusted input into regex APIs.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid DoS conditions produced by regular expression injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[     C* VIOLATION
+     C/EXEC SQL
+     C+ SELECT EMPNO FROM EMPLOYEE
+     C+   WHERE REGEXP_LIKE(LASTNAME, '__w-((?:-?\d+)+)__','i')
+     C/END-EXEC]]></example>
+    <repair><![CDATA[// Never let untrusted input to be used (or concatenated) into patterns used in regular expression functions.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/400.html,https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS,https://en.wikipedia.org/wiki/ReDoS]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:400,CWETOP25:2021:27,OWASP:2004:A9,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.ResourceInjection" message="ResourceInjection: Improper Control of Resource Identifiers ('Resource Injection')" class="com.optimyth.rpg4.rules.security.ResourceInjection" technology="RPG4" active="true">
+    <tags><![CDATA[CWEScope:AccessControl,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Look for access to system resources where the accessed resource could be controlled by user input.
+
+A resource injection issue occurs when the following two conditions are met:
+1. An attacker can control the identifier used to access a system resource.
+   For example, an attacker might be able to specify the name for a CICS queue name, a datafile, etc.
+2. By specifying the resource, the attacker gains a capability that would not otherwise be permitted.
+
+The rule checks if the name of a system resource (e.g. a CICS queue) is specified in a variable that depends on user-controlled input
+(e.g. via statements like ACCEPT or RECEIVE MAP), and no neutralization routine checks the user input properly
+(neutralization routines could be specified in the 'neutralizationRoutines' rule parameter).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid illegal access to resources. Resource access control is easier to maintain.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[h option(*nodebugio:*srcstmt) dftactgrp(*no) actgrp(*new)
+F* Externally described DSPF for user input.
+FDBCRED    CF   E             WORKSTN
+
+D SQLConnect      PR                  Extproc('SQLConnect')
+D                                     like(SQLRETURN)
+D    hdbc                             like(SQLHDBC) value
+D    szDSN                        *   value options(*string)
+D    cbDSN                            like(SQLSMALLINT) value
+D    szUID                        *   value options(*string)
+D    cbUID                            like(SQLSMALLINT) value
+D    szAuthStr                    *   value options(*string)
+D    cbAuthStr                        like(SQLSMALLINT) value
+
+ /FREE
+   // read input data. Input fields: DBUSER, DBPASS, DBNAME
+   exfmt recDbCred;
+
+   // Environment and connection prototypes / data not shown
+   sql_rc = SQLAlcEnv(henv);
+   sql_rc = SQLAlcCon(henv : hdbc)
+
+   // VIOLATION - resource injection on database to connect
+   sql_rc = SQLConnect( hdbc :
+     DBNAME : %len(DBNAME) :
+     DBUSER : %len(DBUSER) :
+     DBPASS : %len(DBPASS)
+   );
+
+ /END-FREE]]></example>
+    <repair><![CDATA[* Same as above, but QNAME is taken from a fixed set of allowed queue names
+* (the queue name chosen may depend on user input, but should be chosen from a fixed set).
+* Alternatively, insert a neutralization routine between input and access to resource:
+  PERFORM CHECK-QUEUE.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/99.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:99,OWASP:2021:A3,PCI-DSS:6.5.8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.SpecialAuthorityGranted" message="SpecialAuthorityGranted: Least privilege failure due to special authority granted" class="com.optimyth.rpg4.rules.security.SpecialAuthorityGranted" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.4.3,ASVS-v4.0.2:10.2.2,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[In an RPG program, a system command is executed, granting special authorities like *ALLOBJ or *IOSYSCFG.
+
+This is considered a violation of the least privilege principle, as the target user will have special authorities
+not required for normal usage.
+
+Execution of commands granting special authorities is a potential signature for a backdoor, when the job user is a
+privileged user (with *SECADM authority): the command execution may succeed, granting too much authority to a normal user.
+
+The rule looks for common iSeries commands (like CHGUSRPRF or CRTUSRPRF) and if a special authority is granted
+to the target user.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid granting unexpected special authority to users.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[     d Spcaut          C                   Const('*JOBCTL')
+     d StdCmd          S            200A
+     d StdLen          S             15P 5
+
+     D Execute         PR                  ExtPgm('QCMDEXC')
+     D     CmdStr                          Like(StdCmd)
+     D                                     Options(*VarSize)
+     D                                     Const
+     D     CmdStrLen                       Like(StdLen) Const
+      *--------------------------------------------------
+     d var1            S                   Like(StdCmd)
+     d var2            S                   Like(stdLen)
+     d                                     Inz(%size(var1))
+     c                   eval      var1 =
+     c                             'CHGUSRPRF ' +
+     c                             'USRPRF(JJADAMS) PASSWORD(*SAME) ' +
+     c                             'SPCAUT(' + Spcaut + ')'
+      * VIOLATION, special authority granted to user
+     c                   callp     Execute(var1:var2)
+     c                   eval      *inlr = *on]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[http://search400.techtarget.com/tip/The-danger-of-indiscriminately-assigning-special-authorities,http://cwe.mitre.org/data/definitions/272.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:272,OWASP:2021:A1,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.SqlInjection" message="SqlInjection: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')" class="com.optimyth.rpg4.rules.security.SqlInjection" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[This check will look for EXEC SQL for dynamic statements (PREPARE+EXECUTE or EXECUTE IMMEDIATE) where sql code
+is computed concatenating external input (like program variables), instead of passing then as bound parameters.
+
+Note: It must be known that most (but not all) embedded SQL constructs in RPG use bound parameters, normally safe against SQL injection attacks.
+One exception is dynamic SQL (like PREPARE + EXECUTE or EXECUTE IMMEDIATE), which are not frequently used in RPG.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid SQL injection allowing unintended accesses to database that result in confidentiality / integrity losses.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Select;
+   When UpdByDept;
+     WhereClause = 'Dept = ' + %EditC(DeptID:'X');
+   When UpdByJob;
+     WhereClause = 'Job = ' + %EditC(Pos:'X');
+   When UpdByDate;
+     WhereClause = 'HireDt < ' + %EditC(StartDate:'X');
+EndSl;
+
+Stmt = 'UPDATE EmplTable SET Sal = Sal + (Sal * '
+     + %Char(RaisePct) + ') WHERE ' + WhereClause;
+Exec SQL PREPARE DynUpdate from :Stmt;
+// VIOLATION, potential SQL injection
+Exec SQL EXECUTE DynUpdate;]]></example>
+    <repair><![CDATA[Select;
+   When UpdByDept;
+     WhereClause = 'Dept = ?';
+     CompareValue = DeptID;
+   When UpdByJob;
+     WhereClause = 'Job = ? ' ;
+     CompareValue = Pos;
+   When UpdByDate;
+     WhereClause = 'HireDate < ?';
+     CompareValue = StartDate;
+EndSl;
+
+Stmt = 'UPDATE EmplTable SET Sal = Sal + (Sal * ?) WHERE '
+     + WhereClause;
+
+Exec SQL PREPARE DynUpdate from :Stmt;
+Exec SQL EXECUTE DynUpdate Using :RaisePct, :CompareValue;]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/89.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:89,CWETOP25:2021:6,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.UnexpectedKeySelect" message="UnexpectedKeySelect: Authorization Bypass Through User-Controlled SQL Primary Key" class="com.optimyth.rpg4.rules.security.UnexpectedKeySelect" technology="RPG4" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Without proper access control, executing a SQL statement that contains a user-controlled primary key may allow
+an attacker to view unauthorized records.
+
+Database access control errors occur when:
+1. Data enters a program from an untrusted source.
+2. The data is used to specify the value of a primary key in a SQL query, without been processed in a
+  proper neutralization routine.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid information leakage to unintended recipients.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[       // new RPG free-form format
+       CTL-OPT;
+
+       DCL-PI dbquery;
+         input CHAR(10) CONST; // untrusted input
+       END-PI;
+
+       DCL-C maxCount CONST(10);
+       DCL-S ssn CHAR(10);
+       DCL-DS patientInfo QUALIFIED;
+         firstName VARCHAR(16);
+         lastName VARCHAR(26);
+         age INT(3);
+         medicalStatus VARCHAR(256);
+       END-DS patientInfo;
+
+       ssn = %trim(input); // untrusted input affects primary key
+
+       // VIOLATION, untrusted input affects the key field used in the query
+       EXEC SQL
+         select ssn, fname, lname, age, medstat
+         into
+           :patientInfo.ssn, :patientInfo.firstName, :patientInfo.lastName,
+           :patientInfo.age, :patientInfo.medicalStatus
+         from patient_info
+         where id = :ssn;
+
+      // display patientInfo ...]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/566.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:566,OWASP:2021:A1,PCI-DSS:6.5.8]]></security>
+    </normatives>
+    <properties>
+      <property name="fieldPattern" descname="Regular expression for matching table key fields in database operations." value="^:?(ID|KEY$|ID$)"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.WeakCryptoHash" message="WeakCryptoHash: Weak cryptographic hashes cannot guarantee data integrity" class="com.optimyth.rpg4.rules.security.WeakCryptoHash" technology="RPG4" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Weak cryptographic hashes cannot guarantee data integrity and should not be used in security-critical contexts.
+
+As an example, MD5 and SHA-1 are popular cryptographic hash algorithms often used to verify the integrity of messages and other data.
+Recent advances in cryptanalysis have discovered weaknesses in both algorithms. Consequently, MD5 and SHA-1 should no longer be relied upon to verify the authenticity of data in security-critical contexts.
+Techniques for breaking MD5 hashes are advanced and widely available enough that the algorithm must not be relied upon for security.
+In the case of SHA-1, current techniques still require a significant amount of computational power and are more difficult to implement.
+However, attackers have found the Achilles' heel for the algorithm, and techniques for breaking it will likely lead to the discovery of even faster attacks.
+
+The rule checks if the cryptographic hash algorithm used is one of the allowed ones, emitting a violation if not.
+The 'allowed' property contains the list of hash algoritms considered safe by the rule.
+
+The rule supports the following Cryptographic APIs:
+- iSeries Cryptographic Services API.
+considering the API operations (one-way hash, HMAC generation and verification) that use cryptograhic hash functions.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Better credentials management / data integrity.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[     D Qc3CalculateHMAC...
+     D                 pr                  extproc('Qc3CalculateHMAC')
+     D   inData                   32767a   const options(*varsize)
+     D   inDataLen                   10i 0 const
+     D   inFormat                     8a   const
+     D   algDesc                     10i 0 const
+     D   algDescFmt                   8a   const
+     D   keyDesc                  32767a   const options(*varsize)
+     D   keyDescFmt                   8a   const
+     D   cryptoProv                   1a   const
+     D   cryptoDev                   10a   const
+     D   HMAC                        64a         options(*varsize)
+     D   ErrorCode                32767a         options(*varsize)
+
+     D SHA_1           c                   const(2)
+     D VARPREF         c                   const(2)
+
+     D ErrorCode       DS                  qualified
+     D    bytesProv                  10i 0 inz(0)
+     D    bytesAvail                 10i 0 inz(0)
+
+      /FREE
+       // VIOLATION, SHA-1 used as hash algorithm, not allowed
+       Qc3CalculateHMAC( utfDataToHash
+                       : utfDataLen
+                       : 'DATA0100'
+                       : SHA_1
+                       : 'ALGD0500'
+                       : my_key
+                       : 'KEYD0200'
+                       : '0'
+                       : *blanks
+                       : binaryHMAC
+                       : ErrorCode );
+      /END-FREE]]></example>
+    <repair><![CDATA[     D Qc3CalculateHMAC...
+     D                 pr                  extproc('Qc3CalculateHMAC')
+     D   inData                   32767a   const options(*varsize)
+     D   inDataLen                   10i 0 const
+     D   inFormat                     8a   const
+     D   algDesc                     10i 0 const
+     D   algDescFmt                   8a   const
+     D   keyDesc                  32767a   const options(*varsize)
+     D   keyDescFmt                   8a   const
+     D   cryptoProv                   1a   const
+     D   cryptoDev                   10a   const
+     D   HMAC                        64a         options(*varsize)
+     D   ErrorCode                32767a         options(*varsize)
+
+     D SHA_256         c                   const(3)
+     D VARPREF         c                   const(2)
+
+     D ErrorCode       DS                  qualified
+     D    bytesProv                  10i 0 inz(0)
+     D    bytesAvail                 10i 0 inz(0)
+
+      /FREE
+       // FIXED, SHA-256 used as hash algorithm, allowed
+       Qc3CalculateHMAC( utfDataToHash
+                       : utfDataLen
+                       : 'DATA0100'
+                       : SHA_256
+                       : 'ALGD0500'
+                       : my_key
+                       : 'KEYD0200'
+                       : '0'
+                       : *blanks
+                       : binaryHMAC
+                       : ErrorCode );
+      /END-FREE]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/328.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:328,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:50]]></security>
+    </normatives>
+    <properties>
+      <property name="allowed" descname="Comma-separated list of allowed hash algorithms." value="SHA-256,SHA-384,SHA-512"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.RPG4.SEC.WeakEncryptionAlgorithm" message="WeakEncryptionAlgorithm: Weak encryption algorithm" class="com.optimyth.rpg4.rules.security.WeakEncryptionAlgorithm" technology="RPG4" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.9.3,ASVS-v4.0.2:6.2.2,ASVS-v4.0.2:8.3.7,CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,crypto]]></tags>
+    <description><![CDATA[Encryption/decryption with a weak cipher algorithm cannot guarantee data confidentiality, and should not be used in security-critical contexts.
+
+Algorithms like DES, RC2 and RC6 are popular encryption algorithms often used to encrypt messages and other data.
+Recent advances in cryptanalysis have discovered weaknesses in these algorithms. Consequently, DES and other algorithms
+should no longer be relied upon to verify the confidentiality of data in security-critical contexts.
+
+Techniques (brute-force and cryptanalysis) for weak ciphers are advanced and widely available enough that the algorithm
+must not be relied upon for security.
+
+The rule checks if the encryption algorithm used is one of the allowed ones, emitting a violation if not.
+The 'allowed' property contains the list of cipher algoritms considered safe by the rule.
+
+The rule supports the following Cryptographic APIs:
+- iSeries Cryptographic Services API.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Better data confidentiality.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[     D/copy qsysinc/qrpglesrc,QC3CCI
+     D/COPY QSYSINC/QRPGLESRC,QUSEC
+
+     D* iSeries identifiers for block cipher algorithms
+     D DES             C                   20
+     D TRIPLE_DES      C                   21
+     D AES             C                   22
+
+     D*--- ssn = data to encrypt ---
+     D ssn             S            128A
+     D results         S          65535A
+     D secretKey       S             32A
+     D cryptoPro       S              1A
+     D cryptoDev       S             10A
+     D encryptLen      S             10I 0
+     D displayBytes    S             52A
+     D svOutData       S          65535A
+     D svBytes         S             52A
+
+     D*--- prototypes ---
+     D encryptDataAPI  PR                  extPgm('QC3ENCDT')
+     D  argIn                     65535    const options(*varsize)
+     D  argInLen                     10I 0 const
+     D  argInFmt                      8    const
+     D  argAlg                    65535    const options(*varsize)
+     D  argAlgFmt                     8    const
+     D  argKey                    65535    const options(*varsize)
+     D  argKeyFmt                     8    const
+     D  argCryptoPro                  1    const
+     D  argCryptoDev                 10    const
+     D  argOut                    65535
+     D  argOutBuffLen                10I 0 const
+     D  argOutLen                    10I 0
+     D  argError                           likeDs(QUSEC)
+     D*
+      /free
+       ssn = '987654320';
+       secretKey = 'IamN0tSur3...';
+
+        // Initialize the Algorithm Data Structure QC3D0200
+        QC3D0200 = *AllX'00';
+        QC3BCA = DES; // weak algorithm
+        QC3BL = 8;
+        QC3MODE = '1';
+        QC3PO = '1';
+        QC3EKS = 0;
+        // Initialize the Key Data Structure QC3D020000 with the key
+        keyDesc.QC3D020000 = *AllX'00';
+        keyDesc.QC3D020000.QC3KT = argAlgorithm;
+        keyDesc.QC3D020000.QC3KF = '0';
+        keyDesc.QC3D020000.QC3KSL = %len(%trim(argKey));
+        keyDesc.QC3Key = %trim(argKey);
+        // Initialize the Rest of the Parameters
+        stdError.QUSEC = *AllX'00';
+        stdError.QUSEC.QUSBPRV = 1040;
+        cryptoPro = '0';
+        cryptoDev = *BLANKS;
+
+        // perform encryption
+        svOutData = *BLANKS;
+
+        encryptDataAPI( // VIOLATION
+          ssn: %len(ssn): 'DATA0100':
+          QC3D0200: 'ALGD0200':
+          keyDesc: 'KEYD0200':
+          cryptoPro: cryptoDev:
+          svOutData: %size(svOutData): argOutLen:
+          stdError
+        );
+
+        if stdError.QUSEC.QUSBAVL > 0;
+          DSPLY ('Error: ' + stdError.QUSEC.QUSEI);
+          svOutData = *BLANKS;
+        endif;
+
+      /end-free]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/327.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:327,OWASP:2021:A2,PCI-DSS:6.5.8,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="allowed" descname="Comma-separated list of allowed cipher algorithms." value="AES, TRIPLE_DES, RC6, RSA"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="RPG4" technology="RPG4" active="true" weight="1.0">
+      <description><![CDATA[RPG4 rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="RPG4" active="true" weight="8.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="RPG4" active="true" weight="10.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="RPG4" active="true" weight="5.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="RPG4" active="true" weight="10.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="RPG4" active="true" weight="4.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

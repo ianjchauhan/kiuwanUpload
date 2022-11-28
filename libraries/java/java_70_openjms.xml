@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="java.openjms" standard="OpenJMS" technology="java">
+
+  <description url="http://openjms.sourceforge.net">Open-source implementation of Java Message Service (JMS) API</description>
+
+  <!-- http://openjms.sourceforge.net/modules/openjms/apidocs/index.html -->
+
+  <module name="org.exolab.jms.administration" >
+    <class name="org.exolab.jms.administration.AdminConnectionFactory" >
+      <method name="create" signature="create(java.lang.String)" >
+        <return type="org.exolab.jms.administration.JmsAdminServerIfc" />
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+      </method>
+      <method name="create" signature="create(java.lang.String,java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <return type="org.exolab.jms.administration.JmsAdminServerIfc" />
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="org.exolab.jms.administration.AdminConnection" >
+      <method name="addUser" signature="addUser(java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <return type="boolean" />
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="changePassword" signature="changePassword(java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <return type="boolean" />
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="org.exolab.jms.administration.JmsAdminServerIfc" >
+      <method name="addUser" signature="addUser(java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <return type="boolean" />
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="changePassword" signature="changePassword(java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <return type="boolean" />
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="org.exolab.jms.administration.net.JmsAdminConnectionImpl" supertypes="org.exolab.jms.administration.JmsAdminServerIfc,org.exolab.jms.administration.AdminConnection" />
+    <class name="org.exolab.jms.administration.intravm.IntravmJmsAdminConnection" supertypes="org.exolab.jms.administration.JmsAdminServerIfc,org.exolab.jms.administration.AdminConnection" />
+    <class name="org.exolab.jms.administration.mipc.IpcJmsAdminConnection" supertypes="org.exolab.jms.administration.JmsAdminServerIfc,org.exolab.jms.administration.AdminConnection" >
+      <constructor name="IpcJmsAdminConnection" signature="IpcJmsAdminConnection(java.lang.String,int)" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </constructor>
+      <constructor name="IpcJmsAdminConnection" signature="IpcJmsAdminConnection(java.lang.String,int,java.lang.String,java.lang.String)" >
+        <tags>username:2,password:3</tags>
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+        <sink argpos="2,3" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+    </class>
+    <class name="org.exolab.jms.administration.rmi.RmiJmsAdminConnection" supertypes="org.exolab.jms.administration.JmsAdminServerIfc,org.exolab.jms.administration.AdminConnection" >
+      <constructor name="RmiJmsAdminConnection" signature="RmiJmsAdminConnection(java.lang.String,int,java.lang.String,java.lang.String,java.lang.String)" >
+        <tags>username:3,password:4</tags>
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+        <sink argpos="3,4" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+
+      <method name="getDelegate" signature="getDelegate()" >
+        <return type="org.exolab.jms.server.rmi.RemoteJmsAdminServerIfc" />
+      </method>
+    </class>
+  </module>
+
+  <module name="org.exolab.jms.client" >
+    <class name="org.exolab.jms.client.JmsConnectionFactory" supertypes="javax.jms.ConnectionFactory,javax.jms.QueueConnectionFactory,java.io.Serializable,javax.jms.TopicConnectionFactory"/>
+    <class name="org.exolab.jms.client.JmsXAConnectionFactory" supertypes="rg.exolab.jms.client.JmsConnectionFactory,javax.jms.XAConnectionFactory,javax.jms.XAQueueConnectionFactory,javax.jms.XATopicConnectionFactory" />
+    <class name="org.exolab.jms.client.JmsConnection" />
+    <class name="org.exolab.jms.client.JmsQueueConnection" supertypes="org.exolab.jms.client.JmsConnection" />
+    <class name="org.exolab.jms.client.JmsTopicConnection" supertypes="org.exolab.jms.client.JmsConnection" />
+    <class name="org.exolab.jms.client.JmsXAQueueConnection" supertypes="org.exolab.jms.client.JmsQueueConnection" />
+    <class name="org.exolab.jms.client.JmsXATopicConnection" supertypes="org.exolab.jms.client.JmsTopicConnection" />
+    <class name="org.exolab.jms.client.JmsServerStubIfc" supertypes="org.exolab.jms.server.ServerConnectionFactory" />
+  </module>
+
+  <module name="org.exolab.jms.message" >
+    <class name="org.exolab.jms.message.MessageImpl" supertypes="javax.jms.Message" />
+    <class name="org.exolab.jms.message.TextMessageImpl" supertypes="org.exolab.jms.message.MessageImpl" />
+    <class name="org.exolab.jms.message.StreamMessageImpl" supertypes="org.exolab.jms.message.MessageImpl" />
+    <class name="org.exolab.jms.message.ObjectMessageImpl" supertypes="org.exolab.jms.message.MessageImpl" />
+    <class name="org.exolab.jms.message.BytesMessageImpl" supertypes="org.exolab.jms.message.MessageImpl" />
+    <class name="org.exolab.jms.message.MapMessageImpl" supertypes="org.exolab.jms.message.MessageImpl" />
+  </module>
+
+  <module name="org.exolab.jms.persistence" >
+    <class name="org.exolab.jms.persistence.DBConnectionManager" >
+      <method name="setDriver" signature="setDriver(java.lang.String)" >
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setEvictionInterval" signature="setEvictionInterval(long)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setMaxActive" signature="setMaxActive(int)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setMaxIdle" signature="setMaxIdle(int)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setMinIdleTime" signature="setMinIdleTime(long)" >
+        <sink kind="configuration_setting_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)" >
+        <tags>password:0</tags>
+        <sink kind="resource_injection" argpos="0" resource="database" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setURL" signature="setURL(java.lang.String)" >
+        <sink kind="connection_string_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)" >
+        <tags>username:0</tags>
+        <sink kind="resource_injection" argpos="0" resource="database" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="org.exolab.jms.persistence.AbstractConnectionManager" supertypes="org.exolab.jms.persistence.DBConnectionManager" />
+    <class name="org.exolab.jms.persistence.DBCPConnectionManager" supertypes="org.exolab.jms.persistence.AbstractConnectionManager" >
+      <method name="getConnection" signature="getConnection()" >
+        <return type="java.sql.Connection" />
+      </method>
+    </class>
+    <class name="org.exolab.jms.persistence.DatabaseService" supertypes="org.exolab.jms.service.Service" >
+      <method name="getAdapter" signature="getAdapter()" >
+        <return type="org.exolab.jms.persistence.PersistenceAdapter" />
+      </method>
+      <method name="getConnection" signature="getConnection()" >
+        <return type="java.sql.Connection" />
+      </method>
+      <method name="getInstance" signature="getInstance()" >
+        <return type="org.exolab.jms.persistence.DatabaseService" />
+      </method>
+    </class>
+    <class name="org.exolab.jms.persistence.PersistenceAdapter" >
+      <method name="getConnection" signature="getConnection()" >
+        <return type="java.sql.Connection" />
+      </method>
+      <method name="getMessage" signature="getMessage()" >
+        <return type="org.exolab.jms.message.MessageImpl" />
+      </method>
+    </class>
+    <class name="org.exolab.jms.persistence.RDBMSAdapter" supertypes="org.exolab.jms.persistence.PersistenceAdapter" />
+  </module>
+
+  <module name="org.exolab.jms.server" >
+    <class name="org.exolab.jms.server.ServerConnectionFactory" >
+      <method name="createConnection" signature="createConnection(java.lang.String,java.lang.String,java.lang.String)" >
+        <tags>username:1,password:2</tags>
+        <return type="org.exolab.jms.server.ServerConnection" />
+        <sink argpos="1,2" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="org.exolab.jms.server.ServerConnectionManager" supertypes="org.exolab.jms.server.ServerConnectionFactory" />
+    <class name="org.exolab.jms.server.rmi.RemoteJmsAdminServerIfc" kind="interface" supertypes="java.rmi.Remote" >
+      <method name="createConnection" signature="createConnection(java.lang.String,java.lang.String,java.lang.String)" >
+        <tags>username:1,password:2</tags>
+        <return type="org.exolab.jms.server.rmi.RemoteJmsAdminConnectionIfc" />
+        <sink argpos="1,2" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="org.exolab.jms.server.rmi.RemoteJmsAdminConnectionIfc" supertypes="java.rmi.Remote" />
+    <class name="org.exolab.jms.server.rmi.RmiJmsAdminConnection" supertypes="org.exolab.jms.server.rmi.RemoteJmsAdminConnectionIfc" />
+    <class name="org.exolab.jms.server.AdminConnectionManager" >
+      <method name="createConnection" signature="createConnection(java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <return type="org.exolab.jms.server.AdminConnection" />
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="org.exolab.jms.server.AdminConnection" >
+      <method name="addUser" signature="addUser(java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <return type="boolean" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="changePassword" signature="changePassword(java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <return type="boolean" />
+        <sink kind="resource_injection" argpos="0,1" resource="other" />
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="removeUser" signature="removeUser(java.lang.String)" >
+        <return type="boolean" />
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+    </class>
+    <class name="org.exolab.jms.server.AdminConnectionFactory" >
+      <method name="create" signature="create()" >
+        <return type="org.exolab.jms.server.AdminConnection" />
+      </method>
+    </class>
+  </module>
+</library>

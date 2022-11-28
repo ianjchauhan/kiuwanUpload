@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library.database
+  xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  technology="plsql" name="plsql_ora_utl" standard="PL/SQL_utl">
+
+  <description url="https://docs.oracle.com/database/121/ARPLS/toc.htm">PL/SQL UTL_* packages, for system access (filesystem, network)</description>
+
+  <package name="utl_file">
+    <description>(Controlled?) access to filesystem</description>
+    <type name="file_type" kind="record">
+      <field name="id" type="binary_integer"/>
+      <field name="datatype" type="binary_integer"/>
+      <field name="byte_mode" type="boolean"/>
+    </type>
+    <procedure name="fclose" signature="fclose(file inout utl_file.file_type)">
+      <errorProcessing>write_error, invalid_filehandle</errorProcessing>
+    </procedure>
+    <procedure name="fcloseall" signature="fcloseall()">
+      <errorProcessing>write_error</errorProcessing>
+    </procedure>
+    <procedure name="fcopy" signature="fcopy(src_location varchar2, src_filename varchar2, dest_location varchar2, dest_filename varchar2, start_line binary_integer, end_line binary_integer)">
+      <errorProcessing>invalid_filename, invalid_path, invalid_operation, invalid_offset, read_error, write_error</errorProcessing>
+      <sink argpos="0,1,2,3" kind="path_traversal" resource="filesystem"/>
+    </procedure>
+    <procedure name="fgetattr" signature="fgetattr(location varchar2, filename varchar2, fexists out boolean, file_length out number, block_size out binary_integer)">
+      <errorProcessing>invalid_filename, invalid_path, invalid_operation, read_error, access_denied</errorProcessing>
+      <sink argpos="0,1" kind="path_traversal" resource="filesystem"/>
+    </procedure>
+    <function name="fgetpos" signature="fgetpos(file utl_file.file_type)">
+      <return type="pls_integer"/>
+      <errorProcessing>invalid_filename, invalid_operation, read_error</errorProcessing>
+    </function>
+    <function name="fopen" signature="fopen(location varchar2, filename varchar2, open_mode varchar2, max_linesize in binary_integer)" alias="fopen_nchar">
+      <return type="utl_file.file_type"/>
+      <errorProcessing>invalid_filename, invalid_path, invalid_operation, invalid_mode, invalid_maxlinesize</errorProcessing>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <procedure name="fremove" signature="fremove(location varchar2, filename varchar2)">
+      <errorProcessing>invalid_filename, invalid_path, invalid_operation, delete_failed, access_denied</errorProcessing>
+    </procedure>
+    <procedure name="frename" signature="fcopy(src_location varchar2, src_filename varchar2, dest_location varchar2, dest_filename varchar2, overwrite boolean)">
+      <errorProcessing>invalid_filename, invalid_path, rename_failed, access_denied</errorProcessing>
+      <sink argpos="0,1,2,3" kind="path_traversal" resource="filesystem"/>
+    </procedure>
+    <procedure name="fseek" signature="fseek(file inout utl_file.file_type, absolute_offset pls_integer, relative_offset pls_integer)">
+      <errorProcessing>invalid_filehandle, invalid_offset, invalid_operation, read_error</errorProcessing>
+    </procedure>
+    <procedure name="get_line" signature="get_line(file utl_file.file_type, buffer out varchar2, len pls_integer)" alias="get_line_nchar">
+      <errorProcessing>invalid_filehandle, invalid_operation, read_error, no_data_found</errorProcessing>
+      <source argpos="1" kind="file_input" resource="filesystem"/>
+    </procedure>
+    <procedure name="get_raw" signature="get_raw(file utl_file.file_type, buffer out raw, len pls_integer)" alias="get_line_nchar">
+      <errorProcessing>invalid_filehandle, invalid_operation, read_error, no_data_found, length_mismatch</errorProcessing>
+      <source argpos="1" kind="file_input" resource="filesystem"/>
+    </procedure>
+    <function name="is_open" signature="is_open(file utl_file.file_type)">
+      <return type="boolean"/>
+      <errorProcessing>invalid_filehandle</errorProcessing>
+    </function>
+    <procedure name="new_line" signature="new_line(file utl_file.file_type, lines binary_integer)">
+      <errorProcessing>invalid_filehandle, invalid_operation, write_error</errorProcessing>
+    </procedure>
+    <procedure name="put_line" signature="put_line(file utl_file.file_type, buffer varchar2, autoflush boolean)" alias="put, put_line_nchar, put_nchar">
+      <errorProcessing>invalid_filehandle, invalid_operation, write_error</errorProcessing>
+      <sink argpos="1" kind="file_output" resource="filesystem"/>
+    </procedure>
+    <procedure name="putf" signature="putf(file utl_file.file_type, format varchar2, arg1 varchar2, arg2 varchar2, arg3 varchar2, arg4 varchar2, arg5 varchar2)"
+               alias="putf_nchar">
+      <errorProcessing>invalid_filehandle, invalid_operation, write_error</errorProcessing>
+      <sink argpos="1,2,3,4,5,6" kind="file_output" resource="filesystem"/>
+    </procedure>
+    <procedure name="put_raw" signature="put_raw(file utl_file.file_type, buffer raw, autoflush boolean)">
+      <errorProcessing>invalid_filehandle, invalid_operation, write_error</errorProcessing>
+      <sink argpos="1" kind="file_output" resource="filesystem"/>
+    </procedure>
+  </package>
+
+  <package name="utl_http">
+    <description>Fun with HTTP procotol as a client</description>
+    <field name="http_version_1_0" type="varchar2"/>
+    <field name="http_version_1_1" type="varchar2"/>
+    <field name="default_http_port" type="pls_integer"/>
+    <field name="default_https_port" type="pls_integer"/>
+    <field name="http_ok" type="pls_integer"/>
+    <!-- ... many more ... -->
+    <type name="req" kind="record">
+      <field name="url" type="varchar2"/>
+      <field name="method" type="varchar2"/>
+      <field name="http_version" type="varchar2"/>
+    </type>
+    <type name="request_context_key" kind="subtype" supertype="pls_integer"/>
+    <type name="resp" kind="record">
+      <field name="status_code" type="pls_integer"/>
+      <field name="reason_phrase" type="varchar2"><source argpos="-1" kind="network_input" resource="web"/></field>
+      <field name="http_version" type="varchar2"/>
+    </type>
+    <type name="cookie" kind="record">
+      <field name="name" type="varchar2"></field>
+      <field name="value" type="varchar2"/>
+      <field name="domain" type="varchar2"/>
+      <field name="expire" type="timestamp"/>
+      <field name="path" type="varchar2"/>
+      <field name="secure" type="boolean"/>
+      <field name="version" type="pls_integer"/>
+      <field name="comment" type="varchar2"/>
+    </type>
+    <type name="cookie_table" kind="collection" elementType="utl_http.cookie"/>
+    <type name="connection" kind="record">
+      <field name="host" type="varchar2"/>
+      <field name="port" type="pls_integer"/>
+      <field name="proxy_host" type="varchar2"/>
+      <field name="proxy_port" type="pls_integer"/>
+      <field name="ssl" type="boolean"/>
+    </type>
+
+    <procedure name="set_proxy" signature="set_proxy(proxy varchar2, no_proxy_domains varchar2)">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="configuration_setting_injection" resource="network"/>
+    </procedure>
+    <function name="begin_request" signature="begin_request(url varchar2, method varchar2, http_version varchar2, request_context utl_http.request_context_key)">
+      <return type="utl_http.req"/>
+      <sink argpos="0,1" kind="ssrf" resource="web"/>
+    </function>
+    <procedure name="set_header" signature="set_header(r inout utl_http.req, name varchar2, value varchar2)">
+      <sink argpos="1,2" kind="header_manipulation" resource="web"/>
+    </procedure>
+    <procedure name="add_cookies" signature="add_cookies(cookies utl_http.cookie_table, request_context utl_http.request_context_key)">
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+      <sink argpos="0" kind="cookie_security" resource="web"/>
+    </procedure>
+    <procedure name="set_authentication" signature="set_authentication(r inout utl_http.req, username varchar2, password varchar2, scheme varchar2, for_proxy varchar2)">
+      <tags>sensitive_info,credential,username:1,password:2</tags>
+      <sink argpos="1,2" kind="hardcoded_credentials" resource="web"/>
+    </procedure>
+    <procedure name="write_raw" signature="write_raw(r inout utl_http.req, data raw)" alias="write_text">
+    </procedure>
+    <function name="get_response" signature="get_response(r inout utl_http.req, return_info_response boolean)">
+      <return type="utl_http.resp"/>
+    </function>
+    <procedure name="get_header" signature="get_header(r inout utl_http.resp, n pls_integer, name out varchar2, value out varchar2)">
+      <source argpos="2,3" kind="network_input" resource="web"/>
+    </procedure>
+    <procedure name="get_header_by_name" signature="get_header_by_name(r inout utl_http.resp, name varchar2, value out varchar2, n pls_integer)">
+      <source argpos="2" kind="network_input" resource="web"/>
+    </procedure>
+    <procedure name="read_raw" signature="read_raw(r inout utl_http.resp, data out raw, len pls_integer)">
+      <source argpos="1" kind="network_input" resource="web"/>
+    </procedure>
+    <procedure name="read_line" signature="read_line(r inout utl_http.resp, data out varchar2, remove_crlf boolean)">
+      <source argpos="1" kind="network_input" resource="web"/>
+    </procedure>
+    <procedure name="read_text" signature="read_text(r inout utl_http.resp, data out varchar2, len pls_integer)">
+      <source argpos="1" kind="network_input" resource="web"/>
+    </procedure>
+    <procedure name="end_request" signature="end_request(r inout utl_http.req)"></procedure>
+    <procedure name="end_response" signature="end_response(r inout utl_http.resp)"></procedure>
+    <function name="request" signature="request(url varchar2, proxy varchar2, wallet_path varchar2, wallet_password varchar2)">
+      <return type="varchar2"/>
+      <sink argpos="0,1" kind="ssrf" resource="web"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </function>
+    <type name="html_pieces" kind="collection" elementType="varchar2"/>
+    <function name="request_pieces" signature="request_pieces(url varchar2, max_pieces natural, proxy varchar2, wallet_path varchar2, wallet_password varchar2)">
+      <return type="utl_http.html_pieces"/>
+      <sink argpos="0,2" kind="ssrf" resource="web"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </function>
+  </package>
+
+  <package name="url_tcp">
+    <description>Fun with TCP/IP</description>
+    <field name="CRLF" type="varchar2"/>
+    <type name="connection" kind="record">
+      <field name="remote_host" type="varchar2"/>
+      <field name="remote_port" type="pls_integer"/>
+      <field name="local_host" type="varchar2"/>
+      <field name="local_port" type="pls_integer"/>
+      <field name="charset" type="varchar2"/>
+      <field name="newline" type="varchar2"/>
+      <field name="tx_timeout" type="pls_integer"/>
+      <field name="private_sd" type="pls_integer"/>
+    </type>
+
+    <function name="open_connection"
+              signature="open_connection(remote_host varchar2, remote_port pls_integer, local_host varchar2, local_port pls_integer, in_buffer_size pls_integer, out_buffer_size pls_integer, charset varchar2, newline varchar2, tx_timeout pls_integer, wallet_path varchar2, wallet_password varchar2)">
+      <return type="url_tcp.connection"/>
+      <sink argpos="0,1" kind="ssrf" resource="network"/>
+    </function>
+    <function name="get_line" signature="get_line(c inout url_tcp.connection, remove_crlf boolean, peek boolean)" alias="get_line_nchar">
+      <return type="varchar2"/>
+      <source argpos="-1" kind="network_input" resource="network"/>
+    </function>
+    <function name="get_raw" signature="get_line(c inout url_tcp.connection, len pls_integer, peek boolean)" alias="get_text, get_text_nchar">
+      <return type="raw"/>
+      <source argpos="-1" kind="network_input" resource="network"/>
+    </function>
+    <function name="write_line" signature="write_line(c inout url_tcp.connection, data varchar2)">
+      <return type="pls_integer"/>
+    </function>
+    <function name="write_raw" signature="write_raw(c inout url_tcp.connection, data raw, len pls_integer)" alias="write_text">
+      <return type="pls_integer"/>
+    </function>
+    <function name="read_line" signature="read_line(c inout url_tcp.connection, data inout varchar2, remove_crlf boolean, peek boolean)">
+      <return type="pls_integer"/>
+      <source argpos="1" kind="network_input" resource="network"/>
+    </function>
+    <function name="read_raw" signature="read_raw(c inout url_tcp.connection, data inout, len pls_integer, peek boolean)" alias="read_text">
+      <return type="pls_integer"/>
+      <source argpos="1" kind="network_input" resource="network"/>
+    </function>
+    <procedure name="secure_connection" signature="secure_connection(c inout url_tcp.connection)">
+      <tags>enable.ssl</tags>
+    </procedure>
+    <procedure name="close_connection" signature="close_connection(c inout url_tcp.connection)"></procedure>
+  </package>
+
+  <package name="utl_url">
+    <function name="escape" signature="escape(url varchar2, escape_reserved_chars boolean, url_charset varchar2)">
+      <return type="varchar2"/>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </function>
+    <function name="unescape" signature="unescape(url varchar2, url_charset varchar2)">
+      <return type="varchar2"/>
+      <!--untaint argpos="-1" kind="xss" resource="web"/-->
+    </function>
+  </package>
+
+  <package name="wpg_docload">
+    <procedure name="download_file" signature="download_file(p_filename in, p_bcaching in)">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </procedure>
+  </package>
+
+</library.database>

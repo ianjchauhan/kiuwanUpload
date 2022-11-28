@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.publicMethods" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.SIZE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.SIZE.CODE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.LOWER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+        <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="15.00" meaning="good" />
+        <threshold from="15.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <internal-name id="OPT.ABAP.SIZE.NPMF" />
+        <java-class>com.als.abap.metrics.NpmMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.SIZE.NPMF" />
+        <java-class>com.als.cpp.metrics.PublicMethodsCppMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.SIZE.NPMF" />
+        <java-class>com.optimyth.csharp.metrics.PublicMethodsCsharpMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.SIZE.NPMF" />
+        <java-class>com.als.java.metrics.PublicMethodsJavaMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+        <internal-name id="OPT.VB6.SIZE.NPMF" />
+        <java-class>com.optimyth.qaking.vb6.metrics.PublicMethodsVB6MetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.SIZE.NPMF" />
+        <java-class>com.optimyth.vbnet.metrics.PublicMethodsVBnetMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+    <code-examples>
+
+     <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <code-example name="metricCodeExampleAbap" result-value="3">
+<![CDATA[
+CLASS cl_bcm_sdn_pattern_engine DEFINITION
+ PUBLIC
+ INHERITING FROM cl_bsp_controller2
+ CREATE PUBLIC.
+
+PUBLIC SECTION.
+
+ METHODS do_initattributes REDEFINITION.
+ METHODS do_request        REDEFINITION.
+ METHODS do_init           REDEFINITION.
+
+ENDCLASS.
+CLASS cl_bcm_sdn_pattern_engine IMPLEMENTATION.
+ METHOD do_request.                                         "1
+ * Dispatch input which includes event handling (callback to handle_event)
+  me->messages->reset( ).
+  me->pe_step_prev_prohibited = ABAP_FALSE.
+  me->pe_step_next_prohibited = ABAP_FALSE.
+  me->dispatch_input( ).
+ ENDMETHOD.
+
+ METHOD do_initattributes.                                  "2
+  me->pe_step_current = 1.
+  me->pe_step_max     = LINES( me->pe_steps ).
+ ENDMETHOD.
+
+ METHOD do_init.                                            "3
+  super->do_init( ).
+  DATA: id TYPE string.
+  id = me->pe_model->if_bsp_model_binding~get_id( ).
+  me->set_model( model_id       = id
+   model_instance = me->pe_model ).
+ ENDMETHOD.
+ENDCLASS.
+]]>
+       </code-example>
+      </language-parser>
+
+     <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <code-example name="metricCodeExampleCpp" result-value="2">
+<![CDATA[
+// ActivityData.h
+#ifndef ACTIVITYDATA_H
+#define ACTIVITIDATA_H
+
+#include "SimpleData.h"
+#include "InfoData.h"
+
+class QTextStream;
+
+class BrowserActivity;
+class ActivityDialog;
+
+class ActivityData : public SimpleData {
+ friend class ActivityDialog;
+
+ public:
+
+  QString get_precond(DrawingLanguage) const;
+  QString get_postcond(DrawingLanguage) const;
+
+};
+
+#endif
+
+// ActivityData.cpp
+QString ActivityData::get_precond(DrawingLanguage ln) const {  // PUBLIC METHOD IMPLEMENTED FROM ActivityData.h - 1
+ switch (ln) {
+  case CppView:
+   return cpp_condition.first;
+  case JavaView:
+   return java_condition.first;
+  default:
+   return uml_condition.first;
+  }
+}
+
+ QString ActivityData::get_postcond(DrawingLanguage ln) const {  // PUBLIC METHOD IMPLEMENTED FROM ActivityData.h - 2
+ switch (ln) {
+  case CppView:
+   return cpp_condition.second;
+  case JavaView:
+   return java_condition.second;
+  default:
+   return uml_condition.second;
+ }
+}
+]]>
+       </code-example>
+      </language-parser>
+
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="metricCodeExampleCsharp" result-value="4">
+<![CDATA[
+public partial class ParametrosBusquedaSeguridadAsociacionUsuario : ParametrosBusquedaBase
+{
+ public override void ConsultarElemento(int Indice, DevExpress.XtraGrid.GridControl Grid, object Elemento)  //1
+ {
+  MostrarElemento(CST.Consultar, Elemento as SeguridadAsociacionUsuario, Indice, Grid);
+ }
+ public override void AltaElemento()                                                                        //2
+ {
+  MostrarElemento(CST.Insertar, null, 0, null);
+ }
+ public override void EditarElemento(object Elemento)                                                       //3
+ {
+  MostrarElemento(CST.Modificar, Elemento as SeguridadAsociacionUsuario, 0, null);
+  LimpiarControles();
+
+ }
+ public override void EliminarElemento(object Elemento)                                                     //4
+ {
+  MostrarElemento(CST.Borrar, Elemento as SeguridadAsociacionUsuario, 0, null);
+  LimpiarControles();
+
+ }
+ private void MostrarElemento(String TipoOperacion, SeguridadAsociacionUsuario Usuario, int Indice, DevExpress.XtraGrid.GridControl Grid)
+ {
+  // Muestro el formulario de espera
+  Ral.MTG.RichClient.UIBase.FormularioEspera.MostrarFormulario();
+
+ }
+
+}
+]]>
+       </code-example>
+      </language-parser>
+
+   <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="metricCodeExampleJava" result-value="2">
+<![CDATA[
+package es.drem.isl.atm.tms.srv.server.eventclient.tmsmodel;
+
+import java.rmi.*;
+import es.drem.isl.atm.tms.srv.server.eventclient.*;
+import es.drem.isl.atm.tms.srv.server.eventservice.*;
+import es.drem.isl.atm.tms.srv.tmsmodel.rmi.events.*;
+
+public class LocalTmsModelUpdateService extends AbstractLocalEventServiceClient {
+ private static LocalTmsModelUpdateService _instance;
+
+ private LocalTmsModelUpdateService() {
+  super();
+ }
+
+ public static LocalTmsModelUpdateService getInstance() {                          //1
+  if (_instance == null) {
+   _instance = new LocalTmsModelUpdateService();
+  }
+  return _instance;
+ }
+
+ @Override
+ public void notify(RmiEvent event) throws RemoteException {                       //2
+  switch(event.getType()){
+   case RMI_FLIGHT_PLAN_UPDATE_EVENT:
+    FlightPlanEvent fpEvent=(FlightPlanEvent)event;
+    dispatch(fpEvent);
+    break;
+   case RMI_CURRENT_SCT_CHANGE_EVENT:
+    CurrentSCTChangedEvent sctEvent=(CurrentSCTChangedEvent)event;
+    dispatch(sctEvent);
+    break;
+                    }
+ }
+
+ private void dispatch(RmiEvent rmiEvent) {
+  for (LocalEventListener listener : listeners) {
+   listener.firedEvent(rmiEvent);
+  }
+ }
+}
+]]>
+       </code-example>
+      </language-parser>
+
+   <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+        <code-example name="metricCodeExampleVb6" result-value="1">
+<![CDATA[
+VERSION 1.0 CLASS
+BEGIN
+ MultiUse = -1  'True
+END
+Attribute VB_Name = "ExcelInf"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = True
+
+Public Function ExcelInf()                                                             '1
+ 'Adoptado de Cards
+ Dim lError As Long
+ Dim fName$, fhandle&
+ Dim classt As String * 256, exect As String * 256, execlen&, classlen&
+
+ frmExcel.aux.MaxCol = foneF1Excel.MaxCol
+ frmExcel.aux.MaxRow = foneF1Excel.MaxRow + 1
+
+ frmExcel.aux.Row = 1
+
+End Function
+
+Public Property Get F1excel() As Object                                                'Property
+ F1excel = foneF1Excel
+End Property
+
+Public Property Let F1excel(ByVal F1excel As Object)                                   'Property
+ Set foneF1Excel = F1excel
+End Property
+]]>
+       </code-example>
+      </language-parser>
+
+   <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="metricCodeExampleVbnet" result-value="4">
+<![CDATA[
+Class NativeMethods
+
+ Public Declare Function SetWindowsHookEx Lib "user32" _                                   '1
+  Alias "SetWindowsHookExA" (ByVal idHook As Integer) As Boolean
+ End Function
+
+ Public Function SetWindowsHookEx (ByVal idHook As Integer) As Boolean                     '2
+ End Function
+
+ Public Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)                    '3
+ End Sub
+
+ Public Sub Sleep (ByVal dwMilliseconds As Long)                                           '4
+ End Sub
+
+End Class
+]]>
+       </code-example>
+      </language-parser>
+
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Métodos públicos]]></name>
+      
+      <description>
+<![CDATA[
+Número de métodos públicos implementados.
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Número de metodos públicos por clase (fichero) abap.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Métodos "public" (independientemente de los modificadores adicionales "static", "final", etc...) IMPLEMENTADOS en un mismo fichero.
+
+NOTA: En C++ los modificadores de acceso (public, private, etc) se encuentran normalmente sólo en los ficheros de cabecera, dentro de las clases, junto con las definiciones de los métodos y no siempre  pueden encontrarse en los ficheros que implementan esos métodos. Por lo tanto, la métrica solo funcionará correctamente si está configurado el preprocesador de C++ de forma que el código de los ficheros de cabecera se embeba al analizar los ficheros .cpp. De esta forma, si la configuración del preprocesador es incorrecta, o no se encuentran los ficheros de cabecera, o no se pueden parsear, no se podrán contar correctamente el número de métodos públicos implementados.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Métodos "public" que no tengan el modificador "abstract", (independientemente de los modificadores adicionales "static", "sealed", etc...) definidos en todas las clases definidas en un mismo fichero. Los métodos de las clases inner también están incluidos. Las interfaces no serán tenidas en cuenta.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Métodos "public" que no tengan el modificador "abstract",(independientemente de los modificadores adicionales "static", "final", etc...) definidos en todas las clases definidas en un mismo fichero. Los métodos de las clases inner o aquellas que se definen en el "new" también están incluidas. Las interfaces no serán tenidas en cuenta.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+<![CDATA[
+Métodos (Sub y Function) "Public", definidos en todas las clases definidas en un mismo fichero .cls.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Métodos "Public" que no tengan el modificador "MustOverride" (independientemente de los modificadores adicionales "NotInheritable", "Shared", etc...) definidos en todas las clases definidas en un mismo fichero. Los métodos de las clases inner también estarán incluidos. Las interfaces no serán tenidas en cuenta.
+]]>
+            </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Public methods]]></name>
+      
+      <description>
+<![CDATA[
+Number of public implemented methods.
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Number of public methods per class (file) abap.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Counts all the  "public" methods (regardless additional modifiers "static", "final", etc ...) IMPLEMENTED in the same file.
+NOTE: Access modifiers in C++ (public, private, etc...) are usually located in header files, inside classes alongside methods definitions, so sometimes it is not possible to find them in the files where the methods are implemented. The metric will only work properly if the C++ preprocessor is enabled, so the header files code is embedded in the .cpp files analysis. On this way, if the preprocessor configuration is incorrect, or the header files can not be found or parsed, then it will not be possible to count the number of public implemented methods properly.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">ç
+<![CDATA[
+Counts all the "public" methods, without the "abstract" modifier (regardless additional modifiers "static", "sealed", etc...) defined in all the classes defined of the file. Methods of inner classes are also counted. Interfaces are not taken into account.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Counts all the "public" methods, without the "abstract" modifier (redardless additional modifiers "static", "final", etc...) defined in all the classes of the file. Methods of inner classes or those defined in the "new" are also counted. Interfaces are not taken into account.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+<![CDATA[
+Counts all the "Public" methods (Sub and function) defined in all classes defined in the same .cls file.
+]]>
+            </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Counts all the  "Public" methods without the "MustOverride" modifier (regardless additional modifiers "NotInheritable", "Shared", etc...) defined in all the classes of the file. Methods of inner classes are also counted. Interfaces are not taken into account.
+]]>
+            </implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

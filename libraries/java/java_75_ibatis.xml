@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="apache.ibatis" standard="iBatis" technology="java">
+
+  <description>iBatis / myBatis persistence frameworks</description>
+
+  <module name="com.ibatis" standard="ibatis">
+    <description url="https://ibatis.apache.org/docs/java/dev/">Apache iBatis - Persistence framework for Java</description>
+
+    <class name="com.ibatis.sqlmap.engine.execution.SqlExecutor">
+      <method name="executeUpdate" signature="executeUpdate(com.ibatis.sqlmap.engine.scope.RequestScope,java.sql.Connection,java.lang.String,java.lang.Object[])"
+              alias="addBatch,executeQuery,executeUpdateProcedure,executeQueryProcedure" match="name">
+        <tags>write</tags>
+        <sink argpos="2" kind="sql_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="com.ibatis.sqlmap.engine.execution.SqlExecutor.Batch">
+      <method name="addBatch" signature="addBatch(com.ibatis.sqlmap.engine.scope.RequestScope,java.sql.Connection,java.lang.String,java.lang.Object[])" match="name">
+        <tags>write</tags>
+        <sink argpos="2" kind="sql_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="com.ibatis.common.jdbc.ScriptRunner">
+      <constructor name="ScriptRunner" signature="ScriptRunner(java.sql.Connection, boolean, boolean)"></constructor>
+      <constructor name="ScriptRunner" signature="ScriptRunner(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean, boolean)">
+        <tags>username:2, password:3</tags>
+        <sink kind="configuration_setting_injection" resource="database" argpos="0"/>
+        <sink kind="connection_string_injection" argpos="1" resource="database"/>
+        <sink kind="hardcoded_credentials" argpos="2,3" resource="database"/>
+      </constructor>
+
+      <method name="runScript" signature="runScript(java.io.Reader)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+    </class>
+  </module>
+
+
+  <module name="org.apache.ibatis" standard="mybatis">
+    <description url="https://mybatis.org/mybatis-3/">MyBatis - Persistence framework for Java</description>
+
+    <class name="org.apache.ibatis.jdbc.SqlRunner">
+      <constructor name="SqlRunner" signature="SqlRunner(java.sql.Connection)"></constructor>
+      <method name="run" signature="run(java.lang.String)">
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="insert" signature="insert(java.lang.String, java.lang.Object...)" match="name">
+        <return type="int"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="update" signature="update(java.lang.String, java.lang.Object...)" match="name">
+        <return type="int"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="delete" signature="delete(java.lang.String, java.lang.Object...)" match="name">
+        <return type="int"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="selectAll" signature="selectAll(java.lang.String, java.lang.Object...)" match="name">
+        <return type="java.util.List" elementType="java.util.Map"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="selectOne" signature="selectOne(java.lang.String, java.lang.Object...)" match="name">
+        <return type="java.util.Map"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+
+  </module>
+
+</library>

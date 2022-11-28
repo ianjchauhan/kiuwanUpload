@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="sanitizers">
+
+  <description>Go sanitization modules</description>
+
+  <module name="github.com.microcosm-cc.bluemonday" standard="bluemonday">
+    <description url="https://github.com/microcosm-cc/bluemonday">
+      HTML sanitizer (against XSS attacks) implemented in Go
+    </description>
+
+    <class name="github.com.microcosm-cc.bluemonday.UGCPolicy" >
+      <method name="Sanitize" signature="Sanitize(go.string)" >
+        <return type="go.string" />
+        <neutralization argpos="0" kind="xss" />
+      </method>
+      <method name="SanitizeBytes" signature="SanitizeBytes(go.slice)" >
+        <return type="go.slice" elementType="go.byte" />
+        <neutralization argpos="0" kind="xss" />
+      </method>
+      <method name="SanitizeReader" signature="SanitizeReader(io.Reader)" >
+        <return type="bytes.Buffer" />
+        <neutralization argpos="0" kind="xss" />
+      </method>
+    </class>
+
+    <function name="github.com.microcosm-cc.bluemonday.UGCPolicy" signature="github.com.microcosm-cc.bluemonday.UGCPolicy()" >
+      <return type="github.com.microcosm-cc.bluemonday.UGCPolicy" />
+    </function>
+  </module>
+</library>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.owasp" standard="OWASP" technology="java">
+
+  <description url="https://owasp.org/projects/">Security tools (validators, encoders...) from OWASP</description>
+  
+  <module name="owasp.html.sanitizer" standard="OWASP_HTML_Sanitizer">
+    <description url="https://github.com/OWASP/java-html-sanitizer">Sanitizer for including HTML in web apps while protecting against XSS</description>
+    <class name="org.owasp.html.Sanitizers">
+      <field name="BLOCKS" type="org.owasp.html.PolicyFactory" />
+      <field name="FORMATTING" type="org.owasp.html.PolicyFactory" />
+      <field name="IMAGES" type="org.owasp.html.PolicyFactory" />
+      <field name="LINKS" type="org.owasp.html.PolicyFactory" />
+      <field name="STYLES" type="org.owasp.html.PolicyFactory" />
+      <field name="TABLES" type="org.owasp.html.PolicyFactory" />
+    </class>
+
+    <class name="org.owasp.html.PolicyFactory">
+      <function name="sanitize" signature="sanitize(java.lang.String)" >
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="xss" resource="web" />
+      </function>
+      <function name="sanitize_2" signature="sanitize(java.lang.String, org.owasp.html.HtmlChangeListener, CTX)" >
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="xss" resource="web" />
+      </function>
+      <function name="and" signature="and(org.owasp.html.PolicyFactory)" >
+        <return type="org.owasp.html.PolicyFactory" />
+      </function>
+    </class>
+
+    <class name="org.owasp.html.HtmlPolicyBuilder">
+      <constructor name="HtmlPolicyBuilder" signature="HtmlPolicyBuilder()"/>
+      <method name="toFactory" signature="toFactory()">
+        <return type="org.owasp.html.PolicyFactory"/>
+      </method>
+      <method name="*" signature="*"><return type="@self"/></method>
+    </class>
+    <class name="org.owasp.html.HtmlSanitizer.Policy"></class>
+    <class name="org.owasp.html.HtmlSanitizer">
+      <method name="sanitize" signature="sanitize(java.lang.String, org.owasp.html.HtmlSanitizer.Policy, org.owasp.html.HtmlStreamEventProcessor)" match="name" instance="false">
+        <neutralization kind="xss" argpos="0" resource="web"/>
+      </method>
+    </class>
+    <class name="org.owasp.html.Encoding">
+      <method name="decodeHtml" signature="decodeHtml(java.lang.String)">
+        <return type="java.lang.String"/>
+      </method>
+      <method name="encodeRcdataOnto" signature="encodeRcdataOnto(java.lang.String, java.lang.Appendable)">
+      </method>
+    </class>
+
+    <class name="org.owasp.validator.html.AntiSamy">
+      <method name="scan" signature="scan(java.lang.String, java.io.File)" match="name" >
+        <return type="org.owasp.validator.html.CleanResults" />
+        <neutralization kind="xss" argpos="-1,0" resource="web" />
+      </method>
+    </class>
+    <class name="org.owasp.validator.html.CleanResults">
+      <method name="getCleanHTML" signature="getCleanHTML()" >
+        <return type="java.lang.String" />
+        <neutralization kind="xss" argpos="-1" resource="web" />
+      </method>
+      <method name="getCleanXMLDocumentFragment" signature="getCleanXMLDocumentFragment()" >
+        <return type="org.w3c.dom.DocumentFragment" />
+        <neutralization kind="xss" argpos="-1" resource="web" />
+      </method>
+    </class>
+  </module>
+
+  <module name="org.owasp.encoder" standard="OWASP_Encoder">
+    <description url="https://owasp.org/owasp-java-encoder/">A simple Java library for anti-XSS encoding</description>
+
+    <class name="org.owasp.encoder.Encode">
+      <method name="forXml" signature="forXml(java.lang.String)" match="name"
+              alias="forHtml,forXmlAttribute,forHtmlAttribute">
+        <return type="java.lang.String"/>
+        <neutralization argpos="0,1" kind="xss" resource="web"/>
+        <neutralization argpos="0,1" kind="xpath_injection"/>
+      </method>
+      <method name="forXmlContent" signature="forXmlContent(java.lang.String)" match="name"
+              alias="forHtmlContent,forHtmlUnquotedAttribute,forCssString,forCssUrl,forJava,forJavaScript,forJavaScriptAttribute,forJavaScriptBlock,forJavaScriptSource">
+        <return type="java.lang.String"/>
+        <neutralization argpos="0,1" kind="xss" resource="web"/>
+      </method>
+      <method name="forUri" signature="forUri(java.lang.String)" match="name" alias="forUriComponent">
+        <return type="java.lang.String"/>
+        <neutralization argpos="0,1" kind="xss" resource="web"/>
+        <neutralization argpos="0,1" kind="header_manipulation" resource="web"/>
+        <neutralization argpos="0,1" kind="http_parameter_pollution" resource="web"/>
+      </method>
+    </class>
+  </module>
+
+</library>

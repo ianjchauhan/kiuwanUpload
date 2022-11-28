@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="go.logging">
+
+  <description>Logging modules</description>
+
+  <module name="glog" >
+    <description url="https://pkg.go.dev/github.com/golang/glog" >Leveled execution logs for Go</description>
+
+    <class name="glog.loggingT" kind="struct" >
+      <method name="println" signature="println(glog.severity,...go.interface)" alias="print" >
+        <tags>write</tags>
+        <sink argpos="1,2,3,4" kind="log_forging" />
+      </method>
+      <method name="printDepth" signature="printDepth(glog.severity,go.int,...go.interface)" >
+        <tags>write</tags>
+        <sink argpos="2,3,4" kind="log_forging" />
+      </method>
+      <method name="printf" signature="println(glog.severity,go.string,...go.interface)" >
+        <tags>write</tags>
+        <sink argpos="2,3,4" kind="format_injection" />
+        <sink argpos="2,3,4" kind="log_forging" />
+      </method>
+      <method name="printWithFileLine" signature="printWithFileLine(glog.severity,go.string,go.int,go.bool,...go.interface)" >
+        <tags>write</tags>
+        <sink argpos="1" kind="path_traversal" />
+        <sink argpos="5,6,7,8" kind="log_forging" />
+      </method>
+    </class>
+
+    <globalObject name="logging" type="glog.loggingT" />
+
+    <function name="glog.V" signature="glog.V(glog.Level)" >
+      <return type="glog.Verbose" />
+    </function>
+
+    <class name="glog.Verbose" >
+      <method name="Info" signature="Info(...go.interface)" alias="Infoln" >
+        <tags>write</tags>
+        <sink argpos="0,1,2,3,4" kind="log_forging" />
+      </method>
+      <method name="Infof" signature="Infof(go.string,...go.interface)" >
+        <tags>write</tags>
+        <sink argpos="0" kind="format_injection" />
+        <sink argpos="1,2,3,4" kind="log_forging" />
+      </method>
+    </class>
+
+    <function name="glog.Info" signature="glog.Info(...go.interface)" alias="glog.Infoln,glog.Warning,glog.Error,glog.Fatal,glog.Exit" >
+      <tags>write</tags>
+      <sink argpos="0,1,2,3,4" kind="log_forging" />
+    </function>
+    <function name="glog.InfoDepth" signature="glog.InfoDepth(go.int,...go.interface)" alias="glog.WarningDepth,glog.ErrorDepth,glog.FatalDepth,glog.ExitDepth" >
+      <tags>write</tags>
+      <sink argpos="1,2,3,4" kind="log_forging" />
+    </function>
+    <function name="glog.Infof" signature="glog.Infof(go.string,...go.interface)" alias="glog.Warningf,glog.Errorf,glog.Fatalf,glog.Exitf" >
+      <tags>write</tags>
+      <sink argpos="0" kind="format_injection" />
+      <sink argpos="1,2,3,4" kind="log_forging" />
+    </function>
+  </module>
+
+  <module name="go.uber.org.zap" >
+    <description url="https://pkg.go.dev/go.uber.org/zap" >Zap logging library</description>
+
+    <class name="go.uber.org.zap.Logger" >
+      <method name="DPanic" signature="DPanic(go.string,...go.uber.org.zap.log.Field)" alias="Debug,Error,Fatal,Info,Panic,Warn">
+        <tags>write</tags>
+        <sink argpos="1,2,3,4" kind="log_forging" resource="other" />
+      </method>
+      <method name="Named" signature="Named(go.string)" >
+        <return type="go.uber.org.zap.Logger" />
+      </method>
+    </class>
+    <class name="go.uber.org.zap.SugaredLogger" >
+      <method name="DPanic" signature="DPanic(go.string,...go.uber.org.zap.log.Field)" alias="Debug,Error,Fatal,Info,Panic,Warn">
+        <tags>write</tags>
+        <sink argpos="1,2,3,4" kind="log_forging" resource="other" />
+      </method>
+      <method name="Named" signature="Named(go.string)" >
+        <return type="go.uber.org.zap.SugaredLogger" />
+      </method>
+    </class>
+
+    <function name="go.uber.org.zap.S" signature="go.uber.org.zap.S()" >
+      <return type="go.uber.org.zap.SugaredLogger" />
+    </function>
+    <function name="go.uber.org.zap.L" signature="go.uber.org.zap.L()" >
+      <return type="go.uber.org.zap.Logger" />
+    </function>
+    <function name="go.uber.org.zap.New" signature="go.uber.org.zap.New()" alias="NewNop" >
+      <return type="go.uber.org.zap.Logger" />
+    </function>
+    <function name="go.uber.org.zap.NewDevelopment" signature="go.uber.org.zap.NewDevelopment(...go.uber.org.zap.Option)" alias="NewExample,NewProduction" >
+      <return type="go.uber.org.zap.Logger,go.error" />
+    </function>
+    <function name="go.uber.org.zap.NewStdLog" signature="go.uber.org.zap.NewStdLog(log.Logger)" >
+      <return type="go.uber.org.zap.Logger" />
+    </function>
+    <function name="go.uber.org.zap.NewStdLog" signature="go.uber.org.zap.NewStdLog" >
+      <return type="go.uber.org.zap.Logger" />
+    </function>
+  </module>
+</library>

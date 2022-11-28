@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.numelements" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.SIZE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.SIZE.CODE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.TYPE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds />
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET">
+        <internal-name id="OPT.ASPNET.SIZE.NUMELEMENTS" />
+        <java-class>com.optimyth.aspnet.metrics.NumElementsMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+     <!-- Code examples for each language parser -->
+    <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET">
+        <code-example name="metricCodeExampleAspnet" result-value="7">
+<![CDATA[
+<html>                            'ELEMENT 1
+<table width="100%">              'ELEMENT 2
+  <tr>                            'ELEMENT 3
+    <td>celda 1</td>              'ELEMENT 4
+    <td>celda 2</td>              'ELEMENT 5
+  </tr>
+  <tr>                            'ELEMENT 6 
+    <td colspan="2">celda 3</td>  'ELEMENT 7
+  </tr>
+</table>
+</html>
+]]>
+        </code-example>
+      </language-parser>
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Número de 'tags']]></name>
+      
+      <description>
+<![CDATA[
+Número de tags correctamente cerrados en ficheros fuente.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET">
+<![CDATA[
+Cuenta el número de elementos en ficheros ASP.Net. "Elemento" es el tag contenido entre <.... />.
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Number of tags]]></name>
+      
+      <description>
+<![CDATA[
+Number of correctly closed tags in source files.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET">
+<![CDATA[
+Counts the number of elements per aspnet file. "Element" is the tag contained between <.... />.
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

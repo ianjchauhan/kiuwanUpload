@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+
+  <bean id="apm_modelBuilder" class="com.optimyth.apm.builder.DefaultApmModelBuilder">
+    <property name="fileFilter" ref="aim.klaFilter"/>
+    <property name="parsersRegistry" ref="apm_parsersRegistry"/>
+    <property name="ruleset" ref="apm_ruleset"/>
+    <property name="reportRenderer" ref="apm_report_renderer"/>
+    <property name="modelBuilderListener" ref="apm_listener"/>
+    <property name="softwareResolver" ref="aim.global.applicationResolver"/>
+    <property name="databaseObjectResolver" ref="aim.global.databaseObjectResolver"/>
+  </bean>
+
+  <bean id="apm_parsersRegistry" class="com.optimyth.apm.builder.parser.FileParsersRegistry">
+    <property name="parsers"><null/></property>
+    <property name="timeoutMillis" value="${parser.timeout}"/>
+  </bean>
+
+  <bean id="apm_ruleset" class="com.optimyth.apm.builder.rules.BuilderRuleset">
+    <property name="name" value="my ruleset"/>
+    <property name="rules"><null/></property>
+  </bean>
+
+  <bean id="apm_report_renderer" class="com.optimyth.apm.builder.report.CompositeReportRenderer">
+    <property name="renderers"><list>
+      <bean class="com.optimyth.apm.builder.report.XmlBuilderReportRenderer" />
+      <bean class="com.optimyth.apm.builder.report.HtmlBuilderReportRenderer" />
+    </list></property>
+  </bean>
+
+  <bean id="apm_listener" class="com.optimyth.apm.builder.listener.CompositeModelBuilderListener">
+    <constructor-arg><list>
+      <bean class="com.optimyth.apm.builder.listener.ProfilerModelBuilderListener">
+        <property name="active" value="${listener.profile.active}"/>
+        <property name="filesProfiled" value="${listener.profile.filesProfiled}"/>
+        <property name="parsersProfiled" value="${listener.profile.parsersProfiled}"/>
+        <property name="rulesProfiled" value="${listener.profile.rulesProfiled}"/>
+        
+      </bean>
+      <bean class="com.optimyth.apm.builder.listener.LoggerModelBuilderListener">
+        <property name="active" value="${listener.logging.active}"/>
+      </bean>
+    </list></constructor-arg>
+  </bean>
+
+  <!--
+    LanguageInfo uses a central LanguageInfo.properties file for defining technology-specific configuration.
+    For example, file extensions, or files to ignore.
+  -->
+  <bean id="language_info" class="es.als.util.LanguageInfo">
+    <property name="resource" value="classpath:LanguageInfo.properties"/>
+  </bean>
+
+  <!-- Persistence -->
+  <import resource="classpath:apm-persistence.xml"/>
+  <!-- JMX -->
+  
+  <!-- build components -->
+  <import resource="classpath:aim.technologies.xml"/>
+  <!-- custom components -->
+  <import resource="classpath:aim.custom.xml"/>
+
+</beans>

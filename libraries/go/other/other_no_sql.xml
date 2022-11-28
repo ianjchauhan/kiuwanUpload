@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="go.noSQL">
+
+  <description>noSQL modules</description>
+
+  <module name="go-redis">
+    <description url="https://github.com/go-redis/redis">Go API for Redis</description>
+
+    <function name="github.com.go-redis.redis.NewClient"
+              signature="github.com.go-redis.redis.NewClient(github.com.go-redis.redis.Options)"
+              alias="github.com.go-redis.redis.v7.NewClient" >
+      <return type="github.com.go-redis.redis.Client" />
+    </function>
+
+    <class name="github.com.go-redis.redis.Options" kind="struct" >
+      <field name="Network" type="go.string" >
+        <sink argpos="-1" kind="resource_injection" resource="database" />
+      </field>
+      <field name="Addr" type="go.string" >
+        <sink argpos="-1" kind="connection_string_injection" resource="database" />
+      </field>
+      <field name="Password" type="go.string" >
+        <tags>password:-1</tags>
+      </field>
+      <field name="DB" type="go.int" >
+        <sink argpos="-1" kind="resource_injection" resource="database" />
+      </field>
+    </class>
+
+    <class name="github.com.go-redis.redis.v7.redis.Options" kind="struct" supertypes="github.com.go-redis.redis.Options" />
+  </module>
+
+  <module name="mongo-driver">
+    <description url="https://godoc.org/go.mongodb.org/mongo-driver/mongo">Go API for Mongo</description>
+
+    <class name="go.mongodb.org.mongo-driver.mongo.Client" >
+      <method name="Database" signature="Database(go.string,...go.mongodb.org.mongo-driver.mongo.options.DatabaseOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.Database" />
+      </method>
+    </class>
+    <class name="go.mongodb.org.mongo-driver.mongo.Database" >
+      <method name="Aggregate" signature="Aggregate(context.Context,go.interface,go.mongodb.org.mongo-driver.mongo.options.AggregateOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.Cursor,go.error" />
+      </method>
+      <method name="Client" signature="Client()" >
+        <return type="go.mongodb.org.mongo-driver.mongo.Client" />
+      </method>
+      <method name="Collection" signature="Collection(go.string,...go.mongodb.org.mongo-driver.mongo.options.CollectionOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.Collection" />
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+      </method>
+      <method name="ListCollections" signature="ListCollections(context.Context,go.interface,...go.mongodb.org.mongo-driver.mongo.options.CollectionOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.Cursor,go.error" />
+        <sink argpos="1" kind="resource_injection" resource="database"/>
+      </method>
+      <method name="RunCommand" signature="RunCommand(context.Context,go.interface,...go.mongodb.org.mongo-driver.mongo.options.CollectionOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.SingleResult" />
+        <sink argpos="0" kind="nosql_injection" resource="database" />
+      </method>
+      <method name="RunCommandCursor" signature="RunCommandCursor(context.Context,go.interface,...go.mongodb.org.mongo-driver.mongo.options.CollectionOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.Cursor,go.error" />
+        <sink argpos="0" kind="nosql_injection" resource="database" />
+      </method>
+    </class>
+    <class name="go.mongodb.org.mongo-driver.mongo.Dialer" >
+      <method name="DialContext" signature="DialContext(context.Context,go.string,go.string)" >
+        <return type="net.Conn,go.error" />
+        <sink argpos="0" kind="resource_injection" resource="network" />
+        <sink argpos="1" kind="ssrf" resource="network" />
+        <sink argpos="1" kind="insecure_transport" resource="network" />
+      </method>
+    </class>
+    <class name="go.mongodb.org.mongo-driver.mongo.Collection" >
+      <method name="Aggregate" signature="Aggregate(context.Context,go.interface,go.mongodb.org.mongo-driver.mongo.options.AggregateOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.Cursor,go.error"/>
+      </method>
+      <method name="CountDocuments" signature="CountDocuments(context.Context,go.interface,go.mongodb.org.mongo-driver.mongo.options.CountOptions)">
+        <return type="go.int64,go.error"/>
+        <sink argpos="1" kind="nosql_injection"/>
+      </method>
+      <method name="Database" signature="Database()" >
+        <return type="go.mongodb.org.mongo-driver.mongo.Database" />
+      </method>
+      <method name="DeleteOne" signature="DeleteOne(context.Context,go.interface,go.mongodb.org.mongo-driver.mongo.options.DeleteOptions)">
+        <return type="go.mongodb.org.mongo-driver.mongo.DeleteResult"/>
+        <sink argpos="1" kind="nosql_injection"/>
+      </method>
+      <method name="DeleteMany" signature="DeleteMany(context.Context,go.interface,go.mongodb.org.mongo-driver.mongo.options.DeleteOptions)">
+        <return type="go.mongodb.org.mongo-driver.mongo.DeleteResult"/>
+        <sink argpos="1" kind="nosql_injection"/>
+      </method>
+      <method name="Distinct" signature="Distinct(context.Context,go.string,go.interface,go.mongodb.org.mongo-driver.mongo.options.DistinctOptions)" >
+        <return type="go.slice,go.error"/>
+        <sink argpos="1,2" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="Find" signature="Find(context.Context,go.interface,...go.mongodb.org.mongo-driver.mongo.options.FindOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.Cursor,go.error"/>
+        <sink argpos="1" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="FindOne" signature="FindOne(context.Context,go.interface,...go.mongodb.org.mongo-driver.mongo.options.FindOneOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.SingleResult"/>
+        <sink argpos="1" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="FindOneAndDelete" signature="FindOneAndDelete(context.Context,go.interface,...go.mongodb.org.mongo-driver.mongo.options.FindOneAndDeleteOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.SingleResult"/>
+        <sink argpos="1" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="FindOneAndReplace" signature="FindOneAndReplace(context.Context,go.interface,...go.mongodb.org.mongo-driver.mongo.options.FindOneAndReplaceOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.SingleResult"/>
+        <sink argpos="1" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="FindOneAndUpdate" signature="FindOneAndUpdate(context.Context,go.interface,...go.mongodb.org.mongo-driver.mongo.options.FindOneAndUpdateOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.SingleResult"/>
+        <sink argpos="1" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="InsertOne" signature="InsertOne(context.Context,go.interface,...go.mongodb.org.mongo-driver.mongo.options.InsertOneOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.InsertOneResult,go.error"/>
+        <sink argpos="1" kind="nosql_injection" resource="database"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="InsertMany" signature="InsertMany(context.Context,go.slice,...go.mongodb.org.mongo-driver.mongo.options.InsertManyOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.InsertManyResult,go.error"/>
+        <sink argpos="1" kind="nosql_injection" resource="database"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="ReplaceOne" signature="ReplaceOne(context.Context,go.slice,...go.mongodb.org.mongo-driver.mongo.options.ReplaceOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.UpdateResult,go.error"/>
+        <sink argpos="1" kind="nosql_injection" resource="database"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="UpdateMany" signature="UpdateMany(context.Context,go.interface,go.interface,...go.mongodb.org.mongo-driver.mongo.options.UpdateOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.UpdateResult,go.error"/>
+        <sink argpos="1" kind="nosql_injection" resource="database"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="UpdateOne" signature="UpdateOne(context.Context,go.interface,go.interface,...go.mongodb.org.mongo-driver.mongo.options.UpdateOptions)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.UpdateResult,go.error"/>
+        <sink argpos="1" kind="nosql_injection" resource="database"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <function name="go.mongodb.org.mongo-driver.mongo.NewClient" signature="go.mongodb.org.mongo-driver.mongo.NewClient(...go.mongodb.org.mongo-driver.mongo.options.ClientOptions)" >
+      <return type="go.mongodb.org.mongo-driver.mongo.Client" />
+    </function>
+    <function name="go.mongodb.org.mongo-driver.mongo.NewClient" signature="go.mongodb.org.mongo-driver.mongo.NewClient(...go.mongodb.org.mongo-driver.mongo.options.ClientOptions)" >
+      <return type="go.mongodb.org.mongo-driver.mongo.Client" />
+    </function>
+    <function name="go.mongodb.org.mongo-driver.mongo.Connect" signature="go.mongodb.org.mongo-driver.mongo.Connect(context.Context,...go.mongodb.org.mongo-driver.mongo.options.ClientOptions)" >
+      <return type="go.mongodb.org.mongo-driver.mongo.Client" />
+    </function>
+
+    <class name="go.mongodb.org.mongo-driver.mongo.options.DatabaseOptions" />
+    <class name="go.mongodb.org.mongo-driver.mongo.options.Credential" >
+      <field name="Username" type="go.string" >
+        <tags>username:-2</tags>
+      </field>
+      <field name="Password" type="go.string" >
+        <tags>password:-2</tags>
+      </field>
+    </class>
+    <class name="go.mongodb.org.mongo-driver.mongo.options.ClientOptions" >
+      <method name="ApplyURI" signature="ApplyURI(go.string)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.options.ClientOptions" />
+        <sink argpos="0" kind="connection_string_injection" resource="database" />
+      </method>
+      <method name="SetAppName" signature="SetAppName(go.string)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.options.ClientOptions" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="SetConnectTimeout" signature="SetConnectTimeout(time.Duration)" >
+        <return type="go.mongodb.org.mongo-driver.mongo.options.ClientOptions" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+    </class>
+
+    <function name="go.mongodb.org.mongo-driver.mongo.options.Database" signature="go.mongodb.org.mongo-driver.mongo.options.Database()" >
+      <return type="go.mongodb.org.mongo-driver.mongo.options.DatabaseOptions" />
+    </function>
+    <function name="go.mongodb.org.mongo-driver.mongo.options.Client" signature="go.mongodb.org.mongo-driver.mongo.options.Client()" >
+      <return type="go.mongodb.org.mongo-driver.mongo.options.ClientOptions" />
+    </function>
+
+  </module>
+
+</library>

@@ -1,0 +1,1364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="go.sql">
+
+  <description>SQL modules</description>
+
+  <module name="github.com.go-pg.pg" standard="go-pg">
+    <description url="https://github.com/go-pg/pg">PostgreSQL client and ORM for Go</description>
+
+    <function name="github.com.go-pg.pg.Connect" signature="github.com.go-pg.pg.Connect(github.com.go-pg.pg.Options)"
+              alias="github.com.go-pg.pg.v9.Connect">
+      <return type="github.com.go-pg.pg.Connect" />
+    </function>
+
+    <class name="github.com.go-pg.pg.Options" >
+      <field name="Network" type="go.string" >
+        <sink argpos="-1" kind="resource_injection" resource="database" />
+      </field>
+      <field name="Addr" type="go.string" >
+        <sink argpos="-1" kind="connection_string_injection" resource="database" />
+      </field>
+      <field name="Password" type="go.string" >
+        <tags>password:-1</tags>
+      </field>
+      <field name="DB" type="go.int" >
+        <sink argpos="-1" kind="resource_injection" resource="database" />
+      </field>
+    </class>
+
+    <class name="github.com.go-pg.pg.v9.pg.Options" supertypes="github.com.go-pg.pg.Options" />
+    <class name="github.com.go-pg.pg.DB" />
+    <class name="github.com.go-pg.pg.v9.DB" supertypes="github.com.go-pg.pg.DB" />
+
+    <function name="github.com.go-pg.pg.Q" signature="github.com.go-pg.pg.Q(go.string,...go.interface)"
+              alias="github.com.go-pg.pg.v9.Q" >
+      <sink argpos="0" kind="sql_injection" resource="database" />
+      <sink argpos="1,2,3,4" kind="primary_controlled_key" resource="database" />
+    </function>
+    <function name="github.com.go-pg.pg.SafeQuery" signature="github.com.go-pg.pg.SafeQuery(go.string,...go.interface)"
+              alias="github.com.go-pg.pg.v9.SafeQuery" >
+      <sink argpos="1,2,3,4" kind="primary_controlled_key" resource="database" />
+    </function>
+    <function name="github.com.go-pg.pg.Scan" signature="github.com.go-pg.pg.Scan(go.string,...go.interface)"
+              alias="github.com.go-pg.pg.v9.Scan" >
+      <sink argpos="0,1,2,3" kind="primary_controlled_key" resource="database" />
+    </function>
+
+    <class name="github.com.go-pg.pg.Conn" >
+      <method name="CreateComposite" signature="CreateComposite(go.interface,github.com.go-pg.pg.orm.DropCompositeOptions)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="CreateTable" signature="CreateTable(go.interface,github.com.go-pg.pg.orm.CreateTableOptions)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="DeleteModel" signature="DeleteModel(go.interface)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="DropComposite" signature="DropComposite(go.interface,github.com.go-pg.pg.orm.DropCompositeOptions)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="DropTable" signature="DropTable(go.interface,github.com.go-pg.pg.orm.CreateTableOptions)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="ForceDelete" signature="ForceDelete(go.interface)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="Exec" signature="Exec(go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecContext" signature="ExecContext(context.Context,go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecOne" signature="ExecOne(go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecOneContext" signature="ExecOneContext(context.Context,go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Formatter" signature="Formatter()" >
+        <return type="github.com.go-pg.pg.v9.orm.QueryFormatter" />
+      </method>
+      <method name="Insert" signature="Insert(...go.interface)" >
+        <return type="go.error" />
+      </method>
+      <method name="Model" signature="Model(...go.interface)" >
+        <return type="github.com.go-pg.pg.v9.orm.Query" />
+      </method>
+      <method name="ModelContext" signature="ModelContext(context.Context,...go.interface)" >
+        <return type="github.com.go-pg.pg.v9.orm.Query" />
+      </method>
+      <method name="Prepare" signature="Prepare(go.string)" >
+        <return type="github.com.go-pg.pg.Stmt" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="Query" signature="Query(...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryContext" signature="QueryContext(context.Context,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryOne" signature="QueryOne(...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryOneContext" signature="QueryOneContext(context.Context,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Select" signature="Select(...go.interface)" >
+        <return type="go.error" />
+      </method>
+      <method name="Update" signature="Update(...go.interface)" >
+        <tags>write</tags>
+        <return type="go.error" />
+      </method>
+      <method name="WithContext" signature="WithContext(context.Context)" >
+        <return type="github.com.go-pg.pg.Conn" />
+      </method>
+      <method name="WithParam" signature="WithParam(go.string,go.interface)" >
+        <return type="github.com.go-pg.pg.Conn" />
+      </method>
+      <method name="WithTimeout" signature="WithTimeout(time.Duration)" >
+        <return type="github.com.go-pg.pg.Conn" />
+      </method>
+    </class>
+    <class name="github.com.go-pg.pg.v9.pg.Conn" supertypes="github.com.go-pg.pg.Conn" />
+
+    <class name="github.com.go-pg.pg.DB" >
+      <method name="CreateComposite" signature="CreateComposite(go.interface,github.com.go-pg.pg.orm.DropCompositeOptions)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="CreateTable" signature="CreateTable(go.interface,github.com.go-pg.pg.orm.CreateTableOptions)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="DeleteModel" signature="DeleteModel(go.interface)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="DropComposite" signature="DropComposite(go.interface,github.com.go-pg.pg.orm.DropCompositeOptions)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="DropTable" signature="DropTable(go.interface,github.com.go-pg.pg.orm.CreateTableOptions)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="ForceDelete" signature="ForceDelete(go.interface)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="Exec" signature="Exec(go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecContext" signature="ExecContext(context.Context,go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecOne" signature="ExecOne(go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecOneContext" signature="ExecOneContext(context.Context,go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Formatter" signature="Formatter()" >
+        <return type="github.com.go-pg.pg.v9.orm.QueryFormatter" />
+      </method>
+      <method name="Insert" signature="Insert(...go.interface)" >
+        <tags>write</tags>
+        <return type="go.error" />
+      </method>
+      <method name="Model" signature="Model(...go.interface)" >
+        <return type="github.com.go-pg.pg.v9.orm.Query" />
+      </method>
+      <method name="ModelContext" signature="ModelContext(context.Context,...go.interface)" >
+        <return type="github.com.go-pg.pg.v9.orm.Query" />
+      </method>
+      <method name="Prepare" signature="Prepare(go.string)" >
+        <return type="github.com.go-pg.pg.Stmt" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="Query" signature="Query(...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryContext" signature="QueryContext(context.Context,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryOne" signature="QueryOne(...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryOneContext" signature="QueryOneContext(context.Context,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Select" signature="Select(...go.interface)" >
+        <return type="go.error" />
+      </method>
+      <method name="Update" signature="Update(...go.interface)" >
+        <tags>write</tags>
+        <return type="go.error" />
+      </method>
+      <method name="WithContext" signature="WithContext(context.Context)" >
+        <return type="github.com.go-pg.pg.DB" />
+      </method>
+      <method name="WithParam" signature="WithParam(go.string,go.interface)" >
+        <return type="github.com.go-pg.pg.DB" />
+      </method>
+      <method name="WithTimeout" signature="WithTimeout(time.Duration)" >
+        <return type="github.com.go-pg.pg.DB" />
+      </method>
+    </class>
+    <class name="github.com.go-pg.pg.v9.pg.DB" supertypes="github.com.go-pg.pg.DB" />
+
+    <class name="github.com.go-pg.pg.Stmt" >
+      <method name="Exec" signature="Exec(go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecContext" signature="ExecContext(context.Context,go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecOne" signature="ExecOne(go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecOneContext" signature="ExecOneContext(context.Context,go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Query" signature="Query(...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryContext" signature="QueryContext(context.Context,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryOne" signature="QueryOne(...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryOneContext" signature="QueryOneContext(context.Context,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+    </class>
+    <class name="github.com.go-pg.pg.v9.pg.Stmt" supertypes="github.com.go-pg.pg.Stmt" />
+
+    <class name="github.com.go-pg.pg.Tx" >
+      <method name="CreateTable" signature="CreateTable(go.interface,github.com.go-pg.pg.orm.CreateTableOptions)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="DeleteModel" signature="DeleteModel(go.interface)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="DropComposite" signature="DropComposite(go.interface,github.com.go-pg.pg.orm.DropCompositeOptions)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="DropTable" signature="DropTable(go.interface,github.com.go-pg.pg.orm.CreateTableOptions)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="ForceDelete" signature="ForceDelete(go.interface)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="Exec" signature="Exec(go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecContext" signature="ExecContext(context.Context,go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecOne" signature="ExecOne(go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecOneContext" signature="ExecOneContext(context.Context,go.interface,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Formatter" signature="Formatter()" >
+        <return type="github.com.go-pg.pg.v9.orm.QueryFormatter" />
+      </method>
+      <method name="Insert" signature="Insert(...go.interface)" >
+        <tags>write</tags>
+        <return type="go.error" />
+      </method>
+      <method name="Model" signature="Model(...go.interface)" >
+        <return type="github.com.go-pg.pg.v9.orm.Query" />
+      </method>
+      <method name="ModelContext" signature="ModelContext(context.Context,...go.interface)" >
+        <return type="github.com.go-pg.pg.v9.orm.Query" />
+      </method>
+      <method name="Prepare" signature="Prepare(go.string)" >
+        <return type="github.com.go-pg.pg.Stmt" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="Query" signature="Query(...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryContext" signature="QueryContext(context.Context,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryOne" signature="QueryOne(...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryOneContext" signature="QueryOneContext(context.Context,...go.interface)" >
+        <return type="github.com.go-pg.pg.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Select" signature="Select(...go.interface)" >
+        <return type="go.error" />
+      </method>
+      <method name="Update" signature="Update(...go.interface)" >
+        <tags>write</tags>
+        <return type="go.error" />
+      </method>
+      <method name="Stmt" signature="Stmt(github.com.go-pg.pg.Stmt)" >
+        <return type="github.com.go-pg.pg.Stmt" />
+      </method>
+    </class>
+    <class name="github.com.go-pg.pg.v9.pg.Tx" supertypes="github.com.go-pg.pg.Tx" />
+
+  </module>
+
+  <module name="github.com.jmoiron.sqlx" standard="sqlx">
+    <description url="https://github.com/jmoiron/sqlx">Extensions for Go standard database/sql library</description>
+
+    <function name="github.com.jmoiron.sqlx.LoadFile" signature="github.com.jmoiron.sqlx.LoadFile(github.com.jmoiron.sqlx.Execer,go.string)" >
+      <return type="database.sql.Result,go.error" />
+      <sink argpos="1" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="github.com.jmoiron.sqlx.LoadFileContext" signature="github.com.jmoiron.sqlx.LoadFileContext(context.Context,github.com.jmoiron.sqlx.Execer,go.string)" >
+      <return type="database.sql.Result,go.error" />
+      <sink argpos="1" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="github.com.jmoiron.sqlx.MustExec" signature="github.com.jmoiron.sqlx.MustExec(github.com.jmoiron.sqlx.Execer,go.string,...go.interface)" >
+      <tags>potentialPk:2;...</tags>
+      <return type="database.sql.Result" />
+      <sink argpos="1" kind="sql_injection" resource="filesystem" />
+      <source argpos="-1" kind="database_input" resource="database" />
+    </function>
+    <function name="github.com.jmoiron.sqlx.MustExecContext" signature="github.com.jmoiron.sqlx.MustExecContext(context.Context,github.com.jmoiron.sqlx.Execer,go.string,...go.interface)" >
+      <tags>potentialPk:3;...</tags>
+      <return type="database.sql.Result" />
+      <sink argpos="1" kind="sql_injection" resource="filesystem" />
+      <source argpos="-1" kind="database_input" resource="database" />
+    </function>
+    <function name="github.com.jmoiron.sqlx.NamedExec" signature="github.com.jmoiron.sqlx.NamedExec(github.com.jmoiron.sqlx.Ext,go.string,go.interface)" >
+      <tags>potentialPk:2;...</tags>
+      <return type="database.sql.Result,go.error" />
+      <sink argpos="1" kind="sql_injection" resource="filesystem" />
+      <source argpos="-1" kind="database_input" resource="database" />
+    </function>
+    <function name="github.com.jmoiron.sqlx.NamedExecContext" signature="github.com.jmoiron.sqlx.NamedExecContext(context.Context,github.com.jmoiron.sqlx.ExtContext,go.string,go.interface)" >
+      <tags>potentialPk:3;...</tags>
+      <return type="database.sql.Result,go.error" />
+      <sink argpos="2" kind="sql_injection" resource="filesystem" />
+      <source argpos="-1" kind="database_input" resource="database" />
+    </function>
+    <function name="github.com.jmoiron.sqlx.Select" signature="github.com.jmoiron.sqlx.Select(github.com.jmoiron.sqlx.Queryer,go.interface,go.string,...go.interface)" >
+      <tags>potentialPk:3;...</tags>
+      <return type="database.sql.Result,go.error" />
+      <sink argpos="2" kind="sql_injection" resource="filesystem" />
+      <source argpos="1" kind="database_input" resource="database" />
+    </function>
+    <function name="github.com.jmoiron.sqlx.SelectContext" signature="github.com.jmoiron.sqlx.SelectContext(context.Context,github.com.jmoiron.sqlx.QueryerContext,go.interface,go.string,...go.interface)" >
+      <tags>potentialPk:4;...</tags>
+      <return type="database.sql.Result,go.error" />
+      <sink argpos="3" kind="sql_injection" resource="filesystem" />
+      <source argpos="2" kind="database_input" resource="database" />
+    </function>
+
+    <class name="github.com.jmoiron.sqlx.DB" supertypes="database.sql.DB" >
+      <method name="MustBegin" signature="MustBegin()" >
+        <return type="github.com.jmoiron.sqlx.Tx" />
+      </method>
+      <method name="MustBeginTx" signature="MustBeginTx(context.Context,database.sql.TxOptions)" >
+        <return type="github.com.jmoiron.sqlx.Tx" />
+      </method>
+      <method name="MustExec" signature="MustExec(github.com.jmoiron.sqlx.Execer,go.string,...go.interface)" >
+        <tags>potentialPk:2;...</tags>
+        <return type="database.sql.Result" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="MustExecContext" signature="MustExecContext(context.Context,github.com.jmoiron.sqlx.Execer,go.string,...go.interface)" >
+        <tags>potentialPk:3;...</tags>
+        <return type="database.sql.Result" />
+        <sink argpos="2" kind="sql_injection" resource="filesystem" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="NamedExec" signature="NamedExec(Ext,go.string,go.interface)" >
+        <tags>potentialPk:2;...</tags>
+        <return type="database.sql.Result,go.error" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="NamedExecContext" signature="NamedExecContext(context.Context,github.com.jmoiron.sqlx.ExtContext,go.string,go.interface)" >
+        <tags>potentialPk:3;...</tags>
+        <return type="database.sql.Result,go.error" />
+        <sink argpos="2" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="NamedQuery" signature="NamedQuery(go.string,go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="NamedQueryContext" signature="NamedQueryContext(context.Context,go.string,go.interface)" >
+        <tags>potentialPk:3;...</tags>
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="Select" signature="Select(Queryer,go.interface,go.string,...go.interface)" >
+        <tags>potentialPk:3;...</tags>
+        <return type="database.sql.Result,go.error" />
+        <sink argpos="2" kind="sql_injection" resource="filesystem" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectContext" signature="SelectContext(context.Context,QueryerContext,go.interface,go.string,...go.interface)" >
+        <tags>potentialPk:4;...</tags>
+        <return type="database.sql.Result,go.error" />
+        <sink argpos="3" kind="sql_injection" resource="filesystem" />
+        <source argpos="2" kind="database_input" resource="database" />
+      </method>
+      <method name="PrepareNamed" signature="PrepareNamed(go.string)" >
+        <return type="github.com.jmoiron.sqlx.NamedStmt" />
+        <sink argpos="0" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="PrepareNamedContext" signature="PrepareNamedContext(context.Context,go.string)" >
+        <return type="github.com.jmoiron.sqlx.NamedStmt" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="Preparex" signature="Preparex(go.string)" >
+        <return type="github.com.jmoiron.sqlx.Stmt" />
+        <sink argpos="0" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="PreparexContext" signature="PreparexContext(context.Context,go.string)" >
+        <return type="github.com.jmoiron.sqlx.Stmt" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="QueryRowx" signature="QueryRowx(go.string,...go.interface)" >
+        <tags>potentialPk1;...</tags>
+        <return type="github.com.jmoiron.sqlx.Row" />
+        <sink argpos="0" kind="sql_injection" resource="filesystem" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryRowxContext" signature="QueryRowxContext(context.Context,go.string,...go.interface)" >
+        <tags>potentialPk:2;...</tags>
+        <return type="github.com.jmoiron.sqlx.Row" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="Queryx" signature="Queryx(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="filesystem" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryxContext" signature="QueryxContext(context.Context,go.string,...go.interface)" >
+        <tags>potentialPk:2;...</tags>
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+    </class>
+
+    <class name="github.com.jmoiron.sqlx.NamedStmt" >
+      <method name="Exec" signature="Exec(go.interface)" >
+        <return type="database.sql.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecContext" signature="ExecContext(context.Context,go.interface)" >
+        <return type="database.sql.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="MustExec" signature="MustExec(go.interface)" >
+        <return type="database.sql.Result" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="MustExecContext" signature="MustExecContext(context.Context,go.interface)" >
+        <return type="database.sql.Result" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Query" signature="Query(go.interface)" >
+        <return type="database.sql.Rows,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryContext" signature="QueryContext(context.Context,go.interface)" >
+        <return type="database.sql.Rows,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryRow" signature="QueryRow(go.interface)" >
+        <return type="database.sql.Row" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryRowContext" signature="QueryRowContext(context.Context,go.interface)" >
+        <return type="database.sql.Row" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryRowx" signature="QueryRowx(go.interface)" >
+        <return type="github.com.jmoiron.sqlx.Row" />
+        <sink argpos="0" kind="sql_injection" resource="filesystem" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryRowxContext" signature="QueryRowxContext(context.Context,go.interface)" >
+        <return type="github.com.jmoiron.sqlx.Row" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="Queryx" signature="Queryx(go.interface)" >
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryxContext" signature="QueryxContext(context.Context,go.interface)" >
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="Select" signature="Select(go.interface,go.interface)" >
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectContext" signature="SelectContext(context.Context,go.interface,go.interface)" >
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+    </class>
+
+    <class name="github.com.jmoiron.sqlx.Stmt" supertypes="database.sql.Stmt">
+      <method name="Preparex" signature="Preparex(github.com.jmoiron.sqlx.Preparer,go.string)" >
+        <return type="github.com.jmoiron.sqlx.Stmt" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="PreparexContext" signature="PreparexContext(context.Context,github.com.jmoiron.sqlx.PreparerContext,go.string)" >
+        <return type="github.com.jmoiron.sqlx.Stmt" />
+        <sink argpos="2" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="Exec" signature="Exec(go.interface)" >
+        <return type="database.sql.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecContext" signature="ExecContext(context.Context,go.interface)" >
+        <return type="database.sql.Result,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="MustExec" signature="MustExec(go.interface)" >
+        <return type="database.sql.Result" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="MustExecContext" signature="MustExecContext(context.Context,go.interface)" >
+        <return type="database.sql.Result" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryRowx" signature="QueryRowx(go.interface)" >
+        <return type="github.com.jmoiron.sqlx.Row" />
+        <sink argpos="0" kind="sql_injection" resource="filesystem" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryRowxContext" signature="QueryRowxContext(context.Context,go.interface)" >
+        <return type="github.com.jmoiron.sqlx.Row" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="Queryx" signature="Queryx(go.interface)" >
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryxContext" signature="QueryxContext(context.Context,go.interface)" >
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="Select" signature="Select(go.interface,go.interface)" >
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectContext" signature="SelectContext(context.Context,go.interface,go.interface)" >
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+    </class>
+
+    <class name="github.com.jmoiron.sqlx.Tx" supertypes="database.sql.Tx">
+      <method name="MustExec" signature="MustExec(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.Result" />
+        <sink argpos="0" kind="sql_injection" resource="filesystem" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="MustExecContext" signature="MustExecContext(context.Context,go.string,...go.interface)" >
+        <tags>potentialPk:2;...</tags>
+        <return type="database.sql.Result" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="NamedExec" signature="NamedExec(go.string,go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.Result,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="NamedExecContext" signature="NamedExecContext(context.Context,go.string,go.interface)" >
+        <tags>potentialPk:2;...</tags>
+        <return type="database.sql.Result,go.error" />
+        <sink argpos="01" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="NamedQuery" signature="NamedQuery(go.string,go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="NamedQueryContext" signature="NamedQueryContext(context.Context,go.string,go.interface)" >
+        <tags>potentialPk:2;...</tags>
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="PrepareNamed" signature="PrepareNamed(go.string)" >
+        <return type="github.com.jmoiron.sqlx.NamedStmt" />
+        <sink argpos="0" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="PrepareNamedContext" signature="PrepareNamedContext(context.Context,go.string)" >
+        <return type="github.com.jmoiron.sqlx.NamedStmt" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="Preparex" signature="Preparex(go.string)" >
+        <return type="github.com.jmoiron.sqlx.Stmt" />
+        <sink argpos="0" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="PreparexContext" signature="PreparexContext(context.Context,go.string)" >
+        <return type="github.com.jmoiron.sqlx.Stmt" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+      </method>
+      <method name="QueryRowx" signature="QueryRowx(go.string,go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="github.com.jmoiron.sqlx.Row" />
+        <sink argpos="0" kind="sql_injection" resource="filesystem" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryRowxContext" signature="QueryRowxContext(context.Context,go.string,go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="github.com.jmoiron.sqlx.Row" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Queryx" signature="Queryx(go.string,go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="filesystem" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="QueryxContext" signature="QueryxContext(context.Context,go.string,go.interface)" >
+        <tags>potentialPk:2;...</tags>
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+      <method name="Select" signature="Select(go.interface,go.string,go.interface)" >
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <sink argpos="1" kind="sql_injection" resource="filesystem" />
+        <source argpos="0" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectContext" signature="SelectContext(context.Context,go.interface,go.string,...go.interface)" >
+        <return type="github.com.jmoiron.sqlx.Rows,go.error" />
+        <sink argpos="2" kind="sql_injection" resource="filesystem" />
+        <source argpos="1" kind="database_input" resource="database" />
+      </method>
+    </class>
+
+    <function name="github.com.jmoiron.sqlx.Connect" signature="github.com.jmoiron.sqlx.Connect(go.string,go.string)" >
+      <return type="github.com.jmoiron.sqlx.DB" />
+      <sink argpos="0" kind="resource_injection" resource="database"/>
+      <sink argpos="1" kind="connection_string_injection" resource="database"/>
+    </function>
+    <function name="github.com.jmoiron.sqlx.ConnectContext" signature="github.com.jmoiron.sqlx.ConnectContext(context.Context,go.string,go.string)" >
+      <return type="github.com.jmoiron.sqlx.DB" />
+      <sink argpos="1" kind="resource_injection" resource="database"/>
+      <sink argpos="2" kind="connection_string_injection" resource="database"/>
+    </function>
+    <function name="github.com.jmoiron.sqlx.MustConnect" signature="github.com.jmoiron.sqlx.MustConnect(go.string,go.string)" >
+      <return type="github.com.jmoiron.sqlx.DB" />
+      <sink argpos="0" kind="resource_injection" resource="database"/>
+      <sink argpos="1" kind="connection_string_injection" resource="database"/>
+    </function>
+    <function name="github.com.jmoiron.sqlx.MustConnectContext" signature="github.com.jmoiron.sqlx.MustConnectContext(context.Context,go.string,go.string)" >
+      <return type="github.com.jmoiron.sqlx.DB" />
+      <sink argpos="1" kind="resource_injection" resource="database"/>
+      <sink argpos="2" kind="connection_string_injection" resource="database"/>
+    </function>
+    <function name="github.com.jmoiron.sqlx.NewDb" signature="github.com.jmoiron.sqlx.NewDb(database.sql.DB,go.string)" >
+      <return type="github.com.jmoiron.sqlx.DB" />
+      <sink argpos="0,1" kind="resource_injection" resource="database"/>
+    </function>
+    <function name="github.com.jmoiron.sqlx.Open" signature="github.com.jmoiron.sqlx.Open(go.string,go.string)" >
+      <return type="github.com.jmoiron.sqlx.DB" />
+      <sink argpos="0" kind="resource_injection" resource="database"/>
+      <sink argpos="1" kind="connection_string_injection" resource="database"/>
+    </function>
+  </module>
+
+  <module name="github.com.jinzhu.gorm" standard="GORM">
+    <description url="https://gorm.io/">Object-Relational Mapper for Go</description>
+    <function name="github.com.jinzhu.gorm.Open" signature="github.com.jinzhu.gorm.Open(go.string,...go.interface)" >
+      <return type="github.com.jinzhu.gorm.DB,go.error" />
+      <sink argpos="0" kind="resource_injection" resource="database"/>
+      <sink argpos="1,2,3" kind="connection_string_injection" resource="database"/>
+    </function>
+    <class name="github.com.jinzhu.gorm.DB" >
+      <method name="Where" signature="Where(go.interface,...go.interface)" alias="Delete,Update,Create">
+        <tags>potentialPk:1;...</tags>
+        <return type="github.com.jinzhu.gorm.DB" />
+      </method>
+      <method name="Order" signature="Order(go.interface)" >
+        <return type="github.com.jinzhu.gorm.DB" />
+      </method>
+      <method name="First" signature="First(go.interface,...go.interface)" alias="FirstOrCreate,FirstOrInit" >
+        <return type="github.com.jinzhu.gorm.DB" />
+        <source argpos="0,1,2" kind="database_input" resource="database" />
+      </method>
+      <method name="Find" signature="Find(go.interface,...go.interface)" alias="Model,Related">
+        <return type="github.com.jinzhu.gorm.DB" />
+        <source argpos="0,1,2" kind="database_input" resource="database" />
+      </method>
+      <method name="Get" signature="Get(go.string)" >
+        <return type="go.interface,go.bool" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Save" signature="Save(go.interface)" >
+        <tags>write</tags>
+      </method>
+    </class>
+  </module>
+
+  <module name="github.com.go-gorp.gorp" standard="gorp">
+    <description url="https://github.com/go-gorp/gorp">Go Relational Persistence</description>
+    <class name="github.com.go-gorp.gorp.DbMap" kind="struct" >
+      <method name="AddTable" signature="AddTable(go.interface)" >
+        <return type="github.com.go-gorp.gorp.TableMap" />
+      </method>
+      <method name="AddTableDynamic" signature="AddTableDynamic(github.com.go-gorp.gorp.FynamicTable,go.string)" >
+        <return type="github.com.go-gorp.gorp.TableMap" />
+        <sink argpos="1" kind="resource_injection" resource="database" />
+      </method>
+      <method name="AddTableWithName" signature="AddTableWithName(go.interface,go.string)" >
+        <return type="github.com.go-gorp.gorp.TableMap" />
+        <sink argpos="1" kind="resource_injection" resource="database" />
+      </method>
+      <method name="AddTableWithNameAndSchema" signature="AddTableWithNameAndSchema(go.interface,go.string,go.string)" >
+        <return type="github.com.go-gorp.gorp.TableMap" />
+        <sink argpos="1,2" kind="resource_injection" resource="database" />
+      </method>
+      <method name="Delete" signature="Delete(...go.interface)" alias="Insert,Update" >
+
+        <tags>write,potentialPk:1;...</tags>
+        <return type="go.int64,go.error" />
+      </method>
+      <method name="DropTable" signature="DropTable(go.interface)" >
+        <return type="go.error" />
+      </method>
+      <method name="DropTableIfExist" signature="DropTableIfExist(go.interface)" >
+        <return type="go.error" />
+      </method>
+      <method name="DynamicTableFor" signature="DynamicTableFor(go.string,go.bool)" >
+        <return type="github.com.go-gorp.gorp.TableMap" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="Exec" signature="Exec(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.Result,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Get" signature="Get(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.interface,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Prepare" signature="Prepare(go.string)" >
+        <return type="database.sql.Stmt,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="Query" signature="Query(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.Rows,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="QueryRow" signature="QueryRow(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.Row" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="Select" signature="Select(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.slice,go.error" elementType="go.interface" />
+        <sink argpos="1" kind="sql_injection" resource="database" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectFloat" signature="SelectFloat(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.float64,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectInt" signature="SelectInt(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.int64,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectNullFloat" signature="SelectNullFloat(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.NullFloat,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectNullInt" signature="SelectNullInt(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.NullInt,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectNullStr" signature="SelectNullStr(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.NullString,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectOne" signature="SelectOne(go.interface,go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.error" />
+        <sink argpos="1" kind="sql_injection" resource="database" />
+        <source argpos="0" kind="database_input" resource="database" />
+      </method>
+      <method name="UpdateColumns" signature="UpdateColumns(github.com.go-gorp.gorp.ColumnFilter,...go.interface)" >
+        <tags>write</tags>
+        <return type="go.int64,go.error" />
+      </method>
+    </class>
+
+    <class name="github.com.go-gorp.gorp.Transaction" kind="struct" >
+      <method name="Delete" signature="Delete(...go.interface)" alias="Insert,Update" >
+        <tags>write,potentialPk:1;...</tags>
+        <return type="go.int64,go.error" />
+      </method>
+      <method name="Exec" signature="Exec(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.Result,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Get" signature="Get(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.interface,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Prepare" signature="Prepare(go.string)" >
+        <return type="database.sql.Stmt,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="Query" signature="Query(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.Rows,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="QueryRow" signature="QueryRow(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.Row" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="Select" signature="Select(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.slice,go.error" elementType="go.interface" />
+        <sink argpos="1" kind="sql_injection" resource="database" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectFloat" signature="SelectFloat(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.float64,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectInt" signature="SelectInt(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.int64,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectNullFloat" signature="SelectNullFloat(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.NullFloat,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectNullInt" signature="SelectNullInt(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.NullInt,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectNullStr" signature="SelectNullStr(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.NullString,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectOne" signature="SelectOne(go.interface,go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.error" />
+        <sink argpos="1" kind="sql_injection" resource="database" />
+        <source argpos="0" kind="database_input" resource="database" />
+      </method>
+      <method name="UpdateColumns" signature="UpdateColumns(github.com.go-gorp.gorp.ColumnFilter,...go.interface)" >
+        <tags>write</tags>
+        <return type="go.int64,go.error" />
+      </method>
+    </class>
+
+    <class name="github.com.go-gorp.gorp.TableMap" kind="struct" >
+      <method name="AddIndex" signature="AddIndex(go.string,go.string,go.slice)" >
+        <return type="github.com.go-gorp.gorp.IndexMap" />
+        <sink argpos="0,1,2" kind="resource_injection" resource="database" />
+      </method>
+      <method name="AddIndex" signature="AddIndex(go.string,go.string,go.slice)" >
+        <return type="github.com.go-gorp.gorp.IndexMap" />
+        <sink argpos="0,1,2" kind="resource_injection" resource="database" />
+      </method>
+      <method name="AddIndex" signature="AddIndex(go.string,go.string,go.slice)" >
+        <return type="github.com.go-gorp.gorp.IndexMap" />
+        <sink argpos="0,1,2" kind="resource_injection" resource="database" />
+      </method>
+      <method name="ColMap" signature="ColMap(go.string)" >
+        <return type="github.com.go-gorp.gorp.ColumnMap" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="DropIndex" signature="DropIndex(go.string)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="IdxMap" signature="IdxMap(go.string)" >
+        <return type="github.com.go-gorp.gorp.IndexMap" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="SetKeys" signature="SetKeys(go.bool,...go.string)" >
+        <return type="github.com.go-gorp.gorp.TableMap" />
+        <sink argpos="1,2,3,4" kind="resource_injection" resource="database" />
+      </method>
+      <method name="SetUniqueTogether" signature="SetUniqueTogether(...go.string)" >
+        <return type="github.com.go-gorp.gorp.TableMap" />
+        <sink argpos="0,1,2,3" kind="resource_injection" resource="database" />
+      </method>
+      <method name="SetVersionCol" signature="SetVersionCol(go.string)" >
+        <return type="github.com.go-gorp.gorp.ColumnMap" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="SqlForCreate" signature="SqlForCreate(go.bool)" >
+        <return type="go.string" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+    </class>
+    <class name="github.com.go-gorp.gorp.SqlExecutor" kind="struct" >
+      <method name="WithContext" signature="WithContext(context.Context)" >
+        <return type="github.com.go-gorp.gorp.SqlExecutor" />
+      </method>
+      <method name="Delete" signature="Delete(...go.interface)" alias="Insert,Update" >
+        <tags>write,potentialPk:1;...</tags>
+        <return type="go.int64,go.error" />
+      </method>
+      <method name="Exec" signature="Exec(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.Result,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Get" signature="Get(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.interface,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Prepare" signature="Prepare(go.string)" >
+        <return type="database.sql.Stmt,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="Query" signature="Query(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.Rows,go.error" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="QueryRow" signature="QueryRow(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.Row" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="Select" signature="Select(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.slice,go.error" elementType="go.interface" />
+        <sink argpos="1" kind="sql_injection" resource="database" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectFloat" signature="SelectFloat(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.float64,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectInt" signature="SelectInt(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.int64,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectNullFloat" signature="SelectNullFloat(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.NullFloat,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectNullInt" signature="SelectNullInt(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.NullInt,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectNullStr" signature="SelectNullStr(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="database.sql.NullString,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectOne" signature="SelectOne(go.interface,go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="go.error" />
+        <sink argpos="1" kind="sql_injection" resource="database" />
+        <source argpos="0" kind="database_input" resource="database" />
+      </method>
+    </class>
+  </module>
+
+  <!-- Version aliases for gorp -->
+  <module name="gopkg.in.gorp" standard="gorp">
+    <class name="gopkg.in.gorp.DbMap" kind="struct" supertypes="github.com.go-gorp.gorp.DbMap"/>
+    <class name="gopkg.in.gorp.Transaction" kind="struct" supertypes="github.com.go-gorp.gorp.Transaction"/>
+    <class name="gopkg.in.gorp.TableMap" kind="struct" supertypes="github.com.go-gorp.gorp.TableMap"/>
+    <class name="gopkg.in.gorp.SqlExecutor" kind="struct" supertypes="github.com.go-gorp.gorp.SqlExecutor"/>
+  </module>
+  <module name="gopkg.in.gorp.v1" standard="gorp">
+    <description url="https://pkg.go.dev/gopkg.in/gorp.v1">Marshal Go structs to and from SQL databases</description>
+    <class name="gopkg.in.gorp.v1.DbMap" kind="struct" supertypes="github.com.go-gorp.gorp.DbMap"/>
+    <class name="gopkg.in.gorp.v1.Transaction" kind="struct" supertypes="github.com.go-gorp.gorp.Transaction"/>
+    <class name="gopkg.in.gorp.v1.TableMap" kind="struct" supertypes="github.com.go-gorp.gorp.TableMap"/>
+    <class name="gopkg.in.gorp.v1.SqlExecutor" kind="struct" supertypes="github.com.go-gorp.gorp.SqlExecutor"/>
+  </module>
+  <module name="gopkg.in.gorp.v2" standard="gorp">
+    <description url="https://pkg.go.dev/gopkg.in/gorp.v12">Marshal Go structs to and from SQL databases</description>
+    <class name="gopkg.in.gorp.v2.DbMap" kind="struct" supertypes="github.com.go-gorp.gorp.DbMap"/>
+    <class name="gopkg.in.gorp.v2.Transaction" kind="struct" supertypes="github.com.go-gorp.gorp.Transaction"/>
+    <class name="gopkg.in.gorp.v2.TableMap" kind="struct" supertypes="github.com.go-gorp.gorp.TableMap"/>
+    <class name="gopkg.in.gorp.v2.SqlExecutor" kind="struct" supertypes="github.com.go-gorp.gorp.SqlExecutor"/>
+  </module>
+
+  <module name="github.com.Masterminds.squirrel" standard="Squirrel">
+    <description url="https://github.com/Masterminds/squirrel">Fluent SQL generator for Go</description>
+    <member name="github.com.Masterminds.squirrel.StatementBuilder" type="github.com.Masterminds.squirrel.StatementBuilderType" />
+
+    <class name="github.com.Masterminds.squirrel.StatementBuilderType">
+      <method name="Select" signature="Select(...go.string)" >
+        <return type="github.com.Masterminds.squirrel.SelectBuilder" />
+        <sink argpos="0,1,2,3" kind="resource_injection" resource="database" />
+      </method>
+      <method name="Insert" signature="Insert(go.string)" >
+        <tags>write</tags>
+        <return type="github.com.Masterminds.squirrel.InsertBuilder" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="Replace" signature="Replace(go.string)" >
+        <tags>write</tags>
+        <return type="github.com.Masterminds.squirrel.InsertBuilder" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="Update" signature="Update(go.string)" >
+        <tags>write</tags>
+        <return type="github.com.Masterminds.squirrel.UpdateBuilder" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="Delete" signature="Delete(go.string)" >
+        <tags>write</tags>
+        <return type="github.com.Masterminds.squirrel.DeleteBuilder" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="PlaceHolderFormat" signature="PlaceHolderFormat(github.com.Masterminds.squirrel.PlaceHolderFormat)" >
+        <return type="github.com.Masterminds.squirrel.StatementBuilderType" />
+      </method>
+      <method name="RunWith" signature="RunWith(github.com.Masterminds.squirrel.BaseRunner)" >
+        <return type="github.com.Masterminds.squirrel.StatementBuilderType" />
+      </method>
+    </class>
+    <class name="github.com.Masterminds.squirrel.BaseBuilder" >
+      <method name="PlaceHolderFormat" signature="PlaceHolderFormat(github.com.Masterminds.squirrel.PlaceHolderFormat)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="RunWith" signature="RunWith(github.com.Masterminds.squirrel.BaseRunner)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="Exec" signature="Exec()" >
+        <return type="database.sql.Result,go.error" />
+      </method>
+      <method name="Query" signature="Query()" >
+        <return type="database.sql.Rows,go.error" />
+      </method>
+      <method name="QueryRow" signature="QueryRow()" >
+        <return type="github.com.Masterminds.squirrel.RowScanner" />
+      </method>
+      <method name="Scan" signature="Scan(...go.interface)" >
+        <return type="go.error" />
+        <source argpos="0,1,2,3,4,5" kind="database_input" resource="database" />
+      </method>
+      <method name="From" signature="From(go.string)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="FromSelect" signature="FromSelect(github.com.Masterminds.squirrel.SelectBuilder,go.string)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="JoinClause" signature="JoinClause(go.interface,...go.interface)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="Join" signature="Join(go.interface,...go.interface)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="LeftJoin" signature="LeftJoin(go.interface,...go.interface)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="RightJoin" signature="RightJoin(go.interface,...go.interface)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="Where" signature="Where(go.interface,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="GroupBy" signature="GroupBy(...go.string)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="Having" signature="Having(go.interface,...go.interface)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="OrderByClause" signature="OrderByClause(go.interface,...go.interface)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="OrderBy" signature="OrderBy(...go.string)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="Limit" signature="Limit(go.uint64)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="RemoveLimit" signature="RemoveLimit()" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="Offset" signature="Offset(go.uint64)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="RemoveOffset" signature="RemoveOffset()" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+      <method name="Suffix" signature="Suffix(go.string,...go.interface)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+      </method>
+      <method name="Set" signature="Set(go.string,go.interface)" >
+        <return type="github.com.Masterminds.squirrel.BaseBuilder" />
+      </method>
+    </class>
+    <class name="github.com.Masterminds.squirrel.SelectBuilder" supertypes="github.com.Masterminds.squirrel.BaseBuilder" />
+    <class name="github.com.Masterminds.squirrel.InsertBuilder" supertypes="github.com.Masterminds.squirrel.BaseBuilder" />
+    <class name="github.com.Masterminds.squirrel.UpdateBuilder" supertypes="github.com.Masterminds.squirrel.BaseBuilder" />
+    <class name="github.com.Masterminds.squirrel.DeleteBuilder" supertypes="github.com.Masterminds.squirrel.BaseBuilder" />
+    <class name="github.com.Masterminds.squirrel.CaseBuilder" supertypes="github.com.Masterminds.squirrel.BaseBuilder" />
+    <class name="github.com.Masterminds.squirrel.RowScanner" >
+      <method name="Scan" signature="Scan(...go.interface)" >
+        <return type="go.error" />
+        <source argpos="0,1,2,3,4,5" kind="database_input" resource="database" />
+      </method>
+    </class>
+
+    <function name="github.com.Masterminds.squirrel.Select" signature="github.com.Masterminds.squirrel.Select(...go.string)" >
+      <return type="github.com.Masterminds.squirrel.SelectBuilder" />
+      <sink argpos="0,1,2,3" kind="resource_injection" resource="database" />
+    </function>
+    <function name="github.com.Masterminds.squirrel.Insert" signature="github.com.Masterminds.squirrel.Insert(go.string)" >
+      <tags>write</tags>
+      <return type="github.com.Masterminds.squirrel.InsertBuilder" />
+      <sink argpos="0" kind="resource_injection" resource="database" />
+    </function>
+    <function name="github.com.Masterminds.squirrel.Replace" signature="github.com.Masterminds.squirrel.Replace(go.string)" >
+      <tags>write</tags>
+      <return type="github.com.Masterminds.squirrel.InsertBuilder" />
+      <sink argpos="0" kind="resource_injection" resource="database" />
+    </function>
+    <function name="github.com.Masterminds.squirrel.Update" signature="github.com.Masterminds.squirrel.Update(go.string)" >
+      <tags>write</tags>
+      <return type="github.com.Masterminds.squirrel.UpdateBuilder" />
+      <sink argpos="0" kind="resource_injection" resource="database" />
+    </function>
+    <function name="github.com.Masterminds.squirrel.Delete" signature="github.com.Masterminds.squirrel.Delete(go.string)" >
+      <tags>write</tags>
+      <return type="github.com.Masterminds.squirrel.DeleteBuilder" />
+      <sink argpos="0" kind="resource_injection" resource="database" />
+    </function>
+    <function name="github.com.Masterminds.squirrel.Case" signature="github.com.Masterminds.squirrel.Case(...go.string)" >
+      <return type="github.com.Masterminds.squirrel.CaseBuilder" />
+      <sink argpos="0" kind="resource_injection" resource="database" />
+    </function>
+  </module>
+
+  <!-- Version aliases for Squirrel -->
+  <module name="gopkg.in.Masterminds.squirrel.v1">
+    <member name="gopkg.in.Masterminds.squirrel.v1.StatementBuilder" type="github.com.Masterminds.squirrel.StatementBuilderType" />
+
+    <class name="gopkg.in.Masterminds.squirrel.v1.StatementBuilderType" supertypes="github.com.Masterminds.squirrel.StatementBuilderType"/>
+    <class name="gopkg.in.Masterminds.squirrel.v1.BaseBuilder" supertypes="github.com.Masterminds.squirrel.BaseBuilder"/>
+    <class name="gopkg.in.Masterminds.squirrel.v1.SelectBuilder" supertypes="gopkg.in.Masterminds.squirrel.BaseBuilder" />
+    <class name="gopkg.in.Masterminds.squirrel.v1.InsertBuilder" supertypes="gopkg.in.Masterminds.squirrel.BaseBuilder" />
+    <class name="gopkg.in.Masterminds.squirrel.v1.UpdateBuilder" supertypes="gopkg.in.Masterminds.squirrel.BaseBuilder" />
+    <class name="gopkg.in.Masterminds.squirrel.v1.DeleteBuilder" supertypes="gopkg.in.Masterminds.squirrel.BaseBuilder" />
+    <class name="gopkg.in.Masterminds.squirrel.v1.CaseBuilder" supertypes="gopkg.in.Masterminds.squirrel.BaseBuilder" />
+    <class name="gopkg.in.Masterminds.squirrel.v1.RowScanner" supertypes="github.com.Masterminds.squirrel.RowScanner"/>
+
+    <functionAlias name="gopkg.in.Masterminds.squirrel.v1.Select" super="github.com.Masterminds.squirrel.Select"/>
+    <functionAlias name="gopkg.in.Masterminds.squirrel.v1.Insert" super="github.com.Masterminds.squirrel.Insert"/>
+    <functionAlias name="gopkg.in.Masterminds.squirrel.v1.Replace" super="github.com.Masterminds.squirrel.Replace"/>
+    <functionAlias name="gopkg.in.Masterminds.squirrel.v1.Update" super="github.com.Masterminds.squirrel.Update"/>
+    <functionAlias name="gopkg.in.Masterminds.squirrel.v1.Delete" super="github.com.Masterminds.squirrel.Delete"/>
+    <functionAlias name="gopkg.in.Masterminds.squirrel.v1.Case" super="github.com.Masterminds.squirrel.Case"/>
+  </module>
+
+  <module name="github.com.gobuffalo.pop" standard="Pop">
+    <description url="https://github.com/gobuffalo/pop">ActiveRecord model for CRUD operations in Go</description>
+
+    <class name="github.com.gobuffalo.pop.Connection" alias="github.com.markbates.pop.Connection">
+      <field name="Store" type="store" />
+      <field name="TX" type="github.com.gobuffalo.pop.Tx" />
+
+      <method name="All" signature="All(go.interface)" >
+        <return type="go.error" />
+        <source argpos="0" kind="database_input" resource="database" />
+      </method>
+      <method name="Create" signature="Create(go.interface,...go.string)" >
+        <return type="go.error" />
+      </method>
+      <method name="Destroy" signature="Destroy(go.interface)" >
+        <return type="go.error" />
+      </method>
+      <method name="Find" signature="Find(go.interface,go.interface)" >
+        <return type="go.error" />
+        <source argpos="0" kind="database_input" resource="database" />
+      </method>
+      <method name="First" signature="First(go.interface)" alias="Last" >
+        <return type="go.error" />
+        <source argpos="0" kind="database_input" resource="database" />
+      </method>
+      <method name="Q" signature="Q()" >
+        <return type="github.com.gobuffalo.pop.Query" />
+      </method>
+      <method name="Select" signature="Select(...go.string)" >
+        <return type="github.com.gobuffalo.pop.Query" />
+      </method>
+      <method name="Update" signature="Update(go.interface,...go.string)" >
+        <tags>write</tags>
+        <return type="go.error" />
+      </method>
+      <method name="Where" signature="Where(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="github.com.gobuffalo.pop.Query" />
+      </method>
+      <method name="ValidateAndCreate" signature="ValidateAndCreate(go.interface,...go.string)" >
+        <tags>write</tags>
+      </method>
+    </class>
+
+    <class name="github.com.gobuffalo.pop.Query" alias="github.com.markbates.pop.Query">
+      <field name="RawSQL" type="github.com.gobuffalo.pop.clause" />
+      <field name="Connection" type="github.com.gobuffalo.pop.Connection" />
+
+      <method name="All" signature="All(go.interface)" >
+        <return type="go.error" />
+        <source argpos="0" kind="database_input" resource="database" />
+      </method>
+      <method name="Find" signature="Find(go.interface,go.interface)" >
+        <return type="go.error" />
+        <source argpos="0" kind="database_input" resource="database" />
+      </method>
+      <method name="First" signature="First(go.interface)" alias="Last" >
+        <return type="go.error" />
+        <source argpos="0" kind="database_input" resource="database" />
+      </method>
+      <method name="RawQuery" signature="RawQuery(go.interface,go.interface)" >
+        <return type="github.com.gobuffalo.pop.Query" />
+      </method>
+      <method name="Select" signature="Select(...go.string)" >
+        <return type="github.com.gobuffalo.pop.Query" />
+      </method>
+      <method name="Update" signature="Update(go.interface,...go.string)" >
+        <tags>write</tags>
+        <return type="go.error" />
+      </method>
+      <method name="Where" signature="Where(go.string,...go.interface)" >
+        <tags>potentialPk:1;...</tags>
+        <return type="github.com.gobuffalo.pop.Query" />
+      </method>
+    </class>
+
+    <class name="github.com.gobuffalo.pop.Tx" supertypes="github.com.jmoiron.sqlx.Tx" alias="github.com.markbates.pop.Tx">
+      <method name="ValidateAndCreate" signature="ValidateAndCreate(go.interface,...go.string)" >
+        <tags>write</tags>
+      </method>
+    </class>
+
+    <class name="github.com.gobuffalo.pop.ConnectionDetails" >
+      <field name="Driver" type="go.string" >
+        <sink argpos="-2" kind="resource_injection" resource="database" />
+      </field>
+      <field name="Database" type="go.string" >
+        <sink argpos="-2" kind="resource_injection" resource="database" />
+      </field>
+      <field name="Host" type="go.string" >
+        <sink argpos="-2" kind="resource_injection" resource="database" />
+      </field>
+      <field name="Port" type="go.string" >
+        <sink argpos="-2" kind="resource_injection" resource="database" />
+      </field>
+      <field name="User" type="go.string" />
+      <field name="Password" type="go.string" />
+      <field name="URL" type="go.string" >
+        <sink argpos="-2" kind="resource_injection" resource="database" />
+      </field>
+      <field name="Pool" type="go.int" >
+        <sink argpos="-2" kind="resource_injection" resource="database" />
+      </field>
+    </class>
+
+    <function name="github.com.gobuffalo.pop.Q" signature="github.com.gobuffalo.pop.Q(github.com.gobuffalo.pop.Connection)" >
+      <return type="github.com.gobuffalo.pop.Query" />
+    </function>
+    <function name="github.com.gobuffalo.pop.NewConnection" signature="github.com.gobuffalo.pop.NewConnection(github.com.gobuffalo.pop.ConnectionDetails)" >
+      <return type="github.com.gobuffalo.pop.Connection,go.error" />
+    </function>
+    <function name="github.com.gobuffalo.pop.Connect" signature="github.com.gobuffalo.pop.Connect(go.string)" >
+      <return type="github.com.gobuffalo.pop.Connection,go.error" />
+    </function>
+    <function name="github.com.gobuffalo.pop.CreateDB" signature="github.com.gobuffalo.pop.CreateDB(github.com.gobuffalo.pop.Connection)" >
+      <return type="go.error" />
+      <sink argpos="0" kind="resource_injection" resource="database" />
+    </function>
+    <function name="github.com.gobuffalo.pop.DropDB" signature="github.com.gobuffalo.pop.DropDB()" >
+      <return type="go.error" />
+      <sink argpos="0" kind="resource_injection" resource="database" />
+    </function>
+  </module>
+
+</library>

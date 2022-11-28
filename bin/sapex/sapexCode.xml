@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="sapexCode" default="run" basedir=".">
+  <description>
+Launches Kiuwan Extractor for SAP, for source code extraction.
+
+Usage:
+ant -f sapexCode.xml
+  [-Dhost=HOSTNAME] [-Dsysnr=SYSNR_VALUE] [-Dclient=CLIENT_NAME]
+  [-Duser=USER] [-Dpass=PASS]
+  [-Dsap.connector=PATH_TO_SAP_JCO]
+
+  [-Ddir.code=DIRECTORY_FOR_EXPORTED_CODE]
+  [-Dtransportpattern=TRANSP] [-Dsubtransports=true/false]
+  [-DpackagePattern=PACKAGE] [-Dsubpackages=true/false]
+  [-Dprograms=true/false] [-Dprogrampattern=PROG_PATTERN]
+  [-Dfunctions=true/false] [-Dfunctionpattern=FUNC_PATTERN]
+  [-Dclasses=true/false] [-Dclasspattern=CLASS_PATTERN]
+  [-Dwebdynpros=true/false] [-DwendynrpoPattern=WD_PATTERN]
+  [-Dlanguage=LANG]
+  [-Dcustomobjectsonly=true/false] [-Dcustomnamespace=CUSTOM_NS]
+
+Example:
+ant -f sapexCode.xml -Ddir.code=/my/dir
+
+NOTE: This script uses SAP Java Connector (JCo) version 3.
+You may download it from http://service.sap.com/connectors.
+
+Connection properties for target SAP server could be configured
+in sapex.properties file in ${env.CHECKING_DATA}/config, or in
+this script directory.
+
+Custom code extract config could be placed in a sapexCode.properties file
+located in ${env.CHECKING_DATA}/config, or in this script directory.
+Any parameter passed at script command line overwrites a parameter
+with same name in sapexCode.properties.
+
+Host, sysnr, client, user, pass and sap.connector are configuration values
+for target SAP system, and the location of the SAP JCo3 library.
+
+dir.code is the directory where exported code will be stored.
+
+For operation, you must add to target SAP system the function module
+ZKW_SAPEX_CODE_RPC (which must be RFC-enabled), and program ZKW_SAPEX_CODE,
+and the utility classes ZKW_CLASSES.
+
+The program ZKW_SAPEX_CODE might be run in SAP as an alternative to this
+(remote) extraction script.
+  </description>
+
+  <property environment="env"/>
+
+  <!-- Find config file in CHECKING config, kiuwan agent config, or in script directory -->
+  <property file="${SAPEX_CONFIG_DIR}/sapex.properties" />
+  <property file="${SAPEX_CONFIG_DIR}/sapexCode.properties" />
+  <property file="${AGENT_HOME}/conf/sapex/sapex.properties"/>
+  <property file="${AGENT_HOME}/conf/sapex/sapexCode.properties"/>
+
+  <!-- Default configuration, when SAPConnector.properties not available -->
+  <property name="host" value="localhost"/>
+  <property name="sysnr" value="00"/>
+  <property name="client" value="000"/>
+  <property name="user" value="DEVELOPER"/>
+  <property name="pass" value="Appl1ance"/>
+  <property name="sap.connector" value="."/>
+
+  <!-- Local directory where exported code will be saved -->
+  <property name="dir.code" value="${basedir}"/>
+  <!-- Name or pattern for the id of the request/task transport order to export. -->
+  <property name="transportPattern" value=""/>
+  <!-- if true, export sub request/task transport orders for matching request/tasks. -->
+  <property name="subTransports" value="false"/>
+  <!-- Name or pattern for the package to export. -->
+  <property name="packagePattern" value=""/>
+  <!-- if true, export sub packages for matching packages. -->
+  <property name="subPackages" value="false"/>
+  <!-- if true, export matching programs -->
+  <property name="programs" value="true"/>
+  <!-- Pattern for the programs to export. If empty, no filter on programs. -->
+  <property name="programPattern" value=""/>
+  <!-- If true, export matching functions. -->
+  <property name="functions" value="true"/>
+  <!-- Pattern for the function modules to export. If empty, no filter on function modules. -->
+  <property name="functionPattern" value=""/>
+  <!-- Pattern for the function groups to export. If empty, no filter on function groups. -->
+  <property name="fgroupPattern" value=""/>
+  <!-- If true, export matching classes -->
+  <property name="classes" value="true"/>
+  <!-- Pattern for the classes to export. If empty, no filter on classes. -->
+  <property name="classPattern" value=""/>
+  <!-- If true, export matching web dynpro components -->
+  <property name="webdynpros" value="true"/>
+  <!-- Pattern for the web dynpro components to export. If empty, no filter on WD components -->
+  <property name="webdynproPattern" value=""/>
+  <!-- Language to use for object titles and locale-specific content. Use E for english. -->
+  <property name="language" value="E"/>
+  <!-- If true, dialog modules (for dynpro screen) will be exported. -->
+  <property name="screens" value="true"/>
+  <!-- If true, texts (for text-pools in code objects) will be exported. -->
+  <property name="texts" value="true"/>
+  <!-- if true, only custom (Z* or Y*) objects will be exported. If false, no filter for custom objects. -->
+  <property name="customObjectsOnly" value="true"/>
+  <!-- Custom namespace to use for exporting objects (for example, /myorg/ ). If none provided, no filter with custom namepsace. -->
+  <property name="customNamespace" value=""/>
+
+  <!-- classpath -->
+  <path id="classpath">
+    <fileset id="sap.connector.location" dir="${sap.connector}">
+      <include name="sapjco3.jar"/>
+    </fileset>
+    <fileset dir="${AGENT_HOME}/lib.engine">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+
+  <target name="run">
+    <taskdef name="sapexCode" classname="com.als.abap.sapex.SapexCodeTask" classpathref="classpath"/>
+    <sapexCode failonerror="true" classpathref="classpath">
+      <config
+         host="${host}" sysnr="${sysnr}" client="${client}" user="${user}" pass="${pass}"
+      />
+      <codeconfig
+        codedir="${dir.code}"
+        transportpattern="${transportPattern}" subtransports="${subTransports}"
+        packagepattern="${packagePattern}" subpackages="${subPackages}"
+        programs="${programs}" programpattern="${programPattern}"
+        functions="${functions}" functionpattern="${functionPattern}" fgrouppattern="${fgroupPattern}"
+        classes="${classes}" classpattern="${classPattern}"
+        webdynpros="${webdynpros}" webdynpropattern="${webdynproPattern}"
+        language="${language}"
+        customobjectsonly="${customObjectsOnly}" customnamespace="${customNamespace}"
+      />
+    </sapexCode>
+  </target>
+
+</project>

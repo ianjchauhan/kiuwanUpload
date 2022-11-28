@@ -1,0 +1,1607 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         name="php_database" technology="php">
+  <description url="https://www.php.net/manual/en/refs.database.php">PHP APIs for database access</description>
+
+  <!-- Standard APIs are (currently): DBA, dbx, ODBC and PDO -->
+
+  <module name="dba">
+    <description url="https://www.php.net/manual/en/book.dba.php">DBA - Interface to BerkeleyDB-style databases</description>
+
+    <function name="dba_open" signature="dba_open(string $path, string $mode, string $handler, mixed $...)">
+      <tags>dbOpen,closedBy:dba_close,link:-1</tags>
+      <return type="resource"/>
+      <sink kind="connection_string_injection" argpos="0"/>
+    </function>
+    <functionAlias name="dba_popen" super="dba_open">
+      <tags>dbPersistentOpen</tags>
+    </functionAlias>
+    <function name="dba_insert" signature="dba_insert(string $key, string $value, resource $handle)">
+      <tags>dbInsert,link:1,state_change</tags>
+      <sink kind="sql_injection" resource="database" argpos="0,1"/>
+    </function>
+    <function name="dba_replace" signature="dba_replace(string $key, string $value, resource $handle)">
+      <tags>dbUpsert,link:1,state_change</tags>
+      <return type="bool"/>
+      <sink kind="sql_injection" resource="database" argpos="0,1"/>
+    </function>
+    <function name="dba_fetch" signature="dba_fetch(string $key, resource $handle)">
+      <tags>dbQuery,link:1</tags>
+      <return type="string"/>
+      <sink kind="sql_injection" resource="database" argpos="0"/>
+    </function>
+    <function name="dba_delete" signature="dba_delete(string $key, resource $handle)">
+      <tags>dbDelete,link:1</tags>
+      <return type="bool"/>
+      <sink kind="sql_injection" resource="database" argpos="0"/>
+    </function>
+    <function name="dba_close" signature="dba_close(resource $handle)">
+      <tags>dbClose,link:0</tags>
+    </function>
+  </module>
+
+  <module name="dbx">
+    <description url="https://www.php.net/manual/en/book.dbx.php">DB abstraction for mysql, oracle, odbc, pgsql, mssql and others</description>
+
+    <function name="dbx_connect" signature="dbx_connect(mixed $module, string $host, string $database, string $username, string $password, int $persistent)">
+      <tags>dbOpen,link:-1,closedBy:dbx_close/mysql_close/odbc_close/pg_close/mssql_close/fbird_close/oci_close/sybase_close/sqlite_close</tags>
+      <return type="object"/>
+      <sink kind="connection_string_injection" argpos="0,1,2"/>
+      <sink kind="ssrf" argpos="1"/>
+      <sink kind="hardcoded_credentials" argpos="3"/>
+      <sink kind="hardcoded_password" argpos="4"/>
+    </function>
+    <function name="dbx_close" signature="dbx_close(object $link_identifier)">
+      <tags>dbClose,link:0</tags>
+      <return type="int"/>
+    </function>
+    <function name="dbx_query" signature="dbx_query(object $link_identifier, string $sql, int $flags)">
+      <tags>dbQuery,link:0</tags>
+      <return type="mixed"/>
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+      <source kind="database_input" argpos="-1"/>
+    </function>
+    <function name="dbx_fetch_row" signature="dbx_fetch_row(object $result_identifier)">
+      <tags>dbQuery</tags>
+      <return type="mixed"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="dbx_escape_string" signature="dbx_escape_string(object $link_identifier, string $text)">
+      <return type="string"/>
+      <neutralization argpos="-1" kind="sql_injection" resource="database"/>
+    </function>
+  </module>
+
+  <module name="odbc">
+    <description url="https://www.php.net/manual/en/book.dbx.php">Unified ODBC API</description>
+
+    <function name="odbc_connect" signature="odbc_connect(string $dsn, string $user, string $password, int $cursor_type)">
+      <tags>dbOpen,link:-1,closedBy:odbc_close/odbc_close_all</tags>
+      <return type="resource"/>
+      <sink kind="connection_string_injection" argpos="0"/>
+      <sink kind="hardcoded_credentials" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2"/>
+    </function>
+    <functionAlias name="odbc_pconnect" super="odbc_connect">
+      <tags>dbPersistentOpen</tags>
+    </functionAlias>
+    <function name="odbc_close" signature="odbc_close(resource $connection_id)">
+      <tags>dbClose,link:0</tags>
+    </function>
+    <function name="odbc_close_all" signature="odbc_close_all()">
+      <tags>dbClose</tags>
+    </function>
+    <function name="odbc_exec" alias="odbc_do"
+              signature="odbc_exec(resource $connection_id, string $sql, int $flags)">
+      <tags>dbExec,link:0,stmtLink:-1</tags>
+      <return type="resource"/>
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="odbc_prepare" signature="odbc_prepare(resource $connection_id, string $query_string)">
+      <tags>dbPrepareStmt,link:0,stmtLink:-1</tags>
+      <return type="resource"/>
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="odbc_execute" signature="odbc_execute(resource $result_id, array $parameters_array)">
+      <tags>dbExec,stmtLink:0/-1</tags>
+      <return type="bool"/>
+    </function>
+    <function name="odbc_fetch_array" signature="odbc_fetch_array(resource $result, int $rownumber)">
+      <tags>dbQuery,stmtLink:0</tags>
+      <return type="array"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="odbc_fetch_into" signature="odbc_fetch_into(resource $result_id, array &amp;$result_array, int $rownumber)">
+      <tags>dbQuery,stmtLink:0</tags>
+      <return type="int"/>
+      <source  argpos="1" kind="database_input" resource="database"/>
+    </function>
+    <function name="odbc_fetch_object" signature="odbc_fetch_object(resource $result, int $rownumber)">
+      <tags>dbQuery,stmtLink:0</tags>
+      <return type="object"/>
+      <source  argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="odbc_result" signature="odbc_result(resource $result_id, mixed $field)">
+      <tags>dbQuery,stmtLink:0</tags>
+      <return type="mixed"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="odbc_result_all" signature="odbc_result_all(resource $result_id, string $format)">
+      <!-- could be XSS on second arg? -->
+      <tags>dbQuery,stmtLink:0</tags>
+    </function>
+  </module>
+
+  <module name="PDO">
+    <description url="https://www.php.net/manual/en/book.pdo.php">PDO - PHP Data Objects</description>
+
+    <class name="PDO">
+      <constructor name="PDO" signature="PDO(string $dsn, string $username, string $passwd, array $options)">
+        <tags>dbOpen</tags>
+        <sink kind="connection_string_injection" argpos="0"/>
+        <sink kind="hardcoded_credentials" argpos="1"/>
+        <sink kind="hardcoded_password" argpos="2"/>
+      </constructor>
+      <method name="exec" signature="exec(string $statement)">
+        <tags>dbExec</tags>
+        <return type="int"/>
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="prepare" signature="prepare(string $statement, array $driver_options)">
+        <tags>dbPrepareStmt</tags>
+        <return type="PDOStatement"/>
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="query" signature="query(string $statement)">
+        <tags>dbQuery</tags>
+        <return type="PDOStatement"/>
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="quote" signature="quote(string $string)"><!-- Not safe, really, but... -->
+        <return type="string"/>
+        <neutralization kind="sql_injection" resource="database" argpos="0"/>
+      </method>
+    </class>
+
+    <class name="PDOStatement" supertypes="Transversable">
+      <field name="queryString" type="string"/>
+      <method name="execute" signature="execute(array $input_parameters)">
+        <tags>dbExec</tags>
+        <return type="bool"/>
+      </method>
+      <method name="fetch" signature="fetch()" alias="fetchColumn,fetchObject">
+        <return type="mixed"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="fetchAll" signature="fetchAll()">
+        <return type="array"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="bindParam" signature="bindParam(mixed $parameter, mixed $variable, int $data_type = PDO::PARAM_STR, int $length, mixed $driver_options)">
+        <tags>query_bind_param_name:0,query_bind_param_value:1</tags>
+        <return type="bool"/>
+      </method>
+      <method name="bindColumn" signature="bindColumn(mixed $column, mixed $amp;$param, int type, int maxlen, mixed $driverdata)">
+        <return type="bool"/>
+        <source argpos="1" kind="database_input" resource="database"/>
+      </method>
+      <method name="closeCursor" signature="closeCursor()"/>
+    </class>
+  </module>
+
+  <!-- Vendor-specific database extensions (the most common...) -->
+
+  <!-- db2 API -->
+  <module name="db2">
+    <description url="https://www.php.net/manual/en/book.ibm-db2.php">DB extension for IBM DB2, Cloudscape and Apache Derby</description>
+
+    <function name="db2_connect"
+              signature="db2_connect(string $database, string $username, string $password, array $options)">
+      <tags>dbOpen,closedBy:db2_close,link:-1</tags>
+      <return type="resource"/>
+      <sink kind="connection_string_injection" argpos="0"/>
+      <sink kind="hardcoded_credentials" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2"/>
+    </function>
+    <functionAlias name="db2_pconnect" super="db2_connect">
+      <tags>dbPersistentOpen</tags>
+    </functionAlias>
+    <function name="db2_close" alias="db2_close(resource $connection)">
+      <tags>dbClose,link:0</tags>
+      <return type="bool"/>
+    </function>
+    <function name="db2_pclose" alias="db2_pclose(resource $connection)">
+      <tags>dbClose,link:0</tags>
+      <return type="bool"/>
+    </function>
+    <function name="db2_exec" signature="db2_exec(resource $connection, string $statement, array $options)">
+      <tags>dbExec,link:0,stmtLink:-1</tags>
+      <return type="resource"/>
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="db2_prepare" signature="db2_prepare(resource $connection, string $statement, array $options)">
+      <tags>dbPrepareStmt,link:0,stmtLink:-1</tags>
+      <return type="resource"/>
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="db2_execute" signature="db2_execute(resource $stmt, array $parameters)">
+      <tags>dbExec,stmtLink:0</tags>
+      <return type="bool"/>
+    </function>
+    <function name="db2_fetch_array" alias="db2_fetch_assoc,db2_fetch_row,db2_fetch_both"
+              signature="db2_fetch_array(resource $stmt, int $row_number = -1)">
+      <tags>dbExec,stmtLink:0</tags>
+      <return type="array"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="db2_fetch_object"
+              signature="db2_fetch_object(resource $stmt, int $row_number = -1)">
+      <tags>dbExec,stmtLink:0</tags>
+      <return type="object"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="db2_result" signature="db2_result(resource $stmt, mixed $column)" alias="db2_next_result">
+      <tags>dbExec,stmtLink:0</tags>
+      <return type="mixed"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="db2_escape_string" signature="db2_escape_string(string $string_literal)">
+      <return type="string"/>
+      <neutralization argpos="-1" kind="sql_injection" resource="database"/>
+    </function>
+    <function name="db2_bind_param" signature="db2_bind_param(resource $stmt, int $parameter_number, string $variable_name)">
+      <!-- TODO query_bind_param_value is variable name not direct value -->
+      <!-- See http://php.net/manual/es/function.db2-bind-param.php -->
+      <tags>stmtLink:0,query_bind_param_name:1,query_bind_param_value:2</tags>
+    </function>
+    <function name="db2_free_stmt" signature="db2_free_stmt(resource $stmt)" alias="db2_free_result">
+      <tags>stmtLink:0</tags>
+      <return type="bool"/>
+    </function>
+  </module>
+
+  <!-- InterBase / FireBird API -->
+  <module name="InterBase">
+    <description url="https://www.php.net/manual/en/book.ibase.php">DB extension for Firebird / Interbase</description>
+
+    <function name="ibase_connect" alias="fbird_connect"
+              signature="ibase_connect(string $database, string $username, string $password, string $charset, int $buffers, int $dialect, string $role, int $sync)">
+      <tags>dbOpen,closedBy:ibase_close/fbird_close,link:-1</tags>
+      <sink kind="connection_string_injection" argpos="0"/>
+      <sink kind="hardcoded_credentials" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2"/>
+    </function>
+    <functionAlias name="ibase_pconnect" super="ibase_connect">
+      <tags>dbPersistentOpen</tags>
+    </functionAlias>
+    <functionAlias name="fbird_pconnect" super="ibase_connect">
+      <tags>dbPersistentOpen</tags>
+    </functionAlias>
+    <function name="ibase_query" alias="fbird_query"
+              signature="ibase_query(resource $link_identifier, string $query, int $bind_args)">
+      <tags>dbExec,link:0,stmtLink:-1</tags>
+      <!-- because first param is optional -->
+      <sink kind="sql_injection" resource="database" argpos="0,1" neutralizer="sql_injection"/>
+    </function>
+    <function name="ibase_prepare" alias="fbird_prepare"
+              signature="ibase_prepare(resource $link_identfier, string $trans, string $query)">
+      <tags>dbPrepareStmt,link:0,stmtLink:-1</tags>
+      <!-- because first two params are optional -->
+      <sink kind="sql_injection" resource="database" argpos="0,1,2" neutralizer="sql_injection"/>
+    </function>
+    <function name="ibase_execute" alias="fbird_execute" signature="ibase_execute(resource $query, mixed $...)">
+      <tags>dbExec,link:0,stmtLink:-1</tags>
+    </function>
+    <function name="ibase_fetch_assoc" alias="ibase_fetch_row,fbird_fetch_assoc,fbird_fetch_row"
+              signature="ibase_fetch_assoc(resource $result, int $fetch_flag = 0)">
+      <tags>dbQuery,stmtLink:0</tags>
+      <return type="array"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="ibase_fetch_object" alias="fbird_fetch_object"
+              signature="ibase_fetch_object(resource $result_id), int $fetch_flag = 0)">
+      <tags>dbQuery,stmtLink:0</tags>
+      <return type="object"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="ibase_free_query" alias="fbird_free_query,ibase_free_result,fbird_free_query"
+              signature="ibase_free_query(resource $query)">
+      <tags>stmtLink:0</tags>
+    </function>
+  </module>
+
+  <!-- Informix API -->
+  <module name="Informix">
+    <description url="https://www.php.net/manual/en/book.ifx.php">DB extension for Informix</description>
+    <function name="ifx_connect" signature="ifx_connect(string $database, string $userid, string $password)">
+      <tags>dbOpen,closedBy:ifx_close,link:-1</tags>
+      <return type="resource"/>
+      <sink kind="connection_string_injection" argpos="0"/>
+      <sink kind="hardcoded_credentials" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2"/>
+    </function>
+    <functionAlias name="ifx_pconnect" super="ifx_connect">
+      <tags>dbPersistentOpen</tags>
+    </functionAlias>
+    <function name="ifx_close" signature="ifx_close(resource $link_identifier)">
+      <tags>dbClose</tags>
+      <return type="bool"/>
+    </function>
+    <function name="ifx_query" signature="ifx_query(string $query, resource $link_identifier, int $cursor_type, mixed $blobidarray)">
+      <tags>dbExec, link:1, stmtLink:-1</tags>
+      <return type="resource"/>
+      <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+    </function>
+    <function name="ifx_prepare" signature="ifx_prepare(string $query, resource $link_identifier, int $cursor_type, mixed $blobidarray)">
+      <tags>dbPrepareStmt, link:1, stmtLink:-1</tags>
+      <return type="resource"/>
+      <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+    </function>
+    <function name="ifx_do" signature="ifx_do(resource $result_id)">
+      <tags>dbExec, stmtLink:-1</tags>
+    </function>
+    <function name="ifx_fetch_row" signature="ifx_fetch_row(resource $result_id, mixed $position)">
+      <tags>dbQuery,stmtLink:0</tags>
+      <return type="array"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="ifx_get_blob" alias="ifx_get_char" signature="ifx_fetch_row(resource $result_id, mixed $position)">
+      <tags>dbQuery</tags>
+      <return type="string"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="ifx_htmltbl_result"></function>
+  </module>
+
+  <!-- Ingres API -->
+  <module name="Ingres">
+    <description url="https://www.php.net/manual/en/book.ingres.php">Ingres driver for PHP</description>
+    <function name="ingres_connect" signature="ingres_connect(string $database, string $username, string $password, array $options)">
+      <tags>dbOpen,closedBy:ingres_close,link:-1</tags>
+      <return type="resource"/>
+      <sink kind="connection_string_injection" argpos="0"/>
+      <sink kind="hardcoded_credentials" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2"/>
+    </function>
+    <functionAlias name="ingres_pconnect" super="ingres_connect">
+      <tags>dbPersistentOpen</tags>
+    </functionAlias>
+    <function name="ingres_close" signature="ingres_close(resource $link)">
+      <tags>dbClose,link:0</tags>
+    </function>
+    <function name="ingres_query" alias="ingres_prepare,ingres_unbuffered_query">
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="ingres_fetch_array" alias="ingres_fetch_assoc,ingres_fetch_row">
+      <return type="array"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="ingres_fetch_object">
+      <return type="object"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="ingres_escape_string">
+      <neutralization argpos="-1" kind="sql_injection" resource="database"/>
+    </function>
+  </module>
+
+  <!-- MaxDB API -->
+  <module name="MaxDB">
+    <description url="https://www.php.net/manual/en/book.maxdb.php">MaxDB PHP extension</description>
+    <function name="maxdb_init">
+      <return type="maxdb"/>
+    </function>
+    <function name="maxdb_connect" signature="maxdb_connect(string $host, string $username, string $passwd, string $dbname, int $port = 0, string $socket)">
+      <tags>dbOpen,closedBy:maxdb_close,link:-1</tags>
+      <return type="maxdb"/>
+      <sink kind="connection_string_injection" argpos="0,3,4,5"/>
+      <sink kind="hardcoded_credentials" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2"/>
+    </function>
+    <function name="maxdb_real_connect" signature="maxdb_real_connect(resource $link, string $host, string $username, string $passwd, string $dbname, int $port = 0, string $socket)">
+      <tags>dbOpen,closedBy:maxdb_close,link:0</tags>
+      <return type="bool"/>
+      <sink kind="connection_string_injection" argpos="1,4,5,6"/>
+      <sink kind="hardcoded_credentials" argpos="2"/>
+      <sink kind="hardcoded_password" argpos="3"/>
+    </function>
+    <function name="maxdb_close" signature="maxdb_close(resource $link)">
+      <tags>dbClose, link:0</tags>
+      <return type="bool"/>
+    </function>
+    <function name="maxdb_select_db">
+      <sink kind="connection_string_injection" argpos="1"/>
+    </function>
+    <function name="maxdb_change_user">
+      <sink kind="hardcoded_credentials" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2"/>
+      <sink kind="connection_string_injection" argpos="3"/>
+    </function>
+    <function name="maxdb_query" alias="maxdb_prepare">
+      <return type="maxdb_result"/>
+      <sink kind="sql_injection" resource="database" argpos="1"/>
+    </function>
+    <function name="maxdb_real_query" alias="maxdb_master_query">
+      <return type="bool"/>
+      <sink kind="sql_injection" resource="database" argpos="1"/>
+    </function>
+    <function name="maxdb_fetch_array" alias="maxdb_fetch_row,maxdb_fetch_assoc,maxdb_fetch_fields">
+      <return type="array"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="maxdb_fetch_object">
+      <return type="object"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="maxdb_escape_string" alias="maxdb_real_escape_string">
+      <neutralization argpos="-1" kind="sql_injection" resource="database"/>
+    </function>
+
+    <class name="maxdb">
+      <description>Object API for MaxDB</description>
+      <constructor name="maxdb" signature="maxdb(string $host, string $username, string $passwd, string $dbname, int $port = 0, string $socket)">
+        <tags>dbOpen, closedBy:maxdb.close, link:-1</tags>
+        <sink kind="connection_string_injection" argpos="0,3,4,5"/>
+        <sink kind="hardcoded_credentials" argpos="1"/>
+        <sink kind="hardcoded_password" argpos="2"/>
+      </constructor>
+      <method name="real_connect" signature="real_connect(string $hostname, string $username, string $passwd, string $dbname, int $port, string $socket)">
+        <tags>dbOpen,link:-2</tags>
+        <return type="bool"/>
+        <sink kind="connection_string_injection" argpos="0,3,4,5"/>
+        <sink kind="hardcoded_credentials" argpos="1"/>
+        <sink kind="hardcoded_password" argpos="2"/>
+      </method>
+      <method name="close" signature="close()">
+        <tags>dbClose,link:-2</tags>
+        <return type="bool"/>
+      </method>
+      <method name="change_user" signature="change_user(string $user, string $password, string $database)">
+        <sink kind="hardcoded_credentials" argpos="0"/>
+        <sink kind="hardcoded_password" argpos="1"/>
+        <sink kind="connection_string_injection" argpos="2"/>
+      </method>
+      <method name="stmt_init" signature="stmt_init()">
+        <return type="maxdb_stmt"/>
+      </method>
+      <method name="query" signature="query(string $query)" alias="real_query,multi_query">
+        <return type="mixed"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+      </method>
+      <method name="prepare" signature="prepare(string $query)">
+        <return type="maxdb_stmt"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+        <sink kind="missing_authorization" resource="database" argpos="0" neutralizer="missing_authorization"/>
+      </method>
+      <method name="real_escape_string" signature="real_escape_string(string $escapestr)" alias="escape_string">
+        <return type="string"/>
+        <neutralization kind="sql_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="use_result" signature="use_result()" alias="store_result">
+        <return type="maxdb_result"/>
+      </method>
+    </class>
+
+    <class name="maxdb_stmt">
+      <method name="prepare" signature="prepare">
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+        <sink kind="missing_authorization" resource="database" argpos="0" neutralizer="missing_authorization"/>
+      </method>
+      <method name="bind_result" signature="bind_result">
+        <source kind="database_input" argpos="0,1,2,3,4,5,6,7,8,9"/>
+      </method>
+      <method name="fetch" signature="fetch"><return type="bool"/></method>
+    </class>
+
+    <class name="maxdb_result">
+      <method name="fetch_array" signature="fetch_array()" alias="fetch_row,fetch_assoc">
+        <return type="array"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="fetch_object" signature="fetch_object()">
+        <return type="object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+  </module>
+
+  <!-- MS Server (deprecated) API -->
+  <module name="Mssql">
+    <description url="https://www.php.net/manual/en/book.mssql.php">Microsoft SQL Server driver (deprecated)</description>
+    <function name="mssql_connect" signature="mssql_connect(string $servername, string $username, string $password, bool $new_link = FALSE)">
+      <tags>dbOpen, closedBy:mssql_close, link:-1</tags>
+      <return type="resource"/>
+      <sink kind="connection_string_injection" argpos="0"/>
+      <sink kind="hardcoded_credentials" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2"/>
+    </function>
+    <functionAlias name="mssql_pconnect" super="mssql_connect">
+      <tags>dbPersistentOpen</tags>
+    </functionAlias>
+    <function name="mssql_close" signature="mssql_close(resource $link_identifier)">
+      <tags>dbClose, link:0</tags>
+    </function>
+    <function name="mssql_select_db">
+      <sink kind="connection_string_injection" argpos="0"/>
+    </function>
+    <function name="mssql_init">
+      <return type="resource"/>
+      <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+    </function>
+    <function name="mssql_query">
+      <return type="resource"/>
+      <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+    </function>
+    <function name="mssql_fetch_array" alias="mssql_fetch_row,mssql_fetch_assoc">
+      <return type="array"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="mssql_fetch_object">
+      <return type="object"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="mssql_result">
+      <return type="string"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+  </module>
+
+  <!-- mysql, original API (deprecated) -->
+  <module name="mysql">
+    <description url="https://www.php.net/manual/en/book.mysql.php">MySQL driver (deprecated)</description>
+    <function name="mysql_connect" signature="mysql_connect(string $server, string $username, string $password, bool $new_link, int $client_flags)">
+      <tags>dbOpen, closedBy:mysql_close, link:-1</tags>
+      <return type="resource"/>
+      <sink kind="connection_string_injection" argpos="0"/>
+      <sink kind="ssrf" argpos="0"/>
+      <sink kind="hardcoded_credentials" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2"/>
+    </function>
+    <functionAlias name="mysql_pconnect" super="mysql_connect">
+      <tags>dbPersistentOpen</tags>
+    </functionAlias>
+    <function name="mysql_close" signature="mysql_close(resource $link_identifier)">
+      <tags>dbClose, link:0</tags>
+      <return type="bool"/>
+    </function>
+    <function name="mysql_select_db" signature="mysql_select_db(string $database_name, resource $link_identifier)">
+      <return type="bool"/>
+      <sink kind="connection_string_injection" argpos="0"/>
+    </function>
+    <function name="mysql_db_query" signature="mysql_db_query(string $database, string $query, resource $link_identifier)">
+      <tags>dbExec,link:2, stmtLink:-1</tags>
+      <return type="mixed"/>
+      <sink kind="connection_string_injection" argpos="0"/>
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="mysql_query" alias="mysql_unbuffered_query"
+              signature="mysql_query(string $query, resource $link_identifier)">
+      <tags>dbExec,link:1, stmtLink:-1</tags>
+      <return type="mixed"/>
+      <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+    </function>
+    <function name="mysql_fetch_array" alias="mysql_fetch_assoc" signature="mysql_fetch_array(resource $result, int $result_type = MYSQL_BOTH)">
+      <tags>dbQuery,stmtLink:0</tags>
+      <return type="array"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="mysql_fetch_field" signature="mysql_fetch_field(resource $result, int $field_offset = 0)">
+      <tags>dbQuery,stmtLink:0</tags>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="mysql_fetch_object" signature="mysql_fetch_object(resource $result, string $class_name, array $params)">
+      <tags>dbQuery,stmtLink:0</tags>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="mysql_fetch_row" signature="mysql_fetch_row(resource $result)">
+      <tags>dbQuery,stmtLink:0</tags>
+      <return type="array"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="mysql_escape_string" alias="mysql_real_escape_string">
+      <!-- <neutralization kind="sql_injection" resource="database"/>  --> <!-- could be escaped, should not be used -->
+      <neutralization argpos="-1" kind="command_injection" resource="database"/>
+    </function>
+  </module>
+
+  <!-- New MySQL API -->
+  <module name="mysqli">
+    <description url="https://www.php.net/manual/en/book.mysqli.php">MySQL improved extension</description>
+    <!-- procedural style -->
+    <function name="mysqli_connect" signature="mysqli_connect(string $host, string $username, string $passwd, string $dbname, int $port, string $socket)"
+              alias="mysqli_real_connect">
+      <tags>dbOpen, closedBy:mysqli_close, link:-1</tags>
+      <return type="mysqli"/>
+      <sink kind="ssrf" argpos="0,4"/>
+      <sink kind="hardcoded_credentials" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2"/>
+      <sink kind="connection_string_injection" argpos="3"/>
+    </function>
+    <function name="mysqli_close" signature="mysqli_close(mysqli $link)">
+      <tags>dnClose,link:0</tags>
+    </function>
+    <function name="mysqli_change_user">
+      <sink kind="hardcoded_credentials" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2"/>
+      <sink kind="connection_string_injection" argpos="3"/>
+    </function>
+    <function name="mysqli_select_db">
+      <sink kind="connection_string_injection" argpos="0"/>
+    </function>
+    <function name="mysqli_query" alias="mysqli_real_query,mysqli_prepare,mysqli_multi_query,mysqli_master_query,mysqli_send_query">
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="mysqli_stmt_bind_param" signature="mysqli_stmt_bind_param(mysqi_stmt $stmt, string $types, mixed &amp;$var1...)">
+      <tags>query_bind_param_name:1,query_bind_param_value:2</tags>
+    </function>
+    <function name="mysqli_use_result" alias="mysqli_store_result">
+      <return type="mysqli_result"/>
+    </function>
+    <function name="mysqli_fetch_row" alias="mysqli_fetch_all,mysqli_fetch_array">
+      <return type="mixed"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="mysqli_fetch_assoc" alias="mysqli_fetch_fields">
+      <return type="array"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="mysqli_fetch_field" alias="mysqli_fetch_field_direct,mysqli_fetch_object">
+      <return type="object"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="mysqli_escape_string">
+      <neutralization argpos="-1" kind="sql_injection" resource="database"/>
+    </function>
+    <function name="mysqli_real_escape_string">
+      <neutralization argpos="-1" kind="sql_injection" resource="database"/>
+    </function>
+
+    <class name="mysqli">
+      <constructor name="mysqli" signature="mysqli(string $host, string $username, string $passwd, string $dbname, int $port, string $socket)">
+        <tags>dbOpen, closedBy:mysqli.close, link:-1</tags>
+        <sink kind="ssrf" argpos="0,4"/>
+        <sink kind="hardcoded_credentials" argpos="1"/>
+        <sink kind="hardcoded_password" argpos="2"/>
+        <sink kind="connection_string_injection" argpos="3"/>
+      </constructor>
+      <method name="real_connect" signature="real_connect(string $host, string $username, string $passwd, string $dbname, int $port, string $socket)">
+        <tags>dbOpen, closedBy:mysqli.close, link:-2</tags>
+        <return type="bool"/>
+        <sink kind="ssrf" argpos="0,4"/>
+        <sink kind="hardcoded_credentials" argpos="1"/>
+        <sink kind="hardcoded_password" argpos="2"/>
+        <sink kind="connection_string_injection" argpos="3"/>
+      </method>
+      <method name="close" signature="close()">
+        <tags>dbClose, link:-2</tags>
+      </method>
+      <method name="change_user" signature="change_user(string $user, string $password, string $database)">
+        <sink kind="hardcoded_credentials" argpos="0"/>
+        <sink kind="hardcoded_password" argpos="1"/>
+        <sink kind="connection_string_injection" argpos="2"/>
+      </method>
+      <method name="select_db" signature="select_db(string $dbname)">
+        <sink kind="connection_string_injection" argpos="0"/>
+      </method>
+      <method name="query" signature="query(string $query)"
+              alias="multi_query,prepare,real_query,send_query">
+        <return type="mysqli_result"/>
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+        <sink kind="missing_authorization" resource="database" argpos="0" neutralizer="missing_authorization"/>
+      </method>
+      <method name="escape_string" signature="escape_string(string $escapestr)" alias="real_escape_string">
+        <neutralization kind="sql_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="use_result" signature="use_result()" alias="store_result,reap_async_query">
+        <return type="mysqli_result"/>
+      </method>
+      <method name="stmt_init" signature="stmt_init()">
+        <return type="mysqli_stmt"/>
+      </method>
+      <method name="prepare" signature="prepare(string $query)">
+        <return type="mysqli_stmt"/>
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+        <sink kind="missing_authorization" resource="database" argpos="0" neutralizer="missing_authorization"/>
+      </method>
+    </class>
+
+    <class name="mysqli_stmt">
+      <constructor name="mysqli_stmt" signature="mysqli_stmt(mysqli $link, string $query)">
+        <sink kind="sql_injection" resource="database" argpos="1"/>
+      </constructor>
+      <method name="prepare" signature="prepare(string $query)">
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+        <sink kind="missing_authorization" resource="database" argpos="0" neutralizer="missing_authorization"/>
+      </method>
+      <method name="bind_param" signature="bind_param(string $types, mixed $var1...)">
+        <tags>query_bind_param_name:0,query_bind_param_value:1</tags>
+      </method>
+      <method name="get_result" signature="get_result()">
+        <return type="mysqli_result"/>
+      </method>
+      <method name="result_metadata" signature="result_metadata()">
+        <return type="mysqli_result"/>
+      </method>
+    </class>
+
+    <class name="mysqli_result">
+      <method name="fetch_row" signature="fetch_row()" alias="fetch_all,fetch_array">
+        <return type="mixed"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="fetch_assoc" signature="fetch_assoc()" alias="fetch_fields">
+        <return type="array"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="fetch_field" signature="fetch_field()" alias="fetch_field_direct,fetch_object">
+        <return type="object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+  </module>
+
+  <!-- OCI8 API -->
+  <module name="OCI8">
+    <description url="https://www.php.net/manual/en/book.oci8.php">Oracle OCI8 driver</description>
+    <function name="oci_connect" alias="oci_new_connect"
+              signature="oci_connect(string $username, string $password, string $connection_string, string $character_set, int $session_mode)">
+      <tags>dbOpen, closedBy:oci_close, link:-1</tags>
+      <return type="resource"/>
+      <sink kind="hardcoded_credentials" argpos="0"/>
+      <sink kind="hardcoded_password" argpos="1"/>
+      <sink kind="connection_string_injection" argpos="2"/>
+    </function>
+    <functionAlias name="oci_pconnect" super="oci_connect">
+      <tags>dbPersistentOpen</tags>
+    </functionAlias>
+    <function name="oci_close" signature="oci_close(resource $connection)">
+      <tags>dbClose, link:0</tags>
+    </function>
+    <function name="oci_parse" signature="oci_parse(resource $connection, string $sql_text)">
+      <tags>dbPrepareStmt,link:0,stmtLink:-1</tags>
+      <return type="resource"/>
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="oci_password_change" signature="oci_password_change(resource $connection, string $username, string $old_pass, string $new_pass)">
+      <sink kind="connection_string_injection" argpos="0"/>
+      <sink kind="hardcoded_credentials" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2,3"/>
+    </function>
+    <function name="oci_fetch_all" signature="oci_fetch_all(resource $stmt, array &amp;$output)">
+      <tags>dbQuery, stmtLink:0</tags>
+      <return type="int"/>
+      <source kind="database_input" argpos="1"/>
+    </function>
+    <function name="oci_fetch_array" alias="oci_fetch_assoc,oci_fetch_row" signature="oci_fetch_array(resource $stmt)">
+      <tags>dbQuery, stmtLink:0</tags>
+      <return type="array"/>
+      <source kind="database_input" argpos="-1"/>
+    </function>
+    <function name="oci_fetch_object" signature="oci_fetch_object(resource $stmt)">
+      <tags>dbQuery, stmtLink:0</tags>
+      <return type="object"/>
+      <source kind="database_input" argpos="-1"/>
+    </function>
+    <function name="oci_result" signature="oci_result(resource $stmt, mixed $field)">
+      <tags>dbQuery, stmtLink:0</tags>
+      <return type="mixed"/>
+      <source kind="database_input" argpos="-1"/>
+    </function>
+    <function name="oci_bind_by_name">
+      <tags>query_bind_param_name:1,query_bind_param_value:2</tags>
+    </function>
+  </module>
+
+  <!-- PostgreSQL API -->
+  <module name="PostgreSQL">
+    <description url="https://www.php.net/manual/en/book.pgsql.php">PostgreSQL driver</description>
+    <function name="pg_connect" signature="pg_connect(string $connection_string int $connection_type)">
+      <tags>dbOpen, closedBy:pg_close, link:-1</tags>
+      <return type="resource"/>
+      <sink kind="connection_string_injection" argpos="0"/>
+      <sink kind="hardcoded_password" argpos="0"/>
+    </function>
+    <functionAlias name="pg_pconnect" super="pg_connect">
+      <tags>dbPersistentOpen</tags>
+    </functionAlias>
+    <function name="pg_close" signature="pg_close(resource $connection)">
+      <tags>dbClose, link:0</tags>
+      <return type="bool"/>
+    </function>
+    <function name="pg_query" alias="pg_exec" signature="pg_query(resource $connection, string $query)">
+      <tags>dbExec, link:0, stmtLink:-1</tags>
+      <return type="resource"/>
+      <sink kind="sql_injection" resource="database" argpos="0,1" neutralizer="sql_injection"/><!-- sql in param 1 if two params, else 0 -->
+      <sink kind="sensitive_data" resource="database" argpos="0,1" neutralizer="sensitive_data"/><!-- sql in param 1 if two params, else 0 -->
+    </function>
+    <function name="pg_send_query" alias="pg_send_query(resource $connection, string $query)">
+      <tags>dbExec, link:0</tags>
+      <return type="bool"/>
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="pg_query_params" signature="pg_query_params(resource $connection, string $query, array $params)">
+      <tags>dbExec, link:0, stmtLink:-1</tags>
+      <return type="resource"/>
+      <sink kind="sql_injection" resource="database" argpos="0,1" neutralizer="sql_injection"/><!-- sql in param 1 if three params, else 0 -->
+    </function>
+    <function name="pg_send_query_params" signature="pg_send_query_params(resource $connection, string $query, array $params)">
+      <tags>dbExec, link:0</tags>
+      <return type="bool"/>
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="pg_prepare" signature="pg_prepare(resource $connection, string $stmtname, string $query)">
+      <tags>dbPrepareStmt, link:0, stmtLink:-1</tags>
+      <return type="resource"/>
+      <sink kind="sql_injection" resource="database" argpos="1,2" neutralizer="sql_injection"/><!-- sql in param 2 if three params, else 1 -->
+    </function>
+    <function name="pg_send_prepare" signature="pg_send_prepare(resource $connection, string $stmtname, string $query)">
+      <tags>dbPrepareStmt, link:0</tags>
+      <return type="bool"/>
+      <sink kind="sql_injection" resource="database" argpos="2" neutralizer="sql_injection"/>
+    </function>
+    <function name="pg_execute" alias="pg_send_execute" signature="pg_execute(resource $connection, string $stmtname, array $params)">
+      <tags>dbExec, link:0, stmtLink:-1</tags>
+      <return type="resource"/>
+    </function>
+    <function name="pg_select" alias="pg_insert,pg_delete">
+      <sink kind="sql_injection" resource="database" argpos="1"/><!-- table name -->
+    </function>
+    <function name="pg_fetch_all" alias="pg_fetch_all_columns,pg_fetch_array,pg_fetch_assoc">
+      <return type="array"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="pg_fetch_object">
+      <return type="object"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="pg_fetch_result">
+      <return type="string"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="pg_escape_string" alias="pg_escape_bytea,pg_escape_identifier,pg_escape_literal"
+              signature="pg_escape_string(resource $connection, string $data)">
+      <return type="string"/>
+      <neutralization argpos="-1" kind="sql_injection" resource="database"/>
+    </function>
+  </module>
+
+  <!-- Sqlite API -->
+  <module name="sqlite">
+    <description url="https://www.php.net/manual/en/book.sqlite.php">SQLite 2.x driver</description>
+    <function name="sqlite_open" signature="sqlite_open(string $filename, int $mode = 0666, string &amp;$error_message)">
+      <tags>dbOpen, closedBy:sqlite_close, link:-1</tags>
+      <return type="resource"/>
+      <sink kind="connection_string_injection" argpos="0"/>
+    </function>
+    <functionAlias name="sqllite_popen" super="sqlite_open">
+      <tags>dbPersistentOpen</tags>
+    </functionAlias>
+    <function name="sqlite_factory" signature="sqlite_factory(string $filename, int $mode = 0666, string &amp;$error_message)">
+      <tags>dbOpen, link:-1</tags>
+      <return type="SQLiteDatabase"/>
+      <sink kind="connection_string_injection" argpos="0"/>
+    </function>
+    <function name="sqlite_close" signature="sqlite_close(resource $dbhandle)">
+      <tags>dbClose, link:0</tags>
+    </function>
+    <function name="sqlite_query" alias="sqlite_exec,sqlite_unbuffered_query,sqllite_array_query"
+              signature="sqlite_query(resource $dbhandle, string $query, int $result_type = SQLITE_BOTH, string &amp;$error_message)">
+      <tags>dbExec, link:0/1, stmtLink:-1</tags>
+      <return type="resource"/>
+      <sink kind="sql_injection" resource="database" argpos="0,1" neutralizer="sql_injection"/>
+    </function>
+    <function name="sqlite_single_query" signature="sqlite_single_query(resource $dbhandle, string $query, bool $first_row_only, bool $decode_binary)">
+      <tags>dbExec, link:0</tags>
+      <return type="array"/>
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="sqlite_fetch_all" alias="sqlite_fetch_array,sqlite_current">
+      <return type="array"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="sqlite_fetch_object">
+      <return type="object"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="sqlite_fetch_single" alias="sqlite_fetch_string">
+      <return type="string"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="sqlite_create_aggregate">
+      <sink kind="code_injection" argpos="1,2,3" resource="database"/>
+    </function>
+    <function name="sqlite_create_function">
+      <sink kind="code_injection" argpos="1,2" resource="database"/>
+    </function>
+    <function name="sqlite_escape_string" signature="sqlite_escape_string(string $item)">
+      <return type="string"/>
+      <neutralization argpos="-1" kind="sql_injection" resource="database"/>
+    </function>
+    <function name="sqlite_udf_encode_binary" signature="sqlite_udf_encode_binary(string $data)">
+      <return type="string"/>
+      <neutralization argpos="-1" kind="sql_injection" resource="database"/>
+    </function>
+    
+    <class name="SQLiteDatabase">
+      <constructor name="SQLiteDatabase" signature="SQLiteDatabase(string $filename, int $mode = 0666, string &amp;$error_message)">
+        <tags>dbOpen, link:-1</tags>
+      </constructor>
+      <method name="query" signature="query(string $query, int $result_type = SQLITE_BOTH, string &amp;$error_message)">
+        <tags>dbExec</tags>
+        <return type="SQLiteResult"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+      </method>
+      <functionAlias name="arrayQuery" super="SQLiteDatabase.query">
+        <return type="array"/>
+      </functionAlias>
+      <method name="queryExec" signature="queryExec(string $query, string &amp;$error_msg)">
+        <tags>dbExec</tags>
+        <return type="bool"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+      </method>
+      <method name="unbufferedQuery" signature="unbufferedQuery(string $query, int $result_type = SQLITE_BOTH, string &amp;$error_msg)">
+        <tags>dbExec</tags>
+        <return type="SQLiteUnbuffered"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+      </method>
+      <function name="singleQuery" signature="singleQuery(string $query, bool $first_row_only, bool $decode_binary)">
+        <tags>dbExec</tags>
+        <return type="array"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+      </function>
+      <function name="createAggregate" signature="createAggregate(string $function_name, callable $step_func, callable $finalize_func, int $num_args = -1)">
+        <sink kind="code_injection" argpos="0,1,2" resource="database"/>
+      </function>
+      <function name="createFunction" signature="createFunction(string $function_name, callable $callback, int $num_args = -1)">
+        <sink kind="code_injection" argpos="0,1" resource="database"/>
+      </function>
+    </class>
+
+    <class name="SQLiteResult">
+      <function name="fetchAll" alias="fetchArray,current">
+        <return type="array"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </function>
+      <function name="fetchObject" signature="fetchObject(string $class_name, array $ctor_params, bool $decode_binary)">
+        <return type="object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </function>
+      <function name="fetchSingle" alias="fetchString">
+        <return type="string"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </function>
+
+    </class>
+    <class name="SQLiteUnbuffered" supertypes="SQLiteResult"></class>
+  </module>
+
+  <module name="sqlite3">
+    <description url="https://www.php.net/manual/en/book.sqlite3.php">SQLite 3 driver</description>
+
+    <class name="SQLite3">
+      <constructor name="SQLite3" signature="SQLite3(string $filename, int $flags, string $encryption_key)">
+        <tags>dbOpen, closedBy:SQLite3.close, link: -1</tags>
+        <sink kind="connection_string_injection" argpos="0"/>
+        <sink kind="hardcoded_key" resource="crypto" argpos="2"/>
+      </constructor>
+      <method name="open" signature="open(string $filename, int $flags, string $encryption_key)">
+        <tags>dbOpen, closedBy:SQLite3.close, link:-2</tags>
+        <sink kind="connection_string_injection" argpos="0"/>
+        <sink kind="hardcoded_key" resource="crypto" argpos="2"/>
+      </method>
+      <method name="close" signature="close()">
+        <tags>dbClose, link:-2</tags>
+        <return type="bool"/>
+      </method>
+      <method name="escapeString" signature="escapeString(string $value)" instance="false">
+        <return type="string"/>
+        <neutralization kind="sql_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="exec" signature="exec(string $query)">
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="openBlob" signature="openBlob(string $table, string $column, string $rowid, string $dbname, int $flags)">
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <sink kind="sql_injection" argpos="0,1,2,3"/>
+      </method>
+      <method name="prepare" signature="prepare(string $query)">
+        <return type="SQLite3Stmt"/>
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+        <sink kind="missing_authorization" resource="database" argpos="0" neutralizer="missing_authorization"/>
+      </method>
+      <method name="query" signature="query(string $query)">
+        <return type="SQLite3Result"/>
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="querySingle" signature="querySingle(string $query, bool $entire_row)">
+        <return type="mixed"/>
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+    <class name="SQLite3Stmt">
+      <method name="execute" signature="execute()">
+        <return type="SQLite3Result"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="bindValue" signature="bindValue(mixed $sql_param, mixed $param, int $type)">
+        <tags>query_bind_param_name:0,query_bind_param_value:1</tags>
+      </method>
+      <method name="bindParam" signature="bindValue(mixed $sql_param, mixed &amp;$param, int $type)">
+        <tags>query_bind_param_name:0,query_bind_param_value:1</tags>
+      </method>
+    </class>
+    <class name="SQLite3Result">
+      <method name="fetchArray" signature="fetchArray">
+        <return type="array"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="sqlsrv">
+    <description url="https://www.php.net/manual/en/book.sqlsrv.php">Microsoft SQL Server driver</description>
+    <function name="sqlsrv_connect">
+      <return type="resource"/>
+      <sink kind="connection_string_injection" resource="database" argpos="0,1"/>
+    </function>
+    <function name="sqlsrv_prepare" alias="sqlsrv_query">
+      <sink kind="sql_injection" resource="database" argpos="1"/>
+    </function>
+    <function name="sqlsrv_fetch_array" alias="sqlsrv_fetch_object,sqlsrv_get_field">
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="sqlsrv_errors">
+      <return type="array"/>
+      <!--<source kind="sensitive_error_info" resource="database"/>-->
+    </function>
+  </module>
+
+  <module name="sybase">
+    <description url="https://www.php.net/manual/en/book.sybase.php">Sybase driver (deprecated)</description>
+    <function name="sybase_connect" signature="sybase_connect(string $servername, string $username, string $password, string $charset, string $appname, bool $new = FALSE)">
+      <tags>dbOpen, closedBy:sybase_close, link:-1</tags>
+      <return type="resource"/>
+      <sink kind="connection_string_injection" argpos="0,4"/>
+      <sink kind="ssrf" argpos="0"/>
+      <sink kind="hardcoded_credentials" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2"/>
+    </function>
+    <functionAlias name="sybase_pconnect" super="sybase_connect">
+      <tags>dbPersistentOpen</tags>
+    </functionAlias>
+   <function name="sybase_close" signature="sybase_close(resource $link)">
+     <tags>dbClose, link:0</tags>
+   </function>
+    <function name="sybase_select_db">
+      <sink kind="connection_string_injection" argpos="0"/>
+    </function>
+    <function name="sybase_query" alias="sybase_unbuffered_query">
+      <return type="mixed"/>
+      <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+    </function>
+    <function name="sybase_fetch_array" alias="sybase_fetch_assoc">
+      <return type="array"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="sybase_fetch_field">
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="sybase_fetch_object">
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="sybase_fetch_row">
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="sybase_get_last_message">
+      <return type="string"/>
+      <!--<source kind="sensitive_error_info" resource="database"/>-->
+    </function>
+  </module>
+
+  <!-- Propel ORM API -->
+  <module name="Propel">
+    <description url="http://propelorm.org/">Propel ORM - Object-Relational Mapping library for PHP</description>
+    <class name="Propel">
+      <method name="getConnection" alias="getMasterConnection,getSlaveConnection,initConnection"
+              signature="getConnection(string $name, string $mode)" >
+        <tags>dbOpen</tags>
+        <return type="PDO"/>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+    <class name="Propel.Runtime.Propel"><!-- Propel 2 -->
+      <method name="getConnection" signature="getConnection(string $name, string $mode)" alias="getReadConnection,getWriteConnection">
+        <tags>dbOpen</tags>
+        <return type="PDO"/>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+
+    <class name="PropelPDO" supertypes="PDO"/>
+    <class name="Proper.Runtime.Connection.ConnectionInterface" supertypes="PDO"/>
+    <class name="Proper.Runtime.Connection.StatementInterface" supertypes="PDOStatement"/>
+
+    <class name="PropelQuery" supertypes="ModelCriteria">
+      <method name="create" signature="create" instance="false">
+        <return type="PropelQuery"/>
+      </method>
+    </class>
+
+    <class name="ModelCriteria" supertypes="Criteria">
+      <method name="create" signature="create" instance="false">
+        <return type="ModelCriteria"/>
+      </method>
+      <method name="condition" signature="condition" alias="addJoinCondition">
+        <return type="ModelCriteria"/>
+        <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+      </method>
+      <method name="filterBy" signature="filterBy" alias="where,orWhere,having,orderBy,groupBy">
+        <return type="ModelCriteria"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+      </method>
+      <method name="findBy" signature="findBy" alias="findOneBy">
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+      </method>
+    </class>
+
+    <class name="Criteria">
+      <method name="create" signature="create" instance="false">
+        <return type="Criteria"/>
+      </method>
+      <!--
+      Although Propel doc says "PDO prepared statement here, no SQL-i", this is false:
+      Developer may pass a query part concatenating untrusted input, which is SQL-injectable !!!
+      Only when query is not tainted, and tainted input is passed as query params, this is safe...
+      -->
+      <method name="addAsColumn" signature="addAsColumn">
+        <return type="Criteria"/>
+        <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+      </method>
+      <method name="addSelectModifier" signature="addSelectModifier" alias="addSelectColumn,addGroupByColumn,addAscendingOrderByColumn,addDescendingOrderByColumn">
+        <return type="Criteria"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+      </method>
+      <method name="add" signature="add">
+        <!-- A column name is expected, but if controller by attackers, they may inject arbitrary SQL... -->
+        <return type="Criteria"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+      </method>
+      <method name="addCond" signature="addCond">
+        <return type="Criteria"/>
+        <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+      </method>
+      <method name="addJoin" signature="addJoin">
+        <return type="Criteria"/>
+        <sink kind="sql_injection" resource="database" argpos="0,1,2" neutralizer="sql_injection"/>
+      </method>
+      <method name="addHaving" signature="addHaving">
+        <return type="Criteria"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+      </method>
+      <method name="addAnd" signature="addAnd" alias="addOr,addUsingOperator">
+        <return type="Criteria"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+      </method>
+
+    </class>
+  </module>
+
+  <module name="Doctrine.DBAL">
+    <description url="http://www.doctrine-project.org/projects/dbal.html">Doctrine Database Abstraction Layer</description>
+    <class name="Doctrine.DBAL.DriverManager">
+      <method name="getConnection" signature="getConnection" instance="false">
+        <return type="Doctrine.DBAL.Connection"/>
+      </method>
+    </class>
+
+    <class name="Doctrine.DBAL.Connection" supertypes="Doctrine.DBAL.Driver.Connection">
+      <method name="getExpressionBuilder" signature="getExpressionBuilder">
+        <return type="Doctrine.DBAL.Query.Expression.ExpressionBuilder"/>
+      </method>
+      <method name="fetchAssoc" signature="fetchAssoc" alias="fetchArray">
+        <return type="array"/>
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="fetchColumn" signature="fetchColumn">
+        <return type="mixed"/>
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="delete" signature="delete">
+        <sink kind="sql_injection" argpos="0,1"/>
+      </method>
+      <method name="update" signature="update">
+        <sink kind="sql_injection" argpos="0,1,2"/>
+      </method>
+      <method name="insert" signature="insert">
+        <sink kind="sql_injection" argpos="0,1"/>
+      </method>
+      <method name="project" signature="project">
+        <return type="array"/>
+        <sink kind="sql_injection" argpos="0"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="executeQuery" signature="executeQuery">
+        <return type="Doctrine.DBAL.Driver.Statement"/>
+        <sink kind="sql_injection" argpos="0" neutralizer="sql_injection"/>
+      </method>
+      <method name="executeCacheQuery" signature="executeCacheQuery">
+        <return type="Doctrine.DBAL.Driver.ResultStatement"/>
+        <sink kind="sql_injection" argpos="0" neutralizer="sql_injection"/>
+      </method>
+      <method name="executeUpdate" signature="executeUpdate">
+        <return type="int"/>
+        <sink kind="sql_injection" argpos="0" neutralizer="sql_injection"/>
+      </method>
+      <method name="quoteIdentifier" signature="quoteIdentifier">
+        <return type="string"/>
+        <neutralization kind="sql_injection" resource="database" argpos="0"/>
+      </method>
+    </class>
+
+    <class name="Doctrine.DBAL.Driver.Connection">
+      <method name="prepare" signature="prepare">
+        <return type="Doctrine.DBAL.Statement"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+        <sink kind="missing_authorization" resource="database" argpos="0" neutralizer="missing_authorization"/>
+      </method>
+      <method name="query" signature="query">
+        <return type="Doctrine.DBAL.Statement"/>
+      </method>
+      <method name="exec" signature="exec">
+        <return type="int"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+      </method>
+      <method name="quote" signature="quote">
+        <return type="string"/>
+        <neutralization kind="sql_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="errorInfo" signature="errorInfo">
+        <return type="array"/>
+        <!--<source kind="sensitive_error_info" resource="database"/>-->
+      </method>
+    </class>
+
+    <class name="Doctrine.DBAL.Statement" supertypes="Doctrine.DBAL.Driver.Statement">
+      <method name="getWrappedStatement" signature="getWrappedStatement">
+        <return type="Doctrine.DBAL.Driver.Statement"/>
+      </method>
+    </class>
+
+    <class name="Doctrine.DBAL.Driver.ResultStatement" kind="interface">
+      <method name="fetch" signature="fetch" alias="fetchColumn">
+        <return type="mixed"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="fetchAll" signature="fetchAll">
+        <return type="array"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="Doctrine.DBAL.Driver.Statement" kind="interface" supertypes="Doctrine.DBAL.Driver.ResultStatement">
+      <method name="execute" signature="execute"></method>
+      <method name="bindParam" signature="bindParam" alias="bindValue">
+        <tags>query_bind_param_name:0,query_bind_param_value:1</tags>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="Doctrine.ORM">
+    <description url="http://www.doctrine-project.org/projects/orm.html">Doctrine Object Request Manager</description>
+    <!-- See http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/security.html -->
+    <class name="Doctrine.ORM.EntityManagerInterface" kind="interface">
+      <method name="getConnection" signature="getConnection">
+        <return type="Doctrine.DBAL.Connection"/>
+      </method>
+      <method name="getExpressionBuilder" signature="getExpressionBuilder">
+        <return type="Doctrine.ORM.Query.Expr"/>
+      </method>
+      <method name="createQuery" signature="createQuery">
+        <return type="Doctrine.ORM.Query"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+      </method>
+      <method name="createNamedQuery" signature="createNamedQuery">
+        <return type="Doctrine.ORM.Query"/>
+      </method>
+      <method name="createNativeQuery" signature="createNativeQuery">
+        <return type="Doctrine.ORM.NativeQuery"/>
+        <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+      </method>
+      <method name="createNamedNativeQuery" signature="createNamedNativeQuery">
+        <return type="Doctrine.ORM.NativeQuery"/>
+      </method>
+      <method name="createQueryBuilder" signature="createQueryBuilder">
+        <return type="Doctrine.ORM.QueryBuilder"/>
+      </method>
+    </class>
+    <class name="Doctrine.ORM.EntityManager" supertypes="Doctrine.ORM.EntityManagerInterface">
+      <method name="create" signature="create" instance="false">
+        <return type="Doctrine.ORM.EntityManager"/>
+      </method>
+      <method name="flush" signature="flush" alias="remove,persist">
+        <tags>state_change</tags>
+        <sink kind="csrf" argpos="-1"/>
+      </method>
+    </class>
+    <class name="Doctrine.ORM.AbstractQuery">
+      <method name="getSQL" signature="getSQL"><return type="string"/></method>
+      <method name="getResultSetMapping" signature="getResultSetMapping"><return type="Doctrine.ORM.Query.ResultSetMapping"/></method>
+      <method name="getResult" signature="getResult" alias="getArrayResult,getScalarResult">
+        <return type="array"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getSingleResult" signature="getSingleResult" alias="getOneOrNullResult,getSingleScalarResult,iterate">
+        <return type="mixed"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+    <class name="Doctrine.ORM.Query.ResultSetMapping">
+    </class>
+    <class name="Doctrine.ORM.QueryBuilder">
+
+    </class>
+    <class name="Doctrine.ORM.Query" supertypes="Doctrine.ORM.AbstractQuery">
+    </class>
+    <class name="Doctrine.ORM.NativeQuery" supertypes="Doctrine.ORM.AbstractQuery">
+    </class>
+
+  </module>
+
+  <module name="Illuminate.Database">
+    <description url="https://github.com/illuminate/database">Illuminate Database - Database API used in Laravel</description>
+    <class name="Illuminate.Database.ConnectionInterface" kind="interface">
+       <method name="table" signature="table(string $table)">
+         <return type="Illuminate.Database.Query.Builder"/>
+         <sink kind="sql_injection" argpos="0" resource="database"/>
+       </method>
+      <method name="raw" signature="raw(string $value)">
+        <return type="Illuminate.Database.Query.Expression"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="selectOne" signature="selectOne(string $query, array $binding, bool $useReadPdo)">
+        <return type="mixed"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="select" signature="select(string $query, array $binding, bool $useReadPdo)">
+        <return type="array"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="cursor" signature="cursor(string $query, array $binding, bool $useReadPdo)">
+        <return type="Generator"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="insert" signature="insert(string $query, array $binding)" alias="update, delete, statement, affectingStatement">
+        <return type="Generator"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="unprepared" signature="unprepared(string $query)">
+        <return type="bool"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+
+      <method name="prepareBindings" signature="prepareBindings(array $bindings)"><return type="array"/></method>
+      <method name="transaction" signature="transaction(Closure $callback, int $attempts)">
+        <return type="mixed"/>
+      </method>
+      <method name="beginTransaction" signature="beginTransaction()" alias="commit, rollback"/>
+      <method name="transactionLevel" signature="transactionLevel()"><return type="int"/></method>
+      <method name="pretend" signature="pretend(Closure $callback)"/>
+    </class>
+
+    <class name="Illuminate.Database.Connection" supertypes="Illuminate.Database.ConnectionInterface">
+      <constructor name="Connection" signature="Connection(PDO $pdo, string $database, string $tablePrefix, array $config)">
+        <sink kind="resource_injection" argpos="1" resource="database"/>
+      </constructor>
+      <method name="query" signature="query()"><return type="Illuminate.Database.Query.Builder"/></method>
+      <method name="selectFromWriteConnection" signature="selectFromWriteConnection(string $query, array $binding)">
+        <return type="array"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="getDoctrineConnection" signature="getDoctrineConnection()">
+        <return type="Doctrine.DBAL.Connection"/>
+      </method>
+      <method name="getPdo" signature="getPdo()" alias="getReadPdo">
+        <return type="PDO"/>
+      </method>
+      <method name="setDatabaseName" signature="setDatabaseName(string $database)">
+        <sink kind="resource_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+
+    <class name="Illuminate.Support.Facades.DB" supertypes="Illuminate.Database.ConnectionInterface">
+      <method name="connection" signature="connection(string $name)" instance="false">
+        <return type="Illuminate.Database.Connection"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="MongoDB">
+    <description url="https://www.php.net/manual/en/set.mongodb.php">MongoDB driver for PHP</description>
+
+    <class name="MongoDB.Driver.Manager">
+      <constructor name="Manager" signature="Manager(string $uri, array $uriOptions, array $driverOptions)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </constructor>
+      <method name="executeBulkWrite" signature="executeBulkWrite">
+        <return type="MongoDB.Driver.WriteResult"/>
+      </method>
+      <method name="executeCommand" signature="executeCommand" alias="executeReadCommand,executeReadWriteCommand,executeWriteCommand">
+        <return type="MongoDB.Driver.Cursor"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="executeQuery" signature="executeQuery">
+        <return type="MongoDB.Driver.Cursor"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="selectServer" signature="selectServer">
+        <return type="MongoDB.Driver.Server"/>
+      </method>
+      <method name="startSession" signature="startSession">
+        <return type="MongoDB.Driver.Session"/>
+      </method>
+    </class>
+
+    <class name="MongoDB.Driver.Server">
+      <method name="executeBulkWrite" signature="executeBulkWrite">
+        <return type="MongoDB.Driver.WriteResult"/>
+      </method>
+      <method name="executeCommand" signature="executeCommand" alias="executeReadCommand,executeReadWriteCommand,executeWriteCommand">
+        <return type="MongoDB.Driver.Cursor"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="executeQuery" signature="executeQuery">
+        <return type="MongoDB.Driver.Cursor"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+    
+    <class name="MongoDB.Driver.Query">
+      <constructor name="Query" signature="Query">
+        <sink kind="nosql_injection" argpos="0,1" resource="database" neutralizer="nosql_injection"/>
+      </constructor>
+    </class>
+
+    <class name="MongoDB.Driver.Command">
+      <constructor name="Command" signature="Command">
+        <sink kind="nosql_injection" argpos="0,1" resource="database" neutralizer="nosql_injection"/>
+      </constructor>
+    </class>
+
+    <class name="MongoDB.BSON.Javascript">
+      <constructor name="Javascript" signature="Javascript">
+        <sink kind="code_injection" argpos="0" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="MongoClient">
+      <description>Deprecated API</description>
+      <field name="$connected" type="bool"/>
+      <field name="$status" type="string"/>
+      <field name="$server" type="string"/>
+      <field name="$persistent" type="string"/>
+      <field name="*" type="MongoDB"/>
+
+      <constructor name="MongoClient" signature="MongoClient">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </constructor>
+      <method name="selectDB" signature="selectDB">
+        <return type="MongoDB"/>
+        <sink kind="resource_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="selectCollection" signature="selectCollection">
+        <return type="MongoCollection"/>
+        <sink kind="resource_injection" resource="database" argpos="0,1"/>
+      </method>
+    </class>
+
+    <class name="MongoDB">
+      <field name="*" type="MongoCollection"/>
+      <method name="authenticate" signature="authenticate">
+        <sink kind="hardcoded_credentials" argpos="0"/>
+        <sink kind="hardcoded_password" argpos="1"/>
+      </method>
+      <method name="createCollection" signature="createCollection" alias="selectCollection">
+        <return type="MongoCollection"/>
+        <sink kind="resource_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="execute" signature="execute">
+        <return type="array"/>
+        <sink kind="code_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+
+    <class name="MongoCollection">
+      <field name="$db" type="MongoDB"/>
+      <method name="aggregate" signature="aggregate" alias="aggregateCursor, count, find, findAndModify, findOne, remove, update">
+        <return type="array"/>
+        <sink argpos="0" kind="nosql_injection" resource="database" neutralizer="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="distinct" signature="distinct">
+        <!--sink kind="resource_injection" argpos="0" resource="database"/-->
+        <sink argpos="1" kind="nosql_injection" resource="database" neutralizer="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="group" signature="group">
+        <sink kind="code_injection" argpos="2" resource="database"/>
+      </method>
+
+    </class>
+    
+    <class name="MongoCode">
+      <constructor name="MongoCode" signature="MongoCode">
+        <sink kind="code_injection" argpos="0" resource="database"/>
+      </constructor>
+    </class>
+
+  </module>
+
+  <!--
+  Old, deprecated APIs
+   -->
+  <module name="ora">
+    <description>(Deprecated) Oracle access API</description>
+    <function name="ora_logon" alias="ora_plogon">
+      <sink kind="hardcoded_credentials" argpos="0"/>
+      <sink kind="hardcoded_password" argpos="1"/>
+    </function>
+    <function name="ora_parse">
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="ora_do">
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="ora_fetch_into">
+      <source kind="database_input" resource="database" argpos="1"/>
+    </function>
+    <function name="ora_getcolumn">
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+  </module>
+
+  <module name="ovrimos">
+    <description>(Deprecated) Ovrimos SQL API</description>
+    <function name="ovrimos_connect" signature="ovrimos_connect(string $host, string $port, string $user, string $password)">
+      <tags>dbOpen, closedBy:ovrimos_close, link:-1</tags>
+      <return type="int"/>
+      <sink kind="connection_string_injection" argpos="0,1"/>
+      <sink kind="ssrf" argpos="0,1"/>
+      <sink kind="hardcoded_credentials" argpos="2"/>
+      <sink kind="hardcoded_password" argpos="3"/>
+    </function>
+    <function name="ovrimos_close" signature="ovrimos_close(int $connection)">
+      <tags>dbClose, link:0</tags>
+    </function>
+    <function name="ovrimos_exec" signature="ovrimos_exec(int $connection, string $query)">
+      <tags>dbExec, link:0, stmtLink:-1</tags>
+      <return type="int"/>
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="ovrimos_prepare" signature="ovrimos_prepare(int $connection, string $query)">
+      <tags>dbPrepareStmt, link:0, stmtLink:-1</tags>
+      <return type="int"/>
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="ovrimos_execute" signature="ovrimos_execute(int $result_id, array $params)">
+      <tags>dbExec, stmtLink:0</tags>
+      <return type="bool"/>
+    </function>
+    <function name="ovrimos_fetch_into" signature="ovrimos_fetch_into(int $stmt, array &amp;$result_array, string $how, int $rownumber)">
+      <return type="bool"/>
+      <source kind="database_input" resource="database" argpos="1"/>
+    </function>
+    <function name="ovrimos_result" signature="ovrimos_result(int $stmt, mixed $field)">
+      <return type="string"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+  </module>
+
+
+</library>

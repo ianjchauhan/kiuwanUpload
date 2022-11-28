@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="dtsx_extract" default="run" basedir=".">
+  <description>
+Script for exporting Microsoft Data Transformation Services Package XML file
+(.dtsx) for processing embedded code (like SQL or c#) into files, so they
+could be analyzed statically later.
+
+Each code embedded is saved in the format FNAME.line.column.EXT, where FNAME
+is the original name of the .dtsx file, line and column are the position
+of the extracted source code in the original .dtsx file, and EXT is an
+extension compatible with the extracted source code (like .cs for c# or
+.tsql for SQL code).
+
+Usage: ant -f dtsx_extract.xml -srcdir=SRCDIR [-Doutdir=OUTDIR]
+
+Where:
+- srcdir is the directory tree with .dstx files to analyze.
+- outdir is the directory where output files will be stored
+  (optional, defaults to srcdir).
+  </description>
+
+  <property environment="env"/>
+  <property name="AGENT_HOME" value=".."/>
+
+  <path id="classpath">
+    <fileset dir="${AGENT_HOME}/lib.engine">
+      <!-- for qaking -->
+      <include name="alsUtils.jar"/>
+      <include name="guava*.jar"/>
+      <include name="dom4j*.jar"/>
+      <include name="spring.jar"/>
+      <include name="qaKingCore.jar"/>
+      <include name="qaking_transactsql_parser.jar"/>
+      <!-- for KLA -->
+      <include name="analyzer.jar"/>
+    </fileset>
+  </path>
+
+  <taskdef name="dtsx.extractor" classname="com.kiuwan.qaking.dtsx.DtsxCodeExtractorTask" classpathref="classpath"></taskdef>
+
+  <!-- Command-line parameters -->
+  <property name="srcdir" value=""/>
+  <property name="outdir" value="${srcdir}"/>
+
+  <target name="run" description="Run the extractor">
+    <dtsx.extractor srcdir="${srcdir}" outdir="${outdir}"/>
+  </target>
+
+  <target name="help" description="Show help">
+    <echo>
+Script for exporting Microsoft Data Transformation Services Package XML file
+(.dtsx) for processing embedded code (like SQL or c#) into files, so they
+could be analyzed statically later.
+
+Each code embedded is saved in the format FNAME.line.column.EXT, where FNAME
+is the original name of the .dtsx file, line and column are the position
+of the extracted source code in the original .dtsx file, and EXT is an
+extension compatible with the extracted source code (like .cs for c# or
+.tsql for SQL code).
+
+Usage: ant -f dtsx_extract.xml -srcdir=SRCDIR [-Doutdir=OUTDIR]
+
+Where:
+- srcdir is the directory tree with .dstx files to analyze.
+- outdir is the directory where output files will be stored
+(optional, defaults to srcdir).
+    </echo>
+  </target>
+
+</project>

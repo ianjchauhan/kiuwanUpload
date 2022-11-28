@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/net" standard="nodejs">
+
+  <module name="nodejs/net" standard="net">
+    <description url="https://nodejs.org/api/net.html">Net system module (Node.js)</description>
+
+    <class name="nodejs/net.Socket" supertypes="nodejs/stream.Duplex,nodejs/EventEmitter">
+      <tags>hasEvents</tags>
+      <field name="localAddress" type="String" alias="remoteAddress"/>
+      <field name="localPort" type="Number" alias="remotePort"/>
+      <field name="remoteFamily" type="String"/>
+
+      <function name="connect" alias="createConnection,net.Socket">
+        <parameters>
+          <param type="function(nodejs/net.Socket)" callback="true" last="true"/>
+        </parameters>
+        <return type="nodejs/net.Socket"/>
+        <sink kind="configuration_setting_injection" resource="network">
+          <arg pos="0"/>
+          <arg pos="0" field="port,path,host,localAddress,localPort"/>
+          <arg pos="1"/>
+        </sink>
+      </function>
+
+      <function name="on:close" alias="on:connect"/>
+    </class>
+
+    <class name="nodejs/net.Server" supertypes="nodejs/EventEmitter">
+      <tags>hasEvents</tags>
+      <function name="net.Server">
+        <tags>server.new</tags>
+        <parameters>
+          <param type="Object"/>
+          <param type="function(nodejs/net.Socket)" last="true"/>
+        </parameters>
+      </function>
+      <function name="address"><return type="Object"/></function>
+      <function name="close">
+        <parameters>
+          <param type="function(Error)"/>
+        </parameters>
+      </function>
+      <function name="listen">
+        <tags>server.listen</tags>
+        <return type="nodejs/http.Server"/>
+        <sink kind="configuration_setting_injection">
+          <arg pos="0"/>
+          <arg pos="0" field="port,host,path"/>
+          <arg pos="1"/>
+        </sink>
+      </function>
+      <function name="getConnections">
+        <parameters>
+          <param type="function(Error,Number)"/>
+        </parameters>
+      </function>
+
+      <function name="on:close" alias="on:listening"/>
+      <function name="on:connection">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/net.Socket)"/>
+        </parameters>
+      </function>
+      <function name="on:error">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error)"/>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/net">
+      <function name="createServer">
+        <tags>server.new</tags>
+        <parameters>
+          <param type="Object"/>
+          <param type="function(nodejs/net.Socket)"/>
+        </parameters>
+        <return type="nodejs/net.Server"/>
+      </function>
+
+      <function name="connect" alias="createConnection">
+        <parameters>
+          <param type="function(nodejs/net.Socket)" callback="true" last="true"/>
+        </parameters>
+        <return type="nodejs/net.Socket"/>
+        <sink kind="configuration_setting_injection" resource="network">
+          <arg pos="0"/>
+          <arg pos="0" field="port,path,host"/>
+          <arg pos="1"/>
+        </sink>
+      </function>
+
+      <function name="isIP">
+        <return type="Number"/>
+      </function>
+      <function name="isIPv4" alias="isIPv6">
+        <return type="Boolean"/>
+      </function>
+    </class>
+  </module>
+
+</library>

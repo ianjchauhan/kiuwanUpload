@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs.templateEngines" standard="nodejs.templateEngines">
+
+  <description>Popular template engines for JavaScript</description>
+
+  <module name="nodejs/consolidate" standard="consolidate" >
+    <description url="https://github.com/tj/consolidate.js">Template engine consolidation library</description>
+
+    <class name="nodejs/consolidate">
+      <function name="mustache"
+                alias="liquid,jade,dust,swig,atpl,liquor,twig,ejs,eco,jazz,jqtpl,haml,hamlet,whiskers,hogan,templayed,handlebars,underscore,lodash,pug,qejs,walrus,just,ect,mote,toffee,dot,bracket,ractive,nunjucks,htmling,react,vash,slm,marko">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/dust" standard="dust" >
+    <description url="https://www.dustjs.com/">The Dust template engine, from LinkedIn</description>
+
+    <class name="nodejs/dust">
+      <function name="#module#">
+        <return type="nodejs/dust"/>
+      </function>
+      <function name="compile">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+      <function name="render">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+      <function name="stream">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/dustjs-linkedin" standard="dustjs-linkedin" >
+    <!-- NPM alias for Dust -->
+    <class name="nodejs/dustjs-linkedin" supertypes="nodejs/dust"/>
+  </module>
+
+  <module name="nodejs/pug" standard="pug" >
+    <description url="https://pugjs.org/api/getting-started.html">Pug (AKA Jade), popular templating engine inspired by Haml</description>
+
+    <class name="nodejs/pug">
+      <function name="compile" alias="compileClient,compileClientWithDependenciesTracked">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+      <function name="compileFile" alias="compileFileClient">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+      <function name="render">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+      <function name="renderFile" alias="__express">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/jade" standard="jade" >
+    <description url="http://jade-lang.com/">Jade template engine</description>
+
+    <class name="nodejs/jade" supertypes="nodejs/pug">
+      <!-- old, deprecated name (Jade) was changed to pug -->
+    </class>
+  </module>
+
+  <module name="nodejs/mustache" standard="mustache" >
+    <description url="https://github.com/janl/mustache.js">Mustache, a logic-less, language-agnostic template engine</description>
+
+    <class name="nodejs/mustache">
+      <function name="compile" alias="parse">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+      <function name="render">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+    </class>
+
+    <globalObject name="Mustache" type="nodejs/mustache">
+    </globalObject>
+  </module>
+
+  <module name="nodejs/handlebars" standard="handlebars">
+    <description url="https://handlebarsjs.com/">Handlebars template engine</description>
+
+    <class name="nodejs/handlebars">
+      <function name="#module#">
+        <return type="nodejs/handlebars"/>
+      </function>
+      <function name="compile">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+    </class>
+
+    <globalObject name="Handlebars" type="nodejs/Handlebars">
+    </globalObject>
+  </module>
+
+  <module name="nodejs/dot" standard="doT" >
+    <description url="https://github.com/olado/doT">JavaScript Template Engine</description>
+
+    <class name="nodejs/dot">
+      <function name="process">
+        <return type="nodejs/dot"/><!-- not really, but... -->
+        <sink kind="server_side_template_injection">
+          <arg pos="0" field="path"/><!-- If user may change the path for precompiled templates, boom! -->
+        </sink>
+      </function>
+      <function name="template">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/swig" standard="swig" >
+    <description url="https://node-swig.github.io/swig-templates/">Swig Template Engine</description>
+
+    <class name="nodejs/swig">
+      <function name="render" alias="renderFile">
+        <return type="String"/>
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+      <function name="compile" alias="precompile,compileFile">
+        <return type="Function"/>
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+      <function name="setDefaults">
+        <sink kind="xss_protection_disabled" resource="web">
+          <arg pos="0" field="autoescape"/>
+        </sink>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/nunjucks" standard="nunjucks" >
+    <description url="https://mozilla.github.io/nunjucks/">Nunjucks templating engine, from Mozilla</description>
+
+    <class name="nodejs/nunjucks">
+      <function name="render" alias="__express">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+      <function name="renderString">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+      <function name="compile" alias="precompile,precompileString">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+      <function name="configure">
+        <sink kind="xss_protection_disabled" resource="web">
+          <arg pos="0" field="autoescape"/>
+          <arg pos="1" field="autoescape"/>
+        </sink>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/ect" standard="ect" >
+    <description url="https://github.com/baryshev/ect">Ect Template Engine with embedded CoffeeScript syntax</description>
+
+    <class name="nodejs/ect">
+      <function name="#module#">
+        <return type="nodejs/ect"/>
+        <sink kind="server_side_template_injection">
+          <arg pos="0" field="root"/>
+        </sink>
+      </function>
+      <function name="render">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/ejs" standard="ejs" >
+    <description url="https://github.com/mde/ejs">Embedded JavaScript templates</description>
+
+    <class name="nodejs/ejs">
+      <function name="compile" alias="parse">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+      <function name="render">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+      <function name="renderFile" alias="__express">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="Template7" standard="Template7" >
+    <description url="https://idangero.us/template7/">Mobile JavaScript Template Engine, with Handlebars-like syntax</description>
+
+    <class name="Template7">
+      <function name="compile">
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+</library>

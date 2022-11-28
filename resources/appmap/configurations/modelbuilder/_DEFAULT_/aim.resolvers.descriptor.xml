@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resolvers>
+  <software-resolvers>
+    <resolver key="aim.common.appresolver.registry" class="com.optimyth.apm.builder.rules.common.appresolution.ApplicationRegistrySoftwareResolver">
+      <name>Application Registry</name>
+      <description>
+      An application registry is a static repository, used by some rules to register detected application.
+      For example, <code>DotnetProjectRule</code> will analyze a <code>.csproj</code> or <code>.vbproj</code>
+      project file to look for application configuration data.
+      This registry is written by rules, and with this resolver you can USE that information, so that 
+      Note that you can override the application name of a .NET project, even if it has a .csproj: just
+      disable this resolver, or be sure that is not the first responding with a non-null value. 
+      </description>
+      <properties/>
+    </resolver>
+    <resolver key="aim.common.appresolver.webregistry" class="com.optimyth.apm.builder.rules.common.appresolution.WebAppSoftwareResolver">
+      <name>Web Application registry</name>
+      <description>
+      A web application registry is a static repository, used by some rules to register detected web
+      applications. Some rules, will analyze web descriptors (like <code>web.xml</code>), looking for
+      the webapp meta information, and registering it.
+      This resolver will check if a file belongs to that detected application (matching its path)
+      </description>
+      <properties/>
+    </resolver>
+    <resolver key="aim.common.appresolver.single" class="com.optimyth.apm.builder.rules.common.appresolution.SingleNameSoftwareResolver">
+      <name>Single Application</name>
+      <description>
+      Single Application resolver is the simplest possible application resolution:
+      all the code belongs to the same ONE application. The sole parameter you will
+      need to configure is the application's name. 
+      </description>
+      <properties>
+        <property id="softwareName" type="string">
+          <name>applicationName</name>
+          <description>Application Name</description>
+        </property>
+        <property id="softwareType" type="string">
+          <name>softwareType</name>
+          <description>Software type. It can be: application (default value), module, layer, library, middleware, tool, product, framework, database, other</description>
+        </property>
+      </properties>
+    </resolver>
+    <resolver key="aim.common.appresolver.filepath" class="com.optimyth.apm.builder.rules.common.appresolution.FilePathSoftwareResolver">
+      <name>File path based resolver</name>
+      <description>
+      This resolver will extract the application name from the file's path. You can specify a grouping
+      regular expression. The first matching group will be the application name.
+      </description>
+      <!-- This list allows to hide certain setters (properties) from the configuration GUI -->
+      <properties>
+        <property id="regexp" type="string">
+          <name>regexp</name>
+          <description>Regular expression used to identify the application name. This expression will be applied on file's path.</description>
+        </property>
+      </properties>
+    </resolver>
+    
+  </software-resolvers>
+</resolvers>

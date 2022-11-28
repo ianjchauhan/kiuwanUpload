@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/koa" standard="nodejs">
+
+  <module name="nodejs/koa" standard="Koa">
+    <description url="https://koajs.com">Web framework for Node.js</description>
+
+    <class name="nodejs/koa">
+      <function name="#module#">
+        <tags>server.new,app.new</tags>
+        <return type="nodejs/koa.Application"/>
+      </function>
+    </class>
+
+    <class name="nodejs/koa.Application">
+      <function name="use">
+        <tags>middleware</tags>
+        <parameters>
+          <param type="function(nodejs/koa.Context, Function)"/>
+        </parameters>
+        <return type="nodejs/koa.Application"/>
+      </function>
+      <function name="callback">
+        <return type="Function"/>
+      </function>
+      <function name="listen">
+        <!-- Sugar for require('http').createServer(app.callback()).listen(3000); -->
+        <tags>server.listen</tags>
+        <sink kind="configuration_setting_injection" argpos="0,1"/>
+      </function>
+    </class>
+
+    <class name="nodejs/koa.Context">
+      <field name="request" type="nodejs/koa.Request" alias="req"/>
+      <field name="response" type="nodejs/koa.Response" alias="res"/>
+      <!-- properties taken from request/response -->
+      <function name="set">
+        <tags>header.name:0, header.value:1</tags>
+        <sink kind="header_manipulation" argpos="0,1" resource="web"/>
+      </function>
+      <function name="get">
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+      <field name="query" type="Object">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="querystring" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="search" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="body" type="Mixed">
+        <sink kind="xss" resource="web"/>
+      </field>
+    </class>
+
+    <class name="nodejs/koa.Request">
+      <field name="header" type="Object">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="headers" type="Object">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="url" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="origin" type="String"/>
+      <field name="href" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="originalUrl" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="url" type="String"/>
+      <field name="method" type="String"/>
+      <field name="query" type="Object">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="querystring" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="search" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="host" type="String"/>
+      <field name="hostname" type="String"/>
+      <field name="socket" type="nodejs/net.Socket"/>
+      <field name="charset" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="type" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="protocol" type="String"/>
+      <field name="secure" type="Boolean"/>
+      <field name="ips" type="Array"/>
+      <field name="subdomains" type="Array"/>
+      <function name="get">
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+    </class>
+
+    <class name="nodejs/koa.Response">
+      <field name="socket" type="nodejs/net.Socket"/>
+      <field name="headers" type="Object">
+        <tags>header:0</tags>
+        <!--sink kind="header_manipulation" resource="web"/-->
+      </field>
+      <field name="status" type="Number"/>
+      <field name="message" type="String"/>
+      <field name="body" type="Mixed">
+        <sink kind="xss" resource="web"/>
+      </field>
+      <function name="redirect">
+        <sink kind="open_redirect" argpos="0,1" resource="web"/>
+      </function>
+      <function name="attachment">
+      </function>
+      <function name="set" alias="append">
+        <tags>header.name:0, header.value:1</tags>
+        <sink kind="header_manipulation" argpos="0,1" resource="web"/>
+        <sink kind="open_redirect" resource="web"><arg pos="0" field="Location"/></sink>
+        <sink kind="open_redirect" resource="web" argpos="1"><checker id="express.isLocationHeader"/></sink>
+      </function>
+      <function name="remove"/>
+    </class>
+
+    <class name="nodejs/koa-route">
+      <function name="all"
+                alias="get,post,put,head,delete,options,trace,copy,lock,mkcol,move,purge,propfind,proppatch,unlock,report,mkactivity,checkout,merge,notify,subscribe,unsubscribe,patch,search,connect">
+        <tags>middleware</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/koa.Context, Function)"/>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/koa-csrf">
+      <!-- anti-CSRF middleware. See https://github.com/koajs/csrf -->
+    </class>
+
+    <class name="nodejs/koa-helmet" supertypes="nodejs/helmet">
+      <!-- an "alias" for helmet on Express -->
+    </class>
+
+  </module>
+</library>

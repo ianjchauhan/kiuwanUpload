@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="System.Web.Mvc" standard="aspnet.mvc" technology="csharp">
+  <description url="https://docs.microsoft.com/en-us/dotnet/api/?view=aspnet-mvc-5.2">ASP.NET MVC (System.Web.Mvc)</description>
+
+  <!-- Controller -->
+
+  <class name="System.Web.Mvc.ControllerBase" kind="abstract_class">
+    <field name="ControllerContext" type="System.Web.Mvc.ControllerContext"/>
+    <field name="TempData" type="System.Web.Mvc.TempDataDictionary"/>
+    <field name="ValidateRequest" type="bool"/>
+    <field name="ValueProvider" type="System.Web.Mvc.IValueProvider"/>
+    <field name="ViewBag" type="object"/>
+    <field name="ViewData" type="System.Web.Mvc.ViewDataDictionary"/>
+    <method name="Execute" signature="Execute(System.Web.Routing.RequestContext)"/>
+    <method name="ExecuteCore" signature="ExecuteCore()"/>
+    <method name="Initialize" signature="Initialize(System.Web.Routing.RequestContext)"></method>
+  </class>
+
+  <class name="System.Web.Mvc.Controller" supertypes="System.Web.Mvc.ControllerBase">
+    <tags>mvccontroller,disposable</tags>
+    <field name="ActionInvoker" type="System.Web.Mvc.IActionInvoker"/>
+    <field name="AsyncManager" type="System.Web.Mvc.Async.AsyncManager"/>
+    <field name="Binders" type="System.Web.Mvc.ModelBinderDictionary"/>
+    <field name="HttpContext" type="System.Web.HttpContextBase"/>
+    <field name="ModelState" type="System.Web.Mvc.ModelStateDictionary"/>
+    <field name="Profile" type="System.Web.Profile.ProfileBase"/>
+    <field name="Request" type="System.Web.HttpRequestBase"/>
+    <field name="Resolver" type="System.Web.Mvc.IDependencyResolver"/>
+    <field name="Response" type="System.Web.HttpResponseBase"/>
+    <field name="RouteData" type="System.Web.Routing.RouteData"/>
+    <field name="Server" type="System.Web.HttpServerUtilityBase"/>
+    <field name="Session" type="System.Web.HttpSessionStateBase"/>
+    <field name="Url" type="System.Web.Mvc.UrlHelper"/>
+    <field name="User" type="System.Security.Principal.IPrincipal"/>
+    <field name="ViewEngineCollection" type="System.Web.Mvc.ViewEngineCollection"/>
+
+    <method name="Content" signature="Content(string,string,System.Text.Encoding)" match="name">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="CreateActionInvoker" signature="CreateActionInvoker()">
+      <return type="System.Web.Mvc.IActionInvoker"/>
+    </method>
+    <method name="CreateTempDataProvider" signature="CreateTempDataProvider()">
+      <return type="System.Web.Mvc.ITempDataProvider"/>
+    </method>
+    <method name="File" signature="File(byte[],string)" match="fullsignature">
+      <return type="System.Web.Mvc.FileContentResult"/>
+    </method>
+    <method name="File" signature="File(byte[],string,string)" match="fullsignature">
+      <return type="System.Web.Mvc.FileContentResult"/>
+    </method>
+    <method name="File" signature="File(System.IO.Stream,string)" match="fullsignature">
+      <return type="System.Web.Mvc.FileStreamResult"/>
+    </method>
+    <method name="File" signature="File(System.IO.Stream,string,string)" match="fullsignature">
+      <return type="System.Web.Mvc.FileStreamResult"/>
+    </method>
+    <method name="File" signature="File(string,string)">
+      <return type="System.Web.Mvc.FilePathResult"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="File" signature="File(string,string,string)">
+      <return type="System.Web.Mvc.FilePathResult"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="HandleUnknownAction" signature="HandleUnknownAction(string)"></method>
+    <method name="HttpNotFound" signature="HttpNotFound(String)">
+      <return type="System.Web.Mvc.HttpNotFoundResult"/>
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="JavaScript" signature="JavaScript(string)">
+      <return type="System.Web.Mvc.JavaScriptResult"/>
+      <sink argpos="0" kind="xss" resource="web"/>
+      <sink argpos="0" kind="code_injection" resource="web"/>
+    </method>
+    <method name="Json" signature="Json(object)" match="name">
+      <return type="System.Web.Mvc.JsonResult"/>
+    </method>
+    <!-- OnXXX callbacks -->
+    <method name="PartialView" signature="PartialView(string)" match="name">
+      <return type="System.Web.Mvc.PartialViewResult"/>
+    </method>
+    <method name="Redirect" signature="Redirect(string)" alias="RedirectPermanent">
+      <return type="System.Web.Mvc.RedirectResult"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="RedirectToAction" signature="RedirectToAction(string,string,System.Web.Routing.RouteValueDictionary)" match="name" alias="RedirectToActionPermanent">
+      <return type="System.Web.Mvc.RedirectToRouteResult"/>
+      <sink argpos="0" kind="action_manipulation" resource="web"/>
+      <sink argpos="1" kind="controller_manipulation" resource="web"/>
+    </method>
+    <method name="Request" signature="Request(string)">
+      <tags>valueShadowing</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="ValidateModel" signature="ValidateModel(object,string)" match="name"></method>
+    <method name="TryValidateModel" signature="TryValidateModel(object,string)" match="name">
+      <tags>retval-needs-check</tags>
+      <return type="bool"/>
+    </method>
+    <method name="View" signature="View()">
+      <return type="System.Web.Mvc.ViewResult"/>
+    </method>
+    <method name="View" signature="View(string)">
+      <return type="System.Web.Mvc.ViewResult"/>
+      <sink argpos="0" kind="view_manipulation" resource="web"/>
+    </method>
+    <method name="View" signature="View(string,string)">
+      <return type="System.Web.Mvc.ViewResult"/>
+      <sink argpos="0,1" kind="view_manipulation" resource="web"/><!-- arg#1 is master page... -->
+    </method>
+    <method name="View" signature="View(string,string,object)">
+      <return type="System.Web.Mvc.ViewResult"/>
+      <sink argpos="0,1" kind="view_manipulation" resource="web"/><!-- arg#1 is master page... -->
+    </method>
+  </class>
+
+  <class name="System.Web.Mvc.AsyncController" supertypes="System.Web.Mvc.Controller">
+    <tags>mvccontroller</tags>
+  </class>
+
+  <class name="System.Web.Mvc.ControllerContext">
+    <field name="Controller" type="System.Web.Mvc.ControllerBase"/>
+    <field name="DisplayMode" type="System.Web.WebPages.IDisplayMode"/>
+    <field name="HttpContext" type="System.Web.HttpContextBase"/>
+    <field name="ParentActionViewContext" type="System.Web.Mvc.ViewContext"/>
+    <field name="RequestContext" type="System.Web.Routing.RequestContext"/>
+    <field name="RouteData" type="System.Web.Routing.RouteData"/>
+  </class>
+
+  <class name="System.Web.Mvc.ActionExecutingContext" supertypes="System.Web.Mvc.ControllerContext">
+    <field name="Result" type="System.Web.Mvc.ActionResult"/>
+  </class>
+  
+  <class name="System.Web.Mvc.ActionExecutedContext" supertypes="System.Web.Mvc.ControllerContext">
+    <field name="Exception" type="System.Exception"/>
+    <field name="Result" type="System.Web.Mvc.ActionResult"/>
+  </class>
+
+  <!-- Model -->
+
+  <class name="System.Web.Mvc.ModelStateDictionary" supertypes="System.Collection.IDictionary">
+    <tags>serializable</tags>
+    <field name="IsValid" type="bool"/>
+    <field name="Item" type="array" elementType="System.Web.Mvc.ModelState"/>
+    <field name="Values" type="System.Collections.ICollection" elementType="System.Web.Mvc.ModelState"/>
+    <method name="Add" signature="Add(string,System.Web.Mvc.ModelState)">
+      <propagate from="1" to="-2"/>
+    </method>
+    <method name="AddModelError" signature="AddModelError(string,System.Exception)"/>
+    <method name="IsValidField" signature="IsValidField(string)">
+      <return type="bool"/>
+    </method>
+    <method name="Merge" signature="Merge(System.Web.Mvc.ModelStateDictionary)"/>
+    <method name="SetModelValue" signature="SetModelValue(string,System.Web.Mvc.ValueProviderResult)"/>
+    <method name="TryGetValue" signature="TryGetValue(string,System.Web.Mvc.ModelState)">
+      <tags>retval-needs-check</tags>
+      <return type="bool"/>
+      <propagate from="-2" to="1"/>
+    </method>
+  </class>
+
+  <class name="System.Web.Mvc.ModelState">
+    <tags>serializable</tags>
+    <field name="Errors" type="System.Web.Mvc.ModelErrorCollection"/>
+    <field name="Value" type="System.Web.Mvc.ValueProviderResult"/>
+  </class>
+
+  <!-- Result ("View") -->
+
+  <class name="System.Web.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <method name="ExecuteResult" signature="ExecuteResult(System.Web.Mvc.ControllerContext)"/>
+  </class>
+  <class name="System.Web.Mvc.ContentResult" supertypes="System.Web.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <field name="Content" type="string"><sink argpos="-1" kind="xss" resource="web"/></field>
+    <field name="ContentType" type="string"></field>
+    <field name="StatusCode" type="int"/>
+  </class>
+  <class name="System.Web.Mvc.EmptyResult" supertypes="System.Web.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="System.Web.Mvc.FileResult" supertypes="System.Web.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="System.Web.Mvc.FileContentResult" supertypes="System.Web.Mvc.FileResult">
+    <tags>mvcactionresult</tags>
+    <constructor name="FileContentResult" signature="FileContentResult(byte[], string)">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </constructor>
+    <field name="FileContents" type="array" elementType="byte"><sink argpos="-1" kind="xss" resource="web"/></field>
+  </class>
+  <class name="System.Web.Mvc.FilePathResult" supertypes="System.Web.Mvc.FileResult">
+    <tags>mvcactionresult</tags>
+    <constructor name="FilePathResult" signature="FilePathResult(string, string)">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </constructor>
+    <field name="FileName" type="string"><sink argpos="-1" kind="path_traversal" resource="filesystem"/></field>
+  </class>
+  <class name="System.Web.Mvc.FileStreamResult" supertypes="System.Web.Mvc.FileResult">
+    <tags>mvcactionresult</tags>
+    <field name="FileStream" type="System.IO.Stream"/>
+  </class>
+  <class name="System.Web.Mvc.HttpStatusCodeResult" supertypes="System.Web.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <constructor name="HttpStatusCodeResult" signature="HttpStatusCodeResult(int,string)">
+      <sink argpos="1" kind="header_manipulation" resource="web"/>
+    </constructor>
+    <field name="StatusCode" type="int"/>
+    <field name="StatusDescription" type="string"/>
+  </class>
+  <class name="System.Web.Mvc.HttpNotFoundResult" supertypes="System.Web.Mvc.HttpStatusCodeResult">
+    <tags>mvcactionresult</tags>
+    <constructor name="HttpNotFoundResult" signature="HttpNotFoundResult(string)">
+      <sink argpos="1" kind="header_manipulation" resource="web"/>
+    </constructor>
+  </class>
+  <class name="System.Web.Mvc.HttpUnauthorizedResult" supertypes="System.Web.Mvc.HttpStatusCodeResult">
+    <tags>mvcactionresult</tags>
+    <constructor name="HttpUnauthorizedResult" signature="HttpUnauthorizedResult(string)">
+      <sink argpos="1" kind="header_manipulation" resource="web"/>
+    </constructor>
+  </class>
+  <class name="System.Web.Mvc.JavaScriptResult" supertypes="System.Web.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="System.Web.Mvc.JsonResult" supertypes="System.Web.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="System.Web.Mvc.RedirectResult" supertypes="System.Web.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <constructor name="RedirectResult" signature="RedirectResult(string)" match="name">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </constructor>
+    <field name="Url" type="string">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </field>
+  </class>
+  <class name="System.Web.Mvc.RedirectToRouteResult" supertypes="System.Web.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+
+  <class name="System.Web.Mvc.ViewResultBase" supertypes="System.Web.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <field name="ViewName" type="string">
+      <sink argpos="0" kind="view_manipulation" resource="web"/>
+    </field>
+    <field name="Model" type="object"/>
+    <field name="TempData" type="System.Web.Mvc.TempDataDictionary"/>
+    <field name="View" type="System.Web.Mvc.IView"/>
+    <field name="ViewBag" type="object"/>
+    <field name="ViewData" type="System.Web.Mvc.ViewDataDictionary"/>
+    <field name="ViewEngineCollection" type="System.Web.Mvc.ViewEngineCollection"/>
+  </class>
+
+  <class name="System.Web.Mvc.PartialViewResult" supertypes="System.Web.Mvc.ViewResultBase">
+    <tags>mvcactionresult</tags>
+  </class>
+
+  <class name="System.Web.Mvc.ViewResult" supertypes="System.Web.Mvc.ViewResultBase">
+    <tags>mvcactionresult</tags>
+    <field name="MasterName" type="string">
+      <sink argpos="0" kind="view_manipulation" resource="web"/>
+    </field>
+  </class>
+
+  <class name="System.Web.Mvc.ExceptionContext">
+    <method name="SwitchToErrorView" signature="SwitchToErrorView(string,string)" match="name"/>
+  </class>
+
+  <class name="System.Web.Mvc.ViewDataDictionary" supertypes="System.Collections.IDictionary">
+    <field name="Item" type="array" elementType="object"/>
+    <field name="Model" type="object"/>
+    <field name="ModelMetadata" type="System.Web.Mvc.ModelMetadata"/>
+    <field name="ModelState" type="System.Web.Mvc.ModelStateDictionary"/>
+    <field name="TemplateInfo" type="System.Web.Mvc.TemplateInfo"/>
+    <field name="Values" type="System.Collections.Generic.ICollection" elementType="object"/>
+    <method name="Add" signature="Add(string,object)">
+      <propagate from="1" to="-2"/>
+    </method>
+    <method name="Eval" signature="Eval(string,string)" match="name">
+      <sink argpos="0" kind="code_injection" resource="web"/>
+    </method>
+    <method name="TryGetValue" signature="TryGetValue(string,object)">
+      <tags>retval-needs-check</tags>
+      <return type="bool"/>
+      <propagate from="-2" to="1"/>
+    </method>
+  </class>
+
+  <class name="System.Web.Mvc.UrlHelper">
+    <field name="RequestContext" type="System.Web.Routing.RequestContext"/>
+    <field name="RouteCollection" type="System.Web.Routing.RouteCollection"/>
+    <method name="Action" signature="Action()">
+      <return type="string"/>
+    </method>
+    <method name="Action" signature="Action(string,string,object,string,string)" match="name">
+      <return type="string"/>
+      <sink argpos="0" kind="action_manipulation" resource="web"/>
+      <sink argpos="1" kind="controller_manipulation" resource="web"/>
+      <sink argpos="3" kind="protocol_manipulation" resource="web"/>
+      <sink argpos="4" kind="ssrf" resource="web"/>
+    </method>
+    <method name="IsLocalUrl" signature="IsLocalUrl(string)">
+      <return type="bool"/>
+      <neutralization argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="Content" signature="Content(string)">
+      <return type="string"/>
+      <!-- if arg does not start with ~, it is returned unchanged, so open_redirect? -->
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="Encode" signature="Encode(string)">
+      <return type="string"/>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="GenerateContentUrl" signature="GenerateContentUrl(string,HttpContextBase)" instance="false">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="GenerateUrl" signature="GenerateUrl(string,string,string,RouteValueDictionary,RouteCollection,RequestContent,bool)" instance="false">
+      <return type="string"/>
+      <sink argpos="0,1,2" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="GenerateUrl" signature="GenerateUrl(string,string,string,string,string,string,RouteValueDictionary,RouteCollection,RequestContent,bool)" instance="false">
+      <return type="string"/>
+      <sink argpos="0,1,2" kind="open_redirect" resource="web"/>
+      <sink argpos="3,4,5" kind="ssrf" resource="web"/>
+    </method>
+    <method name="RouteUrl" signature="RouteUrl(string,object,string,string)" match="name">
+      <return type="string"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/><!-- ??? route name, this is not open_redirect but URL manipulation -->
+      <sink argpos="3" kind="ssrf" resource="web"/>
+    </method>
+    <method name="HttpRouteUrl" signature="HttpRouteUrl(string,object)">
+      <return type="string"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Web.Mvc.ViewContext" supertypes="System.Web.Mvc.ControllerContext">
+    <field name="ClientValidationEnabled" type="bool"></field>
+    <field name="FormContext" type="System.Web.Mvc.FormContext"></field>
+    <field name="TempData" type="System.Web.Mvc.TempDataDictionary"></field>
+    <field name="View" type="System.Web.Mvc.IView"></field>
+    <field name="ViewData" type="System.Web.Mvc.ViewDataDictionary"></field>
+    <field name="Writer" type="System.IO.TextWriter"></field>
+    <method name="OutputClientValidation" signature="OutputClientValidation()"></method>
+  </class>
+
+  <class name="System.Web.Mvc.HtmlHelper">
+    <field name="ClientValidationEnabled" type="bool" instance="false"></field>
+    <field name="Html5DateRenderingMode" type="System.Web.Mvc.Html5DateRenderingMode" instance="false"></field>
+    <field name="UnobtrusiveJavaScriptEnabled" type="bool" instance="false"></field>
+    <field name="RouteCollection" type="System.Web.Routing.RouteCollection"></field>
+    <field name="ViewBag" type="object"></field>
+    <field name="ViewContext" type="System.Web.Mvc.ViewContext"></field>
+    <field name="ViewData" type="System.Web.Mvc.ViewDataDictionary"></field>
+    <field name="ViewDataContainer" type="System.Web.Mvc.IViewDataContainer"></field>
+    
+    <method name="AntiForgeryToken" signature="AntiForgeryToken(string,string,string)" match="name"></method>
+    <method name="AttributeEncode" signature="AttributeEncode(string)" alias="Encode">
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="EnableClientValidation" signature="EnableClientValidation()"></method>
+    <method name="EnableUnobtrusiveJavaScript" signature="EnableUnobtrusiveJavaScript()"></method>
+    <method name="EnableUnobtrusiveJavaScript_2" signature="EnableUnobtrusiveJavaScript(bool)"></method>
+    <method name="FormatValue" signature="FormatValue(object,string)">
+      <return type="string"/>
+      <propagate from="0,1" to="-1"/>
+    </method>
+    <method name="Raw" signature="Raw(object)">
+      <return type="System.Web.IHtmlString"/>
+      <sink argpos="0" kind="xss" resource="web"><checker id="no_string_literal"/></sink>
+    </method>
+    <method name="Action" signature="Action(string)">
+      <sink argpos="0" kind="action_manipulation" resource="web"/>
+    </method>
+    <method name="Action_2" signature="Action(string,string)">
+      <sink argpos="0" kind="action_manipulation" resource="web"/>
+      <sink argpos="1" kind="controller_manipulation" resource="web"/>
+    </method>
+    <method name="Action_3" signature="Action(string,string,object)">
+      <sink argpos="0" kind="action_manipulation" resource="web"/>
+      <sink argpos="1" kind="controller_manipulation" resource="web"/>
+    </method>
+    <!-- The extension methods for creating HTML elements are ignored, for now, they seem to HTML-encode values -->
+  </class>
+
+</library>

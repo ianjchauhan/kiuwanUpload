@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for ASP.Net technology.</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-aspnet.xml"/>
+
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="dotnet/aim.aspnet.properties"/>
+  </bean-->
+
+  <bean id="aim.aspnet.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>aspnet parser</description>
+    <property name="filter" ref="aim.aspnet.filter"/>
+    <property name="languageSupport" ref="ls_aspnet"/>
+  </bean>
+
+  <!-- Rules -->
+  
+  <bean id="aim.aspnet.rule.config" class="com.optimyth.apm.builder.rules.aspnet.webapp.WebAppBuilderRule">
+    <description>Resolves configuration in Web.config files</description>
+    <property name="active" value="${aim.aspnet.rule.config.active}"/>
+    <property name="basedir" value="${aim.aspnet.rule.config.basedirs}"/>
+    <property name="webConfigPatterns" value="${aim.aspnet.rule.config.webConfigPatterns}"/>
+    <property name="xpathAppName" value="${aim.aspnet.rule.config.xpathAppName}"/>
+
+    <property name="callback" ref="aim.aspnet.rule.config.callback"/>
+  </bean>
+  
+  <bean id="aim.aspnet.rule.page" class="com.optimyth.apm.builder.rules.aspnet.aspx.AspxBuilderRule">
+    <description>Rule for processing ASP.Net artefacts (page, masterpage, control, webservice)</description>
+    <property name="active" value="${aim.aspnet.rule.page.active}"/>
+    <property name="appname" value="${aim.aspnet.software}"/>
+    <property name="webContents" value="${aim.aspnet.rule.page.webContents]"/>
+    
+    <property name="callback" ref="aim.aspnet.rule.page.callback"/>
+    <property name="tagResolver"><bean class="com.optimyth.apm.builder.rules.aspnet.aspx.TagResolver">
+      <property name="tagExtractors" ref="aim.aspnet.rule.page.tagExtractors"/>
+    </bean></property>
+    <property name="filter" ref="aim.aspnet.filter"/>
+  </bean>
+
+  <!-- Callbacks -->
+  
+  <bean id="aim.aspnet.rule.config.callback" class="com.optimyth.apm.builder.rules.aspnet.webapp.BasicWebappCallback">
+    <property name="resolveArtifacts" value="${aim.common.resolveArtifacts}"/>
+  </bean>
+
+  <bean id="aim.aspnet.rule.page.callback" class="com.optimyth.apm.builder.rules.aspnet.aspx.BasicAspxCallback">
+    <property name="resolveArtifacts" value="${aim.common.resolveArtifacts}"/>
+    <property name="webappName" value="${aim.aspnet.software}"/>
+  </bean>
+  
+  <!-- Extractors -->
+
+  <util:map id="aim.aspnet.rule.page.tagExtractors" key-type="java.lang.String" value-type="com.optimyth.apm.builder.rules.aspnet.aspx.TagResolver$TagExtractor">
+    <entry key="link"><bean class="com.optimyth.apm.builder.rules.aspnet.aspx.TagResolver$CssTagExtractor"><property name="acceptUnresolvedResources" value="${aim.aspnet.rule.page.acceptUnresolvedResources}"/></bean></entry>
+    <entry key="a"><bean class="com.optimyth.apm.builder.rules.aspnet.aspx.TagResolver$ATagExtractor"><property name="acceptUnresolvedResources" value="${aim.aspnet.rule.page.acceptUnresolvedResources}"/></bean></entry>
+    <entry key="script"><bean class="com.optimyth.apm.builder.rules.aspnet.aspx.TagResolver$JavascriptTagExtractor"><property name="acceptUnresolvedResources" value="${aim.aspnet.rule.page.acceptUnresolvedResources}"/></bean></entry>
+    <entry key="img"><bean class="com.optimyth.apm.builder.rules.aspnet.aspx.TagResolver$ImgTagExtractor"><property name="acceptUnresolvedResources" value="${aim.aspnet.rule.page.acceptUnresolvedResources}"/></bean></entry>
+    <entry key="form"><bean class="com.optimyth.apm.builder.rules.aspnet.aspx.TagResolver$FormTagExtractor"><property name="acceptUnresolvedResources" value="${aim.aspnet.rule.page.acceptUnresolvedResources}"/></bean></entry>
+  </util:map>
+
+
+  <!-- Filters -->
+  <bean id="aim.aspnet.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.aspnet.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.aspnet.filter}"/>
+    <property name="map">
+      <map>
+        <entry key="pattern" value-ref="aim.aspnet.filter.pattern"/>
+      </map>
+    </property>
+  </bean>
+  
+  <bean id="aim.aspnet.filter.default" parent="ls_aspnet_matcher"/>
+  
+  <bean id="aim.aspnet.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.aspnet.filter.pattern}"/>
+  </bean>
+  
+</beans>

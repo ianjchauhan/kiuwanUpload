@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="cpp.filesystem" standard="filesystem" technology="cpp">
+
+  <description url="https://en.cppreference.com/w/cpp/filesystem">C++ filesystem library / boost.filesystem</description>
+
+  <module name="filesystem">
+    <class name="filesystem.path" alias="boost.filesystem.path">
+      <method name="operator_string" signature="operator_string()">
+        <tags>operator, conversion, op:string</tags>
+        <return type="string"/>
+      </method>
+      <method name="operator_/=" signature="operator_/=(string )">
+        <tags>operator, binary, op:/=</tags>
+        <return type="string"/>
+      </method>
+      <method name="operator_/" signature="operator_/(string base, string part)" instance="false">
+        <tags>operator, binary, op:/</tags>
+        <return type="string"/>
+      </method>
+      <method name="operator_&lt;&lt;" signature="operator_&lt;&lt;(basic_ostream&amp; os, filesystem.path&amp; p)">
+        <tags>operator, binary, op:&amp;lt;&amp;lt;</tags>
+        <return type="basic_ostream&amp;"/>
+      </method>
+      <method name="operator_>>" signature="operator_>>(basic_istream&amp; os, filesystem.path&amp; p)">
+        <tags>operator, binary, op:&gt;&gt;</tags>
+        <return type="basic_istream&amp;"/>
+      </method>
+      <method name="append" signature="append(string part)">
+        <propagate from="-2,0" to="-1"/>
+      </method>
+      
+      <method name="lexically_normal" signature="lexically_normal()"><return type="filesystem.path"/></method>
+      <method name="lexically_relative" signature="lexically_relative(filesystem.path&amp; path)" alias="lexically_proximate">
+        <return type="filesystem.path"/>
+        <neutralization argpos="-1" kind="path_traversal" resource="filesystem"/>
+      </method>
+      
+      <method name="root_path" signature="root_path()" alias="root_name, root_directory"><return type="filesystem.path"/></method>
+      <method name="relative_path" signature="relative_path()"><return type="filesystem.path"/></method>
+      <method name="parent_path" signature="parent_path()"><return type="filesystem.path"/></method>
+      <method name="filename" signature="filename()"><return type="filesystem.path"/></method>
+      <method name="stem" signature="stem()"><return type="filesystem.path"/></method>
+      <method name="extension" signature="extension()"><return type="filesystem.path"/></method>
+
+      <method name="has_root_path" signature="has_root_path()" alias="has_root_name, has_root_directory, has_relative_path, has_parent_path, has_filename, has_stem, has_extension">
+        <return type="bool"/>
+      </method>
+      <method name="is_absolute" signature="is_absolute()" alias="is_relative, empty"><return type="bool"/></method>
+    </class>
+
+    <class name="filesystem.directory_iterator">
+      <tags>iterator, it-type:filesystem.directory_entry</tags>
+      <constructor name="directory_iterator" signature="directory_iterator()" match="name"/>
+    </class>
+
+    <class name="filesystem.recursive_directory_iterator" supertypes="filesystem.directory_iterator">
+      <tags>iterator, it-type:filesystem.directory_entry</tags>
+      <constructor name="recursive_directory_iterator" signature="recursive_directory_iterator()" match="name"/>
+    </class>
+
+    <class name="filesystem.directory_entry">
+      <method name="operator_=" signature="operator_=(directory_entry&amp; other)">
+        <tags>operator, binary, op:=</tags>
+        <return type="directory_entry&amp;"/>
+      </method>
+      <method name="operator_path" signature="operator_path()">
+        <tags>operator, conversion, op:filesystem.path</tags>
+        <return type="filesystem.path"/>
+      </method>
+      <method name="path" signature="path()" match="name"><return type="filesystem.path"/></method>
+      <method name="exists" signature="exists()" match="name"><return type="bool"/></method>
+      <method name="status" signature="status()" alias="symlink_status" match="name"><return type="filesystem.file_status"/></method>
+      <method name="file_size" signature="file_size()" match="name"><return type="uintmax_t"/></method>
+    </class>
+    
+    <function name="filesystem.absolute" match="name" signature="filesystem.absolute(filesystem.path&amp; path)">
+      <description>Equivalent to filesystem::current_path() / p in POSIX systems, or GetFullPathNameW</description>
+      <return type="filesystem.path"/>
+    </function>
+    <function name="filesystem.canonical" match="name" signature="filesystem.canonical(filesystem.path&amp; path)"
+              alias="filesystem.weakly_canonical">
+      <description>Similar to POSIX realpath</description>
+      <tags>path-canonicalization:-1</tags>
+      <return type="filesystem.path"/>
+    </function>
+    <function name="filesystem.relative" match="name" signature="filesystem.relative(filesystem.path&amp; path)" alias="filesystem.proximate">
+      <propagate from="0" to="-1"/>
+    </function>
+
+    <function name="filesystem.copy" match="name"
+              signature="filesystem.copy(filesystem.path&amp; from, filesystem.path&amp; to)"
+              alias="filesystem.copy_file, filesystem.copy_symlink">
+      <tags>stateChange</tags>
+      <sink argpos="0,1" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="filesystem.create_directory" match="name"
+              signature="filesystem.create_directory(filesystem.path&amp; dir)"
+              alias="filesystem.create_directories">
+      <tags>stateChange</tags>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="filesystem.create_symlink" match="name"
+              signature="filesystem.create_symlink(filesystem.path&amp; target, filesystem.path&amp; link)"
+              alias="filesystem.create_directory_symlink, filesystem.create_hardlink">
+      <tags>stateChange</tags>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="filesystem.current_path" signature="filesystem.current_path()">
+      <return type="filesystem.path"/>
+      <source resource="filesystem" kind="system_information" argpos="-1"/>
+    </function>
+    <function name="filesystem.current_path_2" signature="filesystem.current_path(filesystem.path&amp; dir)">
+      <tags>stateChange</tags>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="filesystem.exists" signature="filesystem.exists(filesystem.path&amp; path)" match="name">
+      <return type="bool"/>
+    </function>
+    <function name="filesystem.equivalent" signature="filesystem.equivalent(filesystem.path&amp; p1, filesystem.path&amp; p2)" match="name">
+      <return type="bool"/>
+      <neutralization kind="path_traversal" resource="filesystem" argpos="0,1"/>
+    </function>
+    <function name="filesystem.file_size" signature="filesystem.file_size(filesystem.path&amp; p)" match="name">
+      <return type="uintmax_t"/>
+    </function>
+    <function name="filesystem.permissions" signature="filesystem.permissions(filesystem.path&amp; p, filesystem.perms prms, filesystem.perm_options opts)" match="name">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="filesystem.read_symlink" signature="filesystem.read_symlink(ilesystem.path&amp; p)">
+      <return type="ilesystem.path&amp; p"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="filesystem.remove" signature="filesystem.remove(filesystem.path&amp; p)" match="name">
+      <return type="bool"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="filesystem.remove_all" signature="filesystem.remove_all(filesystem.path&amp; p)" match="name">
+      <return type="uintmax_t"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="filesystem.rename" signature="filesystem.rename(filesystem.path&amp; from, filesystem.path&amp; to)" match="name">
+      <sink argpos="0, 1" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="filesystem.resize_file" signature="filesystem.resize_file(filesystem.path&amp; path, uintmax_t size)" match="name">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="filesystem.space" signature="filesystem.space(filesystem.path&amp; path)" match="name">
+      <return type="filesystem.space_info"/>
+    </function>
+    <function name="filesystem.status" match="name" signature="filesystem.status(filesystem.path&amp; path)" alias="filesystem.symlink_status">
+      <return type="filessystem.file_status"/>
+    </function>
+    <function name="filesystem.temp_directory_path" signature="filesystem.temp_directory_path()" match="name">
+      <return type="filesystem.path"/>
+    </function>
+
+  </module>
+
+</library>  

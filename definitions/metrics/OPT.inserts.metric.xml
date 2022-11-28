@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.inserts" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.SIZE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.SIZE.DATABASE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.SQL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds />
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <internal-name id="OPT.PLSQL.SIZE.STATEMENTS" />
+        <java-class>com.als.plsql.metrics.StatementsCountPlsqlMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.SQL">
+        <internal-name id="OPT.SQL.SIZE.STATEMENTS" />
+        <java-class>com.optimyth.sql.metrics.AstSqlSizeRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+        <internal-name id="OPT.TRANSACTSQL.SIZE.STATEMETS" />
+        <java-class>com.optimyth.qaking.tsql.metrics.StatementsCountMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+
+    </implementations>
+
+   <!-- Code examples for each language parser -->
+    <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <code-example name="metricCodeExamplePlsql" result-value="2">
+<![CDATA[
+    CREATE OR REPLACE Procedure UpdateCourse
+       ( name_in IN varchar2 )
+    IS
+        cnumber number;
+        cursor c1 is
+        select course_number
+          from courses_tbl
+          where course_name = name_in;
+
+    BEGIN
+        open c1;
+        fetch c1 into cnumber;
+        insert into student_courses              --INSERT 1
+        ( course_name,
+          course_number)
+        values ( name_in,
+                        cnumber );
+        commit;
+        insert into student_courses              --INSERT 2
+        ( course_name,
+          course_number)
+        values ( name_in,
+                        cnumber );
+        close c1;
+    EXCEPTION
+    WHEN OTHERS THEN
+          raise_application_error(-20001,'An error was encountered - '||SQLCODE||' -ERROR- '||SQLERRM);
+    END;
+]]>
+      </code-example>
+      </language-parser>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.SQL">
+        <code-example name="metricCodeExampleSql" result-value="1">
+<![CDATA[
+-- Des: 
+--   Seleccion de TEMPNOPTDSIT.
+-- Ent: 
+--   cpartida
+--   nordedtx  
+-- Sal: 
+--                 
+-- His: 
+--   28-04-2006 s8790
+-- T
+insert into TEMPNOPTDSIT values (?, ?)     --INSERT 1
+
+
+]]>
+      </code-example>
+      </language-parser>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+        <code-example name="metricCodeExampleTransactsql" result-value="1">
+<![CDATA[
+/****** Object:  StoredProcedure [dbo].[PR_SIMSG_COTA_ENVIO_MENSAGEM_ROBO]    Script Date: 08/13/2012 11:48:49 ******/
+SET ANSI_NULLS OFF
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+CREATE PROCEDURE [dbo].[PR_SIMSG_COTA_ENVIO_MENSAGEM_ROBO]
+AS
+BEGIN   
+
+    DECLARE @V_DATE AS DATETIME
+    
+    SET @V_DATE = GETDATE()
+
+    SELECT 
+        SISORI.CD_SISTEMA AS 'ORIGEM',
+        EXPO.CD_CARTEIRA,
+        SISDEST.CD_SISTEMA AS 'DESTINO',
+        EXPO.CD_INDEXADOR,      
+        CART.IC_NOVA,
+        EXPO.VL_COTA_ATUAL,
+        EXPO.VL_COTA_NOVA,
+        CART.CD_USUARIO
+    FROM TBPL_MSG_COTA_EXPORTACAO EXPO WITH(NOLOCK)
+        INNER JOIN TBPL_MSG_COTA_USUARIO_CARTEIRA CART WITH(NOLOCK)
+            ON EXPO.ID_PARAMETRO = CART.ID_PARAMETRO
+        INNER JOIN TBPL_MSG_COTA_SISTEMA SISORI WITH(NOLOCK)
+            ON EXPO.ID_SISTEMA_ORIGEM = SISORI.ID_SISTEMA
+        INNER JOIN TBPL_MSG_COTA_SISTEMA SISDEST WITH(NOLOCK)
+            ON EXPO.ID_SISTEMA_ORIGEM = SISDEST.ID_SISTEMA          
+        LEFT JOIN TBPL_MSG_COTA_ENVIO_MENSAGEM MEN WITH(NOLOCK) 
+            ON MEN.ID_EXPORTACAO = EXPO.ID_EXPORTACAO AND MEN.ID_CADASTRO = CART.ID_CADASTRO
+    WHERE
+        MEN.ID_EXPORTACAO IS NULL AND MEN.ID_CADASTRO IS NULL AND EXPO.DT_ALTERACAO >= CART.DT_INCLUSAO  AND EXPO.DT_ALTERACAO <= @V_DATE
+        AND ((CART.IC_NOVA = 1) OR (CART.IC_NOVA = 0 AND EXPO.VL_COTA_ATUAL != 0))
+        ORDER BY 1,2,3,4,5,6,7
+            
+    INSERT INTO TBPL_MSG_COTA_ENVIO_MENSAGEM                           --INSERT 1
+        SELECT 
+            EXPO.ID_EXPORTACAO, CART.ID_CADASTRO, @V_DATE
+        FROM TBPL_MSG_COTA_EXPORTACAO EXPO WITH(NOLOCK)
+            INNER JOIN TBPL_MSG_COTA_USUARIO_CARTEIRA CART WITH(NOLOCK)
+                ON EXPO.ID_PARAMETRO = CART.ID_PARAMETRO
+            LEFT JOIN TBPL_MSG_COTA_ENVIO_MENSAGEM MEN WITH(NOLOCK) 
+                ON MEN.ID_EXPORTACAO = EXPO.ID_EXPORTACAO AND MEN.ID_CADASTRO = CART.ID_CADASTRO
+        WHERE
+        MEN.ID_EXPORTACAO IS NULL AND MEN.ID_CADASTRO IS NULL AND EXPO.DT_ALTERACAO >= CART.DT_INCLUSAO  AND EXPO.DT_ALTERACAO <= @V_DATE
+        AND ((CART.IC_NOVA = 1) OR (CART.IC_NOVA = 0 AND EXPO.VL_COTA_ATUAL != 0))
+            
+END
+GO
+]]>
+      </code-example>
+      </language-parser>
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+
+      <name><![CDATA[Operaciones SQL 'insert']]></name>
+      
+      <description>
+<![CDATA[
+Número de operaciones SQL (statements), utilizando análisis estático.
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Cuenta el número de insert, delete, update, schemaOperations (create+alter+drop), sqlCalls (exec+ execute immediate) y select (en este último, no se cuentan las select anidadas, ni declaradas dentro de vistas, pero si las declaradas en cursores).
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.SQL">
+<![CDATA[
+Cuenta el número de insert, delete, update, schemaOperations (create+alter+drop), sqlCalls (exec+ execute immediate) y select (en este último, no se cuentan las select anidadas, ni declaradas dentro de vistas, pero si las declaradas en cursores).
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+<![CDATA[
+Cuenta el número de insert, delete, update, schemaOperations (create+alter+drop), sqlCalls (execute) y select (en este último, no se cuentan las select anidadas, ni declaradas dentro de vistas, pero si las declaradas en cursores).
+        ]]></implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+
+      <name><![CDATA[SQL operations 'insert']]></name>
+      
+      <description>
+<![CDATA[
+SQL operations (statements) counts, using static analysis
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Counts the number of insert, delete, update, schemaOperations (create+alter+drop), sqlCalls (exec+execute immediate) and select (in the latter, do not count the nested selects, or those declared within a view, but selects declared in cursors will be taken into account).
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.SQL">
+<![CDATA[
+Counts the number of insert, delete, update, schemaOperations (create+alter+drop), sqlCalls (exec+execute immediate) and select (in the latter, do not count the nested selects, or those declared within a view, but selects declared in cursors will be taken into account).
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+<![CDATA[
+Counts the number of insert, delete, update, schemaOperations (create+alter+drop), sqlCalls (execute) and select (in the latter, do not count the nested selects, or those declared within a view, but selects declared in cursors will be taken into account).
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="gin_gonic">
+
+  <description url="https://gin-gonic.com/">Gin Web framework</description>
+
+  <module name="github.com.gin-gonic.gin" >
+    <globalObject name="github.com.gin-gonic.gin.DefaultErrorWriter" type="io.Writer" />
+    <globalObject name="github.com.gin-gonic.gin.DefaultWriter" type="io.Writer" />
+
+    <function name="github.com.gin-gonic.gin.CreateTestContext" signature="github.com.gin-gonic.gin.CreateTestContext(net.http.ResponseWriter)" >
+      <return type="github.com.gin-gonic.gin.Context, github.com.gin-gonic.gin.Engine" />
+    </function>
+    <function name="github.com.gin-gonic.gin.Dir" signature="github.com.gin-gonic.gin.Dir(go.string, go.bool)" >
+      <return type="net.http.FileSystem" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+
+    <class name="github.com.gin-gonic.gin.Accounts" supertypes="go.map" />
+    <class name="github.com.gin-gonic.gin.Context" kind="struct" >
+      <field name="Request" type="net.http.Request" />
+      <field name="Writer" type="github.com.gin-gonic.gin.ResponseWriter" />
+      <field name="Params" type="github.com.gin-gonic.gin.Params" />
+
+      <method name="AsciiJSON" signature="AsciiJSON(go.int, go.interface)" >
+        <sink argpos="1,2,3" kind="code_injection_deserialization" resource="other" />
+      </method>
+      <method name="Cookie" signature="Cookie(go.string)" >
+        <return type="go.string, go.error" />
+        <source argpos="-1" kind="user_input" resource="web" >
+          <tags>CWE:784</tags>
+        </source>
+      </method>
+      <method name="Copy" signature="Copy()" >
+        <return type="github.com.gin-gonic.gin.Context" />
+      </method>
+      <method name="Data" signature="Data(go.int, go.string, go.slice)" >
+        <sink argpos="2" kind="xss" resource="web" />
+      </method>
+      <method name="DataFromReader" signature="DataFromReader(go.int, go.int64, go.string, io.Reader, go.map)" >
+        <sink argpos="3,4" kind="xss" resource="web" />
+      </method>
+      <method name="File" signature="File(go.string)" >
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="FileAttachment" signature="FileAttachment(go.string, go.string)" >
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="FormFile" signature="FormFile(go.string)" >
+        <return type="mime.multipart.FileHeader, go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Get" signature="Get(go.string)" >
+        <return type="go.interface, go.bool" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetBool" signature="GetBool(go.string)" >
+        <return type="go.bool" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetDuration" signature="GetDuration(go.string)" >
+        <return type="time.Duration" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetFloat64" signature="GetFloat64(go.string)" >
+        <return type="go.float64" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetHeader" signature="GetHeader(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetInt" signature="GetInt(go.string)" >
+        <return type="go.int" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetInt64" signature="GetInt64(go.string)" >
+        <return type="go.int64" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetPostForm" signature="GetPostForm(go.string)" >
+        <return type="go.string, go.bool" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetBool" signature="GetBool(go.string)" >
+        <return type="go.bool" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Header" signature="Header(go.string, go.string)" >
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="1" kind="header_manipulation" resource="web" />
+      </method>
+
+      <!-- TODO add more methods here -->
+      <method name="SetCookie" signature="SetCookie(go.string, go.string, go.int, go.string, go.string, go.bool, go.bool)" >
+        <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.persistent:2,cookie.path:3,cookie.domain:4,cookie.secure:5,cookie.httpOnly:6</tags>
+        <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      </method>
+      <method name="JSON" signature="JSON(go.int,go.interface)" alias="IndentedJSON,PureJSON" >
+        <tags>serialization:1</tags>
+      </method>
+      <method name="JSONP" signature="JSONP(go.int,go.interface)" >
+        <tags>serialization:1</tags>
+        <sink argpos="1" kind="jsonp_hijacking" resource="web" />
+      </method>
+      <method name="SecureJSON" signature="SecureJSON(go.int,go.interface)" >
+        <tags>serialization:1</tags>
+      </method>
+      <method name="Bind" signature="Bind(go.interface)" alias="BindHeader,BindJSON,BindQuery,BindUrl,BindWith,BindXML,BindYAML">
+        <tags>write</tags>
+        <return type="go.error" />
+        <source argpos="0" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <class name="github.com.gin-gonic.gin.Params" kind="struct" >
+      <method name="ByName" signature="ByName(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Get" signature="Get(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <class name="github.com.gin-gonic.gin.ResponseWriter" kind="struct" supertypes="net.http.ResponseWriter,
+  net.http.Hijacker, net.http.Flusher, net.http.CloseNotifier" />
+
+    <function name="github.com.gin-gonic.gin.New" signature="github.com.gin-gonic.gin.New()" alias="github.com.gin-gonic.gin.Default">
+      <return type="github.com.gin-gonic.gin.Engine" />
+    </function>
+    <class name="github.com.gin-gonic.gin.Engine" kind="struct" supertypes="github.com.gin-gonic.gin.RouterGroup">
+      <method name="Run" signature="Run(...go.string)" >
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+      </method>
+      <method name="RunFd" signature="RunFd(go.int)" >
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+      </method>
+      <method name="RunListener" signature="RunListener(net.Listener)" >
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+      </method>
+      <method name="RunTLS" signature="RunTLS(go.string,go.string,go.string)" >
+        <sink argpos="0" kind="resource_injection" resource="network" />
+        <sink argpos="1" kind="hardcoded_key" resource="network" />
+      </method>
+      <method name="RunUnix" signature="RunUnix(go.string)" >
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+      </method>
+    </class>
+    <class name="github.com.gin-gonic.gin.RouterGroup" kind="struct" >
+      <method name="GET" signature="GET(go.string,...github.com.gin-gonic.gin.HandlerFunc)"
+              alias="HEAD,OPTIONS,PATCH,POST,PUT,DELETE" >
+        <tags>route:1</tags>
+      </method>
+    </class>
+  </module>
+
+  <module name="github.com.tommy351.gin-csrf" >
+    <function name="github.com.tommy351.gin-csrf.csrf.Middleware" signature="github.com.tommy351.gin-csrf.csrf.Middleware(github.com.tommy351.gin-csrf.Options)" >
+      <tags>csrfFilter</tags>
+    </function>
+  </module>
+</library>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="swiftmailer" technology="php">
+  <description url="https://swiftmailer.symfony.com/docs/introduction.html">Swift Mailer library</description>
+  
+  <class name="Egulias.EmailValidator.EmailValidator">
+    <method name="isValid" signature="isValid">
+      <neutralization kind="mail_command_injection" resource="network" argpos="0"/>
+    </method>
+  </class>
+  
+  <class name="Swift_Message">
+    <method name="setSubject" signature="setSubject">
+      <sink kind="mail_command_injection" argpos="0"/>
+    </method>
+    <method name="setFrom" signature="setFrom" alias="setTo,setCc,setBcc,setSender,setReturnPath">
+      <sink kind="mail_command_injection" argpos="0"/>
+    </method>
+    <method name="addTo" signature="addTo" alias="addCc,addBcc">
+      <sink kind="mail_command_injection" argpos="0,1"/>
+    </method>
+  </class>
+</library>  

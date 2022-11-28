@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="iseries.web" technology="rpg4">
+  <description>Web programming in RPG</description>
+  
+  <module name="iseries.cgi">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/rzaie/rzaierefapi.htm">IBM HTTP Server CGI API</description>
+
+    <function name="QtmhGetEnv" alias="QzsrGetEnvCCSID">
+      <description>Get CGI var</description>
+      <tags>data:0, varname:3</tags>
+      <source argpos="0" kind="user_input" resource="web"><checker id="CgiVarChecker"/></source>
+    </function>
+    <function name="QtmhRdStin">
+      <description>Read from STDIN</description>
+      <tags>data:0</tags>
+      <source argpos="0" kind="user_input" resource="web"/>
+    </function>
+    <function name="QtmhWrStout">
+      <description>Write to STDOUT</description>
+      <tags>data:0</tags>
+      <sink kind="xss" resource="web" argpos="0"/>
+    </function>
+    <function name="QtmhCvtDB">
+      <description>Parse CGI input from a DDS file</description>
+      <source kind="user_input" resource="web" argpos="3"/>
+    </function>
+    <function name="QzhbCgiParse">
+      <description>Parse QUERY_STRING</description>
+      <source argpos="1" kind="user_input" resource="web"/>
+    </function>
+    <function name="QzhbCgiUtils">
+      <description>Create a full HTTP response</description>
+    </function>
+  </module>
+
+  <module name="cgidev2">
+    <description url="https://www.easy400.net/cgidev2h/readme.htm">CGIDEV2 library</description>
+    <!--property name="copy.pattern" value="CGIDEV2/.*,prototypeb"/-->
+
+    <function name="zhbGetInput">
+      <source kind="user_input" resource="web" argpos="0"/>
+    </function>
+    <function name="zhbGetVar" alias="zhbGetVarPtr, ZhbGetVarUpper, cgiVarVal">
+      <source kind="user_input" resource="web" argpos="-1"/>
+    </function>
+    <function name="cgiLoadHtmlIFS">
+      <sink kind="path_traversal" resource="filesystem" argpos="0"/>
+    </function>
+
+    <function name="updHtmlVar">
+      <sink argpos="1" kind="xss" resource="web"/>
+    </function>
+    <function name="wrtSection"></function>
+
+    <function name="CrtCookie">
+      <description>Creates a cookie from its attributes</description>
+      <tags>cookie.create, cookie.name:0, cookie.value:1, cookie.domain:3, cookie.path:4, cookie.secure:5, cookie.expires:6, cookie.httpOnly:7</tags>
+      <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      <sink kind="header_manipulation" argpos="0,1,3,4" neutralizer="string" resource="web"/>
+      <sink kind="sensitive_data" argpos="0,1,3,4" neutralizer="sensitive_data" resource="web"/>
+    </function>
+    <function name="GetCookieByName">
+      <description>Retrieve cookie value</description>
+      <tags>cookie.name:0, cookie.value:-1</tags>
+      <source kind="user_input" resource="web" argpos="-1"/>
+    </function>
+    <function name="GetSessionId">
+      <source argpos="-1" kind="system_information" resource="web"/>
+    </function>
+    <!--
+    <function name="getEnv">
+      <description>Get CGI var</description>
+      <tags>data:-1, varname:0</tags>
+      <source argpos="-1" kind="user_input" resource="web"><checker id="CgiVarChecker"/></source>
+    </function>
+    -->
+    <function name="DspStmf" alias="DnlStmf">
+      <description>Display or download local file in browser</description>
+      <sink kind="path_traversal" resource="filesystem" argpos="0"/>
+    </function>
+
+    <!-- Hex and numeric conversions: http://cgidev2.easy400.net/cgidev2p/dspsrc.pgm?cgiinp01=cgidev2&cgiinp02=qrpglesrc&cgiinp03=xxxdata -->
+    <function name="char2hex">
+      <description>str to hex</description>
+      <neutralization argpos="-1" kind="string"/>
+    </function>
+    <function name="hex2char">
+      <description>hex to char</description>
+      <retaint argpos="-1" kind="string"/>
+    </function>
+    <function name="c2n" alias="c2n2">
+      <description>str to number</description>
+      <neutralization kind="string2numeric" argpos="-1"/>
+    </function>
+    <function name="chknbr">
+      <description>check if str is a number</description>
+      <neutralization kind="string2numeric" argpos="0"/>
+    </function>
+    <function name="uppify" alias="lowfy"/>
+
+    <!-- URL encoding: http://cgidev2.easy400.net/cgidev2p/dspsrc.pgm?cgiinp01=cgidev2&cgiinp02=qrpglesrc&cgiinp03=xxxdata1 -->
+    <function name="UrlEscSeq">
+      <description>URL encoding</description>
+      <neutralization argpos="-1" kind="encoding"/>
+    </function>
+    <function name="UrlUnEscSeq">
+      <description>URL decoding</description>
+      <retaint argpos="-1" kind="encoding"/>
+    </function>
+
+    <!-- HTML encoding: http://cgidev2.easy400.net/cgidev2p/dspsrc.pgm?cgiinp01=cgidev2&cgiinp02=qrpglesrc&cgiinp03=xxxwrkhtml -->
+    <function name="encode" alias="encode2">
+      <description>HTML encoding</description>
+      <neutralization argpos="-1" kind="xss" resource="web"/>
+    </function>
+    <function name="decode" alias="decode2">
+      <description>HTML decoding</description>
+      <retaint argpos="-1" kind="xss" resource="web"/>
+    </function>
+
+    <function name="docmd">
+      <description>Runs CL command</description>
+      <sink argpos="0" kind="command_injection" resource="os"/>
+    </function>
+    
+  </module>
+
+  <!-- xTools CGILIB in xtools.xml descriptor -->
+
+</library>

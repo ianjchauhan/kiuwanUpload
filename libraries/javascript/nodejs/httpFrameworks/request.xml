@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/request" standard="nodejs">
+
+  <module name="nodejs/request" >
+    <description url="https://www.npmjs.com/package/request">request, a popular http(s) client module (Node.js)</description>
+
+    <class name="nodejs/request.AgentOptions">
+      <field name="key" type="String" alias="pfx,cert,dhparam,ca,crl">
+        <sink argpos="-1" kind="hardcoded_key" resource="crypto"/>
+      </field>
+      <field name="passphrase" type="String">
+        <sink kind="sensitive_data" resource="crypto"/>
+      </field>
+    </class>
+
+    <class name="nodejs/request.Options">
+      <field name="uri" type="String" alias="uri,baseUrl">
+        <sink kind="resource_injection" resource="web"/>
+        <sink kind="ssrf" resource="web"/>
+      </field>
+      <field name="method" type="String"/>
+      <field name="headers" type="Object"/><!-- a sink? -->
+      <field name="qs" type="Object" alias="body,form,formData,multipart,json">
+        <sink kind="http_parameter_pollution"/>
+      </field>
+      <field name="auth" type="String">
+        <sink kind="sensitive_data" resource="web"/>
+      </field>
+      <field name="agent" type="http.Agent"/>
+      <field name="agentOptions" type="nodejs/request.AgentOptions"/>
+      <field name="callback" type="function(Error,nodejs/http.IncomingMessage,String)"/>
+    </class>
+
+    <class name="nodejs/request">
+      <function name="#module#">
+        <parameters>
+          <param type="nodejs/request.Options"/><!-- could be a string -->
+          <param type="function(Error,nodejs/http.IncomingMessage,String)"/>
+        </parameters>
+        <return type="nodejs/request"/>
+        <sink kind="insecure_transport" resource="web" argpos="0"/>
+        <sink kind="resource_injection" resource="web">
+          <arg pos="0"/>
+          <arg pos="0" field="uri,url,baseUrl"/>
+        </sink>
+        <sink kind="ssrf" resource="web">
+          <arg pos="0"/>
+          <arg pos="0" field="uri,url,baseUrl"/>
+        </sink>
+      </function>
+
+      <function name="get" alias="head,options,post,put,path,del,delete">
+        <parameters>
+          <param type="nodejs/request.Options"/><!-- could be a string -->
+          <param type="function(Error,nodejs/http.IncomingMessage,String)"/>
+        </parameters>
+        <return type="nodejs/request"/>
+        <sink kind="insecure_transport" resource="web" argpos="0"/>
+        <sink kind="resource_injection" resource="web">
+          <arg pos="0"/>
+          <arg pos="0" field="uri,url,baseUrl"/>
+        </sink>
+        <sink kind="ssrf" resource="web">
+          <arg pos="0"/>
+          <arg pos="0" field="uri,url,baseUrl"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/request-promise" supertypes="nodejs/request"/>
+    <class name="nodejs/request-promise-native" supertypes="nodejs/request"/>
+    <class name="nodejs/request-promise-any" supertypes="nodejs/request"/>
+  </module>
+
+  <module name="nodejs/needle" >
+    <description url="https://github.com/tomas/needle#readme">HTTP client</description>
+
+    <!-- Needle: A popular module similar to request, the API is approx the same -->
+    <class name="nodejs/needle.Options" supertypes="nodejs/request.AgentOptions">
+      <field name="username">
+        <sink kind="sensitive_data" resource="web"/>
+      </field>
+      <field name="password">
+        <sink kind="sensitive_data" resource="web"/>
+      </field>
+      <field name="headers" type="Object"/><!-- a sink? -->
+      <field name="agent" type="http.Agent"/>
+      <field name="proxy" type="String"/><!-- a sink? -->
+    </class>
+
+    <class name="nodejs/needle">
+      <function name="get" alias="head,options,post,put,path,delete">
+        <parameters>
+          <param type="String"/><!-- url -->
+          <param type="Object"/><!-- data -->
+          <param type="nodejs/needle.Options"/>
+          <param type="function(Error,nodejs/http.IncomingMessage,String)" callback="true" last="true"/>
+        </parameters>
+        <return type="nodejs/stream.Readable"/>
+        <sink kind="insecure_transport" resource="web" argpos="0"/>
+        <sink kind="resource_injection" resource="web" argpos="0"/>
+        <sink kind="ssrf" resource="web" argpos="0"/>
+      </function>
+
+      <function name="request">
+        <parameters>
+          <param type="String"/><!-- method -->
+          <param type="String"/><!-- url -->
+          <param type="Object"/><!-- data -->
+          <param type="nodejs/request.AgentOptions"/>
+          <param type="function(Error,nodejs/http.IncomingMessage,String)" callback="true" last="true"/>
+        </parameters>
+        <return type="nodejs/stream.Readable"/>
+        <sink kind="insecure_transport" resource="web" argpos="1"/>
+        <sink kind="resource_injection" resource="web" argpos="1"/>
+        <sink kind="ssrf" resource="web" argpos="1"/>
+      </function>
+    </class>
+  </module>
+</library>

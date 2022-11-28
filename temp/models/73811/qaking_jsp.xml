@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_jsp" updated="">
+  <description>Nykaa_Web</description>
+  <rule name="OPT.JSP.SEC_JSP.ExpressionLanguageInjection" message="ExpressionLanguageInjection: Expression Language (EL / OGNL) injection" class="com.als.clases.ncj2ee.cffjsp.ExpressionLanguageInjection" technology="JSP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.4,ASVS-v4.0.2:5.5.4,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,el-injection,ognl-injection]]></tags>
+    <description><![CDATA[The software constructs all or part of an expression language (EL) statement in a Java Server Page (JSP) using
+externally-influenced input from an upstream component, but it does not neutralize or incorrectly neutralizes
+special elements that could modify the intended EL statement before it is executed.
+
+In frameworks like Spring MVC, EL tags are evaluated twice (one by the application server and the result is
+evaluated as EL expression again by the Spring tag implementation), which allows an attacker to pass in the HTTP
+request message a value (header, cookie, message parameter) containing EL expression that could be executed.
+Depending on the context, this may allow execution of arbitrary code, modification of unintended session or
+application attributes, or even downloading remote malicious Java classes with custom classloaders.
+
+Other frameworks, like Struts, use a similar expression language (OGNL) that in certain cases allow double
+execution of OGNL. In particular, when the struts.url.includeParams is set to 'all' or 'get', the Struts
+<s:a> and <s:url> tags are vulnerable to OGNL injection, as the tag implementation re-evaluates the parameters
+passed to the tag as OGNL expressions.
+
+The rule also reports certain insecure configuration properties in the struts.properties / struts.xml
+configuration files, like struts.devMode, struts.ognl.allowStaticMethodAccess, or struts.enable.DynamicMethodInvocation.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid expression injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[In struts.xml configuration file:
+
+<struts>
+  ...
+  <!-- VIOLATION, devMode should be disabled in production -->
+  <constant name="struts.devMode" value="true"/>
+  <!-- VIOLATION, could allow arbitrary code execution -->
+  <constant name="struts.ognl.allowStaticMethodAccess" value="true"/>
+  <!-- VIOLATION, unexpected methods in Struts actions could be invoked with user-controller data -->
+  <constant name="struts.enable.DynamicMethodInvocation" value="true"/>
+  <!-- activates OGNL injection in Struts a/url tags -->
+  <constant name="struts.url.includeParams" value="all"/>
+</struts>
+
+In any Struts JSP view, the <a> and <url> tags are vulnerable:
+<%@ taglib prefix="s" uri="/struts-tags"%>
+<s:url id="url" action="HelloWorld"><!-- VIOLATION -->
+  <s:param name="request_locale"><s:property value="message"/></s:param>
+</s:url>]]></example>
+    <repair><![CDATA[<struts>
+  ...
+  <constant name="struts.devMode" value="false"/>
+  <constant name="struts.ognl.allowStaticMethodAccess" value="false"/>
+  <constant name="struts.enable.DynamicMethodInvocation" value="false"/>
+  <constant name="struts.url.includeParams" value="none"/>
+</struts>]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Expression_Language_Injection,Struts dynamic method execution: http://security.coverity.com/blog/2013/Oct/making-struts2-app-more-secure-disable-dynamic-method-invocation.html,Milking a horse or executing remote code in modern Java frameworks,EL injection in Spring: http://www.mindedsecurity.com/fileshare/Ex]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:917,CWE:95,CWETOP25:2021:30,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.JSP.SEC_JSP.FileInclusionVulnerability" message="FileInclusionVulnerability: JSP File Inclusion vulnerability" class="com.als.clases.ncj2ee.cffjsp.FileInclusionVulnerability" technology="JSP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.5,ASVS-v4.0.2:5.2.8,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,el-injection,ognl-injection]]></tags>
+    <description><![CDATA[JSP technology provides the <jsp:include> action (or JSTL <c:import>) for including content
+in the current page, either from a local (web application) resource or from an URL, respectively.
+
+When the page path or URL is formed using untrusted input, an attacker may provide the input
+in the HTTP request to force the J2EE application server to include an unintended resource, which
+opens the way to either sensitive local file disclosure (like a /WEB-INF configuration file), or
+catastrophic remote file injection (e.g. remote attacker-controlled content with embedded malicious
+JavaScript code for CSRF attacks, or Java code in scriptlet to execute unexpected server-side operations,
+including operating system commands).]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid unintended leakage of sensitive local/remote files, or remote file include attacks, in JSP dynamic include actions.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<!--
+  VIOLATION, attacker may choose which local webapp file to be included
+  ("local file include")
+-->
+<jsp:include page='<%= (String)request.getParameter("page_header")%>' />
+<!--
+  VIOLATION, the URL could be remote, so attacker may provide malicious JSP code
+  ("remote file include")
+-->
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<c:import url='<%= request.getParameter("page_header")%>' />]]></example>
+    <repair><![CDATA[Use the "compile-time" <%@ include %> directive if the included page is local and non dynamic.
+
+If included page should be dynamic, never let untrusted input to directly form part
+of the page path (for <jsp:include>) or page URL (for <c:import>).]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/94.htm]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:94,CWETOP25:2021:28,OWASP:2021:A3,PCI-DSS:6.5.8,WASC:5]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.JSP.SEC_JSP.FormWithoutCaptcha" message="FormWithoutCaptcha: Form without CAPTCHA" class="com.kiuwan.jsp.rules.security.FormWithoutCaptcha" technology="JSP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.3,ASVS-v4.0.2:4.2.2,CWEScope:Access-Control,CWEScope:Non-Repudiation,csrf]]></tags>
+    <description><![CDATA[A form could be a target for a Cross-Site Request Forgery attack (CSRF), but lacks of a known CAPTCHA control
+ensuring that the form is posted by the legitimate authenticated user and it is not controlled by an attacker.
+
+A CAPTCHA ("Completely Automated Public Turing test to tell Computers and Humans Apart") is a challenge-response test
+used to determine whether or not the user is human, for example by identifying deformed text difficult for a computer,
+or a simple puzzle, mathematical, logical or trivia question.
+
+CAPTCHAs are typically used to stop bots used for spamming, posting links or misinformation, generating ad-click revenue,
+creating new accounts, scraping content, or even performing fraudulent transactions like purchases made with stolen credit cards.
+
+CAPTCHAs have issues for disabled people (or even users without visual or other disabilities) and are often under
+attack, either by automated bots equipped with specific captcha-solvers (even using anti-captcha APIs available),
+or even by relying on "a sweatshop of human operators" known as CAPTCHA farms. But they are widely used when
+it is important to ensure that a human is behind a sensitive form post.
+
+This rule reports a defect when a POST form, matching the URL pattern, does not contain a CAPTCHA control.
+Its intended use is to flag forms that could either need some form of CAPTCHA or an assessment for other anti-CSRF measures.
+This rule should be considered a complement to the CSRF-targeted rules.
+
+Note: The rule considers some popular CAPTCHA systems like BotDetect, Google reCAPTCHA or Captcheck, but the 'customCaptchaAttributes'
+configuration property may be used to register additional or custom systems.]]></description>
+    <priority>4</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+  </head>
+  <body>
+    <h2>Password recovery</h2>
+    <!-- VIOLATION, form that may be protected with CAPTCHA -->
+    <form id="password_recovery" action="/users/password_recovery" method="post">
+      <label for="email">Email:</label><br>
+      <input type="text" id="email" name="email" value="" placeholder="Enter your configured email"><br>
+      <button type="submit">Submit</button>
+    </form>
+  </body>
+</html]]></example>
+    <repair><![CDATA[<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+  <h2>Password recovery</h2>
+  <form id="password_recovery" action="/users/password_recovery" method="post">
+    <!-- FIXED using reCAPTCHA v2 checkbox, but there are many other CAPTCHA tools out there -->
+    <div class="g-recaptcha" data-sitekey="your_recaptcha_ket_here"></div>
+    <label for="email">Email:</label><br>
+    <input type="text" id="email" name="email" value="" placeholder="Enter your configured email"><br>
+    <button type="submit">Submit</button>
+  </form>
+  </body>
+</html>]]></repair>
+    <reference><![CDATA[]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:352,CWETOP25:2021:9,OWASP:2013:A8,PCI-DSS:6.5.1,WASC:9]]></security>
+    </normatives>
+    <properties>
+      <property name="onlyPost" descname="If true, only forms with POST method are considered: if false, both GET and POST forms are considered." value="true"/>
+      <property name="customCaptchaAttributes" descname="Comma-separated list of the values to look for recognizing custom CAPTCHA controls. Elements inside the target form will be examined, and the values will be looked for in their id|name|class attributes." value="captcha, captcha_image, jcaptcha, captcha_code, botdetect-captcha"/>
+      <property name="formPattern" descname="Regular expression pattern for matching forms to consider. The id|name|action|class attributes of the FORM element will be looked for matches. If blank, no filtering will be done." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.JSP.SEC_JSP.TargetBlankVulnerability" message="TargetBlankVulnerability: Improper Neutralization of links to external sites" class="com.als.clases.ncj2ee.cffjsp.TargetBlankVulnerability" technology="JSP" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When an user clicks a link to an external site, and that link has the target="_blank" attribute,
+then the new site will be opened into a new tab or window, but will share its process with the original tab or window.
+
+The window.opener object stores information from the original window, so if a malicious attacker achieves to run code into
+the target site then he/she might read or modify the properties included into the window.opener object, even when the
+original and the target sites have different origin.
+
+After that, the attacker might change the original windows for a malicious copy of it, where the user can be tricked
+to login, or to input his/her bank account information or some other sensitive information.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid malicious redirections to sites controlled by the attacker]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<a href="http://attacker-site.example.com/useful-page.html" target="_blank">    <!-- VIOLATION -->]]></example>
+    <repair><![CDATA[<a href="http://attacker-site.example.com/useful-page.html" target="_blank" rel="noopener noreferrer">]]></repair>
+    <reference><![CDATA[https://dev.to/ben/the-targetblank-vulnerability-by-example,https://owasp.org/www-community/attacks/Reverse_Tabnabbing,https://cwe.mitre.org/data/definitions/1022.html,https://mathiasbynens.github.io/rel-noopener/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:1022,OWASP:2021:A5]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedHref" descname="Separated comma list of allowed href values which, when used, exclude that element from
+            being reported" value="#,javascript:void(0);"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="JSP" technology="JSP" active="true" weight="1.0">
+      <description><![CDATA[JSP rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="JSP" active="true" weight="8.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="JSP" active="true" weight="10.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="JSP" active="true" weight="5.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="JSP" active="true" weight="10.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="JSP" active="true" weight="4.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

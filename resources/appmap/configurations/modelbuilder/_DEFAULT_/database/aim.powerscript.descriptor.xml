@@ -1,0 +1,141 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='database' subtech='powerscript' descriptor='database/aim.powerscript.xml' label=''>
+  <description>
+  This module identifies Powerscript files and adds to the model
+  classes and methods.
+  </description>
+
+  <dependencies/>
+
+  <properties>
+    <property id='aim.powerscript.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>
+        Rule activation flag.
+      </description>
+    </property>
+    
+    <property id="aim.powerscript.software" type="string">
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>
+        Containing software for class entities discovered by Powerscript rule.
+        Used as fallback if no global resolver or global resolver cannot find a containing software for the target entity.
+      </description>
+    </property>
+
+    <property id='aim.powerscript.filter' type='enum'>
+      <name>filter</name>
+      <example>pattern</example>
+      <description>Strategy to use for selecting Powerscript files to process.</description>
+      <possible>
+        <enumval name='default'>Accept language extensions for powerscript technology.</enumval>
+        <enumval name='pattern'>Accept scripts matching patterns in the <code>patterns</code> property.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.powerscript.filter.pattern' type='list' subtype='antPattern'>
+      <name>pattern</name>
+      <example>**/*.sru,**/*.srw</example>
+      <description>If <code>filter=pattern</code>, use the following comma-separated Ant patterns for matching JCL files.</description>
+    </property>
+    
+    <property id='aim.powerscript.rule.allmethods' type='bool'>
+      <name>allmethods</name>
+      <example>false</example>
+      <description>Generates entities to the model for all functions discovered by rule.</description>
+    </property>
+    
+    <property id='aim.powerscript.rule.resolveInheritance' type='bool'>
+      <name>resolveInheritance</name>
+      <example>false</example>
+      <description>
+        Resolve inheritance flag.
+      </description>
+    </property>
+    
+    <property id='aim.powerscript.rule.resolveInstantiations' type='bool'>
+      <name>resolveInstantiations</name>
+      <example>false</example>
+      <description>
+        Resolve instantiation flag.
+      </description>
+    </property>
+    
+    <property id='aim.powerscript.rule.resolveCalls' type='bool'>
+      <name>resolveCalls</name>
+      <example>false</example>
+      <description>
+        Resolve calls flag.
+      </description>
+    </property>
+    
+    <property id='aim.powerscript.resolver' type='enum'>
+      <name>resolver</name>
+      <example>existing</example>
+      <description>Indicates resolver to use in order to generate model.</description>
+      <possible>
+        <enumval name='existing'>Resolve only relations to classes in same model.</enumval>
+        <!-- enumval name="matching">Only outgoing dependencies against entities matching classname patterns in <code>packagePatterns</code> will be registered.</enumval -->
+      </possible>
+    </property>
+    
+    <property id='aim.powerscript.rule.dbsystem' type='string'>
+      <name>dbsystem</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>
+        The database type (e.g. DB2, Oracle...) or database name for container of referenced tables.
+        Used as fallback if no global database object resolver, or the resolver cannot find the target entity.
+      </description>
+    </property>
+
+    <property id='aim.powerscript.rule.dbname' type='string'>
+      <name>dbname</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>
+        The database name or database schema for container of referenced tables.
+        Used as fallback if no global database object resolver, or the resolver cannot find the target entity.
+      </description>
+    </property>
+    
+    <property id='aim.powerscript.rule.ignoreCase' type='bool'>
+      <name>ignoreCase</name>
+      <example>${aim.common.ignoreCase}</example>
+      <description>
+        If true, case is ignored in entity names found in powerscript files 
+      </description>
+    </property>
+    
+  </properties>
+  
+  <property id='aim.dotnet.resolver.matching.packagePatterns' type='list' subtype='regexp'>
+      <name>packagePatterns</name>
+      <example>.+</example>
+      <description>
+        When <code>resolver=matching</code>, comma-separated list of regexp patterns with the classes to match
+        (ASP.Net standard types will be ignored).
+      </description>
+    </property>
+
+  <createdEntities>
+    <values>class,operation</values>
+    <description>If <code>aim.powerscript.rule.allmethods</code> creates functions, apart from Powerscript classes.</description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>application-contains-&gt;class,class-contains-&gt;operation,class-inherits-&gt;class,class-instantiates-&gt;class,class-uses-&gt;class,operation-calls-&gt;operation</values>
+    <description>Resolves class and functions contained in a Powerscript application.</description>
+  </createdRelations>
+
+  <importantConfigurations>
+    <alternative>
+      <value>aim.powerscript.rule.active=true</value>
+      <value>aim.powerscript.rule.allmethods=false</value>
+    </alternative>
+    <alternative>
+      <value>aim.powerscript.rule.active=true</value>
+      <value>aim.powerscript.rule.allmethods=true</value>
+    </alternative>
+  </importantConfigurations>
+</block>

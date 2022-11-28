@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.servlet" standard="Servlet" technology="java">
+
+  <description url="https://docs.oracle.com/javaee/6/api/javax/servlet/package-summary.html">Java Servlet / JSP APIs</description>
+
+  <class name="javax.servlet.ServletRequest" kind="interface" standard="servlet">
+    <tags>servlet</tags>
+    <method name="getAttribute" signature="getAttribute(java.lang.String)">
+      <return type="java.lang.Object"/>
+      <propagate from="0" to="-1"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getParameter" signature="getParameter(java.lang.String)">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getParameterNames" signature="getParameterNames()" match="name">
+      <return type="java.util.Enumeration"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getParameterValues" signature="getParameterValues(java.lang.String)">
+      <return type="java.lang.String[]"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getParameterMap" signature="getParameterMap()">
+      <return type="java.util.Map"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getPart" signature="getPart(java.lang.String)">
+      <return type="javax.servlet.http.Part"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getParts" signature="getParts()">
+      <return type="java.util.Collection"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getInputStream" signature="getInputStream()">
+      <return type="javax.servlet.ServletInputStream"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getReader" signature="getReader()">
+      <return type="java.io.BufferedReader"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getCharacterEncoding" signature="getCharacterEncoding()">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getContentType" signature="getContentType()">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getRealPath" signature="getRealPath(java.lang.String)">
+      <propagate from="0" to="-1"/>
+    </method>
+    <method name="getScheme" signature="getScheme()">
+      <!--source argpos="-1" kind="user_input" resource="web"/ SAFE -->
+    </method>
+    <method name="getServerName" signature="getServerName()">
+      <!--source argpos="-1" kind="user_input" resource="web"/ SAFE -->
+    </method>
+    <method name="getRemoteHost" signature="getRemoteHost()">
+      <!-- considered unsafe -->
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getRemoteAddr" signature="getRemoteAddr()">
+      <!-- considered unsafe -->
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getRequestDispatcher" signature="getRequestDispatcher(java.lang.String)">
+      <tags>CWE:552</tags>
+      <return type="javax.servlet.RequestDispatcher"/>
+      <sink argpos="0" kind="file_disclosure" resource="web"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="setAttribute" signature="setAttribute(java.lang.String,java.lang.Object)">
+      <tags>map.key:0, map.value:1, doNotPropagate:trust_boundary</tags>
+      <propagate from="1" to="-2"/>
+    </method>
+    <method name="getAttribute" signature="getAttribute(java.lang.String)">
+      <tags>map.key:0, map.value:-1</tags>
+      <return type="java.lang.String"/>
+      <propagate from="-2" to="-1"/>
+    </method>
+  </class>
+
+  <class name="javax.servlet.ServletRequestWrapper" supertypes="javax.servlet.ServletRequest"/>
+
+  <class name="javax.servlet.http.HttpServletRequest" kind="interface" standard="servlet" supertypes="javax.servlet.ServletRequest">
+    <method name="getSession" signature="getSession()">
+      <tags>doNotPropagate</tags>
+      <return type="javax.servlet.http.HttpSession"/>
+    </method>
+
+    <method name="getSession" signature="getSession(boolean)">
+      <return type="javax.servlet.http.HttpSession"/>
+    </method>
+
+    <method name="getContextPath" signature="getContextPath()">
+      <tags>doNotPropagate</tags>
+      <!--source argpos="-1" kind="user_input" resource="web"/--><!-- Cannot be tainted by attackers -->
+    </method>
+    <method name="getCookies" signature="getCookies()">
+      <tags>CWE:784</tags>
+      <return type="javax.servlet.http.Cookie[]" elementType="javax.servlet.http.Cookie"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getHeaderNames" signature="getHeaderNames()">
+      <return type="java.util.Enumeration"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getHeader" signature="getHeader(java.lang.String)">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getHeaders" signature="getHeaders(java.lang.String)">
+      <return type="java.util.Enumeration"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getMethod" signature="getMethod()">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getPathInfo" signature="getPathInfo()">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getPathTranslated" signature="getPathTranslated()">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getQueryString" signature="getQueryString()">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getRemoteUser" signature="getRemoteUser()">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getRequestDispatcher" signature="getRequestDispatcher(java.lang.String)">
+      <return type="javax.servlet.RequestDispatcher"/>
+      <sink argpos="0" kind="file_disclosure" resource="web"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="getRequestedSessionId" signature="getRequestedSessionId()">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getRequestURI" signature="getRequestURI()">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getRequestURL" signature="getRequestURL()">
+      <return type="java.lang.StringBuffer"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+      <propagate from="0,1" to="-1,-2"/>
+    </method>
+    <method name="getServletPath" signature="getServletPath()">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getUserPrincipal" signature="getUserPrincipal()">
+      <return type="java.security.Principal"/>
+    </method>
+    <method name="isUserInRole" signature="isUserInRole(java.lang.String)">
+      <sink argpos="0" kind="security_decision" resource="web"/>
+    </method>
+    <method name="login" signature="login(java.lang.String,java.lang.String)">
+      <tags>username:0, password:1, stateChange</tags>
+      <sink argpos="0,1" kind="security_decision" resource="web"/>
+      <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+    </method>
+
+    <!-- Kanary extension functions -->
+    <function name="getBody" signature="getBody()" >
+      <return type="com.fasterxml.jackson.databind.JsonNode" />
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+    <function name="getBodyAsJson" signature="getBodyAsJson()" >
+      <return type="kotlin.String" />
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+  </class>
+
+  <class name="javax.servlet.http.HttpServletRequestWrapper" supertypes="javax.servlet.http.HttpServletRequest"/>
+
+  <class name="javax.servlet.ServletResponse" kind="interface">
+    <description>Servlet response</description>
+    <method name="setCharacterEncoding" signature="setCharacterEncoding(java.lang.String)">
+      <tags>CWE:113,header.name:Content-Type,header.value:0</tags>
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="setContentType" signature="setContentType(java.lang.String)">
+      <tags>CWE:113,header.name:Content-Type,header.value:0</tags>
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="getOutputStream" signature="getOutputStream()" match="name">
+      <return type="javax.servlet.ServletOutputStream"/>
+      <source argpos="-1" kind="user_output" resource="web"/>
+    </method>
+    <method name="getWriter" signature="getWriter()" match="name">
+      <return type="java.io.PrintWriter"/>
+      <source argpos="-1" kind="user_output" resource="web"/>
+      <sink argpos="-2" kind="password_in_comment" resource="web"/>
+    </method>
+  </class>
+
+  <class name="javax.servlet.http.HttpServletResponse" kind="interface" standard="servlet" supertypes="javax.servlet.ServletResponse">
+    <description></description>
+    <method name="addCookie" signature="addCookie(javax.servlet.http.Cookie)">
+      <tags>CWE:113, stateChange,header.name:Cookie</tags>
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+      <sink argpos="0" kind="cookie_security" resource="web"/>
+    </method>
+    <method name="addHeader" signature="addHeader(java.lang.String,java.lang.String)">
+      <tags>CWE:113,header.name:0,header.value:1</tags>
+      <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="sendRedirect" signature="sendRedirect(java.lang.String)">
+      <tags>CWE:113, CWE:601,header.name:Location,header.value:0</tags>
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+      <sink kind="execution_after_redirect" argpos="-1" resource="web"/>
+    </method>
+    <method name="sendError" signature="sendError(int,java.lang.String)">
+      <tags>CWE:113, CWE:81,header.value:0</tags>
+      <sink argpos="1" kind="header_manipulation" resource="web"/>
+      <sink argpos="1" kind="xss" resource="web"/>
+    </method>
+    <method name="getHeader" signature="getHeader(java.lang.String)">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getHeaders" signature="getHeaders(java.lang.String)">
+      <return type="java.util.Collection"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="setDateHeader" alias="addDateHeader" signature="setDateHeader(java.lang.String,long)">
+      <tags>CWE:113,header.name:0,header.value:1</tags>
+      <propagate from="0,1" to="-2" />
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="setHeader" signature="setHeader(java.lang.String,java.lang.String)">
+      <tags>CWE:113,header.name:0,header.value:1</tags>
+      <propagate from="0,1" to="-2" />
+      <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="setIntHeader" alias="addIntHeader" signature="setIntHeader(java.lang.String,java.lang.String)">
+      <tags>CWE:113,header.name:0,header.value:1</tags>
+      <propagate from="0,1" to="-2" />
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="encodeURL" signature="encodeURL(java.lang.String)" alias="encodeUrl,encodeRedirectUrl,encodeRedirectURL">
+      <neutralization argpos="0" kind="xss" resource="web"/>
+      <neutralization argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+  </class>
+
+  <class name="javax.servlet.http.HttpServletResponseWrapper" supertypes="javax.servlet.http.HttpServletResponse,javax.servlet.ServletResponseWrapper"/>
+  <class name="javax.servlet.ServletResponseWrapper" supertypes="javax.servlet.ServletResponse" >
+    <method name="getResponse" signature="getResponse()" >
+      <return type="javax.servlet.ServletResponse" />
+    </method>
+  </class>
+
+  <class name="javax.servlet.ServletConfig" kind="interface" standard="servlet">
+    <description>Servlet config object</description>
+    <method name="getServletContext" signature="getServletContext()">
+      <return type="javax.servlet.ServletContext"/>
+    </method>
+    <method name="getServletContext" signature="getServletContext()">
+      <return type="javax.servlet.ServletContext"/>
+    </method>
+  </class>
+
+  <class name="javax.servlet.http.HttpServlet" kind="abstract_class" supertypes="javax.servlet.ServletConfig">
+    <description>HTTP Servlet</description>
+  </class>
+
+  <class name="javax.servlet.ServletContext" kind="interface" standard="servlet">
+    <description>Session object</description>
+    <method name="createFilter" signature="createFilter(java.lang.Class)" >
+      <return type="javax.servlet.Filter" />
+    </method>
+    <method name="createListener" signature="createListener(java.lang.Class)" >
+      <return type="java.util.EventListener" />
+    </method>
+    <method name="createServlet" signature="createServlet(java.lang.Class)" >
+      <return type="javax.servlet.Servlet" />
+    </method>
+    <method name="declareRoles" signature="declareRoles(java.lang.String...)">
+      <sink kind="security_setting_injection" argpos="0" resource="web"/>
+    </method>
+    <method name="getContext" signature="getContext(java.lang.String)" >
+      <return type="javax.servlet.ServletContext" />
+    </method>
+    <method name="getAttribute" signature="getAttribute(java.lang.String)" alias="getValue">
+      <tags>map.key:0, map.value:-1</tags>
+      <return type="java.lang.Object"/>
+      <propagate from="0" to="-1"/>
+      <!-- <source argpos="-1" kind="user_input" resource="web"/> -->
+    </method>
+    <method name="setAttribute" signature="setAttribute(java.lang.String,java.lang.Object)">
+      <tags>CWE:501, stateChange, map.key:0, map.value:1</tags>
+      <sink argpos="0,1" kind="trust_boundary" resource="web"/>
+      <propagate from="1" to="-2"/>
+    </method>
+    <method name="getClassLoader" signature="getClassLoader()"><return type="java.lang.ClassLoader"/></method>
+    <method name="getContextPath" signature="getContextPath()">
+      <return type="java.lang.String"/>
+    </method>
+    <method name="getInitParameter" signature="getInitParameter(java.lang.String)">
+      <return type="java.lang.String"/>
+    </method>
+    <method name="setInitParameter" signature="setInitParameter(java.lang.String, java.lang.String)">
+      <return type="boolean"/>
+      <sink kind="configuration_setting_injection" resource="web" argpos="0,1"/>
+    </method>
+    <method name="getRealPath" signature="getRealPath(java.lang.String path)">
+      <propagate from="0" to="-1" />
+    </method>
+    <method name="getMimeType" signature="getMimeType(java.lang.String)">
+      <return type="getMimeType"/>
+      <!-- Returned mime type (which could be null) is taken from  -->
+      <neutralization kind="*" resource="web" argpos="-1"/>
+    </method>
+    <method name="getRequestDispatcher" signature="getRequestDispatcher(java.lang.String)">
+      <tags>CWE:552</tags>
+      <return type="javax.servlet.RequestDispatcher"/>
+      <sink argpos="0" kind="file_disclosure" resource="web"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="getResourceAsStream" signature="getResourceAsStream(java.lang.String)">
+      <return type="java.io.InputStream"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+      <source argpos="-1" kind="file_input" resource="filesystem" />
+    </method>
+    <method name="getServerInfo" signature="getServerInfo()" >
+      <return type="java.lang.String" />
+      <source argpos="-1" kind="system_information" />
+    </method>
+    <method name="getServlet" signature="getServlet(java.lang.String)" >
+      <return type="javax.servlet.Servlet" />
+    </method>
+    <method name="getServlets" signature="getServlets()" >
+      <return type="java.util.List" elementType="javax.servlet.Servlet" />
+    </method>
+    <method name="log" signature="log(java.lang.Exception,java.lang.String)" match="fullsignature" >
+      <sink kind="log_forging" argpos="1" resource="web" />
+    </method>
+    <method name="log" signature="log(java.lang.String)" >
+      <sink kind="log_forging" argpos="0" resource="web" />
+    </method>
+    <method name="log" signature="log(java.lang.String,java.lang.Throwable)" match="fullsignature" >
+      <sink kind="log_forging" argpos="0" resource="web" />
+    </method>
+  </class>
+
+  <class name="javax.servlet.RequestDispatcher" kind="interface" standard="servlet">
+    <description>RequestDispatcher</description>
+    <method name="forward" signature="forward(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)">
+      <sink kind="execution_after_redirect" argpos="-1" resource="web"/>
+    </method>
+    <method name="include" signature="include(javax.servlet.ServletRequest,javax.servlet.ServletResponse)">
+      <!-- no EAR here, as the servlet may add further content after the included one -->
+    </method>
+  </class>
+
+  <class name="javax.servlet.http.HttpSession" kind="interface" standard="servlet">
+    <description>Session object</description>
+    <method name="getServletContext" signature="getServletContext()">
+      <return type="javax.servlet.ServletContext"/>
+    </method>
+    <method name="putValue" signature="putValue(java.lang.String,java.lang.Object)">
+      <tags>CWE:501, stateChange, map.key:0, map.value:1</tags>
+      <sink argpos="0,1" kind="trust_boundary" resource="web"/>
+      <propagate from="1" to="-2"/>
+    </method>
+    <method name="getAttribute" signature="getAttribute(java.lang.String)" alias="getValue">
+      <tags>map.key:0, map.value:-1</tags>
+      <return type="java.lang.Object"/>
+      <propagate from="0" to="-1"/>
+      <!-- <source argpos="-1" kind="user_input" resource="web"/> -->
+    </method>
+    <method name="setAttribute" signature="setAttribute(java.lang.String,java.lang.Object)">
+      <tags>CWE:501, stateChange, map.key:0, map.value:1</tags>
+      <sink argpos="0,1" kind="trust_boundary" resource="web"/>
+      <propagate from="1" to="-2"/>
+    </method>
+    <method name="getId" signature="getId()">
+      <tags>sensitive_info</tags>
+      <return type="java.lang.String"/>
+      <source argpos="-1" kind="sensitive_info" resource="web"/>
+    </method>
+  </class>
+
+  <class name="javax.servlet.http.Cookie" standard="servlet">
+    <description>Cookie object</description>
+    <constructor name="Cookie" signature="Cookie(java.lang.String,java.lang.String)">
+      <tags>cookie.create,cookie.name:0,cookie.value:1</tags>
+      <propagate from="0,1" to="-1"/>
+    </constructor>
+    <method name="getValue" signature="getValue()"  match="name">
+      <return type="java.lang.String" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getPath" signature="getPath()" match="name">
+      <return type="java.lang.String" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getComment" signature="getComment()"  match="name">
+      <return type="java.lang.String" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getDomain" signature="getDomain()"  match="name">
+      <return type="java.lang.String" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getName" signature="getName()"  match="name">
+      <return type="java.lang.String" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="isHttpOnly" signature="isHttpOnly()" match="name">
+      <return type="java.lang.Boolean" />
+    </method>
+    <method name="setDomain" signature="setDomain(java.lang.String)">
+      <tags>setCookie,cookie.domain:0</tags>
+    </method>
+    <method name="setPath" signature="setPath(java.lang.String)">
+      <tags>setCookie,cookie.path:0</tags>
+    </method>
+    <method name="setHttpOnly" signature="setHttpOnly(boolean)">
+      <tags>setCookie,cookie.httpOnly:0</tags>
+    </method>
+    <method name="setMaxAge" signature="setMaxAge(int)">
+      <tags>setCookie,cookie.maxAge:0</tags>
+    </method>
+    <method name="setSecure" signature="setMaxAge(boolean)">
+      <tags>setCookie,cookie.secure:0</tags>
+    </method>
+    <method name="setValue" signature="setValue(java.lang.String)">
+      <tags>setCookie,cookie.value:0</tags>
+    </method>
+    <method name="setComment" signature="setComment(java.lang.String)">
+      <tags>setCookie,cookie.comment:0</tags>
+    </method>
+  </class>
+
+  <class name="javax.servlet.http.Part" kind="interface">
+    <method name="getContentType" signature="getContentType()">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getHeader" signature="getHeader(java.lang.String)">
+      <return type="java.lang.String"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getHeaders" signature="getHeaders(java.lang.String)">
+      <return type="java.util.Collection"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getName" signature="getName()">
+      <return type="java.lang.String"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getInputStream" signature="getInputStream()">
+      <return type="java.io.InputStream"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="write" signature="write(java.lang.String)">
+      <tags>stateChange</tags>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </method>
+  </class>
+
+  <class name="javax.servlet.ServletOutputStream" kind="abstract_class" standard="servlet" supertypes="java.io.OutputStream">
+    <description>Servlet output stream</description>
+    <tags>servlet</tags>
+    <method name="print" signature="print(java.lang.String)">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="println" signature="println(java.lang.String)">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </method>
+  </class>
+
+  <class name="javax.servlet.jsp.JspFactory" kind="abstract_class" standard="servlet">
+    <method name="getPageContext" signature="getPageContext()" match="name">
+      <return type="javax.servlet.jsp.PageContext"/>
+    </method>
+    <method name="getDefaultFactory" signature="getDefaultFactory()">
+      <return type="javax.servlet.jsp.JspFactory"/>
+    </method>
+  </class>
+
+  <class name="javax.servlet.jsp.JspWriter" kind="abstract_class" standard="servlet" supertypes="java.io.PrintWriter">
+    <tags>servlet</tags>
+  </class>
+
+  <class name="javax.servlet.jsp.PageContext" kind="abstract_class" standard="servlet" supertypes="javax.servlet.jsp.JspContext">
+    <description>JSP PageContext</description>
+    <method name="forward" signature="forward(java.lang.String)">
+      <tags>CWE:552</tags>
+      <sink argpos="0" kind="file_disclosure" resource="web"/>
+    </method>
+    <method name="include" signature="include(java.lang.String)" match="name">
+      <tags>CWE:552</tags>
+      <sink argpos="0" kind="file_disclosure" resource="web"/>
+    </method>
+  </class>
+
+  <class name="org.apache.jasper.runtime.JspRuntimeLibrary" standard="servlet">
+    <description>Jasper runtime utility (in generated JSP-to-Java code)</description>
+    <method name="forward" signature="forward()" match="name">
+      <tags>CWE:552</tags>
+      <sink argpos="2" kind="file_disclosure" resource="web"/>
+      <propagate from="2" to="-2"/>
+    </method>
+    <method name="include" signature="include()" match="name">
+      <tags>CWE:552</tags>
+      <sink argpos="2" kind="file_disclosure" resource="web"/>
+      <propagate from="2" to="-2"/>
+    </method>
+    <method name="URLEncode" signature="URLEncode(java.lang.String,java.lang.String)">
+      <neutralization argpos="1" kind="file_disclosure" resource="web"/>
+    </method>
+  </class>
+
+</library>

@@ -1,0 +1,638 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.nosql" standard="noSQL" technology="java">
+
+  <description>Java libraries for noSQL databases</description>
+
+  <!-- REDIS -->
+  <!-- Redis seems secure againts NoSQL injection: https://redis.io/topics/security -->
+  <!--
+  <class name="RedisClient" kind="class" >
+    <constructor name="RedisClient" signature="RedisClient(string)" >
+      <sink argpos="0,1" kind="connection_string_injection"/>
+      <sink argpos="0,1" kind="resource_injection"/>
+      <sink argpos="0,1" kind="sensitive_info"/>
+    </constructor>
+  </class>
+  -->
+
+  <module name="org.bson" standard="MongoDB_BSON">
+    <description url="https://mongodb.github.io/mongo-java-driver/3.5/javadoc/org/bson/package-frame.html">Binary JSON</description>
+
+    <class name="org.bson.conversions.Bson" kind="interface">
+      <method name="toBsonDocument" signature="toBsonDocument(java.lang.Class, org.bson.codecs.configuration.CodecsRegistry">
+        <return type="org.bson.BsonDocument"/>
+      </method>
+    </class>
+
+    <class name="org.bson.BSONObject" kind="interface">
+      <method name="containsField" signature="containsField(java.lang.String)" alias="containsKey">
+        <return type="boolean"/>
+      </method>
+      <method name="get" signature="get(java.lang.String)"><return type="java.lang.Object"/></method>
+      <method name="put" signature="put(java.lang.String,java.lang.Object)"><return type="java.lang.Object"/></method>
+      <method name="putAll" signature="putAll(org.bson.BSONObject)"/>
+      <method name="removeField" signature="removeField(java.lang.String)"><return type="java.lang.Object"/></method>
+      <method name="toMap" signature="toMap()"><return type="java.util.Map"/></method>
+    </class>
+
+    <class name="org.bson.BasicBSONObject" supertypes="java.util.LinkedHashMap,org.bson.BSONObject,org.bson.conversions.Bson">
+      <!-- JSON encoding done here protects agains NoSQL-i (?) -->
+      <constructor name="BasicBSONObject" signature="BasicBSONObject()"></constructor>
+      <constructor name="BasicBSONObject_1" signature="BasicBSONObject(java.util.Map)">
+        <neutralization argpos="0" kind="nosql_injection" resource="database"/>
+      </constructor>
+      <constructor name="BasicBSONObject_2" signature="BasicBSONObject(java.lang.String,java.lang.Object)">
+        <!--sink argpos="0" kind="resource_injection" resource="database"/-->
+        <neutralization argpos="0,1" kind="nosql_injection" resource="database"/>
+      </constructor>
+      <method name="append" signature="append(java.lang.String,java.lang.Onject)">
+        <return type="org.bson.BasicBSONObject"/>
+        <!--sink argpos="0" kind="resource_injection" resource="database"/-->
+        <neutralization argpos="0,1" kind="nosql_injection" resource="database"/>
+      </method>
+      <method name="put" signature="put(java.lang.String,java.lang.Onject)">
+        <return type="java.lang.Object"/>
+        <!--sink argpos="0" kind="resource_injection" resource="database"/-->
+        <neutralization argpos="0,1" kind="nosql_injection" resource="database"/>
+      </method>
+      <method name="putAll" signature="putAll(java.util.Map)">
+        <return type="java.lang.Object"/>
+        <neutralization argpos="0" kind="nosql_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="org.bson.Document" supertypes="org.bson.BasicBSONObject">
+      <constructor name="Document" signature="Document()"></constructor>
+      <constructor name="Document_1" signature="Document(java.util.Map)">
+        <neutralization argpos="0" kind="nosql_injection" resource="database"/>
+      </constructor>
+      <constructor name="Document_2" signature="Document(java.lang.String,java.lang.Object)">
+        <!--sink argpos="0" kind="resource_injection" resource="database"/-->
+        <neutralization argpos="0,1" kind="nosql_injection" resource="database"/>
+      </constructor>
+      <method name="toJson" signature="toJson()" match="name">
+        <return type="java.lang.String"/>
+      </method>
+    </class>
+
+    <class name="org.bson.types.BasicBSONList" supertypes="java.util.ArrayList,org.bson.BSONObject">
+    </class>
+  </module>
+
+  <module name="com.mongodb.Mongo" standard="MongoDB_Client">
+    <description url="https://www.mongodb.com/">Client for MongoDB (document database)</description>
+
+    <!-- MongoDB -->
+    <class name="com.mongodb.Mongo" supertypes="com.mongodb.MongoClient">
+      <constructor name="Mongo" signature="MongoClient()"/>
+      <constructor name="Mongo_1" signature="MongoClient(java.lang.String)">
+        <sink argpos="0" kind="resource_injection"/>
+      </constructor>
+      <constructor name="Mongo_2" signature="MongoClient(java.lang.String,int)">
+        <sink argpos="0,1" kind="resource_injection" resource="database"/>
+      </constructor>
+      <method name="dropDatabase" signature="dropDatabase(java.lang.String)">
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+      </method>
+      <method name="getAddress" signature="getAddress()">
+        <return type="com.mongodb.ServerAddress"/>
+      </method>
+      <method name="getAllAddress" signature="getAllAddress()">
+        <return type="java.util.List" elementType="com.mongodb.ServerAddress"/>
+      </method>
+      <method name="getDB" signature="getDB(java.lang.String)">
+        <return type="com.mongodb.DB"/>
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="com.mongodb.MongoClient">
+      <constructor name="MongoClient" signature="MongoClient()"/>
+      <constructor name="MongoClient_1" signature="MongoClient(java.lang.String)">
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+      </constructor>
+      <constructor name="MongoClient_2" signature="MongoClient(java.lang.String,int)">
+        <sink argpos="0,1" kind="resource_injection" resource="database"/>
+      </constructor>
+      <method name="getDatabase" signature="getDatabase(java.lang.String)">
+        <return type="com.mongodb.client.MongoDatabase"/>
+      </method>
+      <method name="*" signature="*(java.lang.String)">
+        <return type="com.mongodb.client.MongoDatabase"/>
+      </method>
+    </class>
+
+    <class name="com.mongodb.ConnectionString">
+      <constructor name="ConnectionString" signature="ConnectionString(java.lang.String)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="com.mongodb.MongoClientURI">
+      <constructor name="MongoClientURI" signature="MongoClientURI(java.lang.String)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="getCollection" signature="getCollection()"><return type="java.lang.String"/></method>
+      <method name="getCredentials" signature="getCredentials()"><return type="com.mongodb.MongoCredential"/></method>
+      <method name="getDatabase" signature="getDatabase()"><return type="java.lang.String"/></method>
+      <method name="getHosts" signature="getHosts()"><return type="java.util.List" elementType="java.lang.String"/></method>
+      <method name="getURI" signature="getURI()"><tags>sensitive_info</tags><return type="java.lang.String"/></method>
+      <method name="getPassword" signature="getPassword">
+        <tags>sensitive_info,credential,password</tags>
+        <return type="char[]"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="getUsername" signature="getUsername()">
+        <tags>sensitive_info,credential,username</tags>
+        <return type="char[]"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+    </class>
+
+    <class name="com.mongodb.MongoCredential">
+      <method name="createCredential" signature="createCredential(java.lang.String,java.lang.String,char[])" match="name"
+              alias="createGSSAPICredential,createMoncoCRCredential,createMongoX509Credential,createPlainCredential,createScramSha1Credential">
+        <tags>sensitive_info,credential,username:0,password:2</tags>
+        <return type="com.mongodb.MongoCredential"/>
+        <sink argpos="0,1,2" kind="resource_injection" resource="database"/>
+        <sink argpos="0,2" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="getPassword" signature="getPassword()">
+        <tags>sensitive_info,credential,password</tags>
+        <return type="char[]"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="getUserName" signature="getUserName()">
+        <tags>sensitive_info,credential,username</tags>
+        <return type="char[]"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+    </class>
+
+    <class name="com.mongodb.client.MongoDatabase" kind="interface">
+      <method name="createCollection" signature="createCollection(java.lang.String)" match="name">
+        <return type="com.mongodb.client.MongoCollection" elementType="org.bson.Document"/>
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+      </method>
+      <method name="drop" signature="drop()"/>
+      <method name="getCollection" signature="getCollection(java.lang.String)" match="name">
+        <return type="com.mongodb.client.MongoCollection" elementType="org.bson.Document"/>
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+      </method>
+      <method name="listCollectionNames" signature="listCollectionNames()"><return type="com.mongodb.client.MongoIterable"/></method>
+      <method name="listCollections" signature="listCollections()" match="name">
+        <return type="com.mongodb.client.ListCollectionsIterable"/>
+      </method>
+      <method name="runCommand" signature="runCommand(org.bson.conversions.Bson)" match="name">
+        <return type="org.bson.Document"/>
+      </method>
+      <method name="withCodecRegistry" signature="withCodecRegistry()" match="name" alias="withReadConcern,withReadPreference,withWriteConcern">
+        <return type="com.mongodb.client.MongoDatabase"/>
+      </method>
+      <method name="*" signature="*(java.lang.String)" match="name">
+        <return type="com.mongodb.client.MongoCollection" elementType="org.bson.Document"/>
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="com.mongodb.DB">
+      <constructor name="DB" signature="DB(com.mongodb.Mongo,java.lang.String)">
+        <sink argpos="1" kind="resource_injection" resource="database"/>
+      </constructor>
+      <method name="getMongo" signature="getMongo()"><return type="com.mongodb.Mongo"/></method>
+      <method name="addOption" signature="addOption(int)"/>
+      <method name="addUser" signature="addUser(java.lang.String,char[],boolean)" match="name">
+        <tags>sensitive_info,credential,username:0,password:1</tags>
+        <sink argpos="0,1" kind="resource_injection" resource="database"/>
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="command" signature="command(com.mongodb.DBObject)" match="name">
+        <return type="com.mongodb.CommandResult"/>
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+      </method>
+      <method name="createCollection" signature="createCollection(java.lang.String)" match="name">
+        <return type="com.mongodb.DBCollection" />
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+      </method>
+      <method name="doEval" signature="doEval(java.lang.String,java.lang.Object[])" alias="eval">
+        <return type="com.mongodb.CommandResult"/>
+        <sink argpos="0" kind="code_injection" resource="database"/>
+      </method>
+      <method name="getCollection" signature="getCollection(java.lang.String)" alias="getCollectionFromString">
+        <return type="com.mongodb.DBCollection" />
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+      </method>
+      <method name="getCollectionNames" signature="getCollectionNames()">
+        <return type="java.util.Set" elementType="java.lang.String"/>
+      </method>
+      <method name="getSisterDB" signature="getSisterDB()">
+        <return type="com.mongodb.DB"/>
+      </method>
+      <method name="removeUser" signature="removeUser(java.lang.String)">
+        <tags>sensitive_info,credential,username:0</tags>
+        <return type="com.mongodb.WriteResult"/>
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+
+    <class name="com.mongodb.client.MongoCollection" kind="interface">
+      <method name="aggregate" signature="aggregate(java.util.List)" match="name">
+        <return type="com.mongodb.client.AggregateIterable"/>
+      </method>
+      <method name="count" signature="count(org.bson.conversions.Bson)" match="name">
+        <return type="long"/>
+        <sink argpos="0" kind="nosql_injection"/>
+      </method>
+      <method name="deleteOne" signature="deleteOne(org.bson.conversions.Bson)">
+        <return type="com.mongodb.client.result.DeleteResult"/>
+        <sink argpos="0" kind="nosql_injection"/>
+      </method>
+      <method name="distinct" signature="distinct(java.lang.String, org.bson.conversions.Bson)" match="name">
+        <return type="com.mongodb.client.DistinctIterable"/>
+        <sink argpos="0,1" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="drop" signature="drop()"/>
+      <method name="dropIndex" signature="dropIndex()" match="name" alias="dropIndexes"/>
+      <method name="find" signature="find(org.bson.conversions.Bson)" match="name">
+        <return type="com.mongodb.client.FindIterable"/>
+        <sink argpos="0" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="findOneAndDelete" signature="findOneAndDelete(org.bson.conversions.Bson)" match="name">
+        <return type="org.bson.Document"/>
+        <sink argpos="0" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="findOneAndReplace" signature="findOneAndDelete(org.bson.conversions.Bson)" match="name">
+        <return type="org.bson.Document"/>
+        <sink argpos="0" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="findOneAndUpdate" signature="findOneAndUpdate(org.bson.conversions.Bson,org.bson.conversions.Bson)" match="name">
+        <return type="org.bson.Document"/>
+        <sink argpos="0" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="insert" signature="insert(org.bson.conversions.Bson)" match="name">
+        <sink argpos="0" kind="nosql_injection"/>
+      </method>
+      <method name="insertMany" signature="insertMany(java.util.List)" match="name"></method>
+      <method name="insertOne" signature="insertOne(org.bson.Document)" match="name"></method>
+      <method name="mapReduce" signature="mapReduce(java.lang.String,java.lang.String)">
+        <return type="com.mongodb.client.MongoIterable"/>
+      </method>
+      <method name="replaceOne" signature="replaceOne(org.bson.conversions.Bson,org.bson.Document)" match="name" alias="updateOne,updateMany">
+        <return type="com.mongodb.client.UpdateResult"/>
+        <sink argpos="0" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="withCodecRegistry" signature="withCodecRegistry()" match="name" alias="withDocumentClass,withReadConcern,withReadPreference,withWriteConcern">
+        <return type="com.mongodb.client.MongoCollection"/>
+      </method>
+    </class>
+
+    <class name="com.mongodb.DBCollection">
+      <method name="addOption" signature="addOption(int)"/>
+      <method name="aggregate" signature="aggregate(java.util.List)" match="name">
+        <return type="com.mongodb.AggregationOutput"/>
+      </method>
+      <method name="count" signature="count(com.mongodb.DBObject)" match="name" alias="getCount">
+        <return type="long"/>
+        <sink argpos="0" kind="nosql_injection"/>
+      </method>
+      <method name="distinct" signature="distinct(java.lang.String, com.mongodb.DBObject)" match="name">
+        <return type="java.util.List"/>
+        <sink argpos="0,1" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="drop" signature="drop()"/>
+      <method name="dropIndex" signature="dropIndex()" match="name" alias="dropIndexes"/>
+      <method name="find" signature="find(com.mongodb.DBObject,com.mongodb.DBObject)" match="name">
+        <return type="com.mongodb.DBCursor"/>
+        <sink argpos="0,1" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="findAndModify" signature="findAndModify(com.mongodb.DBObject,com.mongodb.DBObject)" match="name">
+        <return type="com.mongodb.DBObject"/>
+        <sink argpos="0" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="findAndRemove" signature="findAndRemove(com.mongodb.DBObject)" match="name">
+        <return type="com.mongodb.DBObject"/>
+        <sink argpos="0" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="findOne" signature="findOne(com.mongodb.DBObject,com.mongodb.DBObject,com.mongodb.DBObject)" match="name">
+        <return type="com.mongodb.DBObject"/>
+        <sink argpos="0,1,2" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getCollection" signature="getCollection(java.lang.String)">
+        <return type="com.mongodb.DBCollection"/>
+      </method>
+      <method name="getDB" signature="getDB()"><return type="com.mongodb.DB"/></method>
+      <method name="group" signature="group(com.mongodb.DBObject,com.mongodb.DBObject,com.mongodb.DBObject)" match="name">
+        <return type="com.mongodb.DBObject"/>
+        <sink argpos="0,1,2" kind="nosql_injection"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="insert" signature="insert(com.mongodb.DBObject)" match="name">
+        <sink argpos="0" kind="nosql_injection"/>
+      </method>
+      <method name="mapReduce" signature="mapReduce(java.lang.String,java.lang.String,java.lang.String,com.mongodb.DBObject)" match="name">
+        <return type="com.mongodb.MapReduceResult"/>
+        <sink argpos="4" kind="nosql_injection"/>
+      </method>
+      <method name="remove" signature="remove(com.mongodb.DBObject)">
+        <return type="com.mongodb.WriteResult"/>
+        <sink argpos="0" kind="nosql_injection"/>
+      </method>
+      <method name="save" signature="save(com.mongodb.DBObject)" match="name">
+        <return type="com.mongodb.WriteResult"/>
+      </method>
+      <method name="update" signature="update(com.mongodb.DBObject,com.mongodb.DBObject)" match="name" alias="updateMulti">
+        <return type="com.mongodb.WriteResult"/>
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="com.mongodb.ServerAddress">
+      <constructor name="ServerAddress" signature="ServerAddress(java.lang.String,int)" match="name">
+        <!--sink argpos="0,1" kind="ssrf" resource="database"/-->
+      </constructor>
+      <method name="defaultHost" signature="defaultHost()"><return type="java.lang.String"/></method>
+      <method name="defaultPort" signature="defaultPort()"><return type="int"/></method>
+      <method name="getHost" signature="getHost()"><return type="java.lang.String"/></method>
+      <method name="getPort" signature="getPort()"><return type="int"/></method>
+      <method name="getSocketAddress" signature="getSocketAddress()"><return type="java.net.InetSocketAddress"/></method>
+    </class>
+
+    <class name="com.mongodb.DBAddress" supertypes="com.mongodb.ServerAddress"></class>
+
+    <class name="com.mongodb.client.MongoIterable" supertypes="java.lang.Iterable">
+      <method name="batchSize" signature="batchSize(int)">
+        <return type="com.mongodb.client.MongoIterable"/>
+      </method>
+      <method name="into" signature="into(java.util.Collection"><return type="java.util.Collection"/></method>
+      <method name="iterator" signature="iterator()"><return type="com.mongodb.client.MongoCursor"/></method>
+      <method name="map" signature="map(com.mongodb.Function)"><return type="com.mongodb.client.MongoIterable"/></method>
+    </class>
+
+    <class name="com.mongodb.client.ListCollectionsIterable" supertypes="com.mongodb.client.MongoIterable"/>
+
+    <class name="com.mongodb.client.AggregateIterable" kind="interface" supertypes="com.mongodb.client.MongoIterable">
+      <method name="allowDiskUse" signature="allowDiskUse(java.lang.Boolean)">
+        <return type="com.mongodb.client.AggregateIterable"/>
+      </method>
+      <method name="batchSize" signature="batchSize(int)">
+        <return type="com.mongodb.client.AggregateIterable"/>
+      </method>
+      <method name="bypassDocumentValidation" signature="	bypassDocumentValidation(java.lang.Boolean)">
+        <return type="com.mongodb.client.AggregateIterable"/>
+      </method>
+      <method name="maxTime" signature="maxTime(long,java.util.concurrent.TimeUnit)">
+        <return type="com.mongodb.client.AggregateIterable"/>
+      </method>
+      <method name="useCursor" signature="useCursor(java.lang.Boolean)">
+        <return type="com.mongodb.client.AggregateIterable"/>
+      </method>
+    </class>
+
+    <class name="com.mongodb.client.DistinctIterable" kind="interface" supertypes="com.mongodb.client.MongoIterable">
+      <method name="batchSize" signature="batchSize(int)">
+        <return type="com.mongodb.client.DistinctIterable"/>
+      </method>
+      <method name="filter" signature="filter(org.bson.conversions.Bson)">
+        <return type="com.mongodb.client.DistinctIterable"/>
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+      </method>
+      <method name="maxTime" signature="maxTime(long,java.util.concurrent.TimeUnit)">
+        <return type="com.mongodb.client.DistinctIterable"/>
+      </method>
+    </class>
+
+    <class name="com.mongodb.client.FindIterable" kind="interface" supertypes="com.mongodb.client.MongoIterable">
+      <method name="batchSize" signature="batchSize(int)">
+        <return type="com.mongodb.client.FindIterable"/>
+      </method>
+      <method name="cursorType" signature="cursorType(com.mongodb.CursorType)">
+        <return type="com.mongodb.client.FindIterable"/>
+      </method>
+      <method name="filter" signature="filter(org.bson.conversions.Bson)" alias="projection,sort,modifiers">
+        <return type="com.mongodb.client.FindIterable"/>
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+      </method>
+      <method name="limit" signature="limit(int)" alias="skip">
+        <return type="com.mongodb.client.FindIterable"/>
+      </method>
+      <method name="maxTime" signature="maxTime(long,java.util.concurrent.TimeUnit)" alias="maxAwaitTime">
+        <return type="com.mongodb.client.DistinctIterable"/>
+      </method>
+      <method name="noCursorTimeout" signature="noCursorTimeout(boolean)" alias="oplogReplay,partial">
+        <return type="com.mongodb.client.DistinctIterable"/>
+      </method>
+    </class>
+
+    <class name="com.mongodb.client.MongoCursor" supertypes="java.util.Iterator,java.lang.AutoCloseable">
+      <method name="getServerAddress" signature="getServerAddress()"><return type="com.mongodb.ServerAddress"/></method>
+      <method name="getServerCursor" signature="getServerCursor()"><return type="com.mongodb.ServerCursor"/></method>
+      <method name="tryNext" signature="tryNext()"><return type="java.lang.Object"/></method>
+    </class>
+
+    <class name="com.mongodb.DBObject" kind="interface" supertypes="org.bson.BSONObject"/>
+
+    <class name="com.mongodb.BasicDBObject" supertypes="org.bson.BasicBSONObject,com.mongodb.DBObject,org.bson.conversions.Bson">
+      <!-- JSON encoding done here protects agains NoSQL-i (?) -->
+      <constructor name="BasicDBObject" signature="BasicDBObject()"></constructor>
+      <constructor name="BasicDBObject_1" signature="BasicDBObject(java.util.Map)">
+        <neutralization argpos="0" kind="nosql_injection" resource="database"/>
+      </constructor>
+      <constructor name="BasicDBObject_2" signature="BasicDBObject(java.lang.String,java.lang.Object)">
+        <!--sink argpos="0" kind="resource_injection" resource="database"/-->
+        <neutralization argpos="0,1" kind="nosql_injection" resource="database"/>
+      </constructor>
+      <method name="append" signature="append(java.lang.String,java.lang.Onject)">
+        <return type="com.mongodb.BasicDBObject"/>
+        <neutralization argpos="0,1" kind="nosql_injection" resource="database"/>
+      </method>
+      <method name="parse" signature="parse(java.lang.String)" match="name">
+        <return type="com.mongodb.BasicDBObject"/>
+      </method>
+      <method name="toJson" signature="toJson()" match="name">
+        <return type="java.lang.String"/>
+      </method>
+    </class>
+    <class name="com.mongodb.BasicDBList" supertypes="org.bson.types.BasicBSONList"></class>
+
+    <class name="com.mongodb.util.JSON">
+      <tags>deprecated</tags>
+      <method name="parse" signature="parse(java.lang.String)" instance="false">
+        <return type="com.mongodb.DBObject"/><!-- Really an Object, could be also a Boolean, Integer, Long, Double...) -->
+      </method>
+      <method name="serialize" signature="serialize(java.lang.Object)" instance="false"><return type="java.lang.String"/></method>
+      <method name="serialize_2" signature="serialize(java.lang.Object,java.lang.StringBuilder)" instance="false">
+        <propagate from="0" to="1"/>
+      </method>
+    </class>
+
+    <class name="com.mongodb.client.model.Filters" >
+      <method name="eq" signature="eq(java.lang.Object, java.lang.Object)" instance="false" alias="ne, and, gt">
+        <return type="rg.bson.conversions.Bson"/>
+        <neutralization argpos="-1" kind="nosql_injection" resource="database"/>
+      </method>
+    </class>
+  </module>
+  
+  <module name="com.datastax" standard="Datastax.Cassandra">
+    <description url="https://github.com/datastax/java-driver">Datastax Java Driver for Apache Cassandra</description>
+
+    <!-- Cassandra CQL - TODO update this -->
+    <class name="com.datastax.driver.core.SimpleStatement">
+      <constructor name="SimpleStatement" signature="SimpleStatement()" match="name" >
+        <sink argpos="0" kind="nosql_injection" resource="database" />
+      </constructor>
+    </class>
+
+    <class name="com.datastax.driver.core.Cluster">
+      <method name="builder" signature="builder()" >
+        <return type="com.datastax.driver.core.Cluster.Builder" />
+      </method>
+    </class>
+
+    <class name="com.datastax.driver.core.Cluster.Builder">
+      <method name="addContactPoint" signature="addContactPoint()" >
+        <return type="com.datastax.driver.core.Cluster.Builder" />
+        <sink argpos="0" kind="ssrf" resource="network" />
+      </method>
+      <method name="addContactPoints" signature="addContactPoints()" >
+        <return type="com.datastax.driver.core.Cluster.Builder" />
+        <sink argpos="0" kind="ssrf" resource="network" />
+      </method>
+      <method name="addContactPointsWithPorts" signature="addContactPointsWithPorts()" >
+        <return type="com.datastax.driver.core.Cluster.Builder" />
+        <sink argpos="0" kind="ssrf" resource="network" />
+        <sink argpos="0" kind="resource_injection" resource="network" />
+      </method>
+    </class>
+  </module>
+
+ <module name="io.paperdb" standard="PaperDB">
+   <description url="https://github.com/pilgr/Paper">Paper NoSQL storage</description>
+
+   <class name="io.paperdb.Paper">
+     <method name="book" signature="book(java.lang.String)">
+       <return type="io.paperdb.Book"/>
+     </method>
+     <method name="book" signature="book()">
+       <return type="io.paperdb.Book"/>
+     </method>
+     <method name="bookOn" signature="bookOn(java.lang.String)">
+       <return type="io.paperdb.Book"/>
+       <sink argpos="0" kind="resource_injection" resource="database"/>
+     </method>
+     <method name="bookOn" signature="bookOn(java.lang.String, java.lang.String)">
+       <return type="io.paperdb.Book"/>
+       <sink argpos="0,1" kind="resource_injection" resource="database"/>
+     </method>
+   </class>
+
+   <class name="io.paperdb.Book">
+     <method name="write" signature="write(java.lang.String, java.lang.Object)">
+       <return type="io.paperdb.Book"/>
+     </method>
+     <method name="read" signature="read(java.lang.String)" match="name">
+       <return type="java.lang.Object"/>
+       <source argpos="-1" kind="database_input" resource="database"/>
+       <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+     </method>
+   </class>
+
+  </module>
+
+  <module name="com.google.firebase" standard="Firebase">
+    <description url="https://firebase.google.com/">Google Firebase</description>
+
+    <!-- Firebase: https://firebase.google.com/docs/reference/android/packages -->
+    <class name="com.google.firebase.database.DataSnapshot">
+      <method name="child" signature="child(java.lang.String)" >
+        <return type="com.google.firebase.database.DataSnapshot" />
+      </method>
+      <method name="getChildren" signature="getChildren()" >
+        <return type="java.lang.Iterable" elementType="com.google.firebase.database.DataSnapshot" />
+      </method>
+      <method name="getValue" signature="getValue()" match="name" >
+        <return type="java.lang.Object" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+    </class>
+
+  </module>
+
+  <module name="com.orientechnologies.orient" standard="OrientDB">
+    <description url="https://orientdb.com/javadoc/latest/">OrientDB Java APIs</description>
+
+    <class name="com.orientechnologies.orient.jdbc.OrientJdbcDriver" supertypes="java.sql.Driver"/>
+
+    <class name="com.orientechnologies.orient.jdbc.OrientDataSource" supertypes="javax.sql.DataSource">
+      <constructor name="OrientDataSource" signature="OrientDataSource(com.orientechnologies.orient.core.db.OrientDB)"></constructor>
+      <constructor name="OrientDataSource_2" signature="OrientDataSource(java.lang.String,java.lang.String,java.lang.String,java.util.Properties)">
+        <tags>username:0, password:1</tags>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="hardcoded_credentials" argpos="1,2" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="com.tinkerpop.blueprints.impls.orient.OrientGraph">
+      <constructor name="OrientGraph" signature="OrientGraph(java.lang.String)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </constructor>
+      <constructor name="OrientGraph_2" signature="OrientGraph(java.lang.String, java.lang.String, java.lang.String)">
+        <tags>username:1, password:2</tags>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="hardcoded_credentials" argpos="1,2" resource="database"/>
+      </constructor>
+      <constructor name="OrientGraph_3" signature="OrientGraph(java.lang.String, java.lang.String, java.lang.String, boolean)">
+        <tags>username:1, password:2</tags>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="hardcoded_credentials" argpos="1,2" resource="database"/>
+      </constructor>
+    </class>
+    <class name="com.tinkerpop.blueprints.impls.orient.OrientGraphFactory">
+      <constructor name="OrientGraphFactory" signature="OrientGraphFactory(java.lang.String, java.lang.String, java.lang.String, boolean)" match="name">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="hardcoded_credentials" argpos="1,2" resource="database"/>
+      </constructor>
+    </class>
+    <class name="com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx">
+      <constructor name="ODatabaseDocumentTx" signature="ODatabaseDocumentTx(java.lang.String)" match="name">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </constructor>
+      <method name="open" signature="open(java.lang.String, java.lang.String)">
+        <tags>username:0, password:1</tags>
+        <return type="@self"/>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="database"/>
+      </method>
+    </class>
+    <class name="com.orientechnologies.orient.object.db.OrientDBObject">
+      <constructor name="OrientDBObject" signature="OrientDBObject(java.lang.String, com.orientechnologies.orient.core.db.OrientDBConfig)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </constructor>
+      <constructor name="OrientDBObject_2" signature="OrientDBObject(java.lang.String, java.lang.String, java.lang.String, com.orientechnologies.orient.core.db.OrientDBConfig)">
+        <tags>username:1, password:2</tags>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="hardcoded_credentials" argpos="1,2" resource="database"/>
+      </constructor>
+      <method name="open" signature="open(java.lang.String, java.lang.String, java.lang.String)" match="name">
+        <tags>username:1, password:2</tags>
+        <return type="@self"/>
+        <sink kind="configuration_setting_injection" resource="database" argpos="0"/>
+        <sink kind="hardcoded_credentials" argpos="1,2" resource="database"/>
+      </method>
+    </class>
+  </module>
+
+</library>

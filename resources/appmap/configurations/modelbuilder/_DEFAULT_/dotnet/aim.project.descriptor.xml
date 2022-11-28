@@ -1,0 +1,109 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='dotnet' subtech='project' descriptor='dotnet/aim.project.xml' label='Process Visual Studio .Net project files'>
+  <description>
+    Analyzes references to a set of (Visual Studio) .Net projects,
+    discovering software entities (modules or applications) for each .vbproj / .csproj found,
+    and resolving references to external resources (application assemblies).
+  </description>
+
+  <properties>
+
+    <property id='aim.dotnet.project.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>Enable processing Visual Studio .Net project files.</description>
+    </property>
+
+    <property id='aim.dotnet.project.rule.patterns' type='list' subtype='antPattern'>
+      <name>patterns</name>
+      <example>*.csproj,**/*.csproj,*.vbproj,**/*.vbproj</example>
+      <description>
+        Patterns for project files (Visual Studio).
+      </description>
+    </property>
+
+    <property id='aim.dotnet.project.rule.resolveStandardAssemblies' type='bool'>
+      <name>resolveStandardAssemblies</name>
+      <example>false</example>
+      <description>
+        If true, dot.net standard assemblies will be added to the model.
+      </description>
+    </property>
+
+    <property id='aim.dotnet.project.rule.resolveExternalAssemblies' type='bool'>
+      <name>resolveExternalAssemblies</name>
+      <example>true</example>
+      <description>
+        If false, assemblies referenced but not matching applications analyzed will NOT be added to the model.
+      </description>
+    </property>
+
+    <property id='aim.dotnet.project.rule.resolveResources' type='bool'>
+      <name>resolveResources</name>
+      <example>true</example>
+      <description>
+        If true, resolve resx files.
+      </description>
+    </property>
+
+    <property id='aim.dotnet.project.rule.resolveImages' type='bool'>
+      <name>resolveImages</name>
+      <example>true</example>
+      <description>
+        If true, resolve image files.
+      </description>
+    </property>
+
+    <property id='aim.dotnet.project.rule.schemaUri' type='string'>
+      <name>schemaUri</name>
+      <example>http://schemas.microsoft.com/developer/msbuild/2003</example>
+      <description>Namespace URI (do not change).</description>
+    </property>
+
+    <property id='aim.dotnet.project.rule.appNameXpath' type='string'>
+      <name>appNameXpath</name>
+      <example>/msbuild:Project/msbuild:PropertyGroup[1]/msbuild:AssemblyName</example>
+      <description>
+        XPath expr for extracting application name from project file.
+        Do not modify unless your standards specify a special XML element
+      </description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>
+      library(assembly),
+      configuration(project file),
+      class,
+      window(windows form),
+      element(user control),
+      resource(resx|image)
+    </values>
+    <description>
+      Models the following entities derived for project files: The project file itself as <i>configuration</i>,
+      referenced assemblies as <i>library</i>, referenced classes as <i>class</i>, Windows Forms as <i>window</i>,
+      referenced user controls as <i>element</i>, and .resx or image resources as <i>resource</i>.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      software-configuration->configuration(project file),
+      software-contains->resource,
+      software-uses->library(assembly),
+      window(windows form)-uses->class,
+      element(user control)-uses->class
+    </values>
+    <description>
+      Creates <i>uses</i> relation between application and referenced assemblies (each modeled as library).
+      Other entities that depend on classes (e.g. Windows Forms and User Controls) are linked (<i>uses</i> relation)
+      with target classes.
+    </description>
+  </createdRelations>
+  
+  <importantConfigurations activation="aim.dotnet.project.rule.active">
+    <alternative><value>aim.dotnet.project.rule.resolveStandardAssemblies=true</value></alternative>
+  </importantConfigurations>
+  
+</block>

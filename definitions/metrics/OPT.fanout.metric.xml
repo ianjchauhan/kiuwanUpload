@@ -1,0 +1,835 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.fanout" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.LOWER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.NAMESPACE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.TYPE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.FUNCTION" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP" />
+
+<!-- /// Pending of decide how to implement fanout at 'function' level  /// -->
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET" />
+
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JCL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="20.00" meaning="good" />
+        <threshold from="20.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <internal-name id="OPT.ABAP.COUPLING.FOUTF" />
+        <java-class>com.als.abap.metrics.FanoutMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+<!-- /// Pending of decide how to implement fanout at 'function' level  /// -->
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET">
+        <internal-name id="OPT.ASPNET.COUPLING.COUPLING" />
+        <java-class>com.optimyth.aspnet.metrics.FaninFanoutMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.COUPLING.FOUTF" />
+        <java-class>com.als.cpp.metrics.FanOutCppMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.COUPLING.FOUTF" />
+        <java-class>com.optimyth.csharp.metrics.FanOutCsharpMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+        <internal-name id="OPT.COBOL.COUPLING.CALLS" />
+        <java-class>com.als.cobol.metrics.CallsMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JCL">
+        <internal-name id="OPT.JCL.COUPLING.FOUTF" />
+        <java-class>com.als.jcl.metrics.FanOutJclMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.COUPLING.FOUTF" />
+        <java-class>com.als.java.metrics.FanOutJavaMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+        <internal-name id="OPT.JS.FOUTF" />
+        <java-class>com.optimyth.qaking.javascript.metrics.FanOutJavascriptMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL">
+        <internal-name id="OPT.NATURAL.COUPLING.COUPLING" />
+        <java-class>com.optimyth.qaking.natural.metrics.CouplingMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <internal-name id="OPT.OBJECTIVEC.COUPLING.FOUTF" />
+        <java-class>com.optimyth.qaking.objectivec.metrics.FanOutMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <internal-name id="OPT.PHP.COUPLING.FOUTF" />
+        <java-class>com.optimyth.qaking.php.metrics.FanOutMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <internal-name id="OPT.PLSQL.COUPLING.FOUTF" />
+        <java-class>com.als.plsql.metrics.FanoutPlSqlMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+        <internal-name id="OPT.VB6.COUPLING.FOUTF" />
+        <java-class>com.optimyth.qaking.vb6.metrics.FanOutVB6MetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.COUPLING.FOUTF" />
+        <java-class>com.optimyth.vbnet.metrics.FanOutVBnetMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+       <!-- Code examples for each language parser -->
+    <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <code-example name="metricCodeExampleAbap" result-value="2">
+<![CDATA[
+report z3.
+CALL FUNCTION 'EDI_CHANGE_DATA_SEGMENTS'                            FANOUT 1
+ TABLES
+  idoc_changed_data_range = itab_edidd
+ EXCEPTIONS
+  idoc_not_open           = 1
+  data_record_not_exist   = 2
+ OTHERS                  = 3.
+CALL FUNCTION 'EDI_CHANGE_CONTROL_RECORD'                           FANOUT2
+ EXPORTING
+  idoc_changed_control         = itab_edidc
+ EXCEPTIONS
+  idoc_not_open                = 1
+  direction_change_not_allowed = 2
+ OTHERS                       = 3.
+* Update IDoc status
+REFRESH: t_roles.
+t_object-objkey = itab_data-objky.
+t_object-objtype = 'VBRK'.
+]]>
+        </code-example>
+      </language-parser>
+
+<!-- /// Pending of decide how to implement fanout at 'function' level  /// -->
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET">
+        <code-example name="metricCodeExampleAspnet" result-value="4">
+<![CDATA[
+<%@ Page Language="C#" AutoEventWireup="true" Codebehind="GestionIniciativas.aspx.cs"                            FANOUT 1
+                Inherits="MPR.SERC.Web.Sections.Gestion.GestionIniciativas" MasterPageFile="~/Global.Master"
+                Title="Gestión de Iniciativas" EnableEventValidation="false" %>
+<%@ Page MasterPageFile="./SiteTemplate.master" %>
+
+<%@ Register Src="./pp/otro.aspx" TagName="jojo" TagPrefix="jojo" %>
+<%@ Register Src="../../BusquedaAvanzada/BuscadorAvanzaIU.ascx" TagName="BuscadorAvanzaIU" TagPrefix="uc1" %>    FANOUT 2
+
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cc1" %>
+<%@ Register Src="../../BuscadorInic/BuscadorInic.ascx" TagName="BuscadorInic" TagPrefix="uc1" %>                FANOUT 3
+
+<%@ Register Src="~/BusquedaSuc/BusquedaSuc.ascx" TagName="ucBuscadorSuc" TagPrefix="uc2" %>                     FANOUT 4
+
+<asp:Content ID="ContentGestionIniciativas" ContentPlaceHolderID="c" runat="server">
+<cc1:ToolkitScriptManager ID="ScriptMan1" runat="server" ScriptMode="Release" CombineScripts="true" EnablePartialRendering="true" ScriptsHandlerUrl="~/ScriptsHandler.ashx"/>
+<cc1:TabContainer ID="tcPpal" runat="server" CssClass="ajax__tab_rrcc">
+ <cc1:TabPanel ID="tpPendiente" runat="server">
+  <HeaderTemplate>
+   Localizador
+  </HeaderTemplate>
+ <ContentTemplate>
+  <div class="tabStyleAzul" style="font-weight: normal; overflow: auto; height: 500px">
+   <asp:UpdateProgress ID="UpdateProgress1" runat="server">
+    <ProgressTemplate>
+     <div style="text-align: center; z-index: 1000; left: 40%; top: 40%; position: absolute;
+      font-size: 12px; font-family: Verdana; background-color: #cccccc; color: #ffffff;
+      width: 206px; height: 38px;">
+      Cargando...
+      <img src="../../images/cargando.gif" alt="cargando" height="20" width="200" />
+     </div>
+    </ProgressTemplate>
+   </asp:UpdateProgress>
+  </div>
+ </ContentTemplate>
+ </cc1:TabPanel>
+</cc1:TabContainer>
+</asp:Content>
+]]>
+        </code-example>
+      </language-parser>
+
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+        <code-example name="metricCodeExampleCobol" result-value="2">
+<![CDATA[
+****************************************************************
+*  A2421-RUTINA-KC8921M.        ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦*
+*  Se llama la rut KC8921M para obtener el codigo de objeto.   *
+****************************************************************
+A2421-RUTINA-KC8921M.
+
+ INITIALIZE W-MEM-CODOBJET.
+ INITIALIZE  KC8921P.
+
+ SET UNIR OF KC8921P TO TRUE.
+
+ MOVE CODENTID   OF FA7306I    TO  CODENTID   OF KC8921P
+ MOVE TIPPRODUCT OF FA7306I    TO  TIPPRODUCT OF KC8921P
+ MOVE CODCONTRAT OF FA7306I    TO  CODCONTRAT OF KC8921P
+ MOVE W-MEM-TMSTAMP            TO  TSFECHORA  OF KC8921P
+ MOVE W-CTE-1                  TO  SECOPERMUL OF KC8921P
+
+ CALL W-LIT-KC8921M  USING  KC8921P                               FANOUT 1
+
+ IF  CODIRET  OF KC8921P  = W-LIT-OK
+  MOVE REFERENCOR OF KC8921P   TO W-MEM-CODOBJET
+ ELSE
+  $AHERROR(ERROR,W-LIT-KC8921M-2,'RUT_FORMAT_CONCEPT')
+ END-IF.
+
+****************************************************************
+*  A2422-REC-CSB-DIGCON.        ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦*
+*  Llamada a la rutina BS8087M para formatear el resto         *
+*  del concepto.                                               *
+****************************************************************
+A2422-REC-CSB-DIGCON.
+
+ INITIALIZE BS8087P.
+ MOVE W-CTE-1                 TO OPERACION OF BS8087P.
+ MOVE CODENTID    OF FA7306I  TO CODENTID  OF BS8087P.
+ MOVE TIPPRODUCT  OF FA7306I  TO PRO-BAS   OF BS8087P.
+ MOVE CODCONTRAT  OF FA7306I  TO NUM-CTN   OF BS8087P.
+
+ CALL W-LIT-BS8087M  USING  BS8087P                               FANOUT 2
+
+ IF  CODIRET  OF BS8087P  NOT = W-LIT-OK
+  $AHERROR(ERROR,W-LIT-ERR-BS8087P,'RESTO_CONCEP')
+ END-IF.
+]]>
+        </code-example>
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <code-example name="metricCodeExampleCpp" result-value="6">
+<![CDATA[
+#include "UmlBaseRelation.h"
+#include "UmlRelation.h"
+#include "UmlClass.h"
+#include "UmlOperation.h"
+#include "UmlAttribute.h"
+#include "UmlCom.h"
+UmlRelation * UmlBaseRelation::create(aRelationKind kind, UmlClass * start, UmlClass * end)
+{
+ UmlCom::send_cmd(start->_identifier, createCmd, aRelation,     //FANOUT 1
+  kind, end->_identifier);                                      //FANOUT 2
+ UmlRelation * result = (UmlRelation *) UmlBaseItem::read_();
+ if (result != 0) {
+  start->reread_children_if_needed_();                          //FANOUT 3
+
+  switch (kind) {
+  case anAssociation:
+  case anAggregation:
+  case anAggregationByValue:
+   end->reread_children_if_needed_();// bi-directional          //FANOUT 4
+   break;
+  case aGeneralisation:
+  case aRealization:
+   if (!end->formals().isEmpty())                               //FANOUT 5
+   // to update actuals & base_type
+   start->reread_if_needed_();                                  //FANOUT 6
+  default:
+   break;
+  }
+ }
+ return result;
+}
+]]>
+        </code-example>
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="metricCodeExampleCsharp" result-value="7">
+<![CDATA[
+using System;
+using System.Collections.Generic;
+using System.Text;
+using Frk.Print.Common;
+using Frk.Print.Entities;
+
+namespace Impresion.Raiz.Serializacion
+{
+public class QuejasSerializer
+
+{
+
+ public static string GeneraQuejas(REP_QUEJAS_OBJ from)
+ {
+  RealeStringBuilder sb = new RealeStringBuilder();
+  sb.AppendLine(                                                     //FANOUT 1
+   DocPathSerializer.SerializeTexto(from.E_QUEJAS1));                //FANOUT 2
+  sb.AppendLine(                                                     //FANOUT 3
+   DocPathSerializer.SerializeTexto(from.E_QUEJAS2));                //FANOUT 4
+  sb.AppendLine(                                                     //FANOUT 5
+   DocPathSerializer.SerializeTexto(from.E_QUEJAS3));                //FANOUT 6
+  return sb.ToString();                                              //FANOUT 7
+  }
+ }
+}
+]]>
+        </code-example>
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JCL">
+        <code-example name="metricCodeExampleJcl" result-value="1">
+<![CDATA[
+//XHA157 JOB (CPD,PACHECO),'CPD PACHECO',CLASS=A,
+//             MSGCLASS=Z,MSGLEVEL=(1,1),USER=TEPARP
+//*
+//*
+//JOBLIB   DD  DSN=XHA.HABITANT.LOA,DISP=SHR
+//         JCLLIB ORDER=XHA.HABITANT.PRC
+//*************************************
+//** STEP 1          PGM=SORT      **** SELECCIÓ REGISTRES DEL BUIDAT
+//************************************* ORDRE:
+//*                                       DISTR, ADREÇA
+//*                                     INCLUDE:
+//*                                      -PERSONES demanades
+//PAS01    EXEC PGM=SORT                                                FAN OUT 1
+//SYSOUT   DD SYSOUT=*
+//SORTWK01 DD UNIT=DISC,SPACE=(CYL,(42,10))
+//SORTWK02 DD UNIT=DISC,SPACE=(CYL,(42,10))
+//SORTWK03 DD UNIT=DISC,SPACE=(CYL,(42,10))
+]]>
+        </code-example>
+      </language-parser>      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="metricCodeExampleJava" result-value="2">
+<![CDATA[
+package ci.cliente;
+
+import ci.componentes.*;
+
+ public class CITabObjetoInmueble extends ae.presentacion.AqTab implements ci.componentes.CIPanelObjeto {
+
+  public final int NUM_PANELES_OBJ_INMUEBLE = 2;
+  public boolean completarMensajeGrabacion(ci.componentes.CIEstructuraDatosGrid datos) {
+    CIPanelObjeto panelActual = null;
+    boolean completadoCorrectamente = true;
+    for (int i = 0; i < NUM_PANELES_OBJ_INMUEBLE; i++) {
+      panelActual = (CIPanelObjeto) devolverPanel(i);                               //FANOUT 1
+      completadoCorrectamente = panelActual.completarMensajeGrabacion(datos);       //FANOUT 2
+      if (!completadoCorrectamente) break;
+    }
+    return completadoCorrectamente;
+  }
+}
+]]>
+        </code-example>
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+        <code-example name="metricCodeExampleJavascript" result-value="5">
+<![CDATA[
+function ahvnumber() {
+
+ var ahvstring = "";
+ var numZeropad1 = document.getElementById(TEXT_AHV_NO).value;      //FANOUT 1
+ var numZeropad = numZeropad1 + '';
+ if(numZeropad.length > 0 && numZeropad1 > 0)
+ {
+  while(numZeropad.length < count) {
+   numZeropad = "0" + numZeropad;
+  }
+
+  ahvstring =  numZeropad.value;
+
+  var ahvfinal = ahvstring.substring(0,3) + "."           //FANOUT 2
+    + ahvstring.substring(3,7) + "."                      //FANOUT 3
+    + ahvstring.substring(7,11) + "."                     //FANOUT 4
+    + ahvstring.substring(11)                             //FANOUT 5
+
+
+ }
+}
+]]>
+        </code-example>
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL">
+        <code-example name="metricCodeExampleNatural" result-value="1">
+<![CDATA[
+ 1830 IF RVI01U33.COD-AGENTE NE 0
+ 1840       MOVE 1 TO WCIA-10
+ 1850       MOVE RVI01U33.OFICINA-AG TO WOFI-10
+ 1860       MOVE RVI01U33.CODIGO-AG TO WAGTE-10
+ 1870       MOVE WPRODUCTO TO WPROD-10
+ 1880       MOVE RVI01U33.TARIFA TO WMODAL-COM-10
+ 1890       MOVE RVI01U33.DURACION-SEGURO TO WDUR-10
+ 1900       MOVE FORMA-PAGO TO WFP-10
+ 1910       MOVE RVI01U33.DTO-COBRO TO WDTO-10
+ 1920       MOVE 19970528 TO WFECHA-10
+ 1930 *
+ 1940       CALLNAT 'URTM10N' WACCES-COM10                             FANOUT 1
+ 1950       IF WCOD-RET-10 = 0
+ 1960          MOVE WGES-10 TO WCPRO
+ 1970          MOVE WCON-10 TO WCCAR
+ 1980          MOVE WCOBRO-10 TO WCCOB
+ 1990       END-IF
+ 2000  END-IF
+]]>
+        </code-example>
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <code-example name="metricCodeExampleObjectiveC" result-value="1">
+<![CDATA[
+@implementation QAMyProgram
+
+@synthesize initialized = _initialized;
+
+- (id)initWithValue:(NSString *)initialValue
+{
+    if ((self = [super init])) 
+    {
+        _initialized = NO;
+    }
+    
+    return self;
+}
+
+@end
+]]>
+        </code-example>
+      </language-parser>      
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <code-example name="metricCodeExamplePhp" result-value="1">
+<![CDATA[
+<?php
+	abstract class PHPUnit_Runner_BaseTestRunner
+	{
+	    public function getLoader()
+	    {
+	    	$suite = new PHPUnit_Framework_TestSuite($suiteClassName);
+	        $suite->addTestFiles($files);									//FANOUT 1
+	        return $suite;
+	    }
+	}
+?>
+]]>
+        </code-example>
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <code-example name="metricCodeExamplePlsql" result-value="2">
+<![CDATA[
+SET ECHO OFF
+SET HEAD OFF
+SET PAGESIZE 0
+SET LINESIZE 375
+SET FEEDBACK OFF
+SET COLSEP '|'
+
+SPOOL &1/&5\_01a_sel_alarma.rpt
+
+var fecha_corte_alarma VARCHAR2(20);
+
+exec :fecha_corte_alarma := to_date('01/01/'    --FANOUT 1
+  ||to_char(&2 - &6)  , 'dd/mm/yyyy');          --FANOUT 2
+SELECT A.NOMBRE
+ FROM orprv.prv_alarma a
+ WHERE   a.CODIGO IN (SELECT * FROM TABLE PRESTAMOS );
+
+SPOOL OFF
+SET HEAD ON
+SET FEEDBACK ON
+SET ECHO ON
+DISCONNECT;
+EXIT;
+]]>
+        </code-example>
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+        <code-example name="metricCodeExampleVb6" result-value="2">
+<![CDATA[
+VERSION 1.0 CLASS
+BEGIN
+ MultiUse = -1  'True
+ Persistable = 0  'NotPersistable
+ DataBindingBehavior = 0  'vbNone
+ DataSourceBehavior  = 0  'vbNone
+ MTSTransactionMode  = 0  'NotAnMTSObject
+END
+Option Explicit 'Control de locx vbalGrid
+Public obG As vbalGrid
+Public Function RowMatch(ByVal p_vaSearch As Variant, p_svClauColumna As String) As Long
+ Dim i As Long
+ Dim j As Long
+
+ With Me.obG
+  j = .ColumnIndex(p_svClauColumna)          'FANOUT 1
+  For i = 1 To .Rows
+   If .CellText(i, j) = p_vaSearch Then      'FANOUT 2
+    RowMatch = i
+    Exit Function
+   End If
+  Next i
+ End With
+End Function
+]]>
+        </code-example>
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="metricCodeExampleVbnet" result-value="2"><![CDATA[
+Imports System
+
+Namespace DesignLibrary
+
+   Public Class Browser
+
+      Dim uriHistory As New History()
+
+      Sub ErrorProne()
+         uriHistory.AddToHistory("http://www.adventure-works.com")    'FANOUT 1
+      End Sub
+
+      Sub SaferWay()
+         Try
+            Dim newUri As New Uri("http://www.adventure-works.com")
+            uriHistory.AddToHistory(newUri)                           'FANOUT 2
+         Catch uriException As UriFormatException
+         End Try
+      End Sub
+
+   End Class
+
+End Namespace
+        ]]></code-example>
+      </language-parser>
+    </code-examples>
+
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Fan-Out]]></name>
+      
+      <description>
+<![CDATA[
+Un fan-out elevado denota código fuertemente acoplado. Dicho código depende de muchos otros y probablemente sea más complejo de ejecutar y probar.
+
+Un fan-out igual a 0 o simplemente bajo significa que el código es independiente. Esta clase de código se puede reutilizar fácilmente en otro proyecto o para otros propósitos (sin embargo no se fíe si tuviera demasiado código secuencial, esto puede significa "programación espaqueti" y duplicación de código, problemas ambos mucho más graves que el acoplamiento).
+
+Un fichero cuyo fan-out sea 0 será un fichero "hoja" en el proyecto. Podrá incluirlo tal cual en otro proyecto y lo más probable es que siga funcionando igual que antes.
+]]>
+       </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Suma todas las llamadas que corresponden con las instrucciones CALL acompañado de FUNCTION, BADI, TRANSACTION, METHOD, literal (sería RPG), nombre de función para llamar a métodos y las instrucciones PERFORM. Llamadas a funciones implementadas en el mismo fichero se considera fan out.
+
+NOTA: Tenga en cuenta que en Abap se puede tener llamadas a funciones no contenidas en funciones/métodos/report/form, de modo que la suma de los valores del nivel de función no tiene porque coincidir con el valor obtenido para el fichero.
+]]>
+        </implementation-description>
+
+<!-- /// Pending of decide how to implement fanout at 'function' level  /// -->
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET">
+<![CDATA[
+Cuenta el número de "includes" de ficheros con extensiones .aspx y .ascx que hay en ficheros ASP.NET.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Número de llamadas a métodos contenidas en el fichero. Pueden ser llamadas a métodos implementados en el mismo fichero. La llamada a campos de otras clases no se considera fan out, solo métodos. Se puede utilizar la notación punto o bien directamente (nombre_funcion()) o por referencia (->) para ser considerado fan out.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Número de llamadas a métodos contenidas en el fichero. Pueden ser llamadas a métodos implementados en el mismo fichero. La llamada a campos de otras clases no se considera fan out, solo métodos. Se puede utilizar la notación punto o bien directamente (nombre_funcion()) para ser considerado fan out.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+<![CDATA[
+Número de llamadas (externas) del programa. Las llamadas se realizan utilizando la instrucción CALL.
+]]>
+        </implementation-description>
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JCL">
+<![CDATA[
+Número de llamadas utilizando la sentencia exec realizadas en un fichero
+]]>
+        </implementation-description>
+     
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Número de llamadas a métodos contenidas en el fichero. Pueden ser llamadas a métodos implementados en el mismo fichero. La llamada a campos de otras clases no se considera fan out, solo métodos. Se puede utilizar la notación punto o bien directamente (nombre_funcion()) para ser considerado fan out.
+
+NOTA: Cuando se ejecuta esta métrica sobre código JSP, se devuelve un valor para el método artificial llamado 'jspService'. Este método contiene todo el código Java definido en los scriptlets <% ...%> y la evaluación de todas las expresion JSP <%= ... %> En el siguiente código, la métrica 'fanout' da un valor de 4:
+
+      <HTML>
+        <BODY>
+           ..........................
+            <%
+                if (status != null) {
+                  try{
+                   doSomething();                        --> doSomething(); (FANOUT = 1)
+                  } catch(e Exception){
+                   doSomethingElse();                    --> doSomethingElse(); (FANOUT = 2)
+                  }
+            %>
+            <p><font color="blue"><%=myFuntion("Hello")%></font></p>  --> myFunction("Hello"); (FANOUT = 3)
+            <%                                                        --> evalutate(myFunction(...)); (FANOUT = 4)
+                } %>                                                       |
+        </BODY>                                                            ---> EVALUACIÓN EXPRESION JSP <%= ... %>
+      </HTML>
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+<![CDATA[
+Número de llamadas a métodos contenidas en el fichero. Pueden ser llamadas a métodos implementados en el mismo fichero. La llamada a campos de otras clases no se considera fan out, solo métodos. Solo la notación punto puede usarse para llamar funciones y ser consideradas fan out.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL">
+<![CDATA[
+Mide el número de invocaciones del programa natural a funciones. Utiliza la instrucción CALLNAT y si lo contabiliza si está implementada en el mismo fichero.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+<![CDATA[
+Suma todos los mensajes y llamadas a funciones. Los métodos/funciones pueden estar implementados en el mismo fichero.
+]]>
+        </implementation-description>
+        
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+Número de llamadas a métodos contenidas en el fichero. Los métodos/funciones pueden estar implementados en el mismo fichero.
+]]>
+      </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Suma todas las llamadas que corresponden con "FunctionCall" y "ProcedureCall". Las llamadas sería el nombre del procedimiento y argumentos entre paréntesis, si es una funcion tendrá que tener una asignación para el valor de retorno o ser utilizada directamente. Las funciones / procedimientos pueden estar implementados en el mismo fichero.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+<![CDATA[
+Número de llamadas a métodos contenidas en el fichero. Una llamada se realiza mediante la instrucción call, operadores binarios o directamente con el nombre de la función/procedimiento y los argumentos. Las funciones / métodos pueden estar implementados en el mismo fichero.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Número de llamadas a métodos contenidas en el fichero. Las llamadas se realizan utilizando la notación punto o directamente con el nombre de la función/método y parámetros. Las funciones / métodos pueden estar implementados en el mismo fichero.
+]]>
+      </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Fan-Out]]></name>
+      
+      <description>
+<![CDATA[
+A high fan-out denotes strongly coupled code. The code depends on other code and is probably more complex to execute and test.
+
+A low or zero fan-out means independent, self-sufficient code. This kind of code is easier to reuse in another project or for another purpose (but suspect of too-much sequential code, that may be a sign of "spaguetti" design and code duplication, probably much worse problems than function coupling).
+
+A file whose fan-out=0 is a leaf file in the project. You can include it in another project as such and it will most probably continue to work the same way.
+]]>
+       </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+It adds all the calls that correspond with the instructions CALL accompanied of FUNCTION, BADI, TRANSACTION, METHOD, literal (it would be RPG), name of function to call to methods and the instructions PERFORM. Called functions implemented in the same file also are considered as fan out.
+
+NOTE: In Abap you can have function calls not contained in any function/method/report/form, so that the sum of the values ​​of the function level do not have to match the value obtained for the file.
+]]>
+        </implementation-description>
+
+<!-- /// Pending of decide how to implement fanout at 'function' level  /// -->
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET">
+<![CDATA[
+Counts the number of "includes" of files with .aspx and .ascx extensions in the ASP.NET file.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Number of calls to methods contained in the file. They can be called to methods implemented in the same file. The call to data of other classes it is not considered to be a fan out, alone methods. The notation can be in use dot or directly (function_name ()) or by reference (->) for being considered to be a fan out.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Number of calls to methods contained in the file. They can be called to methods implemented in the same file. The call to data of other classes it is not considered to be a fan out, alone methods. The notation can be in use dot or directly (function_name ()) for being considered to be a fan out.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+<![CDATA[
+Number of (external) calls per program. The calls are realized using the instruction CALL.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Number of calls to methods contained in the file. They can be called to methods implemented in the same file. The call to data of other classes it is not considered to be a fan out, alone methods. The notation can be in use dot or directly (function_name ()) for being considered to be a fan out.
+
+NOTE: When execute this metric over JSP code, it returns value for an artificial method called 'jspService'. This method contains all the Java code embedded in the scriptlets <% ... %> and the evaluation of all the JPS expressions <%= ... %> In the following code, the 'fanout' metric returns a value of 4
+
+      <HTML>
+        <BODY>
+           ..........................
+            <%
+                if (status != null) {
+                  try{
+                   doSomething();                        --> doSomething(); (FANOUT = 1)
+                  } catch(e Exception){
+                   doSomethingElse();                    --> doSomethingElse(); (FANOUT = 2)
+                  }
+            %>
+            <p><font color="blue"><%=myFuntion("Hello")%></font></p>  --> myFunction("Hello"); (FANOUT = 3)
+            <%                                                        --> evalutate(myFunction(...)); (FANOUT = 4)
+                } %>                                                       |
+        </BODY>                                                            ---> EVALUATION OF JSP EXPRESION <%= ... %>
+      </HTML>
+
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+<![CDATA[
+Number of calls to methods contained in the file. They can be called to methods implemented in the same file. The call to data of other classes it is not considered to be a fan out, alone methods. Only dot notation can be use to call functions and it be considered fan out.
+]]>
+        </implementation-description>
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JCL">
+<![CDATA[
+Number of calls made ​​using the exec statement in a file
+]]>
+        </implementation-description>   
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL">
+<![CDATA[
+Number of invocations of the natural program to functions. There uses the instruction CALLNAT and it is counted it if it is implemented in the same file.
+]]>
+        </implementation-description>
+
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+<![CDATA[
+Counts all the messages and calls to functions. Methods/functions can be implemented in the same file.
+]]>
+        </implementation-description>
+        
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+Number of calls to methods contained in the file. Methods/functions can be implemented in the same file.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Counts all the calls that correspond with "FunctionCall", "procedureCall". The calls it would be the name of the procedure and arguments in brackets, if it is a function it will have to have an assignment for the return value or be used directly. Functions / procedures couls be implemented in the same file.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+<![CDATA[
+Number of calls to methods contained in the file. A call is realized by means of the instruction call, binary operators or directly with the name of the function / procedure and the arguments. Functions / methods couls be implemented in the same file.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Number of calls to methods contained in the file. The calls are realized using the dot notation or directly with the name of the function / method and parameters. Functions / methods couls be implemented in the same file.
+]]>
+      </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

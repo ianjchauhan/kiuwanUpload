@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="SchemaSpy schema export" default="run" basedir=".">
+  <description>
+Launch SchemaSpy (http://schemaspy.sourceforge.net/) to extract schema descriptor to use in checKing modules.
+
+Usage: ant -f schemaSpy.xml -Dconfig=MYFILE.properties -Doutput=OUTPUT_DIR
+  </description>
+
+  <property environment="env"/>
+  <property name="AGENT_HOME" value=".."/>
+  <property name="config" value="${AGENT_HOME}/conf/schemaExtractConfig.properties"/>
+  <property file="${config}"/>
+
+  <property name="schema.file" value="${output}/${dbName}.${schema}.xml"/>
+
+  <property name="memory.start" value="512m"/>
+  <property name="memory.max" value="512m"/>
+  <property name="stack.size" value="256k"/>
+  <property name="encoding" value="UTF-8"/>
+
+  <property name="count.rows" value="true"/>
+  <property name="export.implied.foreign.keys" value="true"/>
+  <property name="export.views" value="true"/>
+
+  <path id="schemaspy.path" description="Paths for GLOBAL configuration">
+    <fileset dir="${AGENT_HOME}/lib.custom" includes="*.jar"/>
+    <pathelement path="${AGENT_HOME}"/>
+    <pathelement path="${AGENT_HOME}/conf"/>
+  	<pathelement path="${AGENT_HOME}/lib.engine/schemaSpy.jar"/>
+  </path>
+
+  <condition property="opt.norows" value="-norows" else="">
+    <isfalse value="${count.rows}" />
+  </condition>
+  <condition property="opt.noimplied" value="-noimplied" else="">
+    <isfalse value="${export.implied.foreign.keys}" />
+  </condition>
+  <condition property="opt.noviews" value="-noviews" else="">
+    <isfalse value="${export.views}" />
+  </condition>
+
+  <target name="run" description="Launch SchemaSpy">
+    <mkdir dir="${output}"/>
+    <echo>opt.norows: ${opt.norows}</echo>
+    <echo>opt.noimplied: ${opt.noimplied}</echo>
+    <echo>opt.noviews: ${opt.noviews}</echo>
+  	
+    <java classname="net.sourceforge.schemaspy.Main" fork="true" classpathref="schemaspy.path">
+      <jvmarg value="-Xms${memory.start}"/>
+      <jvmarg value="-Xmx${memory.max}"/>
+      <jvmarg value="-Xss${stack.size}"/>
+      <arg value="-t"/><arg value="${dbType}"/>
+      <arg value="-db"/><arg value="${dbName}"/>
+      <arg value="-s"/><arg value="${schema}"/>
+      <arg value="-dp"/><arg value="${jdbc.driver.classpath}"/>
+      <arg value="-host"/><arg value="${host}"/>
+      <arg value="-port"/><arg value="${port}"/>
+      <arg value="-u"/><arg value="${user}"/>
+      <arg value="-p"/><arg value="${password}"/>
+      <arg value="-i"/><arg value="${include}"/>
+      <arg value="-I"/><arg value="${exclude}"/>
+      <arg value="-o"/><arg value="${output}"/>
+      <arg value="-nohtml"/>
+      <arg value="-charset"/><arg value="${encoding}"/>
+      <arg value="${opt.norows}"/>
+      <arg value="${opt.noimplied}"/>
+      <arg value="${opt.noviews}"/>
+    </java>
+
+    <antcall target="clean.bad.chars"/>
+    <antcall target="report.no.schema.generated"/>
+  </target>
+
+  <target name="check.schema.generated">
+    <available file="${schema.file}" property="schema.generated"/>
+  </target>
+
+  <!--
+  Some db systems (e.g. Oracle) allows ASCII 0 chars in SQL elements.
+  SchemaSpy encodes this as &#0; but that character makes XML unparseable
+  -->
+  <target name="clean.bad.chars" depends="check.schema.generated" if="schema.generated">
+    <replace file="${schema.file}" token="&amp;#0;" value=" " />
+    <echo>Schema info exported to ${schema.file} descriptor</echo>
+  </target>
+
+  <target name="report.no.schema.generated" depends="check.schema.generated" unless="schema.generated">
+    <echo>No database items found. No standard descriptor generated. This could be a configuration error.</echo>
+    <echo>Extended extraction (if export.extended=true) will be tried, as database/schema may not contain tables/views.</echo>
+    <echo>After that, script will fail to signal that no database/schema table/views were found.</echo>
+  </target>
+
+  <target name="help">
+    <echo>
+Launch SchemaSpy (http://schemaspy.sourceforge.net/) to extract schema descriptor to use in checKing modules.
+
+Usage: ant -f schemaSpy -Dconfig=MYFILE.properties -Doutput=OUTPUT_DIR
+
+See sampleConfig.properties for an example of a configuration file that could be customized for your needs.
+    </echo>
+  </target>
+
+</project>

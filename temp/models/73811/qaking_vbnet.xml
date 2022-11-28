@@ -1,0 +1,3618 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_vbnet" updated="">
+  <description>Nykaa_Web</description>
+  <rule name="OPT.VBNET.CodeInjection" message="CodeInjection: Improper Control of Generation of Code ('Code Injection')" class="com.optimyth.vbnet.rules.security.tainting.CodeInjection" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.5,ASVS-v4.0.2:5.2.8,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[Code injection is a general term for attack types which consist of injecting code that is dynamically evaluated and executed by the vulnerable application.
+
+In .NET applications, as most of popular languages and frameworks, several ways to evaluate code dynamically can be used, from Razor template engine to C# or VB .NET code compilation and execution.
+
+Code injection attacks can lead to loss of data integrity and can often result in the execution of arbitrary code.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent code injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.CodeDom
+Imports System.CodeDom.Compiler
+
+Public Class Sample Inherits Page
+  Public Sub executeCode()
+    Dim domProvider As CodeDomProvider = CodeDomProvider.CreateProvider("VisualBasic")
+    Dim cp As CompilerParameters = New CompilerParameters()
+    ' VIOLATION
+    Dim cr As CompilerResults = domProvider.CompileAssemblyFromSource(cp, Request.QueryString("EXPRESSION"))
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[  ' Rest of code as before
+  Public Sub executeCode()
+    Dim domProvider As CodeDomProvider = CodeDomProvider.CreateProvider("VisualBasic")
+    Dim cp As CompilerParameters = New CompilerParameters()
+    ' FIXED, user-provided expression is validated
+    Dim expression As String = validate( Request.QueryString("EXPRESSION") )
+    Dim cr As CompilerResults = domProvider.CompileAssemblyFromSource(cp, expression)
+  End Sub]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/94.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:94,CWETOP25:2021:28,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.CodeInjectionWithDeserialization" message="CodeInjectionWithDeserialization: Dynamic code injection during object deserialization" class="com.optimyth.vbnet.rules.security.tainting.CodeInjectionWithDeserialization" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.5.2,ASVS-v4.0.2:5.5.1,ASVS-v4.0.2:5.5.3,CWEScope:Availability,CWEScope:Integrity,code-injection,serialization]]></tags>
+    <description><![CDATA[When a serialization library deserializes untrusted content from a certain exchange format (binary, XML, JSON...) to recover
+the original object graph, attackers may provide attack payloads that may result in unexpected code execution
+or a denial-of-service condition.
+
+(De)serialization of object graphs is a complex issue, due to the object-oriented nature of such graphs:
+Generics, interface fields, polymorphism... Default constructors need to be invoked, fields and properties
+should be set reflectively, and special constructors, type converters, or serialization callbacks need to be invoked.
+
+By controlling the deserialized field values, attackers may abuse the logic of these methods to run arbitrary code.
+The deserialization library may be abused, so attackers may control the type of reconstructed objects, the library
+or the GC might call methods on reconstructed objects. Many libreries perform a simple type control, often
+involving cast *after* deserialization.
+
+In general, deserialization vulnerabilities generally require three ingredients:
+- Potential attackers can modify the stream to be deserialized.
+- Type information is parsed from the stream.
+- The set of types that can be generated is not tightly constrained.
+
+Note: In addition, the stream often needs to be parsed (from XML or other stream format), and the parser itself may be vulnerable
+to other attacks, like exfiltrations / scans via XML External Entity, or denial-of-service attacks via XML Entity Expansion.
+The rule OPT.CSHARP.SEC.XMLEntityInjection looks for vulnerable XML parser configurations.
+
+Which libraries should I use, and how?
+In short, some libraries (FastJSON, Sweet.Jayson, FSPickler) should NEVER be used with untrusted sources.
+Others might be configured incorrectly to open deserialization flaws, typically when a too-much permissive type resolver is used:
+Json.Net, JavaScriptSerializer, DataContractJsonSerializer...
+
+If the attacker cannot control the content to be deserialized, typically there is no problem per-se with these libraries.
+And even when the attacker can control such content, the types to be deserialized may be fixed by the application, or limited to
+a white-list of allowed types, and that makes deserialization safe, at least for most libraries. For example, XmlSerializer
+or DateContractSerializer are safe when the type is fixed to a safe type (unless the applicacion shoots itself in the foot).
+JSON.Net is also typically safe when TypeNameHandling is set to None (but vulnerable otherwise, be careful).
+
+Please note that for most libraries using binary formats, including .Net's BinaryFormatter, are fairly difficult
+to configure for safe type control against attack payloads in user-controlled content.
+
+Note: 2016 was known as the "Year of Java Deserialization apocalypse". That situation motivated the security industry
+to avoid Java native serialization, and move to a (secure) JSON/XML-based serialization, properly configured.
+A similar generic recommendation should be followed under .Net.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid code injection thru serialized objects]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Web
+Imports Newtonsoft.Json
+
+Public Class MyDeserializer
+  Public Function deserializeProduct(ByVal context As HttpContext) As Product
+    Dim json As String = context.Request.Item("json")
+    ' VIOLATION, too permisive type control
+    Return JsonConvert.DeserializeObject(Of Product)(json, New JsonSerializerSettings() With {
+      .TypeNameHandling = TypeNameHandling.All
+    })
+  End Function
+End Class]]></example>
+    <repair><![CDATA[Imports System
+Imports System.Web
+Imports Newtonsoft.Json
+
+Public Class MyDeserializer
+  Public Function deserializeProduct(ByVal context As HttpContext) As Product
+    Dim json As String = context.Request.Item("json")
+    ' FIXED, the default TypeNameHandling.None is much more strict
+    Return JsonConvert.DeserializeObject(Of Product)(json)
+  End Function
+End Class]]></repair>
+    <reference><![CDATA[https://www.alphabot.com/security/blog/2017/net/How-to-configure-Json.NET-to-create-a-vulnerable-web-API.html,https://www.blackhat.com/docs/us-17/thursday/us-17-Munoz-Friday-The-13th-Json-Attacks.pdf,http://cwe.mitre.org/data/definitions/502.html,https://media.blackhat.com/bh-us-12/Briefings/Forshaw/BH_US_12_Forshaw_Are_You_My_Type_WP.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:502,CWETOP25:2021:13,OWASP:2021:A8,PCI-DSS:6.5.6,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.CommandInjection" message="CommandInjection: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')" class="com.optimyth.vbnet.rules.security.tainting.CommandInjectionRule" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.5,ASVS-v4.0.2:5.3.8,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[The software constructs all or part of an operating system (OS) command using externally-controlled input, but it does not neutralize properly that input that could modify the intended command when it is sent to a function that executes the command (e.g. exec(), system(), or the backtick operator).
+
+The rule detects a path in code between an user-input statement (source) and a command execution call (sink), with command depending on non neutralized input. This allows for an attacker to change the intended command to execute or to add a malicious extra command, executed with the application rights.
+
+A neutralization function either validates inputs and report an (neutral) error without allowing command execution, or replaces sensitive shell characters in the input to avoid that the resulting command has different semantics.
+If possible, use "accept known good" input validation strategy (whitelist).
+
+First, ask yourself if you really need to execute OS commands. Most operating system operations can be performed using .NET framework.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid execution of malicious commands.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Diagnostics
+Imports System.Web.UI
+
+Public Class CommandInjection
+  Inherits Page
+
+  Public Sub processCommand()
+    Process.Start( Request.Item("COMMAND") ) ' VIOLATION
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System.Diagnostics
+Imports System.Web.UI
+
+Public Class CommandInjection
+  Inherits Page
+
+  Public Sub processCommand()
+    ' FIXED, command is validated against a whitelist
+    Dim commandToExecute As String = validate( Request.Item("COMMAND") )
+    Process.Start( commandToExecute )
+  End Sub
+End Class]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/78.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:77,CWE:78,CWETOP25:2021:5,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:31]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.CrossSiteRequestForgery" message="CrossSiteRequestForgery: Cross-Site Request Forgery (CSRF)" class="com.optimyth.vbnet.rules.security.CrossSiteRequestForgeryRule" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.3,ASVS-v4.0.2:4.2.2,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[When a user is authenticated in a web site, an attacker with knowledge about the web site can perform malicious requests
+against the vulnerable site and execute actions while user remains authenticated.
+
+Usually the attacker forces an authenticated user to launch the malicious request using social engineering,
+or by exploiting an XSS vulnerability.
+
+In web sites developed with ASP.Net framework, anti-forgery tokens, also known as request verification tokens,
+should be utilized to prevent CSRF attacks.
+
+Anti-forgery tokens are random values generated in the server when a form is requested, and they are included in every request,
+so the server can verify not only that user is authenticated, but that the request was originated from the application.
+
+This rule checks:
+(1) if a code fragment (an MVC / Web API controller or state-changing method, or a WebForms page) should be protected against CSRF attacks.
+(2) if such code is protected with one of the recommended anti-CSRF protection schemes:
+(2.1) For a WebForms page, checks whether ViewStateUserKey is set (without disabling EnableViewStateMac). Parent pages and master pages
+      are taken into account.
+(2.2) For a MVC controller action method, checks for [ValidateAntiForgeryToken] attribute (or a call to AntiForgery.Validate()).
+(2.3) Alternatives, like common Captcha controls like Google's Recaptcha, are checked for.
+(3) If no protection is found for the candidate code, a violation is reported.]]></description>
+    <priority>2</priority>
+    <effort>4</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid attackers to forge requests that appear to be originated from an authenticated victim ("CSRF attacks").]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Web
+Imports System.Web.Mvc
+
+' VIOLATION, no CSRF protection
+Public Partial Class Checkout
+  Inherits System.Web.UI.Page
+
+  Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs)
+    SensitiveOperations()
+  End Sub
+End Class
+
+' Example: sensitive MVC action
+Public Class ProductController
+  Inherits Controller
+
+  ' VIOLATION, no CSRF protection
+  <HttpPost> _
+  Public Function PostSensitive(ByVal id As Integer?) As ActionResult
+    ' ...
+  End Function
+End Class]]></example>
+    <repair><![CDATA[Imports System
+Imports System.Web
+Imports System.Web.Mvc
+
+' Example: sensitive WebForms page
+' Anti-CSRF logic typically done in master page (template in recent ASP.Net versions)
+Public Partial Class SiteMaster
+  Inherits MasterPage
+
+  Private Const AntiCsrfTokenKey As String = "__AntiCsrfToken"
+  Private Const AntiCsrfUserNameKey As String = "__AntiCsrfUserName"
+  Private _antiCsrfTokenValue As String
+
+  Protected Sub Page_Init(ByVal sender As Object, ByVal e As EventArgs)
+    Dim csrfCookie = Request.Cookies(AntiCsrfTokenKey)
+    Dim csrfCookieValue As Guid
+
+    If csrfCookie IsNot Nothing AndAlso Guid.TryParse(csrfCookie.Value, csrfCookieValue) Then
+      ' Use the anti-CSRF token from the cookie
+      _antiCsrfTokenValue = csrfCookie.Value
+      Page.ViewStateUserKey = _antiCsrfTokenValue
+    Else
+      ' Generate a new anti-CSRF token and save to the cookie
+      _antiCsrfTokenValue = Guid.NewGuid().ToString("N")
+      Page.ViewStateUserKey = _antiCsrfTokenValue
+      Dim responseCookie = New HttpCookie(AntiCsrfTokenKey) With {
+        .HttpOnly = True,
+        .Value = _antiCsrfTokenValue
+      }
+
+      If FormsAuthentication.RequireSSL AndAlso Request.IsSecureConnection Then
+        responseCookie.Secure = True
+      End If
+
+      Response.Cookies.[Set](responseCookie)
+    End If
+
+    Page.PreLoad += AddressOf master_Page_PreLoad
+  End Sub
+
+  ' before each page load (where sensitive action is performed)
+  Protected Sub master_Page_PreLoad(ByVal sender As Object, ByVal e As EventArgs)
+    If Not IsPostBack Then
+      ' Set anti-CSRF token (using ViewState)
+      ViewState(AntiCsrfTokenKey) = Page.ViewStateUserKey
+      ViewState(AntiCsrfUserNameKey) = If(Context.User.Identity.Name, String.Empty)
+    Else
+      ' Validate the anti-CSRF token and check
+      If CStr(ViewState(AntiCsrfTokenKey)) <> _antiCsrfTokenValue OrElse _
+         CStr(ViewState(AntiCsrfUserNameKey)) <> (If(Context.User.Identity.Name, String.Empty)) Then
+        Throw New InvalidOperationException("Validation of Anti-CSRF token failed.")
+      End If
+    End If
+  End Sub
+End Class
+
+' Example: sensitive MVC action, simply add ValidateAntiForgeryToken
+' and make sure that the token is generated in the request view/form with
+' @Html.AntiForgeryToken() / @AntiForgery.GetHtml()
+
+Public Class ProductController
+  Inherits Controller
+
+  <ValidateAntiForgeryToken> <HttpPost> _
+  Public Function PostSensitive(ByVal id As Integer?) As ActionResult
+    ' ...
+  End Function
+End Class]]></repair>
+    <reference><![CDATA[For MVC: https://www.asp.net/mvc/overview/security/xsrfcsrf-prevention-in-aspnet-mvc-and-web-pages,For WebForms: https://msdn.microsoft.com/library/ms972969.aspx,http://cwe.mitre.org/data/definitions/352.html,https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet,For Web API: https://www.asp.net/web-api/ov]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:352,CWETOP25:2021:9,OWASP:2013:A8,PCI-DSS:6.5.9,WASC:9]]></security>
+    </normatives>
+    <properties>
+      <property name="checkStateModification" descname="When true, exclude from analysis any method with no operations changing application state; if false, each candidate method should have explicit anti-CSRF protection." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.CrossSiteScripting" message="CrossSiteScripting: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')" class="com.optimyth.vbnet.rules.security.tainting.CrossSiteScriptingRule" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in page content. An attacker could inject browser script code that is executed in the client browser.
+The end-user is the attacked subject, and the software is the vehicle for the attack. This attack is known as Cross-Site Scripting (XSS).
+
+There are three kinds of XSS:
+* Reflected XSS: Attacker causes victim to supply malicious content to a vulnerable web application, which renders HTML content
+  embedding a malicious script executed in victim's browser.
+  A variation of this is named DOM-based XSS, where the vulnerable software does not generate content depending on user input
+  but include script code that use user-controlled input.
+
+* Persistent XSS: Attacker provides malicious content to the vulnerable application, which is stored somewhere.
+  When stored data is fetched and rendered,
+
+Note: This rule only considers the first case ("Reflected XSS").
+
+When other user access to vulnerable pages that embed without proper neutralization the attacker content,
+script code is executed in the victim's browser.
+
+The script executed in the victim's browser could perform malicious activities, like stealing active authentication tokens
+(sometimes in the form of cookies) and performing operations on a insecure webapp (on behalf of the victim) that trusts
+too much identity artifacts in browser and do not request additional authorization for operations ('Cross-Site Request Forgery attack', CSRF).
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but user browsers generally allow scripting languages
+(e.g. JavaScript) in their browsers (disabling JavaScript severely limits a web application).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XSS vulnerabilities.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[In this example, we assume ValidateRequest is disabled.
+
+XSS.aspx:
+
+<%@ Page Language="VB" AutoEventWireup="true" CodeBehind="XSS.aspx.vb" Inherits="Test.XSS"  ValidateRequest="false" %>
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title></title>
+</head>
+<body>
+    <form id="form1" runat="server">
+    <div>
+      <asp:Label ID="lblName" runat="server" />
+    </div>
+    </form>
+</body>
+</html>
+
+XSS.aspx.vb:
+
+Namespace Test
+  Public Partial Class XSS
+    Inherits System.Web.UI.Page
+
+    Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs)
+      Dim id As String = TryCast(Request.QueryString("name"), String)
+
+      If id Is Nothing Then
+        lblName.Text = "NA"
+      Else
+        lblName.Text = id
+      End If
+    End Sub
+  End Class
+End Namespace
+
+Using an URL like:
+http://myhost.com/XSS?name=<a href="http://www.foo.com">Continue...</a>
+we will add a link in page requested by user.]]></example>
+    <repair><![CDATA[This is a very simple example that can be solved by enabling validation request.
+
+Another alternative, using Microsoft Anti-XSS library, might be:
+
+Imports System.Web.Security.AntiXss
+
+Namespace Test
+  Public Partial Class XSS
+    Inherits System.Web.UI.Page
+
+    Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs)
+      Dim id As String = TryCast(Request.QueryString("name"), String)
+
+      If id Is Nothing Then
+        lblName.Text = "NA"
+      Else
+        lblName.Text = AntiXssEncoder.HtmlEncode(id, False) ' FIXED
+      End If
+    End Sub
+  End Class
+End Namespace]]></repair>
+    <reference><![CDATA[https://lockmedown.com/preventing-xss-in-asp-net-made-easy/,http://cwe.mitre.org/data/definitions/79.html,https://msdn.microsoft.com/en-us/library/ff649310.aspx]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:24]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input, database_input, file_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.DoSRegexp" message="DoSRegexp: Prevent denial of service attack through malicious regular expression" class="com.optimyth.vbnet.rules.security.tainting.DoSRegexp" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.1.1,CWEScope:Access-Control,ReDoS,denial-of-service]]></tags>
+    <description><![CDATA[Regular expressions are a formal language for identifying strings of text, parsing, and matching them.
+
+Most regular expressions engines are built over a non-deterministic Finite Automaton (NFA). They use backtracking and,
+while these regular expression engines can quickly confirm a positive match, confirming a negative match can take much more longer.
+
+There are lots of well-known regular expression patterns that, using selected inputs, take a time exponentially related to input size.
+
+An attacker controlling, as a whole or in part, a regular expression, can carry out a denial of service attack. 
+
+In .NET framework >= 4.5, a new implementation of IsMatch method of Regexp class allows providing a timeout for regular expression matching.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent denial of service attacks due to regular expressions.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Text.RegularExpressions
+
+Public Class MyPage
+  Inherits System.Web.UI.Page
+
+  Protected Sub Button1_Click(ByVal sender As Object, ByVal e As System.EventArgs)
+    Dim isValid As Boolean = RegExp.IsMatch( ' VIOLATION
+      Request.QueryString("INPUT"), Request.QueryString("VALIDATE"), RegexOptions.IgnoreCase
+    )
+
+    If isValid Then
+      ' ...
+    End If
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System.Text.RegularExpressions
+
+Public Class MyPage
+  Inherits System.Web.UI.Page
+
+  Protected Sub Button1_Click(ByVal sender As Object, ByVal e As System.EventArgs)
+    Dim isValid As Boolean = RegExp.IsMatch( ' VIOLATION
+      Request.QueryString("INPUT"), Request.QueryString("VALIDATE"), RegexOptions.IgnoreCase,
+      TimeSpan.FromMilliseconds(500) ' FIXED
+    )
+
+    If isValid Then
+      ' ...
+    End If
+  End Sub
+End Class]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/400.html,https://msdn.microsoft.com/nl-nl/magazine/ff646973(en-us).aspx,https://msdn.microsoft.com/en-us/library/gg578045.aspx,https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:400,CWETOP25:2021:27,OWASP:2021:A3]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.InsecureRandomness" message="InsecureRandomness: Standard pseudo-random number generators cannot withstand cryptographic attacks" class="com.optimyth.vbnet.rules.security.InsecureRandomness" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.3.1,ASVS-v4.0.2:2.6.2,ASVS-v4.0.2:2.9.2,ASVS-v4.0.2:6.3.1,ASVS-v4.0.2:6.3.2,ASVS-v4.0.2:6.3.3,CWEScope:Access-Control,CWEScope:Confidentiality,crypto,prng]]></tags>
+    <description><![CDATA[Insecure randomness errors occur when a function that can produce predictable values is used as a source of randomness
+in security-sensitive context.
+
+Computers are deterministic machines, and as such are unable to produce true randomness. Pseudo-Random Number Generators (PRNGs)
+approximate randomness algorithmically, starting with a seed from which subsequent values are calculated.
+
+There are two types of PRNGs: statistical and cryptographic. Statistical PRNGs provide useful statistical properties,
+but their output is highly predictable and forms an easy to reproduce numeric stream that is unsuitable for use
+in cases where security depends on generated values being unpredictable.
+
+Cryptographic PRNGs address this problem by generating output that is more difficult to predict.
+For a value to be cryptographically secure, it must be impossible or highly improbable for an attacker to distinguish
+between it and a truly random value.
+
+In general, if a PRNG algorithm is not advertised as being cryptographically secure, then it is probably a statistical PRNG
+and should not be used in security-sensitive contexts, where its use can lead to serious vulnerabilities such as
+easy-to-guess temporary passwords, predictable cryptographic keys, session hijacking, and DNS spoofing.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[' The following code uses a statistical PRNG to create a URL for a receipt
+' that remains active for some period of time after a purchase.
+
+Private Function GenerateReceiptURL(ByVal baseUrl As String) As String
+  Dim Gen As Random = New Random()
+  Return (baseUrl & Gen.[Next]().toString() & ".html")
+End Function
+
+' This code uses the Random.Next() function to generate "unique" identifiers
+' for the receipt pages it generates.
+' Because Random.Next() is a statistical PRNG, it is easy for an attacker
+' to guess the strings it generates.
+' It would be more secure a cryptographic PRNG in this context.]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[https://msdn.microsoft.com/en-us/library/system.random(v=vs.110).aspx,http://cwe.mitre.org/data/definitions/330.html,http://cwe.mitre.org/data/definitions/338.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:330,CWE:338,OWASP-M:2016:M5,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="pattern" descname="Regular expression for detecting when a non-cryptographic PRNG is used in a security context.
+When blank, any non-cryptographic PRNG usage is reported as a rule violation." value="password|passwd|receipt|session|user|key|csrf|token|hash|mac|digest|uuid|guid|crypto|encrypt|decrypt"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.JSONInjection" message="JSONInjection: Avoid using non-neutralized user-controlled input in JSON entities" class="com.optimyth.vbnet.rules.security.tainting.JSONInjection" technology="VBNET" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[JSON is a lightweight, text-based data interchange format with parsers available in many languages.
+JSON format is often used for serializing and transmitting structured data over a network connection, as an alternative to XML.
+
+An attacker can take advantage of non-neutralized input data written to or interpreted as JSON in several ways, depending on
+the use of JSON in the application.
+
+A change on JSON entity structure can cause an application fail or in the worst case a businness logic manipulation.
+
+Input data must be validated before processing as JSON.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent JSON injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Public Sub saveData()
+  Dim jsonData As String = Request.QueryString("DATA")
+  ' VIOLATION
+  Dim item As Product = JsonConvert.DeserializeObject(Of Product)(jsonData)
+End Sub]]></example>
+    <repair><![CDATA[Public Sub saveData()
+  Dim jsonData As String = Request.QueryString("DATA")
+  jsonData = validate(jsonData) ' FIXED
+  Dim item As Product = JsonConvert.DeserializeObject(Of Product)(jsonData)
+End Sub]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/91.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP:2021:A3]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.LdapInjection" message="LdapInjection: Avoid non-neutralized user-controlled input in LDAP search filters" class="com.optimyth.vbnet.rules.security.tainting.LdapInjectionRule" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.7,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software constructs all or part of an LDAP query using externally-influenced input, but it does not neutralize or
+    incorrectly neutralizes special elements that could modify the intended LDAP query when sent to LDAP server.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It improves the safety.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Public Sub searchLdap()
+  ' VIOLATION, an attacker may change the LDAP query semantics
+  Dim src As DirectorySearcher = New DirectorySearcher("(manager=" & Request.Item("USER") & ")")
+  ' ...
+End Sub]]></example>
+    <repair><![CDATA[Public Sub searchLdap()
+  Dim inputUser As String = Request.Item("USER")
+  ' FIXED, ensure that input is a proper username
+  Dim filter As String = validate(inputUser)
+  Dim src As DirectorySearcher = New DirectorySearcher("(manager=" & filter & ")")
+  ' ...
+End Sub]]></repair>
+    <reference><![CDATA[https://blogs.msdn.microsoft.com/securitytools/2009/08/10/ldap-injection-and-mitigation/,http://cwe.mitre.org/data/definitions/90.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:90,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:29]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+      <property name="parametersAsSources" descname="If true, method parameters are considered untrusted inputs." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.MVCNonActionPublicMethods" message="MVCNonActionPublicMethods: Protect public methods that are not action methods in controllers" class="com.optimyth.vbnet.rules.security.MVCNonActionPublicMethods" technology="VBNET" active="true">
+    <tags><![CDATA[ASP.NET MVC,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[In ASP.NET MVC controllers, every public method  (exluding constructors and static methods)
+is web accessible, regardless of return type.
+
+Methods in controllers that are not action methods should be declared protected or private when feasible. If a method must
+be public, it can be decorated with NonAction attribute or using properties to restrict a method access (See #2 link reference).
+
+This way, an attempt of invoking the method will finish with error.]]></description>
+    <priority>1</priority>
+    <effort>1</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid that non action methods in controllers were web accessible.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Web.Mvc
+
+Public Class ClientController
+    Inherits Controller
+
+    Public Function Index() As ActionResult
+        Dim clients = Client.GetClients()
+        Return View(clients)
+    End Function
+
+    ' VIOLATION: web-reachable
+    Public Sub DeleteClient(ByVal clientId As Integer)
+    End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System.Web.Mvc
+
+Public Class ClientController
+    Inherits Controller
+
+    Public Function Index() As ActionResult
+        Dim clients = Client.GetClients()
+        Return View(clients)
+    End Function
+
+    ' FIXED
+    <NonAction> Public Sub DeleteClient(ByVal clientId As Integer)
+    End Sub
+End Class]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/862.html,https://docs.microsoft.com/en-us/dotnet/framework/misc/securing-method-access]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:862,CWETOP25:2021:18,OWASP:2021:A1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.MVCPostInControllers" message="MVCPostInControllers: Restrict allowed HTTP verbs for state-change operations in MVC controllers" class="com.optimyth.vbnet.rules.security.MVCPostInControllers" technology="VBNET" active="true">
+    <tags><![CDATA[ASP.NET MVC,ASVS-v4.0.2:13.2.3,ASVS-v4.0.2:4.2.2,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[In an MVC controller (for classic MVC, MVC Core, or Web API), actions that change the state of the application
+(perform database modifications, changes in files, etc.) should have the HTTP verbs restricted, to reduce the opportunity
+for cross-site request forgery (CSRF) and other attacks.
+
+The HTTP 1.1 standard define multiple verbs: OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE and CONNECT. With HTML, typically
+only GET and POST have explicit support. A CSRF attack works by tricking the victim's browser into performing actions
+on the application, when the victim has an open authenticated session. Forced by browser's security policy, the attacker
+typically uses GET requests (so restricting to POST, PUT, DELETE at least avoids "one-click" CSRF attacks).
+
+The rule forces that any state-change controller method restricts the allowed HTTP verbs, like POST, PUT and DELETE.
+
+Note: In MVC or Web API applications, anti-forgery tokens can be used to prevent CSRF attacks.
+If the action method is protected by any anti-forgery mechanism, like [ValidateAntiForgeryToken], no violation is emitted,
+even if the action method does not restrict HTTP verbs (a GET request typically cannot pass the validation).]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[More control on which HTTP inputs change application state; reduce risk for CSRF vulnerabilities.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Web.Mvc
+
+Public Class MyController
+    Inherits Controller
+
+    ' VIOLATION, GET may invoke this action
+    Public Function Create(ByVal model As MyModel) As ActionResult
+      ' inserts into database, or another state-change operation...
+      Return View()
+    End Function
+End Class]]></example>
+    <repair><![CDATA[Imports System.Web.Mvc
+
+Public Class MyController
+    Inherits Controller
+
+    ' FIXED - Limits to POST (and adds CSRF protection)
+    <HttpPost> <ValidateAntiForgeryToken>
+    Public Function Create(ByVal model As MyModel) As ActionResult
+      ' inserts into database, or another state-change operation...
+      Return View()
+    End Function
+End Class]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/352.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:352,CWETOP25:2021:9,OWASP:2013:A8,PCI-DSS:6.5.9,WASC:9]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedVerbs" descname="List with the allowed HTTP verbs (POST, PUT and GET by default) for state-changing actions." value="POST,PUT,DELETE"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.MVCPreventOverpostingModelDefinition" message="MVCPreventOverpostingModelDefinition: Prevent over-posting attacks in model definition" class="com.optimyth.vbnet.rules.security.MVCPreventOverpostingModelDefinition" technology="VBNET" active="true">
+    <tags><![CDATA[ASP.NET MVC,ASVS-v4.0.2:13.2.6,ASVS-v4.0.2:13.3.2,ASVS-v4.0.2:3.5.3,CWEScope:Integrity,over-posting]]></tags>
+    <description><![CDATA[In ASP.NET MVC applications, default model binding will attempt to move data from request to model for each property received in request.
+
+Over-posting attacks try to modify data that should not be modifiable, adding parameters to requests.
+
+In ASP.NET MVC, if an attacker add a property to a request, and that property exists in model, by default the model will be updated with the value provided by the attacker.
+
+There are several ways to prevent over-posting attacks:
+
+- Add Bind attribute, with a whitelist or blacklist approach.
+- Use UpdateModel or TryUpdateModel methods with whitelist or blacklist parameter list.
+- Create a specific model for views, just containing properties that users should be able to modify.
+
+This rule is focused on model definition. It emits a violation when in a class there are Required properties, and Bind attribute is missing.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent over-posting attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.ComponentModel.DataAnnotations
+
+' A model class (used in MVC controller parameter)
+Public Class Product ' VIOLATION
+    <Required>
+    Public Property Name As String
+    <Required>
+    Public Property Comment As String
+    Public Property Price As Single
+End Class]]></example>
+    <repair><![CDATA[Imports System.ComponentModel.DataAnnotations
+Imports System.Web.Mvc
+
+' FIXED, make explicit which properties to bound from request
+<Bind(Include := "Name, Comment")>
+Public Class Product ' VIOLATION
+    <Required>
+    Public Property Name As String
+    <Required>
+    Public Property Comment As String
+    Public Property Price As Single
+End Class]]></repair>
+    <reference><![CDATA[http://bradwilson.typepad.com/blog/2010/01/input-validation-vs-model-validation-in-aspnet-mvc.html,http://cwe.mitre.org/data/definitions/345.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:915,OWASP:2021:A8,WASC:12]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.MVCPreventUnderpostingModelComposition" message="MVCPreventUnderpostingModelComposition: Prevent under-posting attacks in model composition" class="com.optimyth.vbnet.rules.security.MVCPreventUnderpostingModelComposition" technology="VBNET" active="true">
+    <tags><![CDATA[ASP.NET MVC,ASVS-v4.0.2:13.2.6,ASVS-v4.0.2:13.3.2,ASVS-v4.0.2:3.5.3,CWEScope:Integrity,under-posting]]></tags>
+    <description><![CDATA[A model can contain an optional property that is another model with Required properties.
+
+Under-posting attacks leave out properties in the request.
+
+In ASP.NET MVC, the attacker can leave out the value of an optional property corresponding to a child model with Required properties. The optional property will have null value and validation of Required properties of child model will not be performed.
+
+There are several ways to prevent these under-posting attacks:
+
+- Create a specific model for views, just containing properties that users should be able to modify.
+- Add Required attribute to child models with Requiered properties.
+- Perform additional validations in other layers of the application.
+
+This rule is focused un model definition. It emits a violation when in a class it finds an optional property that is a child model with Required properties.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevet under-posting attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.ComponentModel.DataAnnotations
+
+Public Class Product
+    <Required>
+    Public Property Name As String
+
+    <Required>
+    Public Property Comment As String
+
+    ' VIOLATION: Vulnerable to under-posting attack:
+    ' Model component with <Required> properties, in a non <Required> property
+    Public Property Conditions As Restrictions
+
+End Class
+
+Public Class Restrictions
+    <Required>
+    Public Property Amount As Integer?
+
+End Class]]></example>
+    <repair><![CDATA[Imports System.ComponentModel.DataAnnotations
+
+Public Class Product
+    <Required>
+    Public Property Name As String
+
+    <Required>
+    Public Property Comment As String
+
+    ' FIXED
+    <Required>
+    Public Property Conditions As Restrictions
+
+End Class
+
+Public Class Restrictions
+    <Required>
+    Public Property Amount As Integer?
+
+End Class]]></repair>
+    <reference><![CDATA[http://bradwilson.typepad.com/blog/2010/01/input-validation-vs-model-validation-in-aspnet-mvc.html,http://cwe.mitre.org/data/definitions/345.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:345,OWASP:2021:A8,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.MVCPreventUnderpostingModelDefinition" message="MVCPreventUnderpostingModelDefinition: Prevent under-posting attacks in model definition" class="com.optimyth.vbnet.rules.security.MVCPreventUnderpostingModelDefinition" technology="VBNET" active="true">
+    <tags><![CDATA[ASP.NET MVC,ASVS-v4.0.2:13.2.6,ASVS-v4.0.2:13.3.2,ASVS-v4.0.2:3.5.3,CWEScope:Integrity,under-posting]]></tags>
+    <description><![CDATA[When the Required attribute is used with a model property, the value is checked to be not null; and when value is null, validation fails.
+
+Under-posting attacks leave out properties in the request.
+
+In ASP.NET MVC, the attacker can leave out a mandatory property of a non nullable type. If validation resides in Required attribute,
+it will not work when the property is non nullable.
+
+There are several ways to prevent these under-posting attacks:
+
+- Make the property a nullable version of the value type, using the ? modifier. For example: int? instead of int.
+- Create a specific model for views, just containing properties that users should be able to modify.
+- Perform additional validations in other layers of the application.
+
+This rule is focused on model definition. It emits a violation when in a class there are Required properties, and
+they are not nullables due to its type.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevet under-posting attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.ComponentModel.DataAnnotations
+
+Public Class Product
+    <Required>
+    Public Property Name As String
+
+    <Required>
+    Public Property Comment As String
+
+    ' VIOLATION: Vulnerable to under-posting attack
+    ' Required property is a (non-nullable) value type (or enum)
+    <Required>
+    Public Property Price As Single
+
+End Class]]></example>
+    <repair><![CDATA[Imports System.ComponentModel.DataAnnotations
+
+Public Class Product
+    <Required>
+    Public Property Name As String
+
+    <Required>
+    Public Property Comment As String
+
+    ' FIXED, nullable value type
+    <Required>
+    Public Property Price As Single?
+
+End Class]]></repair>
+    <reference><![CDATA[http://bradwilson.typepad.com/blog/2010/01/input-validation-vs-model-validation-in-aspnet-mvc.html,http://cwe.mitre.org/data/definitions/345.html,https://docs.microsoft.com/en-us/aspnet/core/mvc/models/validation?view=aspnetcore-2.2#notes-on-the-use-of-the-required-attribute]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:345,OWASP:2021:A8,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.OpenRedirect" message="OpenRedirect: URL Redirection to Untrusted Site ('Open Redirect')" class="com.optimyth.vbnet.rules.security.tainting.OpenRedirectRule" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.5,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Avoid using unvalidated input to build the URL used in a redirect.
+
+The rule detects a path in code between an input statement (source) and a redirect statement (sink), to an URL depending on non neutralized input.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent Open redirect attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Public Sub redirect()
+  ' VIOLATION
+  Response.Redirect(Request.Form("NEW_URL"))
+End Sub]]></example>
+    <repair><![CDATA[Public Sub redirect()
+  ' FIXED, whitelist of allowed redirect URLs
+  Dim newUrl As String = validate( Request.Form("NEW_URL") )
+  Response.Redirect(newUrl)
+End Sub]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/601.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:601,CWETOP25:2021:37,OWASP:2013:A10,PCI-DSS:6.5.8,WASC:33]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.PathTraversal" message="PathTraversal: Avoid non-neutralized user-controlled input composed in a pathname to a resource" class="com.optimyth.vbnet.rules.security.tainting.PathTraversalRule" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.1,ASVS-v4.0.2:12.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software uses external input to construct a pathname that is intended to identify a file or directory
+that is located underneath a restricted parent directory, but the software does not properly neutralize
+special elements within the pathname that can cause the pathname to resolve to a location outside the
+restricted directory.
+
+It the software does not restrict access to files outside certain restricted directories, the attacker may fetch
+sensitive files, and if the file is written with contents controlled by user input, the attacker may change
+configuration files (like Web.config among others), web contents ('web defacement'), or libraries
+(for more insidious code injection attacks).
+
+Access to system files (like /etc/password in Unix/Linux systems) could also be allowed with account permissions
+for the process running the software.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Filesystem paths should not be controlled by untrusted inputs.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Public Sub removeOldFile()
+  ' VIOLATION
+  File.Delete( Request.Item("OLD_FILE") )
+End Sub]]></example>
+    <repair><![CDATA[Public Sub removeOldFile()
+  ' FIXED, if proper validation of the path for the file to delete
+  Dim fileToRemove As String = validate( Request.Item("OLD_FILE") )
+  File.Delete(fileToRemove)
+End Sub]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/73.html,http://cwe.mitre.org/data/definitions/22.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:22,CWE:73,CWETOP25:2021:8,OWASP:2021:A4,OWASP:2021:A5,PCI-DSS:6.5.8,WASC:33]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.PotentialInfiniteLoop" message="PotentialInfiniteLoop: Loop with Unreachable Exit Condition ('Infinite Loop')" class="com.optimyth.vbnet.rules.security.PotentialInfiniteLoop" technology="VBNET" active="true">
+    <tags><![CDATA[CWEScope:Availability,essential,potential-bug]]></tags>
+    <description><![CDATA[The program contains an iteration or loop with an exit condition that cannot be reached, i.e., an infinite loop.
+Such infinite loop conditions are due typically to logical errors in the loop exit conditions and/or loop variables update,
+where the loop exit condition is never reached.
+
+An infinite loop will cause unexpected consumption of resources, such as CPU cycles or memory, and might compromise software availability.
+
+NOTE: Rule UncheckedInputInLoopCondition (CWE-606) checks when an untrusted input, not validated, might influence
+loop termination leading to a denial-of-service condition.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Control flow management</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Dim arr As T()() = fetchArray()
+Dim found As T = Nothing
+
+Dim i As Integer = 0
+While i < arr.Length And found Is Nothing
+  Dim row As T() = arr(i)
+
+  Dim j As Integer = 0
+  ' VIOLATION, potential infinite loop
+  While j < row.Length And found Is Nothing
+    Dim v As T = row(j)
+    If match(v) Then
+      found = v
+    End If
+    ' OOPS, somebody missed or commented-out loop update: j = j + 1
+  End While
+
+  i = i + 1
+End While]]></example>
+    <repair><![CDATA[Dim arr As T()() = fetchArray()
+Dim found As T = Nothing
+
+' Ensure that loops are terminated
+For i As Integer = 0 To arr.Length - 1
+    Dim row As T() = arr(i)
+
+    For j As Integer = 0 To row.length - 1
+        Dim v As T = row(j)
+        If match(v) Then
+          found = v
+          Exit For
+        End If
+    Next
+
+    If found IsNot Nothing Then Exit For
+Next]]></repair>
+    <reference><![CDATA[https://blog.jooq.org/2015/01/16/infinite-loops-or-anything-that-can-possibly-go-wrong-does/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:835,CWETOP25:2020:36]]></security>
+    </normatives>
+    <properties>
+      <property name="allowExplicitInfiniteLoops" descname="Intentional non-empty infinite loops, coded as while(true) ó for(;;), are allowed." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.AccessibilitySubversionRule" message="AccessibilitySubversionRule: .Net access restriction subverted (Reflection)" class="com.optimyth.vbnet.rules.security.AccessibilitySubversionRule" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.10.1,ASVS-v4.0.2:1.4.2,ASVS-v4.0.2:1.4.4,essential]]></tags>
+    <description><![CDATA[.Net imposes access restrictions for code in one class to access fields, methods and
+constructors in objects of different classes (the access level specifiers with public, protected and private keywords
+enforce in code such restrictions).
+
+Using reflection, .Net allows a programmer to get around the access control checks provided by these specifiers.
+For example, a programmer may access a private field by using the method GetFields(BindingFlags.NonPublic).
+
+The rule emits a security flaw when reflection is used along with the BindingFlags.NonPublic flag.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid unintended accesses to elements that should be protected.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Public Class Test
+  Public Shared Function Main() As Integer
+    Dim t As System.Type
+    ' ... fetch Type t
+    ' VIOLATION, reflective access to non-public fields
+    Dim fields = t.GetFields(BindingFlags.[Public] Or BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.[Static])
+    ' ...
+  End Function
+End Class]]></example>
+    <repair><![CDATA[' Do not use reflection to access non public members.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/284.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:284,CWETOP25:2020:30,OWASP:2021:A1,PCI-DSS:6.5.8,WASC:02]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.AnonymousLdapBind" message="AnonymousLdapBind: Access Control - Anonymous LDAP Bind" class="com.optimyth.vbnet.rules.security.AnonymousLdapBind" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.4,ASVS-v4.0.2:13.4.2,ASVS-v4.0.2:4.1.3,ASVS-v4.0.2:4.1.5,ASVS-v4.0.2:7.2.2,ASVS-v4.0.2:8.3.3,ASVS-v4.0.2:8.3.8,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Without proper access control, executing an LDAP statement that contains a user-controlled value can allow an attacker to access unauthorized records.
+Executing LDAP queries under an anonymous bind, effectively without authentication, can allow an attacker to abuse a poorly configured LDAP environment.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.DirectoryServices
+Imports System.DirectoryServices.Protocols
+
+Public Class AnonymousLdapBind
+    Private Const LDAP_URL As String = "LDAP://ad.example.com:389/ou=People,dc=example,dc=com"
+
+    Public Sub m(ByVal username As String)
+        ' VIOLATION, anonymous bind
+        Dim de As DirectoryEntry = New DirectoryEntry(LDAP_URL)
+        doSomething(de, username)
+    End Sub
+
+    Public Sub ldapConn(ByVal target As String, ByVal username As String)
+        ' VIOLATION, anonymous bind
+        Using con As LdapConnection = New LdapConnection(New LdapDirectoryIdentifier(ConfigReader.ADServer, 636))
+            con.AuthType = AuthType.Anonymous
+            con.Bind()
+            con.SendRequest(New SearchRequest(target, "(&(objectClass=user)(cn=" & username & "))"), SearchScope.Subtree, Nothing)
+        End Using
+    End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System.DirectoryServices
+Imports System.DirectoryServices.Protocols
+
+Public Class AnonymousLdapBind
+    Private Const LDAP_URL As String = "LDAP://ad.example.com:389/ou=People,dc=example,dc=com"
+
+    Public Sub m(ByVal username As String)
+        ' FIXED
+        Dim de As DirectoryEntry = New DirectoryEntry()
+        de.Path = LDAP_URL
+        de.AuthenticationType = AuthenticationTypes.None ' OK, basic authentication
+        de.Username = MY_USER
+        de.Password = MY_PASS
+        doSomething(de, username)
+    End Sub
+
+    Public Sub ldapConn(ByVal target As String, ByVal username As String)
+        ' FIXED
+        Using con As LdapConnection = New LdapConnection(New LdapDirectoryIdentifier(ConfigReader.ADServer, 636))
+            con.Credential = New NetworkCredential(MY_USER, MY_PASS)
+            con.AuthType = AuthType.Basic
+            con.Bind()
+            con.SendRequest(New SearchRequest(target, "(&(objectClass=user)(cn=" & username & "))"), SearchScope.Subtree, Nothing)
+        End Using
+    End Sub
+End Class]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/285.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:285,OWASP:2021:A1,PCI-DSS:6.5.8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.AvoidCertificateEquals" message="AvoidCertificateEquals: Never use X509Certificate.Equals() in a security context" class="com.optimyth.vbnet.rules.security.AvoidCertificateEquals" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.9.2,ASVS-v4.0.2:9.2.1,CWEScope:AccessControl,CWEScope:Confidentiality,CWEScope:Integrity,certificates,essential]]></tags>
+    <description><![CDATA[When validating X509 certificates, at certain points it is necessary to check that a received certificate matches another one, trusted certificate
+(or one in a set of trusted certificates).
+
+Application developers might assume that the Equals() method of the X509Certificate class performs a robust comparison.
+Unfortunately, such comparison is weak, as only the issuer distinguished name (DN) and the certificate serial number are compared.
+
+An attacker may clone a legitimate certificate (which is public by definition), copy the issuer name and serial number (and the subject name if necessary),
+and sign the cloned certificate (self-signed or with an attacker-controlled CA keypair). When only Equals() is used for comparison,
+the Equals() method will return true even then the original and the cloned certificates are completely different: the public/private keypair
+(the public part is signed in the certificate with the CA private key) and the signature are different.
+
+So the attacker may pass this cloned certificate as 'equal' to another legitimate certificate with same issued DN and serial number.
+Equals() should never be used in a security context, like in certificate validation.
+
+The Microsoft documentation says "The Equals method should not be used when comparing certificates for security purposes.
+Instead, use a hash of the RawData property, or the Thumbprint property."]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Design error</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid accepting a cloned certificate as legitimate in trust decisions.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Security.Cryptography.X509Certificates
+
+Public Class TrustPoint
+  Public Function IsTrusted( candidate As X509Certificate2, trusted As X509Certificate2() ) As Boolean
+    For Each t As X509Certificate2 In trusted
+      If candidate.Equals(t) Then Return True ' VIOLATION
+    Next t
+	  Return False
+  End Function
+End Class]]></example>
+    <repair><![CDATA[Imports System.Security.Cryptography.X509Certificates
+
+Public Class TrustPoint
+  Public Function IsTrusted( candidate As X509Certificate2, trusted As X509Certificate2() ) As Boolean
+    For Each t As X509Certificate2 In trusted
+      If candidate.Thumbprint.Equals(t.Thumbprint) Then Return True ' FIXED
+    Next t
+	  Return False
+  End Function
+End Class]]></repair>
+    <reference><![CDATA[https://posts.specterops.io/subverting-x509certificate-equals-in-net-92b97d1ae59b,https://docs.microsoft.com/dotnet/api/system.security.cryptography.x509certificates.x509certificate.equals]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:295,CWETOP25:2021:26]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.AvoidHostNameChecks" message="AvoidHostNameChecks: Avoid checks on client-side hostname, that are not reliable due to DNS poisoning" class="com.optimyth.vbnet.rules.security.AvoidHostNameChecks" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.3.3,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Many DNS servers are susceptible to DNS poisoning attacks, so you should assume that your software will someday run
+in an environment with a compromised DNS server. If attackers are allowed to make DNS updates (sometimes called DNS cache poisoning),
+they can route your network traffic through their machines or make it appear as if their IP addresses are part of your domain.
+Do not base the security of your software on DNS names.
+
+Note: If client hostname check is the unique possibility, perform proper forward and reverse DNS lookups for detectin potential DNS spoofing.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Net
+Imports System.Web
+
+Public Class AvoidHostNameChecks
+  Public Sub connect()
+    Dim remoteIpAddress As String = Request.ServerVariables("REMOTE_ADDR")
+    Dim hostIPAddress As IPAddress = IPAddress.Parse(remoteIpAddress)
+    Dim hostInfo As IPHostEntry = Dns.GetHostByAddress(hostIPAddress)
+
+    ' VIOLATION, check against hostname
+    If hostInfo.HostName.EndsWith("trustme.com") Then
+      trusted = True
+    End If
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[' Do not use client hostname for any access control decision.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/350.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:350,OWASP:2021:A4,PCI-DSS:6.5.8,WASC:24]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.ConnectionStringParameterPollution" message="ConnectionStringParameterPollution: Connection string polluted with untrusted input" class="com.optimyth.vbnet.rules.security.tainting.ConnectionStringParameterPollution" technology="VBNET" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When the connection string for an application resource (like database, remote server, persistence entity manager...) could
+be affected by an untrusted source, not properly neutralized, the application is vulnerable to a Connection String Parameter Pollution attack.
+
+An attack targeted at this vulnerability may use special characters (like ';' or ':') to add unexpected parts to the connection string,
+for example to gain extra privileges, or to deactivate security features.
+
+"Untrusted input" means, in this context, a user-controlled application input, an environment variable, or data fetched
+from an external web source.
+
+It should be suspicious that a connection string depends on untrusted input. Normally the application configuration uses
+a fixed connection string, but other attacks, depending on where the connection string is stored (like an SQL injection or
+path traversal attack) may affect the configuration item. This rule only checks for connection strings that are constructed
+programmatically with untrusted input.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Configuration
+Imports System.Data.SqlClient
+
+Public Class InsecureConnectionString
+  Public Sub run()
+    ' Considered untrusted source
+    Dim connStr As String = Environment.GetEnvironmentVariable("MyConnStr")
+
+    Using connection = New SqlConnection(connStr) ' VIOLATION
+      ' ...
+    End Using
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System
+Imports System.Configuration
+Imports System.Data.SqlClient
+
+Public Class InsecureConnectionString
+  Public Sub run()
+    ' Validate (white-list approach) the untrusted input combined into the connection string.
+    ' Alternatively, fetch connection string from a trusted source, like app configuration:
+    Dim connStr As String = ConfigurationManager.ConnectionStrings("MyConnStr").ConnectionString
+
+    Using connection = New SqlConnection(connStr) ' FIXED
+     ' ...
+    End Using
+  End Sub
+End Class]]></repair>
+    <reference><![CDATA[https://msdn.microsoft.com/en-us/library/ms254494(v=vs.110).aspx,https://msdn.microsoft.com/en-us/library/89211k9b(v=vs.110).aspx,https://www.blackhat.com/presentations/bh-dc-10/Alonso_Chema/Blackhat-DC-2010-Alonso-Connection-String-Parameter-Pollution-wp.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:15,OWASP:2021:A5,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.CookiesInSecurityDecision" message="CookiesInSecurityDecision: Reliance on Cookies without Validation and Integrity Checking in a Security Decision" class="com.optimyth.vbnet.rules.security.tainting.CookiesInSecurityDecision" technology="VBNET" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Using a cookie for security decision is a bad practice. Remember that attackers control most parts of the HTTP message,
+including cookies sent to the application. If a security check is based on the value of a cookie field (for example,
+the cookie value), a attacker may choose a particular value to pass such security check, without any reliance to
+past navigation thru the vulnerable application.
+
+Attackers may exploit this vulnerability to bypass protection mechanisms such as authorization and authentication,
+by modifying the cookie to contain an expected value.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid bypass of protection mechanisms, due to flawed security decisions based on cookies.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Web
+Imports System.Web.Http
+
+Namespace Test
+  Public Class SourceClass
+    Inherits ApiController
+
+    Public Sub processContext(ByVal context As HttpContext)
+      Dim Cookies As HttpCookieCollection = context.Request.Cookies
+      Dim role As String = Cookies.Item("ROLE_ADM").Value
+
+      If User.IsInRole(role) Then ' VIOLATION
+        DoTask()
+      End If
+    End Sub
+  End Class
+End Namespace]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/784.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:784,OWASP:2021:A8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.DangerousFileUpload" message="DangerousFileUpload: Unrestricted Upload of File with Dangerous Type" class="com.optimyth.vbnet.rules.security.DangerousFileUpload" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.2.1,ASVS-v4.0.2:12.5.2,ASVS-v4.0.2:13.1.5,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The software allows to upload files without restricting the content uploaded and/or where the uploaded content is stored.
+
+If attacker may influence where on filesystem the file with uploaded content is written, it may overwrite configuration
+and other sensitive system files (this depends on the permissions granted to the web server process).
+
+If attacker may influence, on the file path to write, not the full path, but part of it (for example, the file extension),
+the attacker may choose .aspx or similar extension. If the target resource is available for the attacker, the app is vulnerable
+to an indirect code injection attack.
+
+If the uploaded file is included (as a web resource) in web content, the attacker may even succeed in a stored cross-site scripting
+attack targeted at a victim's browser.
+
+The attacker may use unrestricted file upload sites for file space denial-of-service, automatic command execution
+(in vulnerable virus scanner tools that try to process the uploaded malicious content), and more esoteric attacks.
+
+This rule checks for some explicit validations are performed on the file-upload object, for the different frameworks,
+from ASP.Net WebForms FileUpload control and HttpPostedFile type, to MVC HttpPostedFileBase and MVC Core IFormFile types.
+
+The validations that are checked are:
+- Input size check, to ensure that the content size does not exceed a limit.
+
+- If the file is stored, and something from HTTP message is used to compile the filepath, at least a proper neutralization
+  is done (for example, on the FileName property).
+
+- Any check on the uploaded contents, before storage, is accepted as a proper neutralization.
+
+- Any additional checks (on content-type, filename or extension patterns, etc.) are ignored, as they typically do
+  not neutralize most of the attacks.
+
+Remember that a "file upload", in technical terms, is an HTTP message with Content-Type=multipart/form-data.
+Each form item is a part with a Content-Disposition header. A file HTML control provides a filename value, and Content-Type header.
+But remember that no single bit from a HTTP message could be trusted, as our willy attacker may craft the HTML message entirely.
+So the message may lie about the true content type, the filename could be anything (even an syntactically invalid filename),
+the content could be as large as target webapp accepts, etc.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Force restricting the uploaded content, to reduce the risk with file uploading.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<!-- In .aspx page -->
+<form id="image_upload" runat="server">
+  <asp:Label runat="server" id="DescLabel" text="Choose photo: " />
+  <asp:FileUpload id="FileUploadControl" runat="server" />
+  <asp:Button runat="server" id="UploadButton" text="Upload" onclick="UploadButton_Click" />
+  <br /><br />
+  <asp:Label runat="server" id="StatusLabel" text="Upload status: " />
+</form>
+
+<!-- In code-behind for upload -->
+Imports System.Web
+
+' Partial page class not shown...
+Protected Sub UploadButton_Click(ByVal sender As Object, ByVal e As EventArgs)
+  If FileUploadControl.HasFile Then
+    Try
+      Dim filename As String = Path.GetFileName(FileUploadControl.FileName)
+
+      ' The uploaded contents are not unrestricted, and written in the web content directory...
+      ' Many attacks, like .aspx code injection, stored XSS and many others, are possible !!!
+      ' VIOLATION, unrestricted upload
+      FileUploadControl.SaveAs(Server.MapPath("~/upload/") & filename)
+
+      StatusLabel.Text = "Upload status: File uploaded!"
+    Catch ex As Exception
+      StatusLabel.Text = "Upload status: The file could not be uploaded. The following error occured: " & ex.Message
+    End Try
+  End If
+End Sub]]></example>
+    <repair><![CDATA[<!-- In code-behind for upload -->
+Imports System.Web
+Imports System.Drawing
+Imports System.Drawing.Imaging
+
+' Partial page class not shown...
+Protected Sub UploadButton_Click(ByVal sender As Object, ByVal e As EventArgs)
+  If FileUploadControl.HasFile Then
+    Try
+      Dim result As ValidationResult = ValidateUpload(FileUploadControl)
+
+      If result.IsValid Then
+        Dim filename As String = Path.GetFileName(FileUploadControl.FileName)
+        ' Our logic insists in storing uploaded content in webroot
+        FileUploadControl.SaveAs(Server.MapPath("~/upload/") & filename)
+        StatusLabel.Text = "Upload status: File uploaded!"
+      Else
+        StatusLabel.Text = "Upload status: ERROR - " & result.Message
+      End If
+
+    Catch ex As Exception
+      StatusLabel.Text = "Upload status: The file could not be uploaded."
+      log.[error]("Upload status: The file could not be uploaded: " & filename, ex)
+    End Try
+  End If
+End Sub
+
+Private Const MAX_SIZE As Integer = 1 * 1024 * 1024 ' 1 MB limit
+
+' Example of proper validation for uploaded contents (like checking for a proper image)
+Private Function ValidateUpload(ByVal fileUpload As FileUploadControl) As ValidationResult
+  Dim file As HttpPostedFile = fileUpload.PostedFile
+  If file.ContentLength > MAX_SIZE Then Return New ValidationResult(False, "Too big file, max size: 1MB")
+
+  Try
+    Using img = Image.FromStream(file.InputStream)
+      Dim fmt = img.RawFormat
+      Dim isProperFormat As Boolean = ImageFormat.Bmp.Equals(fmt) OrElse _
+        ImageFormat.Gif.Equals(fmt) OrElse _
+        ImageFormat.Jpeg.Equals(fmt) OrElse ImageFormat.Png.Equals(fmt)
+
+      If Not isProperFormat Then
+        Return New ValidationResult(False, "Invalid image format, allowed types are: bmp, gif, jpg or png")
+      End If
+    End Using
+
+    Return New ValidationResult(True, "")
+  Catch
+    Return New ValidationResult(False, "Uploaded content is not an image")
+  End Try
+End Function]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/434.html,https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html,http://stackoverflow.com/questions/6388812/how-to-validate-uploaded-file-in-asp-net-mvc]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:434,CWETOP25:2021:10]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.HardcodedCredential" message="HardcodedCredential: Use of Hard-coded Credentials" class="com.optimyth.vbnet.rules.security.HardcodedCredential" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.4,ASVS-v4.0.2:3.5.2,ASVS-v4.0.2:6.4.1,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The software contains hard-coded credentials, such as an username or password, which is used for security purposes (like authentication
+with an external system). Any person with access to the source code have straight access to the credentials. Additionally,
+an attacker may fetch the compiled code and decompile it to fetch the hardcoded credentials.
+
+Credentials used for security purposes are sensitive information that should not be disclosed to actors, like developers.
+
+If the hardcoded credentials need to be changed, source code needs to be changed, recompiled, and application needs redeployment,
+which increases the impact of this bad practice, as credential renewal will take longer.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credential leakage.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Diagnostics
+Imports System.Data.SqlClient
+
+Public Class X
+    Private Const UNAME As String = "MyAccount"
+    Private Const PASS As String = "MyPass"
+    Private Const DOMAIN As String = "MyDomain"
+    Private Const CONN_STR As String = "server=(local);user id=ab;password= a!Pass113;initial catalog=AdventureWorks"
+
+    Public Sub runProcess()
+        Dim pwd As SecureString = getSecurePassword()
+        Dim proc As Process = Process.Start("notepad.exe", UNAME, pwd, DOMAIN) ' VIOLATION
+        Dim builder As SqlConnectionStringBuilder = New SqlConnectionStringBuilder(CONN_STR) ' VIOLATION
+        builder.Password = "p4ssw0rd" ' VIOLATION
+        Dim conn As SqlConnection = New SqlConnection(builder.ToString())
+        ' ...
+        Console.WriteLine(builder.ConnectionString)
+    End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System
+Imports System.Diagnostics
+Imports System.Data.SqlClient
+Imports System.Configuration
+
+Public Class NoHardCodedCreds
+    Private Const UNAME As String = ConfigurationManager.AppSettings("MyUsername") ' FIXED
+    Private Const PASS As String = ConfigurationManager.AppSettings("MyPassword") ' FIXED
+    Private Const DOMAIN As String = ConfigurationManager.AppSettings("MyDomain")
+    Private Const CONN_STR As String = ConfigurationManager.AppSettings("MyConnectionString") ' FIXED
+
+    Public Sub runProcess()
+        Dim pwd As SecureString = getSecurePassword()
+        Dim proc As Process = Process.Start("notepad.exe", UNAME, pwd, DOMAIN)
+        Dim builder As SqlConnectionStringBuilder = New SqlConnectionStringBuilder(CONN_STR)
+        builder.Password = ConfigurationManager.AppSettings("dbpass") ' FIXED
+        Dim conn As SqlConnection = New SqlConnection(builder.ConnectionString)
+        ' ...
+    End Sub
+End Class]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/798.html,https://www.kiuwan.com/docs/display/K5/Avoid+hard-coded+or+in-comment+passwords+in+code]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:798,CWETOP25:2021:16,OWASP:2021:A7]]></security>
+    </normatives>
+    <properties>
+      <property name="passwordPattern" descname="Regular expression for matching field names containing passwords." value=""/>
+      <property name="usernamePattern" descname="Regular expression for matching field names containing user ids." value=".*(user|username).*|(^|.*_)id(_.*|$)"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.HardcodedCryptoKey" message="HardcodedCryptoKey: Use of Hard-coded Cryptographic Key" class="com.optimyth.vbnet.rules.security.HardcodedCryptoKey" technology="VBNET" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,crypto,essential]]></tags>
+    <description><![CDATA[Never hard-code cryptographic keys (or passwords used to generate them) in your program.
+
+Crypto keys are used for encryption/decryption, for generation of message authentication codes (MAC), during generation
+of password-based encryption keys (the password is the "crypto key" that generates key material for the cipher), and other usages.
+Source code is the worst place for key storage, as any change in keys needs recompilation, and it is easy to reverse-engineer
+an application binary to learn any keys or secrets that may be embedded in it.
+
+Instead, store crypto keys in some private location. The System.Security.Cryptography.ProtectedData uses
+Microsoft's DPAPI to save/load sensitive credentials (connection strings, passwords, cryptographic keys...).
+
+A crypto key may be stored in configuration file (App.Config or Web.Config), but section containing it needs to be encrypted,
+to mitigate the impact if the file is leaked. See "Encrypting Configuration Information"
+(https://msdn.microsoft.com/en-us/library/53tyfkaw.aspx) for full details.
+
+Some data used in cryptographic operations (like initial vector for block ciphers, salt for password hashes, etc.)
+are not "private", and it is recommended to generate a good random instance at the origin, and add it to the message
+in plaintext, so the destination may use it. The security depends on properly protecting the "secret" thing
+(private key in a public/private keypair, encryption key in a symmetric cipher, key in an HMAC, etc.).
+
+Long-term cryptographic keys (in contrast with ephemeral ones), with the Crypto Next Generation (CNG) API,
+are better stored in a safe key storage. In the constructor (for example, AesCng(string)), the name of the key could be provided.
+Private keys in a public/private keypair should NEVER be unprotected (in raw form) and they should be stored in an even
+safer key storage (the impact for a compromise of a private key is typically huge and brutal).]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Security.Cryptography
+
+Module PBECipher
+    Private Const Keysize As Integer = 256
+    Private Const PassPhrase As String = "NotSecretAtAll!"
+
+    Function Encrypt(ByVal plainText As String) As String
+        Using pbe = New Rfc2898DeriveBytes(PassPhrase, 32) ' VIOLATION, PassPhrase is hardcoded
+            pbe.IterationCount = 10000
+            Dim keyBytes = pbe.GetBytes(Keysize / 8)
+            Dim salt = pbe.Salt
+
+            Using aes = New AesManaged()
+                aes.Mode = CipherMode.CBC
+                aes.Padding = PaddingMode.PKCS7
+                Dim iv = Generate256BitsOfRandomEntropy()
+
+                Using encryptor = aes.CreateEncryptor(keyBytes, iv)
+                  ' ... perform encryption ...
+                End Using
+            End Using
+        End Using
+    End Function
+End Module
+
+Friend Module MyCipher
+    ' The hardcoded DES key
+    Private Shared ReadOnly Key As Byte() = {&H1F, &H3F, &H24, &H91, &H3a, &H0c, &H11, &H6a}
+    Private Shared ReadOnly Iv As Byte() = {0, 0, 0, 0, 0, 0, 0, 0} ' a fixed IV is another bad practice
+
+    Friend Function Encrypt(ByVal plainText As String) As String
+        Dim des = New DESCryptoServiceProvider()
+        Dim enc = des.CreateEncryptor(Key, Iv) ' VIOLATION
+    End Function
+End Module]]></example>
+    <repair><![CDATA[Imports System
+Imports System.Configuration
+Imports System.Security.Cryptography
+
+' KeyStore.FetchKey() provides a more robust way of keeping encryption keys in configuration, protected
+
+Module KeyStore
+    Private _protector As IDataProtector = New DpapiDataProtector("myapp", "protect symmetric keys", "other purpose")
+
+    ' Fetch a symmetric key from configuration, using IDataProtector (DPAPI...)
+    Friend Function FetchKey(ByVal keyname As String) As Byte()
+        ' no error checking, for simplicity...
+        Dim webConf As Configuration = WebConfigurationManager.OpenWebConfiguration(Nothing)
+        Dim entry As String = webConf.AppSettings.Settings(keyname).Value
+        Dim base64Key As String = _protector.Unprotect(entry)
+        Return Convert.fromBase64String(base64Key)
+    End Function
+End Module]]></repair>
+    <reference><![CDATA[https://msdn.microsoft.com/en-us/library/53tyfkaw.aspx,https://cwe.mitre.org/data/definitions/321.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:321,OWASP-M:2016:M5,OWASP:2021:A2,PCI-DSS:6.3.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.HardcodedSalt" message="HardcodedSalt: A hardcoded salt can compromise system security" class="com.optimyth.vbnet.rules.security.HardcodedSalt" technology="VBNET" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,crypto,essential]]></tags>
+    <description><![CDATA[A hardcoded salt can compromise system security in a way that cannot be easily remedied.
+
+Salt, a random set of bytes, is used in password hashing schemes.
+A dictionary attack is an attack in which the attacker attempts to retrieve a cleartext password, by comparing the stored hashed password
+with previously computed values for the most likely password. This attack is made much more difficult by the introduction of salt,
+or random bytes, used in the password hashing function, and appended to the hashed password in storage (salt is not secret).
+
+If attackers know the salt value, they can precompute rainbow tables for the application, and more easily reverse hashed values.
+A random salt (different for each encrypted entry) should be used, instead or a fixed (hardcoded) value.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Using a strong salt along with a secure algorithm makes data harder to leak.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.IO
+Imports System.Text
+Imports System.Security.Cryptography
+
+Public Class rfc2898test
+    Public Shared Sub Main(ByVal passwordargs As String())
+        Dim pwd As String = passwordargs(0)
+        ' hardcoded salt
+        Dim salt As Byte() = { &H20, &H21, &H22, &H23, &H24, &H25, &H26, &H28 }
+        Dim iterations As Integer = 1000
+
+        Try
+            Dim k1 As Rfc2898DeriveBytes = New Rfc2898DeriveBytes(pwd, salt, iterations) ' VIOLATION
+            ' ...
+        Catch e As Exception
+            ' ...
+        End Try
+    End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System
+Imports System.IO
+Imports System.Text
+Imports System.Security.Cryptography
+
+Public Class rfc2898test
+    Public Shared Sub Main(ByVal passwordargs As String())
+        Dim pwd As String = passwordargs(0)
+        Dim salt As Byte() = New Byte(7) {}
+
+        Using prng As RNGCryptoServiceProvider = New RNGCryptoServiceProvider()
+            ' Fill the array with a random value.
+            prng.GetBytes(salt) ' FIXED
+        End Using
+
+        Dim iterations As Integer = 1000
+
+        Try
+            Dim k1 As Rfc2898DeriveBytes = New Rfc2898DeriveBytes(pwd, salt, iterations)
+            ' ...
+        Catch e As Exception
+        End Try
+    End Sub
+End Class]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/760.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:760,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.HttpParameterPollution" message="HttpParameterPollution: HTTP parameter pollution (HPP)" class="com.optimyth.vbnet.rules.security.tainting.HttpParameterPollution" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.1,CWEScope:Integrity,http-parameter-pollution]]></tags>
+    <description><![CDATA[Concatenating untrusted input into path, query string, or parameters for HTTP message (in the URL or in the request body)
+may allow an attacker to override/add unexpected request parameters. Attacker may change the intended
+HTTP request semantics, and may give him/her access to unauthorized data or bypass web application
+firewall validations.
+
+Note: Do not confuse HPP with Server-Side Request Forgery (SSRF), where the attacker has control over the
+full request URL, including host and port. For HPP attack, attacker has control over other parts like the query string
+part of the URL. Remember the format of an HTTP URL: scheme://user:password@host:port/path?query#fragment
+where query is typically param=value&param2=value. HPP is about attackers controlling path, query or fragment,
+while SSRF means controlling scheme, user, password, host or port.
+
+Like other injection issues, with HPP attackers play with "&" to inject additional parameter (similar to the quote
+in SQL injection), "../" to change the path, ";" (to add matrix parameters to URL at different path segments), or "#"
+to remove ending URL characers (like "--" comment delimiter in SQL injection).
+
+Controlling the path typically changes the semantics of the action represented by the HTTP resource.
+Some REST services use request parameter like _method for selecting the HTTP method, which may be subverted by an HPP attack
+(an HTTP header manipulation flaw could also be leveraged with X-HTTP-Method-Override or similar headers in certain frameworks).
+
+For example, imagine a web application that calls to a remote home-banking REST API. The webapp emits
+a (GET) url https://mybank.com/show-balance/account/X/monetaryUnit?date=now to show the balance for the user account X,
+where X is taken from a trusted source, but where monetaryUnit is taken from a cookie, and concatenated without
+any validation or encoding into the URL. An attacker could pass a Cookie request header set to "../../../transfer/X/to/Y?_method=POST#",
+so the vulnerable web application will create https://mybank.com/show-balance/account/X/../../../transfer/X/to/Y?_method=POST#?date=now
+which is equivalent to a POST https://mybank.com/transfer/X/to/Y.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid unexpected behaviour for HTTP parameter pollution attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Net
+Imports System.Web.Http
+Imports System.Collections.Specialized
+
+Public Class HttpParameterPollution
+  Inherits ApiController
+
+  Public Const SVC_URL As String = "http://myorg.com/webapi/search"
+
+  Public Function Search(ByVal productId As String) As IHttpActionResult
+    Dim client As WebClient = New WebClient()
+    client.BaseAddress = SVC_URL
+    Dim parameters As NameValueCollection = New NameValueCollection()
+    parameters.Add("product", productId)
+    parameters.Add("action", "search")
+    client.QueryString = parameters ' VIOLATION, HTTP parameter pollution
+    Dim data As Stream = client.OpenRead(url)
+    Dim result As String = processServiceResult(data)
+    Return Ok(result)
+  End Function
+End Class]]></example>
+    <repair><![CDATA[' Validate input (productId in the example), making sure that it matches a productId,
+' so no extra HTTP parameters could be injected.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/235.html,RESTing On Your Laurels will Get YOu Pwned - https://www.defcon.org/images/defcon-21/dc-21-presentations/Kang-Cruz/DEFCON-21-Kang-Cruz-RESTing-On-Your-Laurels-Will-Get-You-Pwned-Updated.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:235,OWASP:2021:A4,PCI-DSS:6.5.6,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.HttpSplittingRule" message="HttpSplittingRule: Improper neutralization of CR/LF Sequences in HTTP headers" class="com.optimyth.vbnet.rules.security.tainting.HttpSplittingRule" technology="VBNET" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in HTTP headers. An attacker could inject line separators (CR/LF sequences)
+that could split the response message generated by the software into two messages. The second response is completely
+under the control of the attacker (intermediate web proxies may cache it), with could produce multiple conditions
+(web defacement, cache poisoning, cross-site scripting or page hijacking, see CWE-113 for full details).
+
+If software needs to generate HTTP headers depending on user-controlled input, such input should be properly
+neutralized (a white-list validation excluding CR/LF is recommended). Please note that cookies are received and
+sent in 'Cookie' header in HTTP messages, so if the software generates a Cookie from user input, the input should
+be properly validated as well.
+
+NOTE: ASP.NET 2.0 applications on IIS 7.0 always rejects new lines in response headers (even if ASP.NET
+enableHeaderChecking is set to false), so if you're using IIS 7.0 you should disable this rule (see
+https://docs.microsoft.com/en-us/iis/application-frameworks/building-and-running-aspnet-applications/aspnet-20-breaking-changes-on-iis#changes-in-response-header-processing).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Web
+
+Public Class Sample
+  Public Sub HttpSplitting(ByVal req As HttpRequest, ByVal res As HttpResponse)
+    Dim author As String = req.Form("author")
+    Dim cookie As HttpCookie = New HttpCookie("author", author)
+    ' VIOLATION, cookie written in HTTP response 'Set-Cookie' header
+    res.Cookies.Add(cookie)
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System.Web
+
+Public Class Sample
+  Public Sub HttpSplitting(ByVal req As HttpRequest, ByVal res As HttpResponse)
+    Dim author As String = req.Form("author")
+    ' FIXED: white-list validation, or at least remove CR/LF characters from input
+    author = validate( author )
+    Dim cookie As HttpCookie = New HttpCookie("author", author)
+    res.Cookies.Add(cookie)
+  End Sub
+End Class]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/113.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:113,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:25]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.ImproperAuthentication" message="ImproperAuthentication: Avoid that a user can perform actions to which he does not have access" class="com.optimyth.vbnet.rules.security.tainting.ImproperAuthentication" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.1,ASVS-v4.0.2:2.3.3,ASVS-v4.0.2:2.7.1,ASVS-v4.0.2:2.7.2,ASVS-v4.0.2:2.7.3,ASVS-v4.0.2:2.8.4,ASVS-v4.0.2:2.8.5,ASVS-v4.0.2:9.2.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Authentication is one of the fundamental pieces of software and is a key point in the safety of it.
+        
+If the authentication is done incorrectly a potential attacker could access the system by skipping the validations
+of security provided for it.
+
+This rule verifies that the authentication is done indepently of the data entered by the user, either
+through forms or cookies or other sources controlled by the user.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Preventing the decision to perform authentication does not depend on the data provided by the user can prevent a malicious attacker from accessing the system without authentication.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Web
+Imports Microsoft.AspNet.Identity.Owin
+
+Public Class SourceClass
+  Public Function Post(<FromBody> ByVal jsonbody As JToken) As HttpResponseMessage
+    Dim accountController As AccountController = New AccountController()
+    Dim data As dynamic = JObject.Parse(jsonbody.ToString())
+    Dim userId As String = data.userid
+    Dim userPassword As String = data.password
+    Dim Cookies As HttpCookieCollection = context.Request.Cookies
+    Dim roleCookie As HttpCookie = Cookies.Item("ROLE")
+    Dim role As String = Nothing
+    Dim result = Nothing
+
+    If roleCookie Is Nothing Then
+      ' VIOLATION, authentication conditioned by untrusted input
+      result = SignInManagerExtensions.PasswordSignIn(userId, userPassword, False, False)
+    Else
+      Return New HttpResponseMessage(HttpStatusCode.Accepted)
+    End If
+
+    If result.Equals(SignInStatus.Success) Then
+      Return New HttpResponseMessage(HttpStatusCode.Accepted)
+    Else
+      Return New HttpResponseMessage(HttpStatusCode.Forbidden)
+    End If
+  End Function
+End Class]]></example>
+    <repair><![CDATA[Imports System
+Imports System.Web
+Imports Microsoft.AspNet.Identity.Owin
+
+Public Class SourceClass
+  Public Function Post(<FromBody> ByVal jsonbody As JToken) As HttpResponseMessage
+    Dim accountController As AccountController = New AccountController()
+    Dim data As dynamic = JObject.Parse(jsonbody.ToString())
+    Dim userId As String = data.userid
+    Dim userPassword As String = data.password
+
+    ' FIXED, authentication is not externally controlled
+    Dim result = SignInManagerExtensions.PasswordSignIn(userId, userPassword, False, False)
+
+    If result.Equals(SignInStatus.Success) Then
+      Return New HttpResponseMessage(HttpStatusCode.Accepted)
+    Else
+      Return New HttpResponseMessage(HttpStatusCode.Forbidden)
+    End If
+  End Function
+End Class]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/287.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:287,CWETOP25:2021:14]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.InformationExposureThroughDebugLog" message="InformationExposureThroughDebugLog: Avoid exposing sensible information through log" class="com.optimyth.vbnet.rules.security.tainting.InformationExposureThroughDebugLog" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:7.1.1,ASVS-v4.0.2:7.1.2,ASVS-v4.0.2:8.3.5,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Logs can be very helpful at development stages but they should be used on later stages
+because they can show rewarding information.
+
+When a log shows sensible information, it can create a security leak, making useless any other system protection
+mechanisms. Also sensible data can have many legal implications due to the established limitations about personal
+information storage.
+
+This rule reports violation when the log shows information that could be considered sensible.]]></description>
+    <priority>4</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoiding exposing sensible data improves security because it could provide rewarding information to a malicious attacker.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports Microsoft.Extensions.Logging
+
+Public Class SourceClass
+  Private ReadOnly _logger As ILogger
+
+  Public Sub New(ByVal logger As ILogger(Of TodoController))
+    _logger = logger
+  End Sub
+
+  Public Sub process()
+    Dim password As String = "password"
+    ' VIOLATION, sensitive information logged
+    _logger.LogInformation(LoggingEvents.GetItem, "Password {password}", password)
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[' Avoid logging sensible data.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/532.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:532,CWETOP25:2021:39]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.InformationExposureThroughErrorMessage" message="InformationExposureThroughErrorMessage: Avoid sensitive information exposure through error messages" class="com.optimyth.vbnet.rules.security.tainting.InformationExposureThroughErrorMessage" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.1,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[When an error message is generated, care should be taken to ensure that it does not contain
+sensitive information about the environment, users or any other information that may be considered sensitive.
+
+Such information may be valuable itself or may be useful for further attacks with a higher impact.
+
+Also attention should not only be paid to information explicitly included into error messages (for example by using Console.WriteLine),
+but also to certain functions that may produce an error that unexpectedly shows sensitive information. In this situations
+it is necessary to check that the possible errors are handled somehow.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid sensitive information leakage.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+
+Public Class MyType
+  Public Shared Sub Main(ByVal args As String())
+    Try
+      Dim cs As String = "database=northwind;server=mySQLServer..."
+      Dim conn As SqlConnection = New SqlConnection(cs)
+      ' ...
+    Catch e As Exception
+      ' VIOLATION, exception details shown to the end-user
+      Console.WriteLine(e.ToString())
+    End Try
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System
+
+Public Class MyType
+  Public Shared Sub Main(ByVal args As String())
+    Try
+      Dim cs As String = "database=northwind;server=mySQLServer..."
+      Dim conn As SqlConnection = New SqlConnection(cs)
+      ' ...
+    Catch e As Exception
+      ' FIXED
+      Console.WriteLine("Error connecting to database")
+    End Try
+  End Sub
+End Class]]></repair>
+    <reference><![CDATA[]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:209,OWASP:2021:A4,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.InsecureEmailTransport" message="InsecureEmailTransport: Insecure Mail Transport" class="com.optimyth.vbnet.rules.security.InsecureEmailTransport" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[When sending e-mail messages (with SMTP, the protocol commonly used), the transport protocol should be encrypted for confidentiality.
+Otherwise, emails sent by the application could be eavesdropped by attackers.
+
+This rule detects usages of .Net's SmtpClient class without SSL enabled.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Net.Mail
+
+Public Class EmailTransport
+    Public Sub SendEmail(ByVal [to] As String, ByVal subject As String, ByVal body As String)
+        Dim [to] As String = "destination@acme.com"
+        Dim from As String = "source@acme.com"
+        Dim message As MailMessage = New MailMessage(from, [to])
+        message.Subject = subject
+        message.Body = body
+        Dim client As SmtpClient = New SmtpClient("smtp.acme.com")
+        client.UseDefaultCredentials = True
+        client.Send(message) ' VIOLATION
+    End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System
+Imports System.Net.Mail
+
+Public Class EmailTransport
+    Public Sub SendEmail(ByVal [to] As String, ByVal subject As String, ByVal body As String)
+        Dim [to] As String = "destination@acme.com"
+        Dim from As String = "source@acme.com"
+        Dim message As MailMessage = New MailMessage(from, [to])
+        message.Subject = subject
+        message.Body = body
+        Dim client As SmtpClient = New SmtpClient("smtp.acme.com")
+        client.UseDefaultCredentials = True
+        client.EnableSsl = True ' FIXED
+        client.Send(message)
+    End Sub
+End Class
+
+' Alternatively, you may configure SSL in Web.Config:
+<configuration>
+  <system.net>
+    <mailSettings>
+      <smtp deliveryMethod="network" from="user@acme.com">
+        <network
+          host="smtp.acme.com" port="587" defaultCredentials="true"
+          enableSsl="true"
+          username="user@acme.com" password="******" />
+      </smtp>
+    </mailSettings>
+  </system.net>
+</configuration>]]></repair>
+    <reference><![CDATA[https://msdn.microsoft.com/library/system.net.mail.smtpclient.enablessl.aspx]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP:2021:A4,PCI-DSS:6.5.4,WASC:04]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.InsecureTransport" message="InsecureTransport: Insecure transport" class="com.optimyth.vbnet.rules.security.InsecureTransport" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[An insecure transport is used in a request for a remote resource.
+
+In .Net software, this rule requires that all requests for a remote HTTP resource are performed
+on a secure transport (SSL/TLS).
+
+Request content over an insecure transport is cleartext, and any sensitive information it contains may be eavesdropped.
+
+NOTE: Obviously the remote resource must support HTTPS... If that is not the case, and HTTPS in not possible,
+mute the reported defect, or deactivate this rule.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve security at transport layer, avoiding sensible data, like bank details, interception.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Net.Http
+
+Public Class Test
+  Public Shared Function Main() As Integer
+    Dim httpClient As HttpClient = New HttpClient()
+    ' VIOLATION, unsafe transport
+    httpClient.BaseAddress = New Uri("http://foobar.com/")
+  End Function
+End Class]]></example>
+    <repair><![CDATA[Imports System
+Imports System.Net.Http
+
+Public Class Test
+  Public Shared Function Main() As Integer
+    Dim httpClient As HttpClient = New HttpClient()
+    ' FIXED
+    httpClient.BaseAddress = New Uri("https://foobar.com/")
+  End Function
+End Class]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP:2021:A4,PCI-DSS:6.5.4,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="checkFtpConn" descname="When true then insecure FTP connections are checked too." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.LogForging" message="LogForging: Improper Output Neutralization for Logs" class="com.optimyth.vbnet.rules.security.tainting.LogForging" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:7.3.1,ASVS-v4.0.2:7.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[When the application writes untrusted input to a log destination,
+a "log forging" attack could be launched to inject false log entries, corrupt log entries,
+or even exploit a vulnerability in an external "log viewer" application.
+
+Corrupted log entries could hinder detection for malicious activity, or implicate another party
+in the commission of a malicious act.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports Microsoft.Extensions.Logging
+Imports System
+Imports System.IO
+Imports System.Web
+
+Public Class LogForgingHandler
+  Implements IHttpHandler
+
+  Private logger As ILogger
+
+  Public Sub ProcessRequest(ByVal ctx As HttpContext)
+    Dim username As String = ctx.Request.QueryString("username")
+    ' VIOLATION
+    logger.Warn(username & " log in requested.")
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports Microsoft.Extensions.Logging
+Imports System
+Imports System.IO
+Imports System.Web
+
+Public Class LogForgingHandler
+  Implements IHttpHandler
+
+  Private logger As ILogger
+
+  ' Neutralize message with untrusted input, before passing to logging API
+  Public Sub ProcessRequest(ByVal ctx As HttpContext)
+    Dim username As String = ctx.Request.QueryString("username")
+    ' FIXED, remove new-lines to neutralize attack
+    logger.Warn(username.Replace(Environment.NewLine, "") & " log in requested")
+  End Sub
+End Class]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/117.html,https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:117,OWASP:2021:A9,PCI-DSS:10.5.2,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.MailCommandInjection" message="MailCommandInjection: Mail Command Injection" class="com.optimyth.vbnet.rules.security.tainting.MailCommandInjection" technology="VBNET" active="true">
+    <tags><![CDATA[CWEScope:Integrity]]></tags>
+    <description><![CDATA[Mail command injection vulnerabilities occur when an attacker can influence the commands sent to an SMTP, POP3, or IMAP mail server.
+If the library or the developer fails to safely encode the line breaks, an attacker controlling any of the arguments for these commands
+will be able to inject line breaks and new commands after them.
+
+As line breaks are the usual mechanism that attackers use to change the expected behaviour, this vulnerability
+is considered a special CRLF Injection attack.
+
+What the attacker may launch by exploting a Mail Command Injection vulnerability include:
+- Generate spam (SMTP). The application acts as a "mail proxy" that attackers may use to create spam messages.
+- Read messages from other users (POP3/IMAP).
+- Abusing a trusted server to send HTML emails with malicious contents.
+- Change authentication or security options, to skip security controls in mail servers.
+
+See "MX Injection: Capturing and Exploiting Hidden Mail Servers", from Vicente Aguilera, for a full description on
+the benefits that an attacker may gain.
+
+The rule checks when vulnerable mail libraries are called with untrusted input, without validation, which might be vulnerable
+to Mail Command Injection attacks.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid Mail Command Injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Web
+Imports System.Net.Mail
+
+Public Class SourceClass
+  Public Sub processContext(ByVal context As HttpContext)
+    Dim [to] As String = context.Request.Item("to")
+    Dim body As String = context.Request.Item("body")
+    Dim client As SmtpClient = New SmtpClient()
+    ' VIOLATION, to might contain CR/LR sequences that may lead to SMTP injection
+    client.Send("from@company.com", [to], "subject", body)
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[' validate untrusted subject input with a white-list strategy,
+' or at least ensure that line breaks (CR/LF) are removed from "to" untrusted info.]]></repair>
+    <reference><![CDATA[OWASP Testing for IMAP/SMTP injection: https://www.owasp.org/index.php/Testing_for_IMAP/SMTP_Injection_(OTG-INPVAL-011),http://www.webappsec.org/projects/articles/121106.pdf,http://projects.webappsec.org/w/page/13246948/Mail%20Command%20Injection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:93,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:30]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.MainMethodInWebApplication" message="MainMethodInWebApplication: Main() method not allowed in web application" class="com.optimyth.vbnet.rules.security.MainMethodInWebApplication" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-4.0.2:14.2.2,ASVS-4.0.2:14.3.2,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,debug-code]]></tags>
+    <description><![CDATA[A common development practice is to add runnable code, in the form of Main(string[]) method,
+for debugging or testing purposes, not intended to be shipped with the web application.
+
+When this code is accidentally left in the web application, typically security controls are not
+applied and this opens the door for unintended modes of interaction.
+
+The rule emits a violation on each Main() method found in any specific web application component,
+or in a type inside ASP.Net application source code.]]></description>
+    <priority>3</priority>
+    <effort>1</effort>
+    <vulntype>System element isolation</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Linq
+Imports System.Web.Mvc
+Imports MovieEntityApp.Models
+
+Namespace MovieEntityApp.Controllers
+    <HandleError>
+    Public Class HomeController
+        Inherits Controller
+
+        Private _db As MoviesDBEntities
+
+        Public Sub New()
+            _db = New MoviesDBEntities()
+        End Sub
+
+        <AcceptVerbs(HttpVerbs.[Get])>
+        Public Function Index() As ActionResult
+            ViewData.Model = _db.Movies.ToList()
+            Return View()
+        End Function
+
+        ' VIOLATION, Main() in web MVC controller
+        Public Shared Function Main(ByVal args As String()) As Integer
+            Dim controller As HomeController = New HomeController()
+            ' ... testing code for controller ...
+        End Function
+    End Class
+End Namespace]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/489.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:489,PCI-DSS:6.5.5]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.NoSQLInjection" message="NoSQLInjection: Improper neutralization of special elements in data query logic (NoSQL injection)" class="com.optimyth.vbnet.rules.security.tainting.NoSQLInjection" technology="VBNET" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,NoSQL]]></tags>
+    <description><![CDATA[The application generates a query intended to access or manipulate data in a data store such as a NoSQL database,
+but it does not neutralize or incorrectly neutralizes special elements that can modify the intended logic of the query.
+
+Depending on the capabilities of the query language, an attacker could inject additional login into the query to:
+- Modify the intended selection criteria, thus changing which data entities (e.g., records) are returned, modified, or otherwise manipulated.
+- Append additional commands to the query.
+- Return more or fewer entities than intended.
+- Cause entities to be sorted in an unexpected way.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent NoSQL injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Data
+Imports System.Data.Common
+Imports MongoDB.Driver
+
+Public Class InvoiceProvider
+  Private server As MongoServer
+  Private Property database As String
+
+  Public Sub New(ByVal connectionString As String)
+    Dim client As MongoClient = New MongoClient(connectionString)
+    server = client.GetServer()
+  End Sub
+
+  Public Function findOne(ByVal databaseName As String, ByVal collectionName As String) As String
+    Dim db = server.GetDatabase(databaseName)
+    Dim collection = db.GetCollection(collectionName)
+
+    Dim query As String = Request.QueryString("EXPRESSION")
+    Dim bsonDoc As BsonDocument = MongoDB.Bson.Serialization.BsonSerializer.Deserialize(Of BsonDocument)(query)
+
+    ' VIOLATION
+    Dim result = collection.FindOne(New QueryDocument(bsonDoc))
+
+    If result IsNot Nothing Then
+      Return result.ToJson()
+    Else
+      Return ""
+    End If
+  End Function
+End Class]]></example>
+    <repair><![CDATA[Imports System.Data
+Imports System.Data.Common
+Imports MongoDB.Driver
+
+Public Class InvoiceProvider
+  Private server As MongoServer
+  Private Property database As String
+
+  Public Sub New(ByVal connectionString As String)
+    Dim client As MongoClient = New MongoClient(connectionString)
+    server = client.GetServer()
+  End Sub
+
+  Public Function findOne(ByVal databaseName As String, ByVal collectionName As String) As String
+    Dim db = server.GetDatabase(databaseName)
+    Dim collection = db.GetCollection(collectionName)
+
+    ' FIXED, external expression is validated
+    Dim query As String = sanitize( Request.QueryString("EXPRESSION") )
+    Dim bsonDoc As BsonDocument = MongoDB.Bson.Serialization.BsonSerializer.Deserialize(Of BsonDocument)(query)
+
+    Dim result = collection.FindOne(New QueryDocument(bsonDoc))
+
+    If result IsNot Nothing Then
+        Return result.ToJson()
+    Else
+        Return ""
+    End If
+  End Function
+End Class]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/943.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:943,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.PlaintextStorageOfPassword" message="PlaintextStorageOfPassword: Plaintext Storage of a Password" class="com.optimyth.vbnet.rules.security.tainting.PlaintextStorageOfPassword" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.7.5,CWEScope:Access-Control,credentials]]></tags>
+    <description><![CDATA[Storing a password in plaintext may result in a system compromise.
+
+Password management issues occur when a password is stored in plaintext in an application's properties or configuration file.
+Storing a plaintext password in a configuration file allows anyone who can read the file access to the password-protected resource.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports MySql.Data.MySqlClient
+
+Class MainClass
+  Public Shared Sub Main(ByVal args As String())
+    Dim dbuser As String = Environment.GetEnvironmentVariable("DBUSER")
+    Dim dbpass As String = Environment.GetEnvironmentVariable("DBPASS")
+
+    Console.WriteLine("Username: " & dbuser & ", password: " & dbpass) ' VIOLATION
+
+    Dim connectionString As String = "server=localhost;uid=" & dbuser & ";password=" & dbpass & ";database=dbname"
+    Using dbConnection As MySqlConnection = New MySqlConnection(connectionString)
+      dbConnection.Open()
+      ' ...
+    End Using
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System
+Imports MySql.Data.MySqlClient
+Imports System.Text
+Imports System.Security.Cryptography
+
+Class MainClass
+  Public Shared Sub Main(ByVal args As String())
+    Dim dbuser As String = Environment.GetEnvironmentVariable("DBUSER")
+    Dim dbpass As String = Environment.GetEnvironmentVariable("DBPASS")
+
+    ' FIXED, the password was encrypted using the DPAPI, here it is decrypted
+    Dim bytes As Byte() = UnicodeEncoding.ASCII.GetBytes(dbpass)
+    ProtectedMemory.Unprotect(bytes, MemoryProtectionScope.SameLogon)
+    dbpass = UnicodeEncoding.ASCII.GetString(dbpass)
+
+    Console.WriteLine("Username: " & dbuser & ", password: " & dbpass)
+
+    Dim connectionString As String = "server=localhost;uid=" & dbuser & ";password=" & dbpass & ";database=dbname"
+    Using dbConnection As MySqlConnection = New MySqlConnection(connectionString)
+      dbConnection.Open()
+      ' ...
+    End Using
+  End Sub
+End Class]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/256.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:522,CWETOP25:2021:21,OWASP:2021:A4,PCI-DSS:6.3.1]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+      <property name="pattern" descname="Regular expression for matching field names containing credentials." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.ProcessControl" message="ProcessControl: Do not load executables or libraries from untrusted sources" class="com.optimyth.vbnet.rules.security.tainting.ProcessControl" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.14.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,code-injection,scripting]]></tags>
+    <description><![CDATA[Loading libraries or executables from an untrusted source or in an untrusted environment can cause an application
+to execute malicious code on behalf of an attacker.
+
+Sometimes a developed or third-party library needs to be be run during application execution. For example, System.AppDomain type provides
+methods for running libraries or for loading types from a library. If the path to the library depends on external untrusted input,
+for example configuration entries, an attacker that could modify the external input could manage to execute uninteded code,
+with the privileges of the application.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid code injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Configuration
+
+Public Class ProcessControl
+  Public Sub runAssembly()
+    ' if an attacker manages to alter configuration, this is catastrophic
+    Dim libpath As String = ConfigurationManager.AppSettings("MY_LIBRARY")
+    Environment.ExitCode = AppDomain.CurrentDomain.ExecuteAssembly(libpath)
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[' Validate the library path, to avoid executing code from an unintended library.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/114.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:114,CWE:494,OWASP:2021:A1,OWASP:2021:A8,PCI-DSS:6.5.8,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="allowSystemConfiguration" descname="If false, any kind of input is considered untrusted; if true, only user input is considered untrusted" value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.ProperPaddingWithPublicKeyCrypto" message="ProperPaddingWithPublicKeyCrypto: Use of RSA Algorithm without Optimal Asymmetric Encryption Padding (OAEP)" class="com.optimyth.vbnet.rules.security.ProperPaddingWithPublicKeyCrypto" technology="VBNET" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,RSA]]></tags>
+    <description><![CDATA[The software uses the RSA algorithm for cryptographic operations (encryption/decryption, digital signature creation/verification),
+but does not use a padding considered adequate for the operation.
+
+RSA operations should always use some padding to make it robust againt cryptographic attacks.
+Microsoft's cryptography API does not allow RSA operations without padding, which is a good starting point.
+
+PKCS#1 standard defined a padding scheme that was improved against certain weaknesses by the new OAEP (Optimal Asymmetric
+Encryption Padding) for encryption/decryption, or the PSS (Probabilistic Signature Scheme) for digital signature.
+These are considered the state-of-the-art padding schemes, and are recommended against the older PKCS#1 padding.
+
+With a less robust padding scheme, the cryptographic operation may be vulnerable to certain crypto-analytic attacks.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Security.Cryptography
+
+Public Class BadPadding
+    Private Function encrypt(ByVal msg As Byte(), ByVal pubkeyXml As String) As Byte()
+        Using provider = New RSACryptoServiceProvider()
+            provider.FromXmlString(pubkeyXml)
+            Return provider.Encrypt(msg, False) ' VIOLATION, false means PKCS1 padding
+        End Using
+    End Function
+
+    Private Function decrypt(ByVal msg As Byte(), ByVal pairXml As String) As Byte()
+        Using provider = New RSACryptoServiceProvider()
+            provider.FromXmlString(pairXml)
+            Return provider.Decrypt(msg, False) ' VIOLATION, false means PKCS1 padding
+        End Using
+    End Function
+
+    Private Function encrypt2(ByVal msg As Byte(), ByVal pubkeyXml As String) As Byte()
+        Using provider = New RSACryptoServiceProvider()
+            provider.FromXmlString(pubkeyXml)
+            Return provider.Encrypt(msg, RSAEncryptionPadding.Pkcs1) ' VIOLATION
+        End Using
+    End Function
+
+    Private Function decrypt2(ByVal msg As Byte(), ByVal pairXml As String) As Byte()
+        Using provider = New RSACryptoServiceProvider()
+            provider.FromXmlString(pairXml)
+            Return provider.Decrypt(msg, RSAEncryptionPadding.Pkcs1) ' VIOLATION
+        End Using
+    End Function
+
+    Private Function sign(ByVal dataToSign As Byte(), ByVal key As RSAParameters) As Byte()
+        Using rsa = New RSACryptoServiceProvider()
+            rsa.ImportParameters(key)
+            Return rsa.SignData(dataToSign, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1) ' VIOLATION
+        End Using
+    End Function
+
+    Private Function verify(ByVal dataToVerify As Byte(), ByVal sig As Byte(), ByVal key As RSAParameters) As Boolean
+        Using rsa = New RSACryptoServiceProvider()
+            rsa.ImportParameters(key)
+            Return rsa.VerifyData(dataToVerify, sig, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1) ' VIOLATION
+        End Using
+    End Function
+End Class]]></example>
+    <repair><![CDATA[Imports System
+Imports System.Security.Cryptography
+
+Public Class OkPadding
+    Private Function encrypt(ByVal msg As Byte(), ByVal pubkeyXml As String) As Byte()
+        Using provider = New RSACryptoServiceProvider()
+            provider.FromXmlString(pubkeyXml)
+            Return provider.Encrypt(msg, True) ' OK, true means OAEP
+        End Using
+    End Function
+
+    Private Function decrypt(ByVal msg As Byte(), ByVal pairXml As String) As Byte()
+        Using provider = New RSACryptoServiceProvider()
+            provider.FromXmlString(pairXml)
+            Return provider.Decrypt(msg, True) ' OK, true means OAEP
+        End Using
+    End Function
+
+    Private Function encrypt2(ByVal msg As Byte(), ByVal pubkeyXml As String) As Byte()
+        Using provider = New RSACryptoServiceProvider()
+            provider.FromXmlString(pubkeyXml)
+            Return provider.Encrypt(msg, RSAEncryptionPadding.OaepSHA512) ' OK
+        End Using
+    End Function
+
+    Private Function decrypt2(ByVal msg As Byte(), ByVal pairXml As String) As Byte()
+        Using provider = New RSACryptoServiceProvider()
+            provider.FromXmlString(pairXml)
+            Return provider.Decrypt(msg, RSAEncryptionPadding.OaepSHA512) ' OK
+        End Using
+    End Function
+
+    Private Function sign(ByVal dataToSign As Byte(), ByVal key As RSAParameters) As Byte()
+        Using rsa = New RSACryptoServiceProvider()
+            rsa.ImportParameters(key)
+            Return rsa.SignData(dataToSign, HashAlgorithmName.SHA1, RSASignaturePadding.Pss) ' OK
+        End Using
+    End Function
+
+    Private Function verify(ByVal dataToVerify As Byte(), ByVal sig As Byte(), ByVal key As RSAParameters) As Boolean
+        Using rsa = New RSACryptoServiceProvider()
+            rsa.ImportParameters(key)
+            Return rsa.VerifyData(dataToVerify, sig, HashAlgorithmName.SHA1, RSASignaturePadding.Pss) ' OK
+        End Using
+    End Function
+End Class]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/780.html,https://rdist.root.org/2009/10/06/why-rsa-encryption-padding-is-critical/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:780,OWASP:2021:A2]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedPaddingForEncryption" descname="Comma-separated list of allowed padding schemes for encryption/decryption." value="OaepSHA1,OaepSHA256,OaepSHA384,OaepSHA512"/>
+      <property name="allowedPaddingForSignature" descname="Comma-separated list of allowed padding schemes for digital signatures." value="Pss"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.ResourceInjection" message="ResourceInjection: Improper control of resource identifiers (&quot;Resource Injection&quot;)" class="com.optimyth.vbnet.rules.security.tainting.ResourceInjection" technology="VBNET" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software takes from an untrusted source the identifier for a system resource (like a port number),
+and allows access to a non-expected resource. Attackers may use the flaw for malicious behaviour,
+for example a port scan, change software configuration, transmit sensitive information to a third-party server,
+etc.
+
+OWASP project uses the term "Insecure Direct Object Reference" instead of "Resource Injection".
+
+Note: Please note that other rules may check injection flaws for specific resources (like Path Traversal rule for filesytem resources,
+or SSRF for network addresses). This rule reports injection flaws on resource identifiers not covered by other rules.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Int32
+Imports System.Web
+Imports System.Net
+
+Public Class ResourceInjection
+  Public Function connect(ByVal address As String, ByVal req As HttpRequest) As Socket
+    Dim rPort As Integer = Int32.Parse(req.Item("rPort"))
+
+    Dim endpoint As IPEndPoint = New IPEndPoint(address, rPort) ' VIOLATION
+    socket = New Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
+    socket.Connect(endpoint)
+    Return socket
+  End Function
+End Class]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Resource_Injection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:99,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.ServerInsecureTransport" message="ServerInsecureTransport: Insecure transport in HTTP servers]" class="com.optimyth.vbnet.rules.security.ServerInsecureTransport" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[For sensitive applications, a secure transport (like TLS/SSL) provides confidentiality and integrity in communications
+with the server.
+
+The rule demands that HTTP servers use SSL/TLS transport, to ensure server-side authentication, confidentiality and
+integrity of the communications with clients.]]></description>
+    <priority>2</priority>
+    <effort>4</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve security at transport layer, avoiding sensible data, like bank details, interception.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Net
+Imports System.Net.Security
+Imports System.Net.Sockets
+
+Public Class Test
+    Public Sub Connect()
+        Dim sck As Socket
+        Dim peer As NetworkStream = New NetworkStream(sck) ' VIOLATION
+        ' peer not covered by SSL/TLS ...
+    End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System
+Imports System.Net
+Imports System.Net.Security
+Imports System.Net.Sockets
+
+Public Class Test
+    Public Sub Connect()
+        Dim sck As Socket
+        Dim peer As SslStream = New SslStream( New NetworkStream(sck) ) ' FIXED
+        ' peer covered by SSL/TLS ...
+    End Sub
+End Class]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/319.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:319,CWETOP25:2021:35,OWASP:2021:A2,PCI-DSS:6.5.4,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="onlyHttps" descname="If true, any HTTP server put to listen will be reported as violation, even when an HTTPS server is started." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.UnsafeCookieRule" message="UnsafeCookieRule: Generate server-side cookies with adequate security properties" class="com.optimyth.vbnet.rules.security.UnsafeCookieRule" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:3.2.3,ASVS-v4.0.2:3.4.1,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Checks that cookies generated in server side have the following security properties:
+
+* Non persistent - Cookie is not stored persistently by the browser (it is hold in memory)
+* HttpOnly - Cookie is not accessible by client-side scripts (not all browsers support this)
+* Secure - Cookie is sent in HTTP/SSL communications only (more difficult to capture on the net)
+* Path - Path should not match a certain patterns that allow transmission to unintended web applications.
+* Domain - Domain should not be too wide so the cookie is sent to unintended servers.
+
+HttpOnly, for example, could mitigate some CSRF (cross-site request forgery) issues as it makes
+more difficult for the attacker to capture sensitive cookies from client-side code generated by
+exploiting an XSS vulnerability in a web application.
+
+Other rules (like HttpSplittingRule) check other conditions, like HTTP Splitting, that could be
+produced when the cookie value depends on user-controlled input non properly neutralized.
+
+NOTE: Not setting domain or path forces browser to send the cookie to the originator's domain and
+application path, so this is considered secure.]]></description>
+    <priority>3</priority>
+    <effort>4</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Web
+
+Class UnsafeCookie
+  Shared Public Sub AddCookie(ByVal sessionToken As String, ByVal response As HttpResponse)
+    ' May report violation when forceHttpOnly or avoidUnsecureCookies are set
+    Dim cookie As HttpCookie = New HttpCookie("sessionID", sessionToken)
+    cookie.Domain = ".com" ' VIOLATION, overly broad domain
+    cookie.Path = "/" ' VIOLATION, overly broad path
+    cookie.Expires = New DateTime(2100, 1, 1) ' VIOLATION, persistent cookie
+    response.Cookies.Add(cookie)
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System
+Imports System.Web
+
+Class UnsafeCookie
+    Shared Public Sub AddCookie(ByVal sessionToken As String, ByVal response As HttpResponse)
+        Dim cookie As HttpCookie = New HttpCookie("sessionID", sessionToken)
+        cookie.Domain = "www.myorg.com" ' FIXED (removal is also OK)
+        cookie.Path = "/myApp" ' FIXED (removal is also OK)
+        cookie.HttpOnly = True ' Recommended
+        cookie.Secure = True ' Recommended
+        response.Cookies.Add(cookie)
+    End Sub
+End Class]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/614.html,http://cwe.mitre.org/data/definitions/1004.html,http://cwe.mitre.org/data/definitions/539.html,http://cwe.mitre.org/data/definitions/200.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:1004,CWE:200,CWE:539,CWE:614,CWETOP25:2021:20,PCI-DSS:6.5.3,WASC:13]]></security>
+    </normatives>
+    <properties>
+      <property name="domainPatternToAvoid" descname="Domain pattern to avoid" value="\.[^\.]+"/>
+      <property name="avoidPersistentCookies" descname="Avoid persistent cookies" value="true"/>
+      <property name="avoidUnsecureCookies" descname="Avoid unsecure cookies" value="true"/>
+      <property name="pathPatternToAvoid" descname="Path pattern to avoid" value="/"/>
+      <property name="forceHttpOnly" descname="Set HttpOnly" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.UnsafeReflection" message="UnsafeReflection: Use of Externally-Controlled Input to Select Classes or Code ('Unsafe Reflection')" class="com.optimyth.vbnet.rules.security.tainting.UnsafeReflection" technology="VBNET" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,reflection]]></tags>
+    <description><![CDATA[If the application uses untrusted external input to determine which class to instantiate or which method to invoke
+using the reflection API, a potential attacker may run unexpected code through the application that were not intended
+by the application developers.
+
+This attack vector may allow the attacker to bypass authentication or access control checks or otherwise cause
+unexpected behaviour in the application.
+
+"Untrusted input" means, in this context, a user-controlled application input, an environment variable or configuration entry,
+or data fetched from an external web source.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Limit potential unexpected code execution, or uncontrolled access to sensitive information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Reflection
+
+Public Class UnsafeReflection
+  Private Shared Function InvokeReflectively( _
+    ByVal classname As String, ByVal method As String, ByVal args As Object() _
+  ) As Object
+    Dim type As Type = Type.[GetType](classname)
+    Dim method As MethodInfo = type.GetMethod(method)
+    Return method.Invoke(Nothing, args)
+  End Function
+
+  Public Shared Function Main(ByVal args As String()) As Integer
+    Dim classname As String = args(0)
+    Dim method As String = args(1)
+    Dim callArgs As Object() = New Object(args.Length - 2 - 1) {}
+    Array.Copy(args, 0, callArgs, 0, callArgs.Length)
+
+    ' VIOLATION
+    ret = InvokeReflectively(classname, method, callArgs)
+    Console.WriteLine(ret)
+  End Function
+End Class]]></example>
+    <repair><![CDATA[' Validate externally-controlled parameters affecting targets of reflexion code]]></repair>
+    <reference><![CDATA[OWASP Unsafe Reflection: https://www.owasp.org/index.php/Unsafe_Reflection,https://cwe.mitre.org/data/definitions/470.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:470,OWASP:2021:A3,PCI-DSS:6.5.8,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.UnvalidatedAspNetModel" message="UnvalidatedAspNetModel: Unvalidated model in MVC controller" class="com.optimyth.vbnet.rules.security.UnvalidatedAspNetModel" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.2,ASVS-v4.0.2:13.3.1,ASVS-v4.0.2:5.1.3,ASVS-v4.0.2:5.1.4,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,aspnet,core.mvc,mvc]]></tags>
+    <description><![CDATA[ASP.Net provide different web frameworks following the model-view-controller paradigm. ASP.Net MVC, Web API and ASP.Net Core
+are the most common instances. Such frameworks use "actions" implemented as methods in the controller class, receiving model data
+(bound from the input message), and generating the result by delegating to a view.
+
+These frameworks allow validation controls on model properties, using attributes typically in the System.ComponentModel.DataAnnotations namespace.
+When a model type has validated properties, and the type is passed as parameter to an action method, the method should check,
+using ModelState.IsValid, that the enforced validations pass, and give an error response without performing any sensitive operation.
+
+When this is not done, validations are ignored and unvalidated inputs may lead to security flaws (SQL and other injection flaws, access control violations, and many more).
+
+To avoid such flaws, the rule checks that action methods using parameters with validated model types are checking the ModelState.IsValid property.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Error handling and fault isolation</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.ComponentModel.DataAnnotations
+
+Namespace MyApi.Models
+    ' Model type that enforce validations
+    Public Class Product
+        Public Property Id As Integer
+        <Required>
+        Public Property Name As String
+        Public Property Price As Decimal
+        <Range(0, 999)>
+        Public Property Weight As Double
+    End Class
+End Namespace
+
+Namespace MyApi.Controllers
+    Public Class ProductsController
+        Inherits ApiController
+
+        Public Function Post(ByVal product As Product) As HttpResponseMessage
+            If ModelState.IsValid Then ' OK, model validation performed
+                ' Do something with the product (not shown).
+                Return New HttpResponseMessage(HttpStatusCode.OK)
+            Else
+                Return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ModelState)
+            End If
+        End Function
+
+        Public Function [Get](ByVal productId As Integer) As HttpResponseMessage
+          ' Do something with the product (not shown).
+        End Function
+
+        ' VIOLATION
+        Public Function Delete(ByVal product As Product) As HttpResponseMessage
+            ' Delete product, without checking if model is valid. Open to attacks
+            Return New HttpResponseMessage(HttpStatusCode.OK)
+        End Function
+    End Class
+End Namespace]]></example>
+    <repair><![CDATA['  Fix reported method with check on the validity of the model
+Public Function Delete(ByVal product As Product) As HttpResponseMessage
+    If ModelState.IsValid Then
+        ' Delete product ...
+        Return New HttpResponseMessage(HttpStatusCode.OK)
+    Else
+        Return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ModelState)
+    End If
+End Function]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/20.html,https://www.asp.net/web-api/overview/formats-and-model-binding/model-validation-in-aspnet-web-api,https://www.strathweb.com/2018/02/exploring-the-apicontrollerattribute-and-its-features-for-asp-net-core-mvc-2-1/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:20,CWETOP25:2021:4,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SEC.XMLEntityInjection" message="XMLEntityInjection: XML entity injection" class="com.optimyth.vbnet.rules.security.tainting.XMLEntityInjection" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.5.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[In XML parsers, when XML document to parse could be altered by untrusted input, and the
+untrusted input may alter the Document Type Definition (DTD, embedded or external), the parser should be configured to
+avoid two kinds of potential attacks:
+
+* XML entity expansion DoS (XML bomb or "billion laughs attack"), CWE-776, where well-formed DTD with
+  internal entities are expanded exponentially until they exhaust memory.
+
+* XML external entity injection (XXE), CWE-611, where an external entity controlled by the attacker refers to the URL
+  of a resource that gives unauthorized access to sensitive files on the server machine, or to a resource
+  like /dev/random in Unix systems that, when entity is expanded, leads to a denial-of-service condition.
+  A variant of this attack is the server-side request forgery (SSRF), where the URL for external DTD or XML-Schema
+  is processed by the URL handler used by the XML parser, allowing the attacker access to an unexpected
+  network resource (for cross-site request forgery attacks or port-scanning enumeration).
+
+Please note that most .Net parsers are not vulnerable by default to XML entity injection attacks because their
+default settings have both entity expansion and external entity resolution disabled.
+
+XML parsing could be hidden in other frameworks and libraries. For example, with REST, when a resource has an XML
+representation, the REST framework typically use an underlying XML parser for processing the request message, which
+obviously is fully under control of a potential attacker.
+
+To be safe during XML processing coming from untrusted sources, a number of XML features should be not enabled
+when configuring the parser.
+
+The rule checks that there is a path between an untrusted input and the XML document to parse,
+then verifies that the XML parser is configured to avoid both external entity and entity expansion attacks.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XML entity attacks that could cause denial-of-service and information leakage.]]></benefits>
+    <inconvenients><![CDATA[Dependencies on certain features related to DTD or entity expansion may render runtime errors.]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Reflection
+Imports System.Xml
+Imports System.Xml.Serialization
+
+Public Class Test
+  Public Function parseXML() As T
+    Dim xml As String = Request.QueryString("EXPRESSION")
+    Dim stream As MemoryStream = New MemoryStream(Encoding.[Default].GetBytes(xml))
+
+    Dim serializer As XmlSerializer = New XmlSerializer(GetType(T), [Namespace])
+
+    Dim settings As XmlReaderSettings = New XmlReaderSettings()
+    settings.DtdProcessing = DtdProcessing.Parse
+    settings.XmlResolver = New XmlSecureResolver(New XmlUrlResolver(), "http://serverName/data/")
+
+    ' VIOLATION, XmlReader settings vulnerable to XML Entity Injection
+    Using reader As XmlReader = XmlReader.Create(stream, settings)
+      Return CType(serializer.Deserialize(reader), T)
+    End Using
+  End Function
+End Class]]></example>
+    <repair><![CDATA[Imports System
+Imports System.Reflection
+Imports System.Xml
+Imports System.Xml.Serialization
+
+Public Class Test
+  Public Function parseXML() As T
+    Dim xml As String = Request.QueryString("EXPRESSION")
+    Dim stream As MemoryStream = New MemoryStream(Encoding.[Default].GetBytes(xml))
+    Dim serializer As XmlSerializer = New XmlSerializer(GetType(T), [Namespace])
+
+    ' FIXED: safe configuration:
+    ' DTD ignored, external entities disabled, and limit entities expansion
+    Dim settings As XmlReaderSettings = New XmlReaderSettings()
+    settings.DtdProcessing = DtdProcessing.Ignore
+    settings.MaxCharactersFromEntities = 1024
+    settings.XmlResolver = Nothing
+
+    Using reader As XmlReader = XmlReader.Create(stream, settings)
+      Return CType(serializer.Deserialize(reader), T)
+    End Using
+  End Function
+End Class]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/776.html,https://cwe.mitre.org/data/definitions/611.html,https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#XmlDocument]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:611,CWE:776,CWETOP25:2021:23,OWASP:2021:A5,PCI-DSS:6.5.1,WASC:43,WASC:44]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.ServerSideRequestForgery" message="ServerSideRequestForgery: Server-Side Request Forgery (SSRF)" class="com.optimyth.vbnet.rules.security.tainting.ServerSideRequestForgery" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.6.1,ASVS-v4.0.2:5.2.6,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[A server side request forgery vulnerability appears when an attacker can send requests from a vulnerable server to remote services.
+
+SSRF attacks allow accessing, through vulnerable server, internal systems located behind a firewall that normally would not be accessible.
+
+There are two kinds of SSRF attacks:
+
+- Trusted SSRF: we just can send requests to a list of predefined remote services.
+- Remote SSRF: we can send requests to any remote IP and port.
+
+SSRF attacks are commonly used  for port scanning and attacking systems from the internal network.
+
+This rule checks if there are connections established using untrusted input data.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent SSRF attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Public Async Function GetAsync(ByVal port As String) As Task(Of JsonObject)
+  Dim ip As String = Request.QueryString("HOST")
+  Dim httpClient As HttpClient = New HttpClient()
+
+  ' VIOLATION
+  Dim response = Await httpClient.GetAsync("http://" & ip & ":" & port)
+  response.EnsureSuccessStatusCode()
+
+  Dim content As String = Await response.Content.ReadAsStringAsync()
+  Return Await Task.Run(Function() JsonObject.Parse(content))
+End Function]]></example>
+    <repair><![CDATA[Public Async Function GetAsync(ByVal port As String) As Task(Of JsonObject)
+  ' FIXED, external IP is validated
+  Dim ip As String = validateIp( Request.QueryString("HOST") )
+  Dim httpClient As HttpClient = New HttpClient()
+
+  Dim response = Await httpClient.GetAsync("http://" & ip & ":" & port)
+  response.EnsureSuccessStatusCode()
+
+  Dim content As String = Await response.Content.ReadAsStringAsync()
+  Return Await Task.Run(Function() JsonObject.Parse(content))
+End Function]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/918.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:918,CWETOP25:2021:24,OWASP:2021:A10,PCI-DSS:6.5.8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SqlInjection" message="SqlInjection: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')" class="com.optimyth.vbnet.rules.security.tainting.SqlInjectionRule" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The software constructs all or part of an SQL command using externally-controlled input, but it does not neutralize properly
+that input that could modify the intended SQL command when it is sent to a database interaction method.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent SQL injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Class DatabaseOperations
+  Public Sub DeleteOldData()
+    Dim user As String = Request.Form("OLD_USER")
+    Dim query As String = "DELETE FROM MYTABLE WHERE USER ='" & user & "'"
+
+    Using conn As SqlConnection = New SqlConnection(connString)
+      ' VIOLATION
+      Dim cmd As SqlCommand = New SqlCommand(query, conn)
+      cmd.Connection.Open()
+      cmd.ExecuteNonQuery()
+    End Using
+  End Sub
+
+  Public Sub DoSelect()
+    Dim filter As String = Request.Form("FILTER")
+    Dim query As String = "SELECT F1, F2 FROM MYTABLE"
+    If Not String.IsNullOrEmpty(filter) Then query += " WHERE F3 = '" & filter & "'"
+
+    Using conn As SqlConnection = New SqlConnection(connString)
+      ' VIOLATION
+      Dim cmd As SqlCommand = New SqlCommand(query, conn)
+      cmd.Connection.Open()
+      Dim reader = cmd.ExecuteReader()
+      ' ...
+    End Using
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[' Proper way: use Parameters API, and NEVER concatenate untrusted data into SQL code
+Class DatabaseOperations
+  Public Sub DeleteOldData()
+    Dim user As String = Request.Form("OLD_USER")
+    Dim query As String = "DELETE FROM MYTABLE WHERE USER = @user"
+
+    Using conn As SqlConnection = New SqlConnection(connString)
+      Dim cmd As SqlCommand = New SqlCommand(query, conn)
+      cmd.Parameters.AddWithValue("@user", user)
+      cmd.Connection.Open()
+      cmd.ExecuteNonQuery()
+    End Using
+  End Sub
+
+  Public Sub DoSelect()
+    Dim filter As String = Request.Form("FILTER")
+    Dim query As String = "SELECT F1, F2 FROM MYTABLE"
+    If Not String.IsNullOrEmpty(filter) Then query += " WHERE F3 = @filter"
+
+    Using conn As SqlConnection = New SqlConnection(connString)
+      Dim cmd As SqlCommand = New SqlCommand(query, conn)
+      If Not String.IsNullOrEmpty(filter) Then cmd.Parameters.AddWithValue("@filter", filter)
+      cmd.Connection.Open()
+      Dim reader = cmd.ExecuteReader()
+      ' ...
+    End Using
+  End Sub
+End Class]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/SQL_Injection_Prevention_Cheat_Sheet,http://stackoverflow.com/questions/35163361/how-can-i-add-user-supplied-input-to-an-sql-statement,https://msdn.microsoft.com/library/ff648339.aspx]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:89,CWETOP25:2021:6,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+      <property name="parametersAsSources" descname="If true, method parameters are considered untrusted inputs." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.StoredCrossSiteScripting" message="StoredCrossSiteScripting: Web content generation from improper sanitized database data and escaped output (Stored Cross-site Scripting, XSS)" class="com.optimyth.vbnet.rules.security.tainting.CrossSiteScriptingRule" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places input taken from database in page content. An attacker could inject browser script code that is executed in the client browser.
+The end-user is the attacked subject, and the software is the vehicle for the attack. This attack is known as Cross-Site Scripting (XSS).
+
+There are three kinds of XSS:
+* Reflected XSS: Attacker causes victim to supply malicious content to a vulnerable web application, which renders HTML content
+  embedding a malicious script executed in victim's browser.
+  A variation of this is named DOM-based XSS, where the vulnerable software does not generate content depending on user input
+  but include script code that use user-controlled input.
+
+* Persistent XSS: Attacker provides malicious content to the vulnerable application, which is stored somewhere.
+  When stored data is fetched and rendered,
+
+This rule analyzes only the "Persistent XSS" case.
+
+When other user access to vulnerable pages that embed without proper neutralization the attacker content,
+script code is executed in the victim's browser. For this, you should add other input kinds (e.g. file_input and/or database_input)
+to the 'inputs' rule property.
+
+The script executed in the victim's browser could perform malicious activities, like stealing active authentication tokens
+(sometimes in the form of cookies) and performing operations on a insecure webapp (on behalf of the victim) that trusts
+too much identity artifacts in browser and do not request additional authorization for operations ('Cross-Site Request Forgery attack', CSRF).
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but user browsers generally allow scripting languages
+(e.g. JavaScript) in their browsers (disabling JavaScript severely limits a web application).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XSS vulnerabilities.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[In this example, we assume that ValidateRequest is disabled.
+
+StoredXSS.aspx:
+<%@ Page Language="VB" AutoEventWireup="true" CodeBehind="StoredXSS.aspx.vb" Inherits="StoredXSS"  ValidateRequest="false" %>
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+  <title></title>
+</head>
+<body>
+  <form id="form1" runat="server">
+  <div>
+    <asp:Label ID="lblName" runat="server" />
+  </div>
+  </form>
+</body>
+</html>
+
+StoredXSS.aspx.vb:
+
+Imports System
+Imports System.Data
+Imports System.Data.SqlClient
+
+Public Partial Class StoredXSS
+  Inherits System.Web.UI.Page
+
+  Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs)
+    Using conn As SqlConnection = getSqlConnection()
+      Dim cmd As SqlCommand = New SqlCommand("SELECT * FROM Customers", conn)
+      conn.Open()
+      Dim reader As SqlDataReader = cmd.ExecuteReader(CommandBehaviour.CloseConnection)
+
+      While reader.Read()
+        lblName.Text += reader(0) ' VIOLATION
+      End While
+    End Using
+  End Sub
+
+  Protected Function getSqlConnection() As SqlConnection
+    ' ...
+  End Function
+End Class
+
+An attacker may insert a malicious payload like "<script>...</script>" in first column of the Customers table
+(probably, in another available point allowing insertions in that table), causing the execution of unexpected
+JavaScript code in the victim's browser.]]></example>
+    <repair><![CDATA[Activating validation request at .aspx page, the issue is fixed.
+
+Other alernative, using Microsoft Anti-XSS library, might be:
+
+Imports System.Web.Security.AntiXss
+
+Public Partial Class StoredXSS
+  Inherits System.Web.UI.Page
+
+  Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs)
+    Using conn As SqlConnection = getSqlConnection()
+      Dim cmd As SqlCommand = New SqlCommand("SELECT * FROM Customers", conn)
+      conn.Open()
+      Dim reader As SqlDataReader = cmd.ExecuteReader(CommandBehaviour.CloseConnection)
+
+      While reader.Read()
+        ' FIXED
+        lblName.Text += AntiXssEncoder.HtmlEncode( reader(0), False )
+      End While
+    End Using
+  End Sub
+
+  Protected Function getSqlConnection() As SqlConnection
+    ' ...
+  End Function
+End Class]]></repair>
+    <reference><![CDATA[https://msdn.microsoft.com/en-us/library/ff649310.aspx,http://cwe.mitre.org/data/definitions/79.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:24]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" value="database_input,network_input"/>
+      <property name="storedXss" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.SystemInformationLeak" message="SystemInformationLeak: Exposure of System Data to an Unauthorized Control Sphere" class="com.optimyth.vbnet.rules.security.tainting.SystemInformationLeakRule" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.2,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[The fact that data from the system or debugging information can cause an attacker to gain information on how act for an attack on the system.
+This fact occurs when system data or debugging information are exposed to third parties through a sequence of output or a log function.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Error handling and fault isolation</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+
+Public Class MyType
+  Public Shared Sub Main(ByVal args As String())
+    Try
+      Dim cs As String = "database=northwind;server=mySQLServer..."
+      Dim conn As SqlConnection = New SqlConnection(cs)
+      ' ...
+
+    Catch e As Exception
+      ' VIOLATION, may leak sensitive information
+      Response.Write( e.ToString() )
+    End Try
+  End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System
+
+Public Class MyType
+  Public Shared Sub Main(ByVal args As String())
+    Try
+      Dim cs As String = "database=northwind;server=mySQLServer..."
+      Dim conn As SqlConnection = New SqlConnection(cs)
+      ' ...
+
+    Catch e As Exception
+      Response.Write( "Database error" ) ' FIXED
+    End Try
+  End Sub
+End Class]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/497.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:497,OWASP:2021:A1,PCI-DSS:6.5.5]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="system_information"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.TooMuchOriginsAllowed" message="TooMuchOriginsAllowed: CORS policy (Cross-origin resource sharing) too broad" class="com.optimyth.vbnet.rules.security.TooMuchOriginsAllowed" technology="VBNET" active="true">
+    <tags><![CDATA[CORS,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Too much allowed origins in HTML5 Access-Control-Allow-Origin header.
+        
+Traditionally, web browsers enforced the Same Origin Policy (SOP) to avoid cross-domain JavaScript to access
+certain contents in web page. This policy prevents a malicious script on one page from obtaining
+access to sensitive data on another web page ("victim") with a different origin. A strict separation between content
+from unrelated sites must be maintained on the browser to prevent loss of data confidentiality or integrity.
+
+Cross-Origin Resource Sharing (CORS) relaxes the SOP. To do this, essentially two HTTP headers (Origin, emitted by client,
+and Access-Control-Allow-Origin, emitted by server). This allows, for example, to Ajax requests (XMLHttpRequest) for
+accessing content from different origin that should be forbidden by the SOP.
+
+With Access-Control-Allow-Origin header, server defines which other domains are allowed to access content in its domain
+using cross-origin requests. A too much permissive value (like '*') will allow a malicious application to communicate
+with the vulnerable application in unexpected ways, leading to different security problems.
+
+NOTE: CORS is intended to avoid data read from pages coming from other origins, and it is enforced by modern browsers.
+Remember that an attacker has full control over an HTTP request message, so do not rely on CORS Origin header for
+validating the source of a request, or for CSRF protection.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Limits read application data from content coming from hostile origins.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Net.Http
+Imports System.Web.Http
+Imports System.Web.Http.Cors
+
+' VIOLATION
+<EnableCors(origins := "*", headers := "*", methods := "PUT,POST")>
+Public Class TestController
+    Inherits ApiController
+End Class]]></example>
+    <repair><![CDATA[Imports System.Net.Http
+Imports System.Web.Http
+Imports System.Web.Http.Cors
+
+' FIXED
+<EnableCors(origins := "https://myorg.com, https://api.myorg.com", headers := "*", methods := "PUT,POST")>
+Public Class TestController
+    Inherits ApiController
+End Class]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/942.html,https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties,http://enable-cors.org/server_aspnet.html,https://docs.microsoft.com/aspnet/web-api/overview/security/enabling-cross-origin-requests-in-web-api,https://w3c.github.io/webappsec-cors-for-developers]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:942,OWASP:2021:A5,PCI-DSS:6.5.10,WASC:15]]></security>
+    </normatives>
+    <properties>
+      <property name="disallowedOriginPattern" descname="Regular expression for CORS origins do not considered valid" value="\*|null"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.UncheckedReturnValue" message="UncheckedReturnValue: Unchecked return value." class="com.optimyth.vbnet.rules.security.UncheckedReturnValueRule" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:11.1.7,CWEScope:Availability,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The software does not check the return value from a method or function, which can prevent it from detecting unexpected states and conditions.
+If an attacker can force the function to fail or otherwise return a value that is not expected, then the subsequent program logic
+could lead to a vulnerability, because the software is not in a state considered by the programmer.
+
+Under .Net, programmers often ignore the return values from methods in many System.IO classes.
+Methods that read/write bytes in an array from/to a stream return the number of value to the number of bytes read/written.
+Therefore, unless the return value is checked explicitely, there is no guarantee that the amount of data is that was requested.
+
+This behavior makes it important for programmers to examine the return value from Read() and other IO methods,
+and ensure that they receive the amount of data they expect.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Control flow management</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Dim bytes As Char() = New Char(1023) {}
+
+Dim i As IEnumerator = users.GetEnumerator()
+While i.MoveNext()
+  Dim userName As String = CStr(i.Current())
+  Dim pFileName As String = PFILE_ROOT & "/" & userName
+
+  Using sr As StreamReader = New StreamReader(pFileName)
+    ' VIOLATION, bytes read not checked
+    sr.Read(bytes, 0, 1024)
+  End Using
+
+  processPFile(userName, bytes)
+  i.Current()
+End While]]></example>
+    <repair><![CDATA[Dim bytes As Char() = New Char(1023) {}
+
+Dim i As IEnumerator = users.GetEnumerator()
+While i.MoveNext()
+  Dim userName As String = CStr(i.Current())
+  Dim pFileName As String = PFILE_ROOT & "/" & userName
+  Dim bytesRead As Integer = 0
+
+  Using sr As StreamReader = New StreamReader(pFileName)
+    bytesRead = sr.Read(bytes, 0, 1024)
+  End Using
+
+  ' FIXED, number of bytes read is checked
+  If bytesRead = 1024 Then
+    processPFile(userName, bytes)
+  Else
+    processTooSmall(userName, bytesRead)
+  End If
+  i.Current()
+End While]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/252.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:252,CWE:754,PCI-DSS:6.5.5,WASC:24]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.WeakCryptographicHash" message="WeakCryptographicHash: Weak cryptographic hash" class="com.optimyth.vbnet.rules.security.WeakCryptographicHash" technology="VBNET" active="true">
+    <tags><![CDATA[CAS350,CAS351,CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,crypto,hash]]></tags>
+    <description><![CDATA[MD5, SHA-1 and RIPEMD160 are popular cryptographic hash functions often used to verify the integrity of messages, and for other usages.
+Recent advances in cryptanalysis have discovered weaknesses in both algorithms. Consequently, MD5, SHA-1 or RIPEMD160
+should no longer be relied upon in security-critical contexts.
+
+Techniques for breaking MD5 hashes are advanced and widely available enough that the algorithm must not be relied upon for security.
+In the case of SHA-1 or RIPEMD160, current techniques still require a significant amount of computational power and are more difficult to implement.
+However, attackers have found the Achilles heal for the algorithm, and techniques for breaking it will likely lead to the discovery
+of even faster attacks. In particular, Google has reported recently an example of colliding SHA-1 hashes.
+
+RIPEMD-160 may be used (for some time in the future) in legacy applications.
+
+The rule checks also for HMAC (message authentication codes based on hash functions) implementations for the forbidden hash algorithms.
+HMACSHA384 is considered safe; MACTripleDES should be used only in legacy applications; HMACMD5 or HMACSHA1 should not be used
+in new applications, even when the security of such HMAC schemes is not as much compromised as with their hash function counterparts.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Security.Cryptography
+' ...
+' VIOLATION, MDS is a weak hash function for most cryptographic usages
+Dim hashAlg = MD5.Create()]]></example>
+    <repair><![CDATA[Imports System.Security.Cryptography
+' ...
+' FIXED
+Dim hashAlg = SHA256.Create()]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/328.html,https://msdn.microsoft.com/en-us/library/mt612873.aspx,https://msdn.microsoft.com/en-us/library/mt612872.aspx,https://en.wikipedia.org/wiki/Hash_function_security_summary]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:328,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:50]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="Comma-separated list of allowed hash functions." value="RIPEMD160, HMACRIPEMD160, MACTripleDES, SHA256, SHA384, SHA512, HMACSHA256, HMACSHA384, HMACSHA512"/>
+      <property name="forbiddenAlgorithms" descname="List of weak hash algorithms" value="MD5, SHA1, HMACMD5, HMACSHA1"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.WeakEncryption" message="WeakEncryption: Insufficient RSA key length" class="com.optimyth.vbnet.rules.security.WeakEncryption" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.8.3,ASVS-v4.0.2:6.2.3,ASVS-v4.0.2:6.2.4,ASVS-v4.0.2:6.2.5,ASVS-v4.0.2:6.2.6,ASVS-v4.0.2:6.2.7,ASVS-v4.0.2:9.1.2,ASVS-v4.0.2:9.1.3,CWEScope:Access-Control,CWEScope:Confidentiality,cipher,crypto]]></tags>
+    <description><![CDATA[An otherwise strong RSA public-key algorithm is vulnerable to brute force attack when a small key size is used.
+
+Current cryptography guidelines suggest that key lengths of at least 1024 bits should be used with the RSA algorithm.
+However, increased computing power and advances in factoring techniques are challenging the security of RSA encryption,
+for key lengths lower than 1024 bits.
+
+Note: Rule WeakKeySize generalizes this rule for key lengths under different ciphers and digital signature primitives.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Security.Cryptography
+' ...
+' VIOLATION, default key length
+Dim rsa As RSACryptoServiceProvider = New RSACryptoServiceProvider()
+' VIOLATION, too small key length
+Dim rsa2 As RSACryptoServiceProvider = New RSACryptoServiceProvider(512)]]></example>
+    <repair><![CDATA[Imports System.Security.Cryptography
+' ...
+' FIXED
+Dim rsa As RSACryptoServiceProvider = New RSACryptoServiceProvider(1024)]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/w/page/13246936/Information%20Leakage,http://cwe.mitre.org/data/definitions/325.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:326,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="minKeySize" descname="Minimun key size" value="1024"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.WeakKeySize" message="WeakKeySize: Weak cryptography, insufficient key length" class="com.optimyth.vbnet.rules.security.WeakKeySize" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.6.1,ASVS-v4.0.2:1.6.2,ASVS-v4.0.2:1.6.3,ASVS-v4.0.2:1.6.4,ASVS-v4.0.2:2.6.3,ASVS-v4.0.2:2.7.6,ASVS-v4.0.2:2.8.2,ASVS-v4.0.2:2.8.3,ASVS-v4.0.2:2.9.1,ASVS-v4.0.2:6.2.1,ASVS-v4.0.2:6.2.3,ASVS-v4.0.2:6.2.4,ASVS-v4.0.2:6.2.5,ASVS-v4.0.2:6.2.6,ASVS-v4.0.2:6.2.7,ASVS-v4.0.2:6.4.2,ASVS-v4.0.2:9.1.2,ASVS-v4.0.2:9.1.3,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[A robust cryptographic algorithm (like RSA or AES) with a small key length could be vulnerable to brute-force type attacks.
+
+For symmetric ciphers, AES-CBC (FIPS 197) is the most often recommended algorithm nowadays, with a block size of at least
+64 bits (128 bits for the better). Recommended minimum key length for AES is 128 bits for most usages, but for long-range
+security, 192 bits or even 256 bits are often recommended.
+
+DES and DESede (or "triple-DES") are, nowadays, not robust enough for most applications. Many algorithms used in the past,
+like Blowfish or RC2, are now deemed insecure.
+
+For asymetric cryptography ("public key"), the algorithm most often used is RSA. Most experts consider 2048 as the
+most adequate key length for common needs, as its usage in digital signature and other applications demand cryptographic
+robustness for a long period of time. Experts now consider 1024 bits for RSA keys (modulus) not enough secure.
+
+Algoritms based on elliptic curves cryptography (like EC-DSA) typically require smaller key sizes, around 200 bits.
+
+See http://www.keylength.com for an interactive site showing current recommendations in cryptographic algorithms,
+key length and other issues to take into account.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Security.Cryptography
+' ... rest of code not shown
+Using rsa As RSA = New RSACryptoServiceProvider(1024, cspParams)) ' VIOLATION
+  ' ...
+End Using]]></example>
+    <repair><![CDATA[Imports System.Security.Cryptography
+' ... rest of code not shown
+Using rsa As RSA = New RSACryptoServiceProvider(2048, cspParams)) ' FIXED
+  ' ...
+End Using]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/320.html,http://cwe.mitre.org/data/definitions/326.html,http://www.keylength.com/,http://cwe.mitre.org/data/definitions/310.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:310,CWE:320,CWE:326,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="minKeySize" descname="Comma-separated list of minimum key size per algorithm." value="AES/128, TripleDES/192, RC2/128, RSA/2048, DSA/2048, ECDsa/256, ECDiffieHellman/256"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.WeakSymmetricEncryptionAlgorithm" message="WeakSymmetricEncryptionAlgorithm: Weak symmetric encryption algorithm" class="com.optimyth.vbnet.rules.security.WeakSymmetricEncryptionAlgorithm" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.9.3,ASVS-v4.0.2:6.2.2,ASVS-v4.0.2:8.3.7,CAS350,CAS351,CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,crypto]]></tags>
+    <description><![CDATA[Encryption algorithms like DES, Triple-DES and RC2 are nowadays too weak for cryptographic usage,
+in particular for ensuring information confidentiality.
+
+DES is currently broken, as an small key size renders it unsafe against brute-force attacks.
+
+RC2 is currently broken, as a related-key attack, where an attacker finds mathematical relationships
+between key values, renders it unsafe as well.
+
+Triple-DES (or 3DES) is weak, and should be migrated to a more robust standard cipher.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Security.Cryptography
+' ...
+' VIOLATION, DES is a weak cipher, for most cryptographic usages
+Dim cipher = DES.Create()]]></example>
+    <repair><![CDATA[Imports System.Security.Cryptography
+' ...
+' FIXED, AES is the current standard for symmetric encryption
+Dim cipher = Aes.Create()]]></repair>
+    <reference><![CDATA[https://msdn.microsoft.com/en-us/library/mt612872.aspx,https://msdn.microsoft.com/en-us/library/mt612873.aspx,http://cwe.mitre.org/data/definitions/327.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:327,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="List of allowed cipher algorithms" value="AES,RIJNDAEL"/>
+      <property name="forbiddenAlgorithms" descname="List of weak cipher algorithms" value="DES,RC2,TripleDES"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.WeakSymmetricEncryptionModeOfOperation" message="WeakSymmetricEncryptionModeOfOperation: Do not use weak modes of operation with symmetric encryption" class="com.optimyth.vbnet.rules.security.WeakSymmetricEncryptionModeOfOperation" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.9.3,ASVS-v4.0.2:6.2.2,ASVS-v4.0.2:8.3.7,CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,crypto]]></tags>
+    <description><![CDATA[For block ciphers, like AES, Triple-DES or RC5, mode of operation is the way the plaintext/ciphertext blocks are combined during
+encryption/decyption of the message.
+
+Many modes of operation (like CTR, OFB or CFB) transforms a block cipher into a stream cipher. Other modes (named Authenticated Encryption modes)
+were designed to combine secrecy and authentication in a single cryptographic primitive (like OCB, CCM or GCM modes).
+
+This rule detects modes that are considered too weak for general usage. For example, ECB mode (the simplest mode, with no feedback)
+is typically a too-weak mode because encrypting the same block always produce the same cipher block. This allows the attacker
+to (1) detect whether two ECB-encrypted messages are identical, (2) detect whether two EBC-encrypted messages share a common prefix
+or other common substrings aligned at block boundaries, or (3) detect whether (and where) a single ECB-encrypted message contains
+repetitive data (zeros, spaces or null bytes), repeated header fields, or repeated phrases in text, and (4) without additional message
+authentication, an attacker can insert previously ciphertext blocks anywhere ("too-much malleable").
+
+A real case that lead to a massive real-world data compromise was the 2013 Adobe password database leak.
+
+Please note that most modes (except EBC) require a unique binary sequence, called initialization vector (IV) for each encryption operation,
+that should not be reused (and typically should be random for most modes). Besides choosing a proper mode of operation,
+a proper IV generation and last-block padding should be also taken into account.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System
+Imports System.Security.Cryptography
+
+Public Class Encryption
+    Public Sub encrypt(ByVal cipherKey As Byte())
+        Dim cipher = New TripleDESCryptoServiceProvider()
+        cipher.Mode = CipherMode.ECB ' VIOLATION
+        cipher.Padding = PaddingMode.PKCS7
+        cipher.Key = cipherKey
+        ' ...
+    End Sub
+End Class]]></example>
+    <repair><![CDATA[Imports System
+Imports System.Security.Cryptography
+
+Public Class Encryption
+    Public Sub encrypt(ByVal cipherKey As Byte())
+        Dim cipher = New TripleDESCryptoServiceProvider()
+        cipher.Mode = CipherMode.CBC ' FIXED
+        ' CBC mode needs an initial vector
+        ' Use a different cryptographic random number for each message
+        ' Pass the IV with the encrypted bytes for decryption
+        cipher.IV = GenerateInitialVector()
+        cipher.Padding = PaddingMode.PKCS7
+        cipher.Key = cipherKey
+        ' ...
+    End Sub
+End Class]]></repair>
+    <reference><![CDATA[http://crypto.stackexchange.com/questions/20941/why-shouldnt-i-use-ecb-encryption,http://cwe.mitre.org/data/definitions/327.html,https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:327,OWASP:2021:A2,PCI-DSS:6.5.8,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="forbiddenModes" descname="List of weak modes of operation for block ciphers." value="ECB"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.XMLInjection" message="XMLInjection: XML Injection (aka Blind XPath Injection)" class="com.optimyth.vbnet.rules.security.tainting.XMLInjection" technology="VBNET" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The extensible markup language (XML) is used in a wide range of applications, from remote procedure calls to storage, exchange and retrieval of data.
+
+By injecting XML content or structures into an XML document, an attacker can alter the logic of the application or insert malicious content.
+
+Input data must be validated before writing into an XML document.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent XML injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Public Sub SaveData()
+  Dim element As String = Request.QueryString("ELEMENT")
+  Dim value As String = Request.QueryString("VALUE")
+
+  Using writer As XmlWriter = XmlWriter.Create("foo.xml")
+    writer.WriteStartElement("product")
+    ' VIOLATION
+    writer.WriteElementString(element, value)
+    writer.WriteEndElement()
+  End Using
+End Sub]]></example>
+    <repair><![CDATA[Public Sub SaveData()
+  Dim element As String = Request.QueryString("ELEMENT")
+  Dim value As String = Request.QueryString("VALUE")
+
+  Using writer As XmlWriter = XmlWriter.Create("foo.xml")
+    writer.WriteStartElement("product")
+    ' FIXED, escape special XML characters in text
+    writer.WriteElementString(System.SecurityElement.Escape(element), System.SecurityElement.Escape(value))
+    writer.WriteEndElement()
+  End Using
+End Sub]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/91.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP:2021:A3,WASC:23]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.XPathInjection" message="XPathInjection: Improper Neutralization of Data within XPath Expressions ('XPath Injection')" class="com.optimyth.vbnet.rules.security.tainting.XpathInjectionRule" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.10,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[.NET framework offers an API to execute a XPath search on a XML DOM tree. If the location path depends on non-neutralized user-input, a potential XPath Injection vulnerability could be present, enabling user control on the nodes returned by the XPath search functions.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It improves the safety.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Imports System.Xml.XPath
+' ...
+Public Function FindUser() As MyUser
+  ' Untrusted data concatenated into XPath query without validation
+  Dim query As String = "/users/user[userID='" & Request.Item("USER_ID") & "']"
+  Dim docNav As XPathDocument = New XPathDocument(myXml)
+  Dim nav As XPathNavigator = docNav.CreateNavigator()
+  Return ToUser( nav.Evaluate(query) ) ' VIOLATION
+End Sub]]></example>
+    <repair><![CDATA[Imports System.Xml.XPath
+' ...
+Public Sub FindUser() As MyUser
+  ' FIXED
+  Dim userToFind As String = validate( Request.Item("USER_ID") )
+  Dim query As String = "/users/user[userID='" & userToFind & "']"
+  Dim docNav As XPathDocument = New XPathDocument(myXml)
+  Dim nav As XPathNavigator = docNav.CreateNavigator()
+  Return ToUser( nav.Evaluate(query) )
+End Sub]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/643.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:643,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+      <property name="parametersAsSources" descname="If true, method parameters are considered untrusted inputs." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.XQueryInjection" message="XQueryInjection: Improper Neutralization of Data within XQuery Expressions ('XQuery Injection')" class="com.optimyth.vbnet.rules.security.tainting.XQueryInjection" technology="VBNET" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[XQuery is primarily a query language for data stored in XML form, although it is also used for manipulating XML documents, competing with XSLT, or generating HTML documents.
+
+When an XQuery Expression is constructed using untrusted input, an attacker can take control over the information selected, or can take control over the content of an XML document or an HTML document if you are using XQuery expressions for that kind of manipulations.
+
+Input data must be validated before using it in an XQuery expression.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent XQuery injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Public Function ValidateData() As Boolean
+    Dim productId = Request("productId")
+    Dim productQuery As String = _
+      "for $product in doc(products.xml)//product[productid='" & productId & "'] return $product"
+    Dim processor As Processor = New Processor()
+    Dim startNode As XdmNode = processor.NewDocumentBuilder().Build(getDocument())
+    Dim compiler As XQueryCompiler = processor.NewXQueryCompiler()
+    Dim executor As XQueryExecutable = compiler.Compile(productQuery) ' VIOLATION
+    Dim evaluator As XQueryEvaluator = executor.Load()
+
+    If evaluator.EvaluateSingle() Is Nothing Then
+      Return False
+    Else
+      Return True
+    End If
+End Function]]></example>
+    <repair><![CDATA[Public Function ValidateData() As Boolean
+    Dim productId = sanitize( Request("productId") ) ' FIXED
+    Dim productQuery As String = _
+      "for $product in doc(products.xml)//product[productid='" & productId & "'] return $product"
+    Dim processor As Processor = New Processor()
+    Dim startNode As XdmNode = processor.NewDocumentBuilder().Build(getDocument())
+    Dim compiler As XQueryCompiler = processor.NewXQueryCompiler()
+    Dim executor As XQueryExecutable = compiler.Compile(productQuery)
+    Dim evaluator As XQueryEvaluator = executor.Load()
+
+    If evaluator.EvaluateSingle() Is Nothing Then
+      Return False
+    Else
+      Return True
+    End If
+End Function]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/652.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:652,OWASP:2021:A3,WASC:23]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VBNET.XSLTInjection" message="XSLTInjection: Avoid using non-neutralized user-controlled input when creating XSL stylesheets" class="com.optimyth.vbnet.rules.security.tainting.XSLTInjection" technology="VBNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.14.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[XSLT is a language for transforming XML documents into XHTML documents or to other XML documents. XSLT adopts the XPath language syntax for expressions. There are also built-in and custom extension functions for building expressions for XML data queries and transformations.
+
+If a XSL stylesheet is created using untrusted input, an attacker can take control over the transformation applied, controlling the final document content so the attacker could perform an XSS attack, expose sensitive information from the application, or execute arbitrary code.
+
+Input data must be validated before using it in an XSL stylesheet.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent XSLT injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Public Sub transform()
+  Dim transformer As XslCompiledTransform = New XslCompiledTransform()
+  transformer.Load( Request("operation") & "_output.xsl" ) ' VIOLATION
+  xslt.Transform("template.xml", "output.html")
+End Sub]]></example>
+    <repair><![CDATA[Public Sub transform()
+  ' FIXED
+  Dim operation As String = validate( Request("operation") )
+  Dim transformer As XslCompiledTransform = New XslCompiledTransform()
+  transformer.Load(operation & "_output.xsl")
+  xslt.Transform("template.xml", "output.html")
+End Sub]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/494.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP:2021:A3,WASC:23]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="VBNET" technology="VBNET" active="true" weight="1.0">
+      <description><![CDATA[VBNET rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="VBNET" active="true" weight="8.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="VBNET" active="true" weight="10.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="VBNET" active="true" weight="5.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="VBNET" active="true" weight="10.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="VBNET" active="true" weight="4.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

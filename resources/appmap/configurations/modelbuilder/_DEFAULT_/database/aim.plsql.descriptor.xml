@@ -1,0 +1,168 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='database' subtech='plsql' descriptor='database/aim.plsql.xml' label='Process Oracle PL/SQL code'>
+  <description>
+    Process Oracle SQL and PL/SQL code (typically extracted from multiple schemas).
+    <br/>
+    Analyze sql files and models PL/SQL entities and dependencies found:
+    types, functions, procedures, packages (its internal functions / procedures / types as well),
+    triggers, used SQL queries and tables, used sequences.
+    <br/>
+    Database entities are located in a schema. Different schema resolution strategies could be used,
+    related to the location of the sql file.
+  </description>
+
+  <properties>
+    <property id='aim.plsql.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>
+        If true, Oracle SQL and PL/SQL code will be processed.
+      </description>
+    </property>
+
+    <property id='aim.plsql.database' type='string'>
+      <name>database</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>
+        The default database.
+      </description>
+    </property>
+
+    <property id='aim.plsql.schema' type='string'>
+      <name>schema</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>
+        The default schema, to use when the schema cannot be resolved.
+      </description>
+    </property>
+
+    <property id='aim.plsql.rule.createInternalObjects' type='bool'>
+      <name>createInternalObjects</name>
+      <example>true</example>
+      <description>
+        If true, create internal objects (e.g. TYPES) in PL/SQL.
+      </description>
+    </property>
+
+    <property id='aim.plsql.filter' type='enum'>
+      <name>filter</name>
+      <example>default</example>
+      <description>
+        Which files to analyze. Use the default filter (based on extensions in language info) or explicit patterns.
+      </description>
+      <possible>
+        <enumval name="default">Uses the extensions configured in checKing for plsql technology.</enumval>
+        <enumval name="pattern">Uses patterns in <code>pattern</code> property.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.plsql.filter.pattern' type='list' subtype='antPattern'>
+      <name>pattern</name>
+      <example>**/*.sf,**/*.sps,**/*.sp,**/*.fnc,**/*.spp,**/*.plsql,**/*.trg,**/*.sql,**/*.st,**/*.prc,**/*.pks,**/*.pkb</example>
+      <description>
+        Pattern for PL/SQL sources (used if filter set to pattern)
+        Some usual PL/SQL extensions: sf,sps,spb,sp,fnc,spp,plsql,trg,sql,st,prc,pks,pkb
+      </description>
+    </property>
+
+    <property id='aim.plsql.schemaResolver' type='enum'>
+      <name>schemaResolver</name>
+      <example>default</example>
+      <description>
+        Schema resolver to use.
+      </description>
+      <possible>
+        <enumval name="default">
+          Returns the <code>schema</code> property as schema name.
+        </enumval>
+        <enumval name="multi">
+          Assumes that SQL files for multiple schemes follow this layout: <code>SCHEMA_DIR/SchemaName/...sql files in arbitrary subdirs...</code>.
+          The <code>schemasDirectory</code> property contains the directory where schema subdirectories are located.
+        </enumval>
+        <enumval name="directories">
+          The first directory behind sources directory is used as the schema name, if matches one the schemas
+          in <code>allowedSchemas</code> property. If none matches, uses the default strategy.
+        </enumval>
+      </possible>
+    </property>
+
+    <property id='aim.plsql.schemaResolver.multi.schemas' type='string'>
+      <name>allowedSchemas</name>
+      <example>MYSCHEMA,MYOTHERSCHEMA</example>
+      <description>
+        Schemas (comma-separated) to accept when <code>schemaResolver=multi</code>.
+      </description>
+    </property>
+
+    <property id='aim.plsql.schemaResolver.directories.schemasDirectory' type='string'>
+      <name>schemasDirectory</name>
+      <example>${CHECKING_DATA}/plugindata/schema${project}</example>
+      <description>
+        Directory which contains the set of schemas to use when <code>schemaResolver=directories</code>.
+      </description>
+    </property>
+
+    <property id='aim.plsql.ignoreCaseColumns' type='bool'>
+      <name>ignoreCaseColumns</name>
+      <example>${aim.common.ignoreCase}</example>
+      <description>
+        If true, all columns names will be set to upper-case; if false, no case transformation will be done on column names.
+      </description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>
+      database,databaseInstance,table,view,sequence,synonym,index,primaryKey,dblink,other(package),
+      storedProcedure(procedure|function),userType
+    </values>
+    <description>
+      Generates a software (database) for the database instance, and a component (databaseInstance) for the schema.
+      <br/>
+      On the databaseInstance container the rest of database entities are added:
+      tables, views, primary keys, indexes, synonym, sequence, trigger, package, stored procedure / function, db-link.
+      <br/>
+      Note: An Oracle package is modeled as <code>other</code> with plsqlType=package.
+      <br/>
+      The <code>sqlType</code> property and  <code>plsqlType</code> property contains the entity type.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      database-contains->databaseInstance,
+      databaseInstance-contains->*,
+      view-select->table,
+      table-contains->primaryKey,
+      table-contains->index,
+      table-foreignKey->table|synonym,
+      table-uses->trigger,
+      *-*->synonym,
+      synonym-alias->*,
+      other(package)-contains->storedProcedure(procedure|function)|userType
+    </values>
+    <description>
+      The module resolves dependencies found in database items in sql code
+      (see database/database for analyzing schema descriptors).
+      <ul>
+        <li>view-select->table</li>
+        <li>table-contains->primaryKey</li>
+        <li>table-contains->index</li>
+        <li>table-foreignKey->table</li>
+      </ul>
+      For Oracle, the following additional dependencies are resolved:
+      <ul>
+        <li>table-uses->trigger</li>
+        <li>other(package)-contains->storedProcedure(procedure|function)|userType</li>
+        <li>synonym-alias->*</li>
+        <li>dblink-references->databaseInstance(schema)</li>
+      </ul>
+      with dblink containing the target tables that could not be resolved in the target schema, and synonyms taking the
+      right-hand side of relations that use the synonym.
+    </description>
+  </createdRelations>
+
+  <importantConfigurations activation="aim.plsql.rule.active" />
+
+</block>

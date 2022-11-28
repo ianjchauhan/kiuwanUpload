@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="flask" technology="python">
+
+  <description url="https://flask.palletsprojects.com/en/1.1.x/#api-reference">Python Web Framework</description>
+
+  <module name="flask">
+    <function name="Flask" signature="Flask(name)">
+      <return type="flask.app"/>
+    </function>
+
+    <function name="send_file" signature="send_file(filename_or_fp, mimetype=None, as_attachment=False, attachment_filename=None, add_etags=True, cache_timeout=None, conditional=False, last_modified=None)" >
+      <return type="NoneType" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="send_from_directory" signature="send_from_directory(directory, filename, **options)" >
+      <return type="NoneType" />
+    </function>
+    <function name="safe_join" signature="safe_join(directory, *pathnames)" >
+      <return type="str" />
+      <neutralization argpos="0,1,2" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="redirect" signature="redirect(path)" >
+      <return type="flask.Response" />
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+      <sink kind="execution_after_redirect" argpos="0" resource="web"/>
+    </function>
+    <function name="make_response" signature="make_response(rv)" >
+      <return type="flask.Response" />
+      <sink argpos="0" kind="xss" resource="web"/>
+    </function>
+    <function name="escape" signature="escape(str)" >
+      <return type="str" />
+      <neutralization argpos="0" kind="string" resource="filesystem" />
+    </function>
+
+    <member name="session" type="dict">
+      <sink argpos="0" kind="trust_boundary" resource="web" />
+    </member>
+
+    <class name="Markup" >
+      <method name="escape" signature="escape(str)" >
+        <return type="str" />
+        <neutralization argpos="0" kind="string" resource="filesystem" />
+      </method>
+
+    </class>
+
+    <class name="Response" >
+      <field name="headers" type="dict" >
+        <tags>open_redirect: -2</tags>
+        <sink argpos="-2" kind="header_manipulation" resource="web"/>
+      </field>
+      <field name="status_code" type="int" >
+        <source argpos="-1" kind="user_output" resource="web" />
+      </field>
+      <field name="status" type="str" >
+        <sink argpos="-2" kind="header_manipulation" resource="web"/>
+      </field>
+      <field name="mimetype" type="str" >
+        <sink argpos="-2" kind="header_manipulation" resource="web"/>
+      </field>
+
+      <method name="set_cookie" signature="set_cookie(key,value='',max_age=None,expires=None, path='/', domain=None, secure=None, httponly=False)" >
+        <tags>cookieName:0,cookieValue:1,cookieNameArg=key,cookieValueArg=value,httpOnly:httponly:false,secure:secure:false,maxAge:max_age,expires:expires,path:path:/,domain:domain</tags>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+        <sink argpos="0,1" kind="cookie_poisoning" resource="web"/>
+        <sink argpos="0" paramNames="key, value" kind="cookie_plaintext_storage" resource="web" />
+      </method>
+    </class>
+    
+    <class name="request" alias="Request">
+      <constructor name="Request" signature="Request(environ, populate_request=True, shallow=False)"/>
+
+      <field name="form">
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="args" type="dict" >
+        <source argpos="-1" kind="user_input" resource="web" />
+        <sink argpos="0" kind="sensitive_data" resource="web" />
+      </field>
+      <field name="cookies" type="dict" >
+        <tags>CWE:784</tags>
+        <source argpos="-1" kind="user_input" resource="web" />
+        <sink argpos="0" kind="sensitive_data" resource="web" />
+      </field>
+      <field name="remote_addr" type="str" >
+        <tags>remote_host</tags>
+      </field>
+      <field name="environ" type="dict"/>
+    </class>
+
+    <module name="app" >
+      <annotation name="route" >
+        <source argpos="0" kind="user_input" resource="web" />
+      </annotation>
+      
+      <function name="run" signature="run(host=None, port=None, debug=None, **options)" >
+        <sink argpos="-1, 0, 1" paramNames="host, port" kind="resource_injection" />
+        <sink argpos="-2" kind="server_insecure_transport" />
+        <sink argpos="0, 1" paramNames="host, port" kind="ssrf" />
+      </function>
+
+      <class name="Flask" supertypes="flask.helpers._PackageBoundObject" />
+
+      <member name="permanent_session_lifetime" type="int">
+        <tags>session_timeout:-1</tags>
+      </member>
+
+      <class name="config" >
+        <method name="update" signature="update([other])" >
+          <sink argpos="0" kind="sensitive_data" resource="database" />
+        </method>
+      </class>
+    </module>
+
+    <module name="helpers" >
+      <class name="flask.helpers._PackageBoundObject" />
+    </module>
+  </module>
+
+  <module name="flask_sqlalchemy" >
+    <class name="SQLAlchemy" >
+      <constructor name="SQLAlchemy" signature="SQLAlchemy(app=None, use_native_unicode=True, session_options=None, metadata=None)" />
+
+      <field name="engine" type="SQLAlchemy.engine.base.Engine" />
+
+      <method name="get_engine" signature="get_engine(app, bind=None)" >
+        <return type="SQLAlchemy.engine.base.Engine" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+    </class>
+  </module>
+
+  <!-- Flask mail module -->
+  <module name="flaskext" >
+    <module name="mail" >
+      <function name="send" signature="send(msg)" />
+      <function name="connect" signature="connect(send_many=True)" />
+      
+      <class name="Mail" >
+        <!-- safe according to flas-mail documentation -->
+        <function name="send" signature="send(msg)" />
+      </class>
+      
+      <class name="Connection" >
+        <constructor name="Connection" signature="Connection(mail, testing=False, send_many=False)" />
+
+        <function name="send" signature="send(msg)" />
+      </class>
+      
+      <class name="Message" >
+        <constructor name="Message" signature="Message(subject, recipients=None, body=None, html=None, sender=None)" />
+
+        <function name="attach" signature="attach(filename=None, content_type=None, data=None, disposition=None)" />
+        <function name="add_recipient" signature="add_recipient(recipient)" />
+      </class>
+    </module>
+  </module>
+
+</library>

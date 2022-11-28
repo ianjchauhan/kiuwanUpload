@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+  <description>AIM configuration module for Cobol.</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-cobol.xml"/>
+  <import resource="classpath:resources/qaking-tech-sql.xml"/>
+  <import resource="classpath:resources/qaking-tech-plsql.xml"/>
+
+  <bean id="ls_multi_sql_parser" class="com.optimyth.apm.builder.parser.MultiReaderParser">
+  	<property name="parsers"><list>
+      <ref bean="ls_sql_parser"/>
+      <ref bean="ls_plsql_parser"/>
+    </list></property>
+  </bean>
+
+  <bean id="ls_cobol_choose" parent="ls_cobol">
+    <property name="sqlParser" ref="aim.cobol.sql.parser.resolver"/>
+  </bean>
+
+  <bean id="aim.cobol.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">  <!-- apparently, testing use only -->
+    <description>Cobol parser</description>
+    <property name="filter" ref="aim.cobol.filter.${aim.cobol.filter}"/>
+    <property name="languageSupport" ref="ls_cobol_choose"/>
+  </bean>
+
+  <!-- Processors -->
+  <bean id="aim.cobol.sql.processor" class="com.optimyth.apm.builder.rules.sql.BasicSqlProcessor">
+    <property name="addSqlToModel" value="${aim.cobol.rule.addSqlToModel}"/>
+    <property name="parseSqlColumns" value="${aim.cobol.rule.parseSqlColumns}"/>
+    <property name="sqlCallback" ref="aim.cobol.rule.sql.callback"/>
+    <property name="sqlParser" ref="ls_sql_parser" />
+    <property name="variableEvaluator" ref="aim.cobol.rule.evaluator"/>
+  </bean>
+
+  <bean id="aim.cobol.plsql.processor" class="com.optimyth.apm.builder.rules.sql.BasicPlSqlProcessor">
+    <property name="addSqlToModel" value="${aim.cobol.rule.addSqlToModel}"/>
+    <property name="parseSqlColumns" value="${aim.cobol.rule.parseSqlColumns}"/>
+    <property name="sqlCallback" ref="aim.cobol.rule.plsql.callback"/>
+    <property name="sqlParser" ref="ls_plsql_parser" />
+    <property name="variableEvaluator" ref="aim.cobol.rule.evaluator"/>
+  </bean>
+
+  <bean id="aim.cobol.rule.evaluator" class="com.optimyth.apm.builder.rules.cobol.CobolVariableEvaluator"/>
+  
+  <bean id="aim.cobol.multi.sql.processor" class="com.optimyth.apm.builder.rules.sql.CompositeSqlProcessor">
+    <property name="sqlProcessors"><list>
+      <ref bean="aim.cobol.sql.processor"/>
+      <ref bean="aim.cobol.plsql.processor"/>
+    </list></property>
+  </bean>
+
+  <bean id="aim.cobol.statement.processor" class="com.optimyth.apm.builder.variables.rules.cobol.CobolStatementProcessor">
+    <property name="callback" ref="aim.cobol.rule.variables.callback"/>
+  </bean>
+
+  <bean id="aim.cobol.variables.sql.processor" class="com.optimyth.apm.builder.variables.rules.cobol.SqlVariablesProcessor">
+    <property name="callback" ref="aim.cobol.rule.variables.callback"/>
+  </bean>
+
+  <!-- Rules -->
+
+  <bean id="aim.cobol.rule" class="com.optimyth.apm.builder.rules.cobol.CobolBuilderRule">
+    <description>Extract dependencies from Cobol programs</description>
+    <property name="active" value="${aim.cobol.rule.active}"/>
+
+    <property name="callback" ref="aim.cobol.rule.callback"/>
+    <property name="sqlProcessor" ref="aim.cobol.sql.processor.resolver"/>
+
+    <property name="filter" ref="aim.cobol.filter.${aim.cobol.filter}"/>
+
+    <property name="copysToIgnore" value="${aim.cobol.rule.copysToIgnore}"/>
+    <property name="callsToIgnore" value="${aim.cobol.rule.callsToIgnore}"/>
+
+    <property name="parseSqlDependencies" value="${aim.cobol.rule.parseSqlDependencies}"/>
+    <property name="parseFileDependencies" value="${aim.cobol.rule.parseFileDependencies}"/>
+    <property name="parseCicsDependencies" value="${aim.cobol.rule.parseCicsDependencies}"/>
+    <property name="addCodeToRelations" value="${aim.cobol.rule.addSqlToModel}"/>
+  </bean>
+
+  <bean id="aim.variables.cobol.rule" class="com.optimyth.apm.builder.variables.rules.cobol.CobolVariablesBuilderRule">
+    <description>Extract data of vars</description>
+    <property name="active" value="${aim.cobol.rule.variables.active}"/>
+    <property name="filter" ref="aim.cobol.filter.${aim.cobol.filter}"/>
+    <property name="statementProcessor" ref="aim.cobol.statement.processor"/>
+    <property name="sqlVariablesProcessor" ref="aim.cobol.variables.sql.processor"/>
+    <property name="callback" ref="aim.cobol.rule.variables.callback"/>
+    <property name="copyExtensions" value="${aim.cobol.resolver.copy.extensions}" />
+	</bean>
+  
+  <bean id="aim.cobol.ims.rule" class="com.optimyth.apm.builder.rules.cobol.CobolImsRule">
+    <description>Extract IMS dependencies in Cobol programs</description>
+    <property name="active" value="${aim.cobol.ims.rule.active}"/>
+    <property name="cobolCallback" ref="aim.cobol.rule.callback"/>
+    <property name="imsCallback" ref="aim.cobol.ims.callback"/>
+    <property name="filter" ref="aim.cobol.filter.${aim.cobol.filter}"/>
+
+    <property name="identifierFunctionMap" value="${aim.cobol.ims.rule.identifierFunctionMap}"/>
+  </bean>
+
+  <!-- Callbacks -->
+
+  <bean id="aim.cobol.rule.variables.callback" class="com.optimyth.apm.builder.variables.rules.DefaultVariablesCallback">
+	</bean>
+
+  <bean id="aim.cobol.rule.callback" class="com.optimyth.apm.builder.rules.cobol.BetterCobolDependenciesCallback">
+    <property name="copyResolver" ref="aim.cobol.resolver.copy"/>
+    <property name="fileResolver" ref="aim.cobol.copy.file.strict.resolver"/>
+    <property name="calledResolver" ref="aim.cobol.resolver.progcalls"/>
+    <property name="dataStoreResolver" ref="aim.cobol.resolver.progcalls.dds"/>
+    <property name="application" value="${aim.cobol.rule.software}"/>
+    <property name="applicationType" ref="aim.common.softwareType.application"/>
+    <property name="ignoreCase" value="${aim.cobol.rule.ignoreCase}"/>
+    <property name="resolveArtifacts" value="${aim.common.resolveArtifacts}"/>
+    <property name="markUnresolvedDynamicCalls" value="${aim.cobol.rule.markUnresolvedDynamicCalls}"/>
+    <property name="extension" value="${aim.cobol.resolver.copy.extensions}"/>
+    <property name="fileResolverType" value="${aim.cobol.resolver.copy.type}"/>
+  </bean>
+
+  <bean id="aim.cobol.rule.sql.callback" class="com.optimyth.apm.builder.rules.sql.BasicSqlCallback">
+    <property name="dbType" value="${aim.cobol.rule.dbsystem}"/>
+    <property name="dbInstance" value="${aim.cobol.rule.dbname}"/>
+    <property name="ignoreCase" value="${aim.cobol.rule.ignoreCase}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+  
+  <bean id="aim.cobol.rule.plsql.callback" class="com.optimyth.apm.builder.rules.sql.BasicPlSqlCallback">
+    <property name="dbType" value="${aim.cobol.rule.dbsystem}"/>
+    <property name="dbInstance" value="${aim.cobol.rule.dbname}"/>
+    <property name="ignoreCase" value="${aim.cobol.rule.ignoreCase}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+  
+  <bean id="aim.ims.processor" class="com.optimyth.apm.builder.rules.ims.ImsDescriptorProcessor">
+    <property name="dbType" value="${aim.ims.dbsystem}"/>
+    <property name="psbPatterns" value="${aim.ims.psbPatterns}"/>
+  </bean>
+
+  <bean id="aim.cobol.ims.callback" class="com.optimyth.apm.builder.rules.cobol.CobolImsDependenciesCallback">
+    <property name="descriptorProcessor" ref="aim.ims.processor"/>
+    <property name="softwareName" value="${aim.cobol.rule.software}"/>
+    <property name="softwareType" ref="aim.common.softwareType.application"/>
+  </bean>
+
+
+  <!-- Resolvers -->
+
+  <bean id="aim.cobol.resolver.copy" parent="aim.common.resolver.base" class="com.optimyth.apm.builder.rules.cobol.CopyResolver">
+    <description>Resolver for COPY files. Used only for file artefact (COPY entity is always created)</description>
+    <property name="extension" value="${aim.cobol.resolver.copy.extensions}"/>
+    <property name="resolverCopyType" value="${aim.cobol.resolver.copy.type}"/>
+    <property name="fileResolver" ref="aim.cobol.copy.file.resolver"/>
+    <property name="useCallerSoftware" value="${aim.cobol.resolver.copy.unresolved.useCallerSoftware}"/>
+  </bean>
+
+  <bean id="aim.cobol.copy.file.resolver" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>
+      Process aim.cobol.copy.file.resolver.type to choose the right fileresolver used by the copyresolver
+    </description>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.fileresolution.FileResolver"/>
+    <property name="key" value="${aim.cobol.resolver.copy.type}"/>
+    <property name="defaultValue" ref="aim.cobol.copy.file.resolver.multipattern"/>
+    <property name="map"><map>
+      <entry key="singledir" value-ref="aim.cobol.copy.file.resolver.singledir"/>
+      <entry key="multipattern" value-ref="aim.cobol.copy.file.resolver.multipattern"/>
+      <entry key="inmodel" value-ref="aim.cobol.copy.file.resolver.inmodel"/>
+      <entry key="datatablepatterns" value-ref="aim.cobol.copy.file.resolver.datatablepatterns"/>
+    </map></property>
+  </bean>
+  
+  <bean id="aim.cobol.copy.file.strict.resolver" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>
+      Process aim.cobol.copy.file.resolver.type to choose the right fileresolver used by the copyresolver
+    </description>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.fileresolution.FileResolver"/>
+    <property name="key" value="${aim.cobol.resolver.copy.type}"/>
+    <property name="defaultValue" ref="aim.cobol.copy.file.resolver.multipattern"/>
+    <property name="map"><map>
+      <entry key="singledir" value-ref="aim.cobol.copy.file.resolver.singledir"/>
+      <entry key="multipattern" value-ref="aim.cobol.copy.file.resolver.multipattern"/>
+      <entry key="inmodel" value-ref="aim.cobol.copy.file.resolver.inmodel"/>
+      <entry key="datatablepatterns" value-ref="aim.cobol.copy.file.resolver.strict.datatablepatterns"/>
+    </map></property>
+  </bean>
+  
+  <bean id="aim.cobol.sql.processor.resolver" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>
+      Process 
+        + aim.cobol.sql.processor.resolver.type (old config - deprecated)
+        + aim.cobol.sqltype (new config)
+      to choose the right SqlProcessor used by the BuilderRule
+    </description>
+    <property name="key" ref="aim.cobol.sqltype.supportConfig"/>  <!-- To support old and new properties configuration -->
+    <property name="objectType" value="com.optimyth.apm.builder.rules.sql.SqlProcessor"/>
+    <property name="defaultValue" ref="aim.cobol.sql.processor"/>
+    <property name="map"><map>
+      <entry key="sql92"   value-ref="aim.cobol.sql.processor"/> <!-- deprecated value, kept for retro-compatibility -->
+      <entry key="ansisql" value-ref="aim.cobol.sql.processor"/>
+      <entry key="plsql"   value-ref="aim.cobol.plsql.processor"/>
+      <entry key="multi"   value-ref="aim.cobol.multi.sql.processor"/>
+    </map></property>
+  </bean>  
+
+  <bean id="aim.cobol.sql.parser.resolver" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>
+      Process
+        + aim.cobol.sql.processor.resolver.type (old config - deprecated)
+        + aim.cobol.sqltype (new config)
+      to choose the right Language support used by QakingFileParserAdapter
+    </description>
+    <property name="objectType" value="com.als.core.parser.ReaderParser"/>
+    <property name="key" ref="aim.cobol.sqltype.supportConfig"/>  <!-- To support old and new properties configuration -->  
+    <property name="defaultValue" ref="ls_sql_parser"/>
+    <property name="map"><map>
+      <entry key="sql92"   value-ref="ls_sql_parser"/>  <!-- deprecated value, kept for retro-compatibility -->
+      <entry key="ansisql" value-ref="ls_sql_parser"/>
+      <entry key="plsql"   value-ref="ls_plsql_parser"/>
+      <entry key="multi"   value-ref="ls_multi_sql_parser"/>
+    </map></property>
+  </bean>
+  
+  <!-- To support old and new properties configuration -->
+  <bean name="aim.cobol.sqltype.supportConfig" class="com.optimyth.apm.builder.rules.common.FirstNonNullPropertyFactoryBean">
+    <property name="objectType" value="java.lang.String"/>
+    <property name="values">
+      <list>
+        <bean class="java.lang.String"><constructor-arg value="${aim.cobol.sqltype}"/></bean>
+        <bean class="java.lang.String"><constructor-arg value="${aim.cobol.sql.processor.resolver.type}"/></bean>
+      </list>
+    </property>
+  </bean>   
+
+  <bean id="aim.cobol.copy.file.resolver.multipattern" class="com.optimyth.apm.builder.rules.common.fileresolution.MultiDirectoryFileResolver">
+    <property name="basedir" value="${aim.cobol.resolver.copy.basedir}" />
+    <property name="patterns" value="${aim.cobol.resolver.copy.patterns}" />
+  </bean>
+  <bean id="aim.cobol.copy.file.resolver.singledir" class="com.optimyth.apm.builder.rules.common.fileresolution.SingleDirFileResolver">
+    <property name="basedir" value="${aim.cobol.resolver.copy.basedir}" />
+    <property name="recurseDirs" value="${aim.cobol.resolver.copy.recurseDirs}" />
+  </bean>
+  <bean id="aim.cobol.copy.file.resolver.inmodel" class="com.optimyth.apm.builder.rules.common.fileresolution.InModelFileResolver">
+  </bean>
+  <bean id="aim.cobol.copy.file.resolver.datatablepatterns" class="com.optimyth.apm.builder.rules.common.fileresolution.MultiDirectoryOrderFileResolver">
+    <property name="mapResolvers">
+      <map>
+        <entry key="table">
+          <bean class="com.optimyth.apm.builder.rules.common.fileresolution.MultiDirectoryFileResolver">
+            <property name="basedir" value="${aim.cobol.resolver.copy.basedir}" />
+            <property name="patterns" value="${aim.cobol.resolver.table.copy.patterns}" />
+          </bean>
+        </entry>
+        <entry key="data">
+          <bean class="com.optimyth.apm.builder.rules.common.fileresolution.MultiDirectoryFileResolver">
+            <property name="basedir" value="${aim.cobol.resolver.copy.basedir}" />
+            <property name="patterns" value="${aim.cobol.resolver.data.copy.patterns}" />
+          </bean>
+        </entry>
+      </map>
+    </property>
+  </bean>
+  
+  <bean id="aim.cobol.copy.file.resolver.strict.datatablepatterns" class="com.optimyth.apm.builder.rules.common.fileresolution.MultiDirectoryStrictFileResolver">
+    <property name="mapResolvers">
+      <map>
+        <entry key="table">
+          <bean class="com.optimyth.apm.builder.rules.common.fileresolution.MultiDirectoryFileResolver">
+            <property name="basedir" value="${aim.cobol.resolver.copy.basedir}" />
+            <property name="patterns" value="${aim.cobol.resolver.table.copy.patterns}" />
+          </bean>
+        </entry>
+        <entry key="data">
+          <bean class="com.optimyth.apm.builder.rules.common.fileresolution.MultiDirectoryFileResolver">
+            <property name="basedir" value="${aim.cobol.resolver.copy.basedir}" />
+            <property name="patterns" value="${aim.cobol.resolver.data.copy.patterns}" />
+          </bean>
+        </entry>
+      </map>
+    </property>
+  </bean>
+  
+
+  <bean id="aim.cobol.resolver.progcalls" class="com.optimyth.apm.builder.rules.common.callresolution.CompositeCalledResolver">
+    <description>
+      Resolver for program calls. Remember that in Cobol the program name could refer different things:
+      - Another cobol program
+      - A program in other language (e.g. an RPG program)
+      - A "batch" script (e.g. a JCL or CL/400 script)
+    </description>
+    <property name="resolvers"><list>
+      <ref bean="aim.cobol.resolver.progcalls.cobol"/>
+      <ref bean="aim.cobol.resolver.progcalls.job"/>
+      <ref bean="aim.cobol.resolver.progcalls.rpg"/>
+      <ref bean="aim.common.resolver.incremental"/>
+      <ref bean="aim.cobol.resolver.progcalls.fallback"/>
+    </list></property>
+  </bean>
+
+  <bean id="aim.cobol.resolver.progcalls.cobol" parent="aim.common.resolver.base">
+    <description>Resolver for calls to other Cobol programs (in same software)</description>
+    <property name="extension" value="${aim.cobol.resolver.cobol.extensions}"/>
+    <property name="language" value="cobol"/>
+    <property name="fileResolver">
+      <bean class="com.optimyth.apm.builder.rules.common.fileresolution.InModelFileResolver">
+      </bean>
+    </property>
+  </bean>
+
+  <!-- In default config, no explicit processing for DDS usages -->
+  <bean id="aim.cobol.resolver.progcalls.dds" parent="aim.common.resolver.base" class="com.optimyth.apm.builder.rules.cobol.DdsCalledResolver"/>
+
+  <bean id="aim.cobol.resolver.progcalls.fallback" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>
+      Process aim.cobol.resolver.progcalls.registerUnresolvedCalls
+      to choose the right fallback resolver for program calls
+    </description>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.callresolution.CalledResolver"/>
+    <property name="key" value="${aim.cobol.resolver.progcalls.registerUnresolvedCalls}"/>
+    <property name="map"><map>
+      <entry key="true" value-ref="aim.common.resolver.fallback"/>
+      <entry key="false" value-ref="aim.common.resolver.null"/>
+    </map></property>
+  </bean>
+
+  <!-- resolver for calls to scripts: jcl or cl400 -->
+  <bean id="aim.cobol.resolver.progcalls.job" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.callresolution.CalledResolver"/>
+    <property name="key" value="${aim.cobol.resolver.progcalls.job}"/>
+    <property name="defaultValue" ref="aim.common.resolver.null"/>
+    <property name="map"><map>
+      <entry key="jcl" value-ref="aim.cobol.resolver.progcalls.job.jcl"/>
+      <entry key="cl400" value-ref="aim.cobol.resolver.progcalls.job.cl400"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.cobol.resolver.progcalls.job.base" parent="aim.common.resolver.base" abstract="true">
+    <property name="extension" value="${aim.cobol.resolver.job.extensions}"/>
+    <property name="fileResolver">
+      <bean class="com.optimyth.apm.builder.rules.common.fileresolution.InModelFileResolver">
+      </bean>
+    </property>
+  </bean>
+
+  <bean id="aim.cobol.resolver.progcalls.job.jcl" parent="aim.cobol.resolver.progcalls.job.base">
+    <description>Resolver for calls to JCL scripts (in same software)</description>
+    <property name="language" value="jcl"/>
+  </bean>
+
+  <bean id="aim.cobol.resolver.progcalls.job.cl400" parent="aim.cobol.resolver.progcalls.job.base">
+    <description>Resolver for calls to CL/400 scripts (in same software)</description>
+    <property name="language" value="cl400"/>
+  </bean>
+
+  <bean id="aim.cobol.resolver.progcalls.rpg.nonnull" parent="aim.common.resolver.base">
+    <description>Resolver for calls to RPG programs (in same software)</description>
+    <property name="extension" value="${aim.cobol.resolver.rpg.extensions}"/>
+    <property name="language" value="cl400"/>
+    <property name="fileResolver">
+      <bean class="com.optimyth.apm.builder.rules.common.fileresolution.InModelFileResolver">
+      </bean>
+    </property>
+  </bean>
+
+  <bean id="aim.cobol.resolver.progcalls.rpg" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.callresolution.CalledResolver"/>
+    <property name="key" value="${aim.cobol.resolver.progcalls.rpg}"/>
+    <property name="defaultValue" ref="aim.common.resolver.null"/>
+    <property name="map"><map>
+      <entry key="true" value-ref="aim.cobol.resolver.progcalls.rpg.nonnull"/>
+    </map></property>
+  </bean>
+
+  <!-- Filters -->
+  <bean id="aim.cobol.filter.default" parent="ls_cobol_matcher"/>
+
+  <bean id="aim.cobol.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.cobol.filter.pattern}"/>
+  </bean>
+
+
+</beans>

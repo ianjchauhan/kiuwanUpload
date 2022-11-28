@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="web.py" technology="python">
+
+  <description url="http://webpy.org">Simple web framework for Python</description>
+  
+  <module name="web">
+    <function name="application" signature="application()" match="name">
+      <return type="Application"/>
+    </function>
+
+    <function name="input" signature="input(*requireds,**defaults)" match="name">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </function>
+
+    <function name="header" signature="header(hdr,value,unique)" match="name">
+      <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+    </function>
+
+    <function name="data" signature="data()">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </function>
+
+    <function name="setcookie" signature="setcookie(name,value,expires,domain,secure,httpony,path)" match="name">
+      <tags>cookieName:0,cookieValue:1,maxAge:max_age,expires:expires,domain:domain,secure:secure:false,httpOnly:httponly:false,path:path</tags>
+      <sink argpos="0,1" kind="cookie_poisoning" resource="web"/>
+      <sink argpos="0" paramNames="key, value" kind="cookie_plaintext_storage" resource="web" />
+    </function>
+
+    <function name="cookies" signature="cookies(*requireds,**defaults)" match="name">
+      <tags>CWE:784</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </function>
+    
+    <function name="redirect" signature="redirect(url,status,absolute)" match="name"
+              alias="Redirect,found,Found,seeother,SeeOther,tempredirect,TempRedirect">
+      <sink argpos="0" paramNames="url" kind="open_redirect" resource="web"/>
+      <sink kind="execution_after_redirect" argpos="0" paramNames="url" resource="web"/>
+    </function>
+
+    <function name="HTTPError" signature="HTTPError(status,headers,data)">
+      <sink argpos="1" kind="header_manipulation" resource="web"/>
+    </function>
+
+    <function name="ok" signature="ok(data,headers)" alias="created,Created,accepted,Accepted,nocontent,NoContent">
+      <sink argpos="1" kind="header_manipulation" resource="web"/>
+    </function>
+    
+    <class name="Application">
+      <function name="run" signature="run()" match="name"/>
+
+      <function name="request" signature="request(localpart,method,data,host,headers,https,**kw)">
+        <sink argpos="0"  paramNames="localpart" kind="open_redirect" resource="web"/>
+        <sink argpos="0"  paramNames="localpart" kind="ssrf" resource="web"/>
+        <sink argpos="5" paramNames="https" kind="insecure_transport" resource="web"/>
+      </function>
+    </class>
+  </module>
+</library>

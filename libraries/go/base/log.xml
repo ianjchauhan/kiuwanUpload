@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="log">
+
+  <module name="log" >
+    <description url="https://pkg.go.dev/log">Implements a simple logging package</description>
+
+    <class name="log.Logger" kind="struct" >
+      <method name="Fatal" signature="Fatal(go.interface)" alias="Fatalln, Panic, Panicln, Print, Println" >
+        <tags>write</tags>
+        <return type="go.error" />
+        <sink argpos="0,1,2" kind="log_forging" resource="other" />
+      </method>
+      <method name="Fatalf" signature="Fatalf(go.string, go.interface)" alias="Panicf, Printf" >
+        <tags>write</tags>
+        <return type="go.error" />
+        <sink argpos="0" kind="format_injection" resource="other" />
+        <sink argpos="1,2,3" kind="log_forging" resource="other" />
+      </method>
+      <method name="Output" signature="Output(go.int, go.string)" >
+        <tags>write</tags>
+        <return type="go.error" />
+        <sink argpos="1" kind="log_forging" resource="other" />
+      </method>
+      <method name="Writer" signature="Writer()" >
+        <return type="io.Writer" />
+      </method>
+    </class>
+
+    <function name="log.New" signature="log.New(io.Writer, go.string, go.int)" >
+      <return type="log.Logger" />
+    </function>
+
+    <function name="log.Fatal" signature="log.Fatal(go.interface)" alias="log.Fatalln, log.Panic, log.Panicln, log.Print, log.Println" >
+      <tags>write</tags>
+      <return type="go.error" />
+      <sink argpos="0,1,2" kind="log_forging" resource="other" />
+    </function>
+    <function name="log.Fatalf" signature="log.Fatalf(go.string, go.interface)" alias="log.Panicf, log.Printf" >
+      <tags>write</tags>
+      <return type="go.error" />
+      <sink argpos="1,2,3" kind="log_forging" resource="other" />
+    </function>
+    <function name="log.Output" signature="log.Output(go.int, go.string)" >
+      <tags>write</tags>
+      <return type="go.error" />
+      <sink argpos="1" kind="log_forging" resource="other" />
+    </function>
+    <function name="log.Writer" signature="log.Writer()" >
+      <return type="io.Writer" />
+    </function>
+  </module>
+</library>

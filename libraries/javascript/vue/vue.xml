@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="Vue" standard="Vue" technology="javascript">
+  <description url="https://v3.vuejs.org/">Vue.js framework</description>
+
+  <module name="vue">
+    <!-- vue2 and vue3 -->
+    <globalObject name="Vue" type="Vue" alias="vue"/>
+
+    <function name="defineComponent" signature="defineComponent(VueOptions)" alias="defineCustomComponent">
+      <tags>comp-config, vue-options:0</tags>
+      <return type="VueOptions"/>
+    </function>
+    <function name="defineAsyncComponent" signature="defineComponent(Function)">
+      <tags>comp-config</tags>
+      <return type="Object"/>
+    </function>
+    <function name="defineCustomElement" signature="defineCustomElement(VueOptions)">
+      <tags>comp-config, vue-options:0</tags>
+      <return type="Function" elementType="HTMLElement"/>
+    </function>
+
+
+    <class name="Vue">
+      <constructor name="Vue" signature="Vue(VueOptions)">
+        <tags>app-config, vue-options:0</tags>
+      </constructor>
+
+      <field name="$data" type="Object"></field>
+      <field name="$props" type="Object"></field>
+      <field name="$options" type="VueOptions"></field>
+      <field name="$parent" type="Vue"></field>
+      <field name="$children" type="Array" elementType="Vue"></field>
+      <field name="$slots" type="Object" alias="$scopedSlots"></field>
+      <field name="$refs" type="Object"></field>
+      <field name="$isServer" type="Boolean"></field>
+      <field name="$attrs" type="Object"></field>
+      <field name="$listeners" type="Object"></field>
+
+      <method name="$watch" signature="$watch(String, Function, Object)" match="name"><return type="Function"/></method>
+      <method name="$set" signature="$set(Object, String, Object)"></method>
+      <method name="$delete" signature="$delete(Object, )"></method>
+
+      <field name="config" type="Object" instance="false"/>
+
+      <method name="createApp" signature="createApp(VueOptions)" instance="false">
+        <tags>app-config, vue-options:0</tags>
+        <return type="Vue"/>
+      </method>
+      <method name="createSSRApp" signature="createSSRApp(VueOptions)" instance="false">
+        <tags>app-config, vue-options:0</tags>
+        <return type="Vue"/>
+      </method>
+
+      <method name="component" signature="component(String)" match="numargs" instance="false">
+        <tags>vue-comp-name:0</tags>
+        <return type="VueComponent"/>
+      </method>
+
+      <method name="component" signature="component(String, VueOptions)" match="numargs" instance="false">
+        <tags>comp-config, vue-comp-name:0, vue-options:1</tags><!-- options could be a Function as well -->
+        <return type="Vue"/>
+      </method>
+
+      <method name="extend" signature="extend(VueOptions)" instance="false">
+        <tags>app-config, vue-options:0</tags>
+        <return type="Vue"/>
+      </method>
+
+      <method name="nextTick" signature="nextTick(Function, Object)" instance="false"></method>
+      <method name="set" signature="set(Object, String, Object)" instance="false"></method>
+      <method name="delete" signature="delete(Object, String)" instance="false"></method>
+
+      <method name="compile" signature="compile(String)" instance="false">
+        <tags>vue-template:0</tags>
+      </method>
+      <method name="directive" signature="directive(String, VueDirective)" instance="false">
+        <return type="VueDirective"/>
+      </method>
+
+      <method name="createElement" signature="createElement(String, Object, Array)">
+        <!-- This is passed as an argument to the render function, but typically is named 'createElement' -->
+        <tags>vue-render-function</tags>
+      </method>
+
+    </class>
+
+    <class name="VueOptions">
+      <!-- modelled in com.optimyth.qaking.js.frameworks.vue.js.VueOptions -->
+      <field name="name" type="String"></field>
+      <field name="data" type="Object"></field>
+      <field name="props" type="Object"></field>
+      <field name="propsData" type="Object"></field>
+      <field name="computed" type="Object"></field>
+      <field name="methods" type="Object"></field>
+      <field name="watch" type="Object"></field>
+      <field name="name" type="String"></field>
+      <field name="template" type="String"><tags>vue-template:-1</tags></field>
+      <field name="render" type="Function"></field>
+      <field name="renderError" type="Function"></field>
+      <field name="beforeCreate" type="Function" 
+             alias="created,beforeMount.mounted,beforeUpdate,updated,activated,deactivated,beforeDestroy,destroyed,errorCaptured"></field>
+      <field name="beforeUnmount,unmounted,renderTracked,renderTriggered"></field>
+      <field name="directives" type="Object"></field>
+      <field name="filters" type="Object"></field>
+      <field name="components" type="Object"></field>
+      <field name="parent" type="Vue"></field>
+      <field name="mixins" type="Array" elementType="Object"></field>
+      <field name="extends" type="VueOptions"></field>
+      <field name="provide" type="Object"></field>
+      <field name="inject"></field>
+      <field name="delimiters" type="String"></field>
+      <field name="functional" type="Boolean" alias="inheritAttrs,comments"></field>
+      <field name="model" type="Object"></field>
+    </class>
+
+    <class name="VueDirective">
+      <field name="bind" type="Function"></field>
+      <field name="inserted" type="Function"></field>
+      <field name="inserted" type="Function"></field>
+      <field name="update" type="Function"></field>
+      <field name="componentUpdated" type="Function"></field>
+      <field name="unbind" type="Function"></field>
+    </class>
+
+  </module>
+  
+</library>  

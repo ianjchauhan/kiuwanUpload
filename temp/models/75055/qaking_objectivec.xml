@@ -1,0 +1,3638 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_objectivec" updated="">
+  <description>EDCAST_MOBILE</description>
+  <rule name="OPT.OBJECTIVEC.AvoidConfusingUserIdCalls" message="AvoidConfusingUserIdCalls: Avoid setuid() / setreuid() / setgid() / setregid() to change program privilege levels" class="com.optimyth.qaking.objectivec.rules.security.AvoidConfusingUserIdCalls" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[There are several system functions you can use to change the privilege level of a program.
+The semantics of these functions are tricky, and vary depending on the operating system on which they are used.
+
+For example, if you are running with both a group ID (GID) and user ID (UID) that are different from those of the user, you have to drop the GID before dropping the UID. Once you’ve changed the UID, you may no longer have sufficient privileges to change the GID.
+
+As with every security-related operation, you must check the return values of your calls to setuid, setgid, and related routines to make sure they succeeded. Otherwise you might still be running with elevated privileges when you think you have dropped privileges.
+
+As setuid() and related functions are difficult to use without opening security issues, the rule emits a violation for any call to functions listed in the 'forbidden' property (typically seteuid() and seteguid() are the simplest, most portable, and clear functions in the family, and allowed, while setuid() / setreuid() / setgid() / setregid() are considered too tricky to be allowed).
+
+See https://developer.apple.com/library/mac/documentation/security/conceptual/SecureCodingGuide/SecureCodingGuide.pdf for full details.
+
+This rule is Mac OS X-specific.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid potential security vulnerabilities due to misuse of process ID change functions.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[Apple Secure Coding Guide: https://developer.apple.com/library/mac/documentation/security/conceptual/SecureCodingGuide/SecureCodingGuide.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:271]]></security>
+    </normatives>
+    <properties>
+      <property name="forbidden" descname="Comma-separated list of forbidden C functions" value="setuid,setreuid,setgid,setregid"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.AvoidInsecureCStringFunctions" message="AvoidInsecureCStringFunctions: Avoid C library functions that do not check for bounds" class="com.optimyth.qaking.objectivec.rules.security.AvoidInsecureCStringFunctions" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.1.2,ASVS-v4.0.2:5.4.1,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Some functions that operate on C strings (null terminated) are either totally insecure (like gets) or are difficult to call with proper checks against buffer overflow / buffer underflow (like strcat or strncat).
+
+You may use the following safer alternatives: - strlcat, instead of strcat or strncat.
+- strlcpy, instead of strcpy or strncpy.
+- snprintf or asprintf, instead of sprintf (take care with these functions anyway).
+- vsnprintf or vasprintf, instead of vsprintf (take care with these functions anyway).
+- fgets instead of gets (pass to fgets the buffer size minus one, to leave room for null termination).
+
+The "safer" functions are not immune to programming errors that produce security vulnerabilities (for example, if maximum size is not computed correctly), but could be useful in preventive maintenance to reduce the likelihood of vulnerabilities in existing legacy code.
+
+The list of C string functions to avoid could be configured in the '' property.
+
+You can also avoid string handling buffer overflows by using higher-level interfaces: - If you are using C++, the ANSI C++ string class avoids buffer overflows, though it doesn’t handle non-ASCII encodings (such as UTF-8).
+- If you are writing code in Objective-C, use the NSString class. Note that an NSString object has to be converted to a C string in order to be passed to a C routine, such as a POSIX function.
+- If you are writing code in C, you can use the Core Foundation representation of a string, referred to as a CFString, and the string-manipulation functions in the CFString API.
+
+CERT C Secure Coding Standard (STR07-C) follows a similar recommendation.
+See CWE 120 (http://cwe.mitre.org/data/definitions/120.html) for more documentation on buffer overflow vulnerabilities.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Buffer handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[https://developer.apple.com/library/mac/#documentation/security/conceptual/SecureCodingGuide/Articles/BufferOverflows.html]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-C:STR07,CWE:120,PCI-DSS:6.5.2]]></security>
+    </normatives>
+    <properties>
+      <property name="forbidden" descname="Comma-separated list of C string functions to avoid" value="strcat,strncat,strcpy,strncpy,sprintf,vsprintf,gets"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.AvoidSqlInjection" message="AvoidSqlInjection: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')" class="com.optimyth.qaking.objectivec.rules.security.AvoidSqlInjection" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The software constructs all or part of an SQL command using externally-controlled input, but it does not neutralize properly that input that could modify the intended SQL command when it is sent to a database interaction method.
+
+The rule detects a path in code between an input statement (source) and a database call (sink), with SQL sentence depending on non neutralized input.
+
+It must be known that if SQL does not depend on user-controlled input (e.g. Parametrized SQL, see repair example), there is no possibility for an SQL injection.
+
+Note: Using stored procedures in database operations does NOT prevent SQL injection if, for example, the SQL to send to the database for execution of the stored procedure is composed by concatenating non properly neutralized user input.
+The ways to avoid SQL injection are: 1) Use parametrized SQL, so SQL code and parameters are not mixed (no parameter could change semantics of the SQL).
+2) If SQL code must depend on user input (e.g. to build 'dynamic' WHERE clauses), even with prepared statements, all user-controlled inputs used to compose such "dynamic" SQL should be neutralized.
+
+A neutralization function either validates inputs and report an (neutral) error without allowing SQL execution, or replaces sensitive SQL characters in the input to avoid that the resulting SQL has different semantics.
+
+It is recommended to use parametrized SQL (when possible).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid SQL injection vulnerabilities.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[-(void)update:(MYData *)data {
+  // SQL Injection issue: SQL combined with external data
+  NSString* unsafeSqlString = [NSString stringWithFormat: @"UPDATE record SET name=\"%@\" WHERE id=%@", record.name, record.id];
+  sqlite3_stmt* statement;
+
+  // Please note that prepared statements do not protect automatically from SQL injection issues;
+  // For that, the SQL code should not be tainted with external data
+  if(sqlite3_prepare(database, [safeSqlString UTF8String], -1, &statement, NULL) != SQLITE_OK) // VIOLATION
+  {
+    // Add your error handling code here
+  }
+
+  // statement is executed
+  if (sqlite3_step(statement) != SQLITE_DONE)
+  {
+    // Add your error handling code here
+  }
+}]]></example>
+    <repair><![CDATA[-(void)update:(MYData *)data {
+
+  NSString* safeSqlString = @"UPDATE record SET name=? WHERE id=?"; // FIXED
+  sqlite3_stmt* statement;
+
+  if(sqlite3_prepare(database, [safeSqlString UTF8String], -1, &statement, NULL) != SQLITE_OK)
+  {
+    // Add your error handling code here
+  }
+
+  // Parameter binding
+  if(sqlite3_bind_text(statement, 1, [record.name UTF8String], -1, SQLITE_TRANSIENT) != SQLITE_OK)
+  {
+    // Add your error handling code here
+  }
+  if(sqlite3_bind_int(statement, 2, record.key) != SQLITE_OK)
+  {
+    // Add your error handling code here
+  }
+
+  // statement is executed
+  if (sqlite3_step(statement) != SQLITE_DONE)
+  {
+    // Add your error handling code here
+  }
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/89.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:89,CWETOP25:2021:6,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input,fileread"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.AvoidSudo" message="AvoidSudo: Avoid using sudo programmatically" class="com.optimyth.qaking.objectivec.rules.security.AvoidSudo" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.10.1,ASVS-v4.0.2:1.4.2,ASVS-v4.0.2:1.4.4,ASVS-v4.0.2:13.1.4,ASVS-v4.0.2:13.4.2,ASVS-v4.0.2:4.1.3,ASVS-v4.0.2:4.1.5,ASVS-v4.0.2:7.2.2,ASVS-v4.0.2:8.3.3,ASVS-v4.0.2:8.3.8,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[If authorized to do so in the sudoers file, a user can use sudo to execute a command as root.
+The sudo command is intended for occasional administrative use by a user sitting at the computer and typing into the Terminal application. Its use in scripts or called from code is not secure.
+
+After executing the sudo command (which requires authenticating by entering a password) there is a five-minute period (by default) during which the sudo command can be executed without further authentication.
+It is possible for another process to take advantage of this situation to execute a command as root.
+
+Further, there is no encryption or protection of the command being executed. Because sudo is used to execute privileged commands, the command arguments often include user names, passwords, and other information that should be kept secret. A command executed in this way by a script or other code can expose confidential data to possible interception and compromise.
+
+This rule is Mac OS X-specific.]]></description>
+    <priority>1</priority>
+    <effort>4</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid improper execution of commands as root.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[Apple Secure Coding Guide: https://developer.apple.com/library/mac/documentation/security/conceptual/SecureCodingGuide/SecureCodingGuide.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:284,CWE:285,CWETOP25:2020:30,OWASP:2021:A1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.AvoidUnsafeFileFunctions" message="AvoidUnsafeFileFunctions: Use safe file access POSIX functions" class="com.optimyth.qaking.objectivec.rules.security.AvoidUnsafeFileFunctions" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.11.3,ASVS-v4.0.2:11.1.6,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[Files in publicly writable directories (like /tmp) must be treated as untrusted.
+An attacker can delete or replace any file with another file, with a hard or symbolic link to another file, create file ahead of time, and so on. There are ways to mitigate such attacks, but the best way to prevent them is to not read or write files in a publicly writable directory.
+
+If you must work in a directory where your software process does not have exclusive access, you must check if file exists before you create it, and that the file created and the file processed later are the same. If not, an attacker could take benefit of the "race condition" between file creation and later file access.
+
+To this end, always use routines that operate on file descriptors rather than pathnames wherever possible. For checking if file exists during creation you may e.g. pass O_CREAT and O_EXCL to POSIX open() call, which fails if the file already exists.
+
+Under unix-type systems, it is a good practice to set file creation mask to limit access rights to files created by your software to the most restrictive (e.g. 077 means no access to other users), globally (umask() call) or per-file/per-directory (open() or mkdir()).
+
+The rule checks calls to non-safe file access C functions (fopen, chmod, chown, stat, mktemp).
+Such file access functions could lead to race conditions when creating files.
+Use safer alternative POSIX functions: open, fchmod, fchown, lstat, fstat, mkstemp.
+
+See https://developer.apple.com/library/mac/documentation/security/conceptual/SecureCodingGuide/SecureCodingGuide.pdf for full details on how to securely open a file (e.g. for reading) in a public directory.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[static *suffix = ".ext";
+    void openFile(char *fname, uint size)
+    {
+      if(fopen(fname, r) == NULL) // VIOLATION
+        return;
+      // other code
+    }]]></example>
+    <repair><![CDATA[static *suffix = ".ext";
+    void openFile(char *fname, uint size)
+    {
+      if(open(fname, r) == NULL) // Ok
+        return;
+      // other code
+    }]]></repair>
+    <reference><![CDATA[https://www.securecoding.cert.org/confluence/display/c/FIO01-C.+Be+careful+using+functions+that+use+file+names+for+identification,Apple Secure Coding Guide: https://developer.apple.com/library/mac/documentation/security/conceptual/SecureCodingGuide/SecureCodingGuide.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-C:FIO01,CWE:367]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.CertificateVerifyFailedBypass" message="CertificateVerifyFailedBypass: Do not bypass certificate validation fails" class="com.optimyth.qaking.objectivec.rules.security.CertificateVerifyFailedBypass" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.9.2,ASVS-v4.0.2:9.2.1,CWEScope:Authentication,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Frequently in development phase programmers want to use self-signed certificates.
+
+In order to prevent Man-in-the-middle attacks, self-signed certificates must be forbidden in production environment.
+
+This rule emit a violation in known practices used to bypass certificate verify fails in applications that use NSURLRequest, NSStream or AsyncSocket or ASIHTTPRequest libraries.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent access to data received from an untrusted source application.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[@interface NSURLRequest (DummyInterface)
++ (BOOL)allowsAnyHTTPSCertificateForHost:(NSString*)host;
++ (void)setAllowsAnyHTTPSCertificate:(BOOL)allow forHost:(NSString*)host;
+@end
+
+@implementation MYViewController
+
+- (void)processRequest
+{
+  [NSURLRequest setAllowsAnyHTTPSCertificate:YES forHost:[URL host]];  // VIOLATION - validation bypass using private API
+  /*...
+  ...
+  ...*/
+}
+
+@end]]></example>
+    <repair><![CDATA[@implementation MYViewController
+
+- (void)processRequest   // OK
+{
+  /*...
+  ...
+  ...*/
+}
+
+@end]]></repair>
+    <reference><![CDATA[https://www.isecpartners.com/media/12985/secure_development_on_ios.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:295,CWETOP25:2021:26,OWASP:2021:A2,PCI-DSS:6.5.10]]></security>
+    </normatives>
+    <properties>
+      <property name="checkNSStream" descname="CCheck bypass using NSStream." value="true"/>
+      <property name="checkAsyncSocket" descname="Check bypass using AsyncSocket library." value="true"/>
+      <property name="checkNSURLConnectionDelegate" descname="Check bypass using NSURLConnectionDelegate." value="true"/>
+      <property name="checkASIHTTPRequest" descname="Check bypass using ASIHTTPRequest library." value="true"/>
+      <property name="checkNSURLRequest" descname="Check bypass using NSURLRequest." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.CodeInjection" message="CodeInjection: Improper Control of Generation of Code ('Code Injection')" class="com.optimyth.qaking.objectivec.rules.security.CodeInjection" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.4,ASVS-v4.0.2:5.2.5,ASVS-v4.0.2:5.2.8,ASVS-v4.0.2:5.5.4,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[Code injection term is used to identify all the attacks that are based on injecting
+malicious data into a computer program and change the course of execution in an unexpected way.
+
+Programs behaviour usually needs external data, and the vulnerability appears when the programmer trust in the data
+supplied by the user, incorrectly assuming that the data just contains the expected operations.
+
+When the application uses a scripting engine to execute source code that could be altered by an external, untrusted
+input, a potential attacker may force the execution of unintended code (local or even remote code injection).
+
+Some scripting engines allow execution of system commands, which makes this flaw more dangerous, even allowing arbitrary
+system command execution.
+
+Code and data in compiled languages are quite different, but under scripting languages this boundary is much more fuzzy.
+
+External untrusted input should be passed to the script in the form of "parameters" or "binding variables" so any source
+code injected by a potential attacker will NOT be considered source code by the scripting engine.
+
+In ObjectiveC UIWebView and WKWebView classes usually content components to recover data from users, such as a
+UITextField.
+
+Malicious users can take advantage of them and attach unexpected data to the valid submitted input. This way, the system
+will process the input data as valid, but then, the extra data will cause unexpected results on the system, such as
+data loss and malicious data access.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent code injection attacks, avoiding data loss and malicious data access.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "MYClass.h"
+#import "WKWebView.h"
+#import "UITextField.h"
+
+@implementation MYClass {
+  WKWebView *webView;
+  UITextField *inputTextField;
+}
+
+- (void) doSomething {
+  [webView evaluateJavaScript:[NSString stringWithFormat:@"document.body.style.backgroundColor="%@";", inputTextField.text] completionHandler:nil];   // Violation
+}
+
+@end]]></example>
+    <repair><![CDATA[#import "MYClass.h"
+#import "WKWebView.h"
+#import "UITextField.h"
+
+@implementation MYClass {
+  WKWebView *webView;
+  UITextField *inputTextField;
+}
+
+- (void) doSomething {
+	NSString validated = neutralize (inputTextField.text);
+  [webView evaluateJavaScript:[NSString stringWithFormat:@"document.body.style.backgroundColor="%@";", validated] completionHandler:nil];   // Ok
+}
+
+@end]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Code_Injection,https://developer.apple.com/library/ios/documentation/Security/Conceptual/SecureCodingGuide/OtherHardeningTechniques/OtherHardeningTechniques.html#//apple_ref/doc/uid/TP40002415-CH3-SW2,https://cwe.mitre.org/data/definitions/94.html,https://cwe.mitre.org/data/definitions/95.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:94,CWE:95,CWETOP25:2021:28,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.CrossSiteScripting" message="CrossSiteScripting: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')" class="com.optimyth.qaking.objectivec.rules.security.CrossSiteScripting" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in page content. An attacker could inject browser
+script code that is executed in the client browser. The end-user is the attacked subject, and the software is the
+vehicle for the attack.
+
+There are two main kinds of XSS:
+
+* Reflected XSS: Attacker causes victim to supply malicious content to a vulnerable web application, which renders HTML
+content embedding a malicious script executed in victim's browser. A variation of this is named DOM-based XSS, where the
+vulnerable software does not generate content depending on user input but include script code that use user-controlled
+input.
+
+* Persisted XSS: Attacker provides malicious content to vulnerable application. When other user access to vulnerable
+pages that embed without proper neutralization the attacker content, script code is executed in the victim's browser.
+
+The script executed in the victim's browser could perform malicious activities such as:
+
+* Stealing the identity or confidential Data (credit card details,...).
+* Session hijacking.
+* Malware attack.
+* Website defacement.
+* Denial of service attacks(Dos).
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but user browsers generally
+allow scripting languages (e.g. JavaScript) in their browsers (disabling JavaScript severely limits a web site).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Increase security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "MYClass.h"
+#import "WKWebView.h"
+#import "UITextField.h"
+#import "NSFetchRequest.h"
+#import "NSEntityDescription.h"
+#import "NSArray.h"
+#import "NSManagedObject"
+#import "NSString.h"
+
+@implementation MYClass {
+  WKWebView *webView;
+  UITextField *inputTextField;
+  UIWebView *uiWebView;
+}
+
+- (void) doSomething {
+
+  [webView loadHTMLString:inputTextField.text baseURL:nil];   // Violation
+}
+
+@end]]></example>
+    <repair><![CDATA[#import "MYClass.h"
+#import "WKWebView.h"
+#import "UITextField.h"
+#import "NSFetchRequest.h"
+#import "NSEntityDescription.h"
+#import "NSArray.h"
+#import "NSManagedObject"
+#import "NSString.h"
+
+@implementation MYClass {
+  WKWebView *webView;
+  UITextField *inputTextField;
+  UIWebView *uiWebView;
+}
+
+- (void) doSomething {
+  NSString validated = neutralize (inputTextField.text);
+  [webView loadHTMLString:validated baseURL:nil];
+}
+
+@end]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/79.html,https://developer.apple.com/library/ios/documentation/Security/Conceptual/SecureCodingGuide/OtherHardeningTechniques/OtherHardeningTechniques.html#//apple_ref/doc/uid/TP40002415-CH3-SW2,https://www.owasp.org/index.php/Cross-site_Scripting_(XSS)]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.7,WASC:08]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input, database_input, file_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.DoNotUseSystem" message="DoNotUseSystem: Do not call system() if you do not need a command processor" class="com.optimyth.qaking.objectivec.rules.security.DoNotUseSystem" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.5,ASVS-v4.0.2:5.3.8,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[The C99 function system() executes a specified command by invoking an implementation-defined command processor, such as a UNIX shell or CMD.EXE in Windows NT and later Windows versions. The POSIX popen() function also invokes a command processor but creates a pipe between the calling program and the executed command, returning a pointer to a stream that can be used to either read from or write to the pipe.
+
+Command interpreters such as the POSIX command-language interpreter sh and CMD.EXE, however, provide functionality in addition to executing a simple command. If this functionality is not required, it is a good idea not to use system() or any other function that invokes a command interpreter, as doing so significantly complicates the command-string sanitization.
+
+To fix, replace calls to system() or popen() with calls to exec* family of functions (execve, execlp, execvp, execl, execle, execv or execve). Such functions do not use (unlike system() or popen()) a full shell interpreter, so they are not vulnerable to command injection attacks. Of course, if the functionality of the external program could be replaced by existing library calls, you may use them instead.
+
+The rule also checks that NSTask's setLaunchPath is not set with a command including a shell (given in the shells list), which will execute a command in a shell. Shell execution should be avoided, as the arguments, when depends on external data, could be altered to force execution of unexpected commands.
+
+Additional precautions, such as to ensure that the external executable program launched cannot be modified by an untrusted user, are outside of the scope of this rule.
+
+This rule is Mac OS X-specific.]]></description>
+    <priority>2</priority>
+    <effort>4</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Reduce the risk due to command injection vulnerabilities.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[char *input = NULL;
+/* input gets initialized by user */
+
+char cmdbuf[512];
+int len_wanted = snprintf(
+  cmdbuf, sizeof(cmdbuf), "any_cmd '%s'", input
+);
+if (len_wanted >= sizeof(cmdbuf)) {
+  perror("Input too long");
+}
+else if (len_wanted < 0) {
+  perror("Encoding error");
+}
+else if ( system(cmdbuf) == -1 ) { /* Non compliant */
+  perror("Error executing input");
+}
+
+/* Other example, using NSTask */
++ (NSTask*) taskForShellCommand:(NSString*)command /* Potential external input */
+{
+	NSTask *task = [[[NSTask alloc] init] autorelease];
+  [task setLaunchPath: @"/bin/sh"]; /* Non compliant */
+	[task setStandardInput:[NSFileHandle fileHandleWithNullDevice]];
+	NSArray	*args = [NSArray arrayWithObjects:@"-c", command, nil];
+  [task setArguments: args];
+  return task;
+}]]></example>
+    <repair><![CDATA[/*
+This compliant solution is significantly different from the equivalent noncompliant code example.
+First, input is incorporated into the args array and passed as an argument to execve().
+This eliminates any concerns about buffer overflow or string truncation while forming the command string.
+Second, this compliant solution must fork a new process before executing "/usr/bin/any_exe" in the child process.
+While this is more complicated than calling system(), the added security is worth the additional effort
+*/
+
+char *input = NULL;
+/* input gets initialized by user */
+
+pid_t pid;
+int status;
+pid_t ret;
+char *const args[3] = {"any_exe", input, NULL};
+char **env;
+extern char **environ;
+
+/* ... Sanitize arguments ... */
+pid = fork();
+if (pid == -1) {
+  perror("fork error");
+}
+else if (pid != 0) {
+  while ((ret = waitpid(pid, &status, 0)) == -1) {
+    if (errno != EINTR) {
+      perror("Error waiting for child process");
+      break;
+    }
+  }
+  if ((ret != -1) &&
+      (!WIFEXITED(status) || !WEXITSTATUS(status)) ) {
+   /* Report unexpected child status */
+  }
+} else {
+  /*... Initialize env as a sanitized copy of environ ...*/
+  if (execve("/usr/bin/any_exe", args, env) == -1) {
+    perror("Error executing any_exe");
+    _exit(127); /* command not found error */
+  }
+}]]></repair>
+    <reference><![CDATA[CERT C Secure Coding Standard ENV04-C, CWE ID 88 "Argument Injection", CWE ID 78 "OS Command Injection"]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-C:ENV04,CWE:77,CWE:78,CWE:88,CWETOP25:2021:5,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:31]]></security>
+    </normatives>
+    <properties>
+      <property name="shells" descname="Shells to consider in NSTask setLaunchPath" value="sh,bash,csh,zsh,ksh"/>
+      <property name="insecureFunctions" descname="Comma-separated list of C functions to avoid" value="system,popen"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.DoSRegularExpression" message="DoSRegularExpression: Prevent denial of service attack through malicious regular expression" class="com.optimyth.qaking.objectivec.rules.security.DoSRegularExpression" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.1.1,CWEScope:Access-Control,ReDoS,denial-of-service]]></tags>
+    <description><![CDATA[If the software creates a regular expression ("pattern", "regex") from untrusted input, an
+attacker may supply malicious input that produces a denial-of-service (DoS) condition during regular expression matching.
+
+Alternatively, if the regular expression is used for input validation, the attacker-controlled regular expression may
+fail to neutralize undesired input, which may bypass the intended restrictions or render useless a security control.
+
+In ObjectiveC, the NSRegularExpression class provides an API to regular expressions. The regular expression engine uses
+backtracking to match input strings, and there are certain regular expressions (named "evil regexes") that take
+exponential time (relative to input size) to match in the worst case.
+
+If the attacker controls also the input to be matched, he/she could craft an input for the evil regex that takes an
+inordinate amount of time to match, consuming resources (like CPU).
+
+Evil regex typically has a group with repetition, and the repeated group has repetition or alternation with overlapping.
+For example: "(a+)+", "([a-z]+)*", "(a|aa)+" or "(aa|aab?)*".
+
+For example, a "(a+)+" regex will take long computing time when matching "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa!" takes many
+seconds to complete, and longer strings (with exponential time increase) may lead to DoS conditions.
+
+Please note that regular expressions are often used for security controls and input validation. Even OWASP validation
+regex repository contained some known evil regular expressions.
+
+Note: Attackers may use tools like Google CodeSearch to find evil regex in open-source code ('CodeSearch hacking').
+
+The rule checks for potential injection of untrusted input into regex APIs.
+
+Note: Attacks like ReDoS are named "directed/intelligent/application" DoS, as an attacker with few resources could
+render unavailable a web application, in contrast with brute-force DoS.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid DoS caused by regular expression injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "MYClass.h"
+#import "UITextField.h"
+#import "NSString.h"
+#import "NSRegularExpression.h"
+
+@implementation MYClass {
+  UITextField *usernameField;
+}
+
+- (void) doSomethingMore {
+  NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:usernameField.text options:NSRegularExpressionCaseInsensitive error:&error];    // Violation
+
+}
+
+@end]]></example>
+    <repair><![CDATA[#import "MYClass.h"
+#import "UITextField.h"
+#import "NSString.h"
+#import "NSRegularExpression.h"
+
+@implementation MYClass {
+  UITextField *usernameField;
+}
+
+- (void) doSomethingMore {
+  NSString *regex = MyRegexRepository.getRegex(usernameField.text);   // check regex...
+  NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:regex options:NSRegularExpressionCaseInsensitive error:&error];    // Ok
+
+}
+
+@end]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS,https://en.wikipedia.org/wiki/ReDoS,https://cwe.mitre.org/data/definitions/400.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:400,CWETOP25:2021:27,OWASP:2004:A9,PCI-DSS:6.5.1,WASC:10]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.FormatStringVulnerability" message="FormatStringVulnerability: Exclude unsanitized user input from format strings" class="com.optimyth.qaking.objectivec.rules.security.FormatStringVulnerability" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.4.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Never call any formatted I/O function with a format string containing user input.
+
+An attacker who can fully or partially control the contents of a format string can crash a vulnerable process, view the contents of the stack, view memory content, or write to an arbitrary memory location and consequently execute arbitrary code with the permissions of the vulnerable process.
+
+Formatted output functions or methods are particularly dangerous because many programmers are unaware of their capabilities (for example, they can write an integer value to a specified address using the %n conversion specifier).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid format-string vulnerabilities.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#define MSG_FORMAT "%s cannot be authenticated.\n"
+void incorrect_password(const char *user) { /* user is untrusted */
+  /* user names are restricted to 256 characters or less */
+  static const char *msg_format = MSG_FORMAT;
+  size_t len = strlen(user) + sizeof(MSG_FORMAT);
+  char *msg = (char *)malloc(len);
+  if (!msg) {
+    /* Handle error condition */
+  }
+  int ret = snprintf(msg, len, msg_format, user);
+  if (ret < 0 || ret >= len) {
+    /* Handle error */
+  }
+  fprintf(stderr, msg); /* Non Compliant, user -snprintf-> msg (msg is format string) */
+  syslog(LOG_INFO, msg); /* Non Compliant, same as above (msg is format string) */
+  free(msg);
+  msg = NULL;
+}]]></example>
+    <repair><![CDATA[#define MSG_FORMAT "%s cannot be authenticated.\n"
+void incorrect_password(char const *user) {
+  fprintf(stderr, MSG_FORMAT, user); /* Fixed, format string does not depend on untrusted sources */
+  syslog(LOG_INFO, MSG_FORMAT, msg); /* Fixed, format string does not depend on untrusted sources */
+}]]></repair>
+    <reference><![CDATA[CERT C Secure Coding Standard FIO30-C, CWE ID 134 "Uncontrolled format string"]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-C:FIO30,CWE:134,CWETOP25:2011:23,OWASP:2004:A5,PCI-DSS:6.5.2]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.InsecureTransportLayer" message="InsecureTransportLayer: Avoid using HTTP instead of HTTPS" class="com.optimyth.qaking.objectivec.rules.security.InsecureTransportLayer" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Communications sent over HTTP (Hypertext Transfer Protocol) protocol are in plain text, so
+they are fully exposed to attacks such as man in the middle. This situation is not acceptable when sensible information
+is being communicated.
+
+Using HTTPS (Hypertext Transfer Protocol Secure) allows to perform encrypted connections between the user and the server
+using SSL (Secure Sockets Layer) or TLS (Transport Layer Security) certificates. These certificates use an asymmetric
+public key infrastructure (PKI) system, which consists in two keys, one of them public distributed to the users, and the
+other private stored into the server.
+
+When a connection to a web page is started the server sends a SSL/ TSL certificate to the user's browser, and then they
+stablish a secure connection.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve security at transport layer, avoiding sensible data, like bank details, interception.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+    NSString * const USER_URL = @"http://localhost:8080/igoat/user";    // Insecure URL...
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:USER_URL]];    // Violation
+    [[NSURLConnection alloc] initWithRequest:request delegate:self];
+
+}
+
+@end]]></example>
+    <repair><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+    NSString * const USER_URL = @"https://localhost:8080/igoat/user";
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:USER_URL]];    // Ok
+    [[NSURLConnection alloc] initWithRequest:request delegate:self];
+
+}
+
+@end]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/w/page/13246945/Insufficient%20Transport%20Layer%20Protection,https://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP-M:2016:M3,OWASP:2021:A4,PCI-DSS:6.5.10,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="checkFtpConn" descname="When true then insecure FTP connections are checked too." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.JSONInjection" message="JSONInjection: Avoid using non-neutralized user-controlled input into JSON entities - JSON Injection" class="com.optimyth.qaking.objectivec.rules.security.JSONInjection" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Unvalidated untrusted input is concatenated to a JSON stream, which is sent as request to
+a potentially service.
+
+This allows an attacker to inject tailored content that change the semantics of the original JSON message.
+
+Depending on how the JSON-formatted data is later used, the attacker could execute unexpected dynamic code, or escape
+from authentication or authorization controls. If the resulting JSON string is evaluated in JavaScript (JavaScript may
+eval a string and treat it as an array or JavaScript object), the attacker may add additional code (for example, an
+attack payload like "'}; while(1); //" that could produce a denial-of-service condition.
+
+Note: Do not confuse this issue with JSON (or JavaScript) hijacking, which is a browser-side vulnerability where an
+attacker can steal sensitive information sent as JSON to victim's browser.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent JSON injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "MYClass.h"
+#import "WKWebView.h"
+#import "UITextField.h"
+#import "NSString.h"
+
+@implementation MYClass {
+  WKWebView *webView;
+  UITextField *usernameField;
+  UIWebView *uiWebView;
+}
+
+- (void) doSomething {
+
+  NSDictionary *jsonData = [NSJSONSerialization JSONObjectWithData:[usernameField.text dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:&error];   // Violation
+}
+
+@end]]></example>
+    <repair><![CDATA[#import "MYClass.h"
+#import "WKWebView.h"
+#import "UITextField.h"
+#import "NSString.h"
+
+@implementation MYClass {
+  WKWebView *webView;
+  UITextField *usernameField;
+  UIWebView *uiWebView;
+}
+
+- (void) doSomething {
+
+  NSString * input = [NSString stringWithFormat:usernameField.text];
+  NSString * const jsonString = escapeInput (input);
+
+  NSDictionary *jsonData = [NSJSONSerialization JSONObjectWithData:[jsonString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:&error];
+}
+
+@end]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/345.html,https://cwe.mitre.org/data/definitions/91.html,https://developer.apple.com/library/ios/documentation/Security/Conceptual/SecureCodingGuide/OtherHardeningTechniques/OtherHardeningTechniques.html#//apple_ref/doc/uid/TP40002415-CH3-SW2]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.OpenRedirect" message="OpenRedirect: URL Redirection to Untrusted Site ('Open Redirect')" class="com.optimyth.qaking.objectivec.rules.security.OpenRedirect" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.5,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[A web application accepts a user-controlled input that specifies a link to an external
+site, and uses that link in a redirect. This can be done by setting the Location/Refresh HTTP headers.
+
+If the redirect URL is user-controlled (e.g. fetched from HTTP request parameter), an attacker may force an user to
+provide a malicious URL encoded in a link to the vulnerable resource. The browser will redirect to the malicious URL,
+and the attacker may deceive the victim user for phishing or other malicious activities.
+
+The rule detects a path in code between an input statement (source) and a redirect statement (sink), to an URL depending
+on non neutralized input.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent Open redirect attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+	NSControl *control;
+	NSString *dest = [control stringValue];
+	NSURL *destURL = [NSURL URLWithString:dest];
+	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:destURL cachePolicy:nil timeoutInterval:60.0];
+
+	// passing key as a http header request
+	[request addValue:@"Location" forHTTPHeaderField:dest];		// Violation
+
+	// passing key as a http header request
+	[request addValue:@"Refresh" forHTTPHeaderField:dest];		// Violation
+
+	// setting key as a http header request
+	[request setValue:@"Location" forHTTPHeaderField:dest];		// Violation
+
+	// setting key as a http header request
+	[request setValue:@"Refresh" forHTTPHeaderField:dest];		// Violation
+
+}
+
+@end]]></example>
+    <repair><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+	NSControl *control;
+	NSString *dest = [control stringValue];
+    dest = validate (dest);                   // Validation...
+	NSURL *destURL = [NSURL URLWithString:dest];
+	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:destURL cachePolicy:nil timeoutInterval:60.0];
+
+}
+
+@end]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/w/page/13246981/URL%20Redirector%20Abuse,https://www.owasp.org/index.php/Open_redirect,https://www.owasp.org/index.php/Unvalidated_Redirects_and_Forwards_Cheat_Sheet,https://cwe.mitre.org/data/definitions/601.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:601,CWETOP25:2021:37,OWASP:2013:A10,PCI-DSS:6.5.1,WASC:38]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.PathManipulationVulnerability" message="PathManipulationVulnerability: Avoid non-neutralized user-controlled input to be part of a pathname (file or directory) used in I/O operations" class="com.optimyth.qaking.objectivec.rules.security.PathManipulationVulnerability" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.1,ASVS-v4.0.2:12.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software uses external input to construct a pathname that is intended to identify a file or directory that is located
+underneath a restricted parent directory, but the software does not properly neutralize special elements within the pathname
+that can cause the pathname to resolve to a location outside the restricted directory.
+
+An attacker may fetch sensitive files, and if the file is written with contents controlled by user input, the attacker may change configuration files,
+web contents ('web defacement'), or libraries (for more insidious code injection attacks).
+Access to system files (the customary /etc/password in Unix/Linux systems) could also allowed with the process account permissions.
+
+It is recommended, besides ensuring that files depending on user-controlled input do not exit the intended directories,
+that the OS account does have the minimal permissions, to reduce the impact of a successful path traversal attack.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid path manipulation vulnerabilities.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[-(NSData*) getFileContents: (NSString *)fileName {
+  // Path traversal vulnerability
+  NSString *rootfolder = @"/Documents/";
+  NSString *filePath = [rootfolder stringByAppendingString:fileName];
+
+  NSFileManager *fm = [NSFileManager defaultManager];
+  return [fm contentsAtPath:filePath]; // VIOLATION
+}]]></example>
+    <repair><![CDATA[-(NSData*) getFileContents: (NSString *)fileName {
+  NSString *rootfolder = @"/Documents/";
+
+  // Simple validation, using regexp
+  NSRegularExpression *regex = [NSRegularExpression
+    regularExpressionWithPattern:@"^[a-z0-9_\\-]+\\.[a-z0-9]{0,3}$"
+    options:NSRegularExpressionCaseInsensitive
+    error:&error];
+
+  // FIXED, input validation
+  if([regex numberOfMatchesInString:fileName, options:0, range:NSMakeRange(0, [stringToValidate length])] != 1) {
+    return nil;
+  }
+
+  NSString *filePath = [rootfolder stringByAppendingString:fileName];
+
+  NSFileManager *fm = [NSFileManager defaultManager];
+  return [fm contentsAtPath:filePath];
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/22.html,CWE-73, http://cwe.mitre.org/data/definitions/73.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:22,CWE:73,CWETOP25:2021:8,OWASP:2021:A4,OWASP:2021:A5,PCI-DSS:6.5.8,WASC:33]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input,fileread"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.PerformSelectorWithUntrustedData" message="PerformSelectorWithUntrustedData: Avoid external control over performSelector" class="com.optimyth.qaking.objectivec.rules.security.UnsafeReflection" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.14.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Sometimes software use external input with reflection to select which classes or code to use. In ObjectiveC performSelector method can be used to dynamically invoke a given method.
+
+When the application uses external inputs to determine which class to instantiate or which method to invoke, then an attacker
+could supply values to select unexpected classes or methods. If this occurs, then the attacker could execute code that
+was not intended by the developer. It may bypass authentication or access control checks, or otherwise cause unexpected behaviour.
+
+It the attacker is able to upload files in a location that appears in the classpath, or add new entries to the classpath,
+this flaw could lead to execution of arbitrary code, chosen by the attacker.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid uncontrolled or unauthorized access to sensitive information, increasing security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "MYClass.h"
+#import "NSString.h"
+#import "NSControl.h"
+#import "SEL"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+	NSControl *control;
+
+	NSString *pathExt =  [control stringValue];
+
+	SEL *selector = NSSelectorFromString(pathExt);
+    [NSObject performSelector:selector withObject:query afterDelay:nil];		// Violation
+}
+
+@end]]></example>
+    <repair><![CDATA[#import "MYClass.h"
+#import "NSString.h"
+#import "NSControl.h"
+#import "SEL"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+  NSControl *control;
+
+  NSString validated = neutralize ([control stringValue]);
+  [NSObject performSelector:NSSelectorFromString(validated) withObject:query afterDelay:nil];		// Ok
+}
+
+@end]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/470.html,http://cwe.mitre.org/top25/#CWE-494,https://cwe.mitre.org/data/definitions/494.html,https://www.owasp.org/index.php/Unsafe_Reflection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:470,CWE:494,OWASP-M:2016:M8,OWASP:2021:A2,OWASP:2021:A8,PCI-DSS:6.5.8,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.ReplaceWithLessSecureFunc" message="ReplaceWithLessSecureFunc: Do not replace secure functions with less secure functions" class="com.optimyth.qaking.objectivec.rules.security.ReplaceWithLessSecureFunc" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[Preprocessor]]></tags>
+    <description><![CDATA[Macros are frequently used in the remediation of existing code to globally replace one
+        identifier with another, for example, when an existing API changes.
+
+While there is always some risk involved, this practice becomes particularly dangerous if a function name is replaced
+with a less secure function. Replacing secure functions with less secure functions is a very risky practice, because
+developers can be easily fooled into trusting the function to perform a security check that is absent.
+
+The property 'secureFunctions' contains the list of functions that should not be replaced by function-like macros.]]></description>
+    <priority>1</priority>
+    <effort>4</effort>
+    <vulntype>Design error</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid issues (like buffer overrun) due to the risky function replacement.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[/* Non compliant: vsprintf does not check bounds */
+#define vsnprintf(buf, size, fmt, list) \
+        vsprintf(buf, fmt, list)]]></example>
+    <repair><![CDATA[Do not replace via #define secure functions with less secure functions.
+If necessary, include an implementation of the missing function (vsnprintf() in the example), to eliminate the dependency
+on external library functions when they are not available.
+
+For example, vnsprintf() is included in ISO C99 standard. You may include an alternate implementation if not under C99:
+#include <stdio.h>
+#ifndef __USE_ISOC99
+  /* reimplements vsnprintf() */
+  #include "my_stdio.h"
+#endif]]></repair>
+    <reference><![CDATA[https://www.securecoding.cert.org/confluence/display/c/PRE09-C.+Do+not+replace+secure+functions+with+deprecated+or+obsolescent+functions]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-C:PRE09,CWE:684]]></security>
+    </normatives>
+    <properties>
+      <property name="secureFunctions" descname="Comma-separated list of functions that should not be replaced in macro #define">
+        <value><![CDATA[fgets, strlcat, strlcpy, snprintf, asprintf, vsnprintf, vasprintf, tmpfile_s, tmpnam_s, fopen_s, freopen_s, fprintf_s,
+fscanf_s, printf_s, scanf_s, snprintf_s, sprintf_s, sscanf_s, vfprintf_s, vfscanf_s, vprintf_s, vscanf_s, vsnprintf_s,
+vsprintf_s, vsscanf_s, gets_s, getenv_s, bsearch_s, qsort_s, wctomb_s, mbstowcs_s, wcstombs_s, memcpy_s, memmove_s,
+strcpy_s, strncpy_s, strcat_s, strncat_s, strtok_s, strerror_s, strerrorlen_s, strnlen_s, asctime_s, ctime_s, gmtime_s,
+localtime_s, fwprintf_s, fwscanf_s, snwprintf_s, swprintf_s, swscanf_s, vfwprintf_s, vfwscanf_s, vsnwprintf_s,
+vswprintf_s, vswscanf_s, vwprintf_s, vwscanf_s, wprintf_s, wscanf_s, wcscpy_s, wcsncpy_s, wmemcpy_s, wmemmove_s,
+wcscat_s, wcsncat_s, wcstok_s, wcsnlen_s, wcrtomb_s, mbsrtowcs_s, wcsrtombs_s]]></value>
+      </property>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.AvoidSMS" message="AvoidSMS: Avoid performing SMS-related operations" class="com.optimyth.qaking.objectivec.rules.security.AvoidSMS" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.14.5,ASVS-v4.0.2:13.1.4,ASVS-v4.0.2:13.4.2,ASVS-v4.0.2:14.2.6,ASVS-v4.0.2:4.1.3,ASVS-v4.0.2:4.1.5,ASVS-v4.0.2:7.2.2,ASVS-v4.0.2:8.3.3,ASVS-v4.0.2:8.3.8,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Operations involving SMS shouldn't be performed if they aren't totally essential.
+
+Nowadays anyone can find malware written for mobile devices that could abuse such functionality to steal money or user data.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[@implementation AvoidSMS
+
+int main() {
+  [[CTMessageCenter sharedMessageCenter] sendSMSWithText:@"Hello world!" serviceCenter:nil toAddress:@"+12345678910"];    // VIOLATION
+
+  [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"sms:+12345678910"]];    // VIOLATION
+
+  MFMessageComposeViewController *messageComposerVC = [[MFMessageComposeViewController alloc] init];
+
+  [messageComposerVC setMessageComposeDelegate:self];
+  [messageComposerVC setBody:@"Hello World!"];
+  [messageComposerVC setRecipients:[NSArray arrayWithObject:@"+12345678910"]];    // VIOLATION
+
+  [self presentViewController:messageComposerVC animated:YES completion:nil];
+}
+
+@end]]></example>
+    <repair><![CDATA[ //Don't perform SMS-related operations]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/265.html,http://cwe.mitre.org/data/definitions/285.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:265,CWE:285,OWASP-M:2016:M1,OWASP:2021:A5,WASC:02]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.BiometricWithoutMessage" message="BiometricWithoutMessage: User is asked for fingerprints without reason" class="com.optimyth.qaking.objectivec.rules.security.BiometricWithoutMessage" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.6,ASVS-v4.0.2:14.2.3,ASVS-v4.0.2:14.2.4,ASVS-v4.0.2:2.10.3,ASVS-v4.0.2:5.3.9,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[An application always has to explain to users why fingerprints are requested. Not doing so can be confusing to the user
+and can get the application banned from the AppStore.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve user friendliness when biometrics are requested.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "LocalAuthentication.h"
+
+int main() {
+  LAContext *context = [[LAContext init] alloc];
+
+  [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics localizedReason:""      // VIOLATION
+          reply:^(BOOL success, NSError *error) {
+              if (success) {
+                  NSLog(@"Auth was OK");
+              }
+  }];
+
+  [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics localizedReason:nil      // VIOLATION
+          reply:^(BOOL success, NSError *error) {
+              if (success) {
+                  NSLog(@"Auth was OK");
+              }
+  }];
+}]]></example>
+    <repair><![CDATA[#import "LocalAuthentication.h"
+
+int main() {
+  LAContext *context = [[LAContext init] alloc];
+
+  [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics localizedReason:@"do it!"   // OK
+          reply:^(BOOL success, NSError *error) {
+              if (success) {
+                  NSLog(@"Auth was OK");
+              }
+  }];
+}]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/829.html,https://developer.apple.com/documentation/localauthentication/lapolicy/1622327-deviceownerauthenticationwithbio,https://cwe.mitre.org/data/definitions/522.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:522,CWE:829,CWETOP25:2021:21,OWASP:2021:A8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.CommandInjectionRule" message="CommandInjectionRule: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')" class="com.optimyth.qaking.objectivec.rules.security.CommandInjectionRule" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.5,ASVS-v4.0.2:5.3.8,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[ObjectiveC programs constructs all or part of an operating system (OS) command using externally-influenced input,
+without properly neutralizing special characters that could modify the intended OS command to be executed.
+
+This flaw could allow attackers to execute unexpected, dangerous commands directly on the operating system.
+There are two variants:
+
+1. The program could intend to execute a single, fixed program, taking external input as argument(s) to the program.
+   If the program does not remove command separators from the external input, the attacker could place such command separators
+   into the arguments, which allows him to execute additional, unexpected OS commands or programs. For example,
+   shell metacharacters like ";", "&" or "|" are typically used for command separators.
+
+2. The program accepts an input that it uses to fully select which program to run, as well as which commands to use.
+   The program simply redirects this entire command to the operating system. If the input is under attacker control,
+   then the attacker can execute arbitrary OS commands or programs.
+
+In the first variant, the programmer clearly intends that external, untrusted input will be part of the arguments of the OS command
+to execute, but the attacker could force the execution of additional OS commands. In the second variant, the programmer
+does not intend for the command to be accessible to any untrusted party, but the programmer probably has not accounted for
+alternate ways in which malicious attackers could control program inputs.
+
+When the attacker is able to execute unauthorized commands, he/she could gain further privileges, produce a
+denial-of-service condition, read files or directories, read or modify application data, modify application or system
+configuration, or hide activities, among others.
+
+The rule detects a path in code between an user-input statement (source) and a command execution call (sink), with
+command depending on non neutralized input. This allows for an attacker to change the intended command to execute or to
+add a malicious extra command, executed with the application rights.
+
+A neutralization function either validates inputs and report an (neutral) error without allowing command execution, or
+replaces sensitive shell characters in the input to avoid that the resulting command has different semantics.
+If possible, use "accept known good" input validation strategy (whitelist).
+
+First, ask yourself if you really need to execute OS commands.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid malicious commands execution.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "Foundation.h"
+
+void executeCommandCocoa(String command, NSArray args) {
+
+    NSTask task = [NSTask init];
+
+    task.launchPath = command;
+    task.arguments = args;
+
+    [task launch];
+
+    NSData data = [pipe.fileHandleForReading readDataToEndOfFile];
+    NSString output = [NSString withData: data];
+
+    return output;
+}
+
+int main () {
+    NSFileHandle *input = [NSFileHandle fileHandleWithStandardInput];
+    NSData *inputData = [NSData dataWithData:[input availableData]];
+    NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+
+    executeCommandCocoa("/bin/echo", inputString);  /* VIOLATION */
+    executeCommandCocoa(inputString, "Hello, I am here!");     /* VIOLATION */
+}]]></example>
+    <repair><![CDATA[#import "Foundation.h"
+
+void executeCommandCocoa(String command, NSArray args) {
+
+    NSTask task = [NSTask init];
+
+    task.launchPath = command;
+    task.arguments = args;
+
+    [task launch];
+
+    NSData data = [pipe.fileHandleForReading readDataToEndOfFile];
+    NSString output = [NSString withData: data];
+
+    return output;
+}
+
+int main () {
+    NSFileHandle *input = [NSFileHandle fileHandleWithStandardInput];
+    NSData *inputData = [NSData dataWithData:[input availableData]];
+    NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+
+    NSRegularExpression *regex = [NSRegularExpression
+           regularExpressionWithPattern:@"^[+0]+(?=\\d*)"
+           options:NSRegularExpressionCaseInsensitive
+           error:&error];
+
+    NSString neutralized = [regex   // neutralization
+             stringByReplacingMatchesInString:inputString
+             options:0
+             range:NSMakeRange(0, [string length])
+             withTemplate:@"+"];;
+
+    executeCommandCocoa("/bin/echo", neutralized);  /* OK */
+    executeCommandCocoa(neutralized, "Hello, I am here!");     /* OK */
+}]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Command_Injection,http://cwe.mitre.org/data/definitions/78.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:77,CWE:78,CWETOP25:2021:5,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:31]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input,database_input,file_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.ConnectionStringParameterPollution" message="ConnectionStringParameterPollution: Connection string polluted with untrusted input" class="com.optimyth.qaking.objectivec.rules.security.ConnectionStringParameterPollution" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.7,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When the connection string for an application resource (like database, remote server, persistence entity manager...) could
+be affected by an untrusted source, not properly neutralized, the application is vulnerable to a Connection String Parameter Pollution attack.
+
+An attack targeted at this vulnerability may use special characters (like ';' or ':') to add unexpected parts to the connection string,
+for example to gain extra privileges, or to deactivate security features.
+
+"Untrusted input" means, in this context, a user-controlled application input, an environment variable, or data fetched
+from an external web source.
+
+It should be suspicious that a connection string depends on untrusted input. Normally the application configuration uses
+a fixed connection string, but other attacks, depending on where the connection string is stored (like an SQL injection or
+path traversal attack) may affect the configuration item. This rule only checks for connection strings that are constructed
+programmatically with untrusted input.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[@implementation SampleClass
+
+-(void)openDB:(const char *)query isQueryExecutable:(BOOL)queryExecutable{
+    // Create a sqlite object.
+    sqlite3 *sqlite3Database;
+
+    NSFileHandle *input = [NSFileHandle fileHandleWithStandardInput];
+    NSData *inputData = [NSData dataWithData:[input availableData]];
+    NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+
+    // Set the database file path.
+    NSString *databasePath = [self.documentsDirectory stringByAppendingPathComponent:inputString];
+
+    // Open the database.
+    BOOL openDatabaseResult = sqlite3_open([databasePath UTF8String], &sqlite3Database);    // VIOLATION
+}
+
+@end]]></example>
+    <repair><![CDATA[// Validate (white-list approach) the untrusted input combined into the connection string.]]></repair>
+    <reference><![CDATA[https://www.blackhat.com/presentations/bh-dc-10/Alonso_Chema/Blackhat-DC-2010-Alonso-Connection-String-Parameter-Pollution-wp.pdf,https://cwe.mitre.org/data/definitions/159.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:15,OWASP:2021:A5,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.ExecutionAfterRedirect" message="ExecutionAfterRedirect: Execution After Redirect (EAR)" class="com.optimyth.qaking.objectivec.rules.security.ExecutionAfterRedirect" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The web application sends a forward / redirect to another location, but instead of exiting, it executes additional code.
+
+If the redirect is a client redirect (typically, setting the Location HTTP header), the attacker may ignore such redirect
+and process the message body, potentially accessing unintended contents rendered to the HTTP response after the redirect.
+
+When the application developer does not terminate the response, but perform additional operations assuming that
+the redirect call will not end the flow, then an unauthorized user may be able to access unintended contents.
+
+The rule looks for statements following the forward / redirect call, and reports a defect when a non allowed statement
+follows that call. A few kind of statements, like a return, a break (in a switch case), a logging call, or a counter increment,
+might be allowed.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Control flow management</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+	NSControl *control;
+	NSString *dest = [control stringValue];
+	NSURL *destURL = [NSURL URLWithString:dest];
+	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:destURL cachePolicy:nil timeoutInterval:60.0];
+
+	// passing key as a http header request
+	[request addValue:@"Location" forHTTPHeaderField:dest];
+	[request addValue:@"Other" forHTTPHeaderField:dest];
+
+  // VIOLATION, statement following an HTTP redirect
+  NSData * data = [NSURLConnection sendSynchronousRequest:request
+                                   returningResponse:&response error:&error];
+
+  doSomething(); // after redirect, no statement should follow
+}
+@end]]></example>
+    <repair><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+	NSControl *control;
+	NSString *dest = [control stringValue];
+	NSURL *destURL = [NSURL URLWithString:dest];
+	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:destURL cachePolicy:nil timeoutInterval:60.0];
+
+	// passing key as a http header request
+	[request addValue:@"Location" forHTTPHeaderField:dest];
+	[request addValue:@"Other" forHTTPHeaderField:dest];
+
+  NSData * data = [NSURLConnection sendSynchronousRequest:request
+                                   returningResponse:&response error:&error];
+
+  return; // OK, no statement or return allowed
+}
+@end]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/698.html,https://www.owasp.org/index.php/Execution_After_Redirect_(EAR),http://cs.ucsb.edu/~bboe/public/pubs/fear-the-ear-ccs2011.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:698]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.HardcodedCryptoKey" message="HardcodedCryptoKey: Hardcoded cryptographic keys" class="com.optimyth.qaking.objectivec.rules.security.HardcodedCryptoKey" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,crypto,essential]]></tags>
+    <description><![CDATA[Never hard-code cryptographic keys (or passwords used to generate them) in your program.
+
+Crypto keys are used for encryption/decryption, for generation of message authentication codes (MAC), during generation
+of password-based encryption keys (the password is the "crypto key" that generates key material for the cipher), and other usages.
+Source code is the worst place for key storage, as any change in keys needs recompilation, and it is easy to reverse-engineer
+an application binary to learn any keys or secrets that may be embedded in it.
+
+Some data used in cryptographic operations (like initial vector for block ciphers, salt for password hashes, etc.)
+are not "private", and it is recommended to generate a good random instance at the origin, and add it to the message
+in plaintext, so the destination may use it. The security depends on properly protecting the "secret" thing
+(private key in a public/private keypair, encryption key in a symmetric cipher, key in an HMAC, etc.).
+
+Long-term cryptographic keys (in contrast with ephemeral ones), are better stored in a safe key storage.
+Private keys in a public/private keypair should NEVER be unprotected (in raw form) and they should be stored in an even
+safer key storage (the impact for a compromise of a private key is typically huge and brutal).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[int main() {
+ CCCrypt( kCCEncrypt, kCCAlgorithmAES128, kCCOptionPKCS7Padding,
+                                          'some_funny_pass', kCCKeySizeAES256,
+                                          NULL,
+                                          [self bytes], dataLength,
+                                          buffer, bufferSize,
+                                          &numBytesEncrypted );
+}]]></example>
+    <repair><![CDATA[// Do not use hardcoded crypto keys]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/321.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:321,OWASP-M:2016:M5,OWASP:2021:A2,PCI-DSS:6.3.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.HardcodedIp" message="HardcodedIp: Do not write IP address in source code" class="com.optimyth.qaking.objectivec.rules.security.HardcodedIp" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality,infoleak]]></tags>
+    <description><![CDATA[Hardcoding an IP address can create a potential security breach if it is discovered by a
+malicious attacker who successfully decompiles the code.
+
+Also maintainability and portability is deteriorated because the IP address must be directly modified into the code.
+
+The customizable parameter ipPattern contains the pattern used to identify the hardcoded IP.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid potential security breaches.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[void main(int argc, const char *argv[]) {
+	NSString potentialIPAddress = @"98.139.180.149";    // VIOLATION
+
+	if ([potentialIPAddress isEqualToString:@"127.0.0.1"]) {
+    continue;
+  }
+}]]></example>
+    <repair><![CDATA[void main(int argc, const char *argv[]) {
+	NSString potentialIPAddress1 = @"127.0.0.1";   // OK
+
+	if ([potentialIPAddress isEqualToString:@"127.0.0.1"]) {
+    continue;
+  }
+}]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/200.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:200,CWETOP25:2021:20]]></security>
+    </normatives>
+    <properties>
+      <property name="ipPattern" descname="Pattern used to recognize harcoded IP addresses." value="(.*(^|\s|\\|//)(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\s|:|$).*|^(\p{XDigit}{1,4}(?:\:\p{XDigit}{1,4}){3,7}))"/>
+      <property name="strictMode" descname="When enabled only fully matched strings will be reported." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.HardcodedUsernamePassword" message="HardcodedUsernamePassword: Use of Hard-coded Credentials" class="com.optimyth.qaking.objectivec.rules.security.HardcodedUsernamePassword" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.4,ASVS-v4.0.2:3.5.2,ASVS-v4.0.2:6.4.1,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,credentials,essential]]></tags>
+    <description><![CDATA[Hardcoded credentials (username / password) are visible to any person reading the source code.
+If the resource protected by such hardcoded credentials is important, this may compromise system security.
+
+With hardcoded credentials, change is difficult. If the target account is compromised, and the software
+is deployed in production, a code change is needed, which forces a redeployment.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credential leakage.
+If an account is compromised, changing credentials in an external repository does not need changes in code
+plus software deployment]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[static NSString *const CookieUsername = @"admin123";    // VIOLATION
+static NSString *const Password = @"dvpassword";     // VIOLATION]]></example>
+    <repair><![CDATA[// Don't hardcode credentials]]></repair>
+    <reference><![CDATA[https://www.kiuwan.com/docs/display/K5/Avoid+hard-coded+or+in-comment+passwords+in+code,http://cwe.mitre.org/data/definitions/798.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:798,CWETOP25:2021:16,OWASP-M:2016:M2,OWASP:2021:A7,PCI-DSS:6.5.3,WASC:01]]></security>
+    </normatives>
+    <properties>
+      <property name="passwordPattern" descname="Regular expression for matching field names containing passwords." value=""/>
+      <property name="usernamePattern" descname="Regular expression for matching field names containing user ids." value=".*(user|username).*|(^|.*_)id(_.*|$)"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.HttpParameterPollutionRule" message="HttpParameterPollutionRule: HTTP parameter pollution (HPP)" class="com.optimyth.qaking.objectivec.rules.security.HttpParameterPollutionRule" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.1,CWEScope:Integrity,http-parameter-pollution]]></tags>
+    <description><![CDATA[Concatenating untrusted input into path, query string, or parameters for HTTP message (in
+the URL or in the request body) may allow an attacker to override/add unexpected request parameters. Attacker may change the intended
+HTTP request semantics, and may give him/her access to unauthorized data or bypass web application
+firewall validations.
+
+Note: Do not confuse HPP with Server-Side Request Forgery (SSRF), where the attacker has control over the
+full request URL, including host and port. For HPP attack, attacker has control over other parts like the query string
+part of the URL. Remember the format of an HTTP URL: scheme://user:password@host:port/path?query#fragment
+where query is typically param=value&param2=value. HPP is about attackers controlling path, query or fragment,
+while SSRF means controlling scheme, user, password, host or port.
+
+Like other injection issues, with HPP attackers play with "&" to inject additional parameter (similar to the quote
+in SQL injection), "../" to change the path, ";" (to add matrix parameters to URL at different path segments), or "#"
+to remove ending URL characters (like "--" comment delimiter in SQL injection).
+
+Controlling the path typically changes the semantics of the action represented by the HTTP resource.
+Some REST services use request parameter like _method for selecting the HTTP method, which may be subverted by an HPP attack
+(an HTTP header manipulation flaw could also be leveraged with X-HTTP-Method-Override or similar headers in certain frameworks).
+
+For example, imagine a web application that calls to a remote home-banking REST API. The webapp emits
+a (GET) url https://mybank.com/show-balance/account/X/monetaryUnit?date=now to show the balance for the user account X,
+where X is taken from a trusted source, but where monetaryUnit is taken from a cookie, and concatenated without
+any validation or encoding into the URL. An attacker could pass a Cookie request header set to "../../../transfer/X/to/Y?_method=POST#",
+so the vulnerable web application will create https://mybank.com/show-balance/account/X/../../../transfer/X/to/Y?_method=POST#?date=now
+which is equivalent to a POST https://mybank.com/transfer/X/to/Y.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Performing input data validation improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[int main() {
+  NSFileHandle *input = [NSFileHandle fileHandleWithStandardInput];
+  NSData *inputData = [NSData dataWithData:[input availableData]];
+  NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+
+  NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://my-site.com?user=" + inputString]];   // VIOLATION
+  NSURLConnection *conn = [[NSURLConnection alloc] initWithRequest:request delegate:self];
+}]]></example>
+    <repair><![CDATA[int main() {
+  NSFileHandle *input = [NSFileHandle fileHandleWithStandardInput];
+  NSData *inputData = [NSData dataWithData:[input availableData]];
+  NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+
+  NSRegularExpression *regex = [NSRegularExpression
+           regularExpressionWithPattern:@"^[+0]+(?=\\d*)"
+                                 options:NSRegularExpressionCaseInsensitive
+                                   error:&error];
+
+  NSString neutralized = [regex   // neutralization
+                                          stringByReplacingMatchesInString:inputString
+                                                                   options:0
+                                                                     range:NSMakeRange(0, [string length])
+                                                              withTemplate:@"+"];;
+
+  NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://my-site.com?user=" + neutralized]];   // OK
+  NSURLConnection *conn = [[NSURLConnection alloc] initWithRequest:request delegate:self];
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/235.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:235,OWASP:2021:A3,PCI-DSS:6.5.6,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.HttpResponseCachingLeak" message="HttpResponseCachingLeak: HTTP sensitive responses being cached" class="com.optimyth.qaking.objectivec.rules.security.HttpResponseCachingLeak" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,global,infoleak,privacy]]></tags>
+    <description><![CDATA[HTTP may contain sensitive information like keys, health data, etc.
+
+By default ObjectiveC caches HTTP response to improve the application performance, and they are saved into a local
+decrypted database. If a malicious attacker gain access to the system, he / she might recover all of these
+screenshots and gain access to emails, passwords, bank account numbers,...etc.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.
+
+This rule reports violation when responses to requests containing sensitive information are being cached.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "HealthKit.h"
+#import "Foundation.h"
+#import "UIKit.h"
+
+int main() {
+  HKHealthStore *healthStore =  [[HKHealthStore alloc]init];
+  HKBloodTypeObject *blood = [healthStore bloodTypeWithError];   // source;
+
+  NSString *urlString = @"http://myserver.com/?data=" + blood.bloodType;
+  NSURL url = [NSURL URLWithString:urlString];
+  NSURLRequest request = [[NSURLRequest alloc]initWithURL:url];
+  [[NSURLSession shared] dataTaskWithRequest:request completionHandler:nil];  // VIOLATION
+}]]></example>
+    <repair><![CDATA[#import "HealthKit.h"
+#import "Foundation.h"
+#import "UIKit.h"
+
+int main() {
+  HKHealthStore *healthStore =  [[HKHealthStore alloc]init];
+  HKBloodTypeObject *blood = [healthStore bloodTypeWithError];   // source;
+
+  NSString *urlString = @"http://myserver.com/?data=" + blood.bloodType;
+  NSURL url = [NSURL URLWithString:urlString];
+  NSURLRequest request = [[NSURLRequest alloc]initWithURL:url];
+  [[NSURLSession shared] dataTaskWithRequest:request completionHandler:nil];  // OK
+
+  [NSURLCache removeCachedResponseForRequest: request];        // Neutralization
+}]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Privacy_Violation]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:313,OWASP-M:2016:M2,OWASP:2013:A8,OWASP:2021:A2,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.HttpSplittingRule" message="HttpSplittingRule: Improper Neutralization of CRLF Sequences in HTTP Headers ('HTTP Response Splitting')" class="com.optimyth.qaking.objectivec.rules.security.HttpSplittingRule" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in HTTP headers. An attacker could inject line separators (CR/LF sequences)
+    that could split the response message generated by the software into two messages. The second response is completely
+    under the control of the attacker (intermediate web proxies may cache it), with could produce multiple conditions
+    (web defacement, cache poisoning, cross-site scripting or page hijacking, see CWE-113 for full details).
+
+    If software needs to generate HTTP headers depending on user-controlled input, such input should be properly
+    neutralized (a white-list validation excluding CR/LF is recommended). Please note that cookies are received and
+    sent in 'Cookie' header in HTTP messages, so if the software generates a Cookie from user input, the input should
+    be properly validated as well.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+	NSFileHandle *input = [NSFileHandle fileHandleWithStandardInput];
+  NSData *inputData = [NSData dataWithData:[input availableData]];
+  NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+
+	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:destURL cachePolicy:nil timeoutInterval:60.0];
+
+	// passing key as a http header request
+	[request addValue:inputString forHTTPHeaderField:@"someField"];		// VIOLATION
+}
+
+@end]]></example>
+    <repair><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+	NSFileHandle *input = [NSFileHandle fileHandleWithStandardInput];
+  NSData *inputData = [NSData dataWithData:[input availableData]];
+  NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+
+  NSRegularExpression *regex = [NSRegularExpression
+           regularExpressionWithPattern:@"^[+0]+(?=\\d*)"
+                                 options:NSRegularExpressionCaseInsensitive
+                                   error:&error];
+
+  NSString neutralized = [regex   // neutralization
+                                          stringByReplacingMatchesInString:inputString
+                                                                   options:0
+                                                                     range:NSMakeRange(0, [string length])
+                                                              withTemplate:@"+"];;
+
+	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:destURL cachePolicy:nil timeoutInterval:60.0];
+
+	// passing key as a http header request
+	[request addValue:neutralized forHTTPHeaderField:@"someField"];		// OK
+}
+
+@end]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/113.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:113,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:25]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input, hardcoded_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.InformationExposureThroughErrorMessage" message="InformationExposureThroughErrorMessage: Avoid sensitive information exposure through error messages" class="com.optimyth.qaking.objectivec.rules.security.InformationExposureThroughErrorMessage" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.1,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[When an error message is generated, care should be taken to ensure that it does not contain
+sensitive information about the environment, users or any other information that may be considered sensitive.
+
+Such information may be valuable itself or may be useful for further attacks with a higher impact.
+
+Attention should be paid to information explicitly included into error messages, and also to certain functions
+that may produce an error that unexpectedly shows sensitive information.
+
+Rule shows violation when some sensitive error information, or with excessive technical detail, is shown to the application end-user.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid sensitive information leakage.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[int main() {
+   NSString* test = [NSString stringWithString:@"ss"];
+
+   @try {
+      [test characterAtIndex:6];
+
+   }
+   @catch (NSException * e) {
+      NSLog(@"Exception: %@", e);   // VIOLATION
+   }
+   @finally {
+      NSLog(@"finally");
+   }
+}]]></example>
+    <repair><![CDATA[int main() {
+   NSString* test = [NSString stringWithString:@"ss"];
+
+   @try {
+      [test characterAtIndex:6];
+
+   }
+   @catch (NSException * e) {
+      NSLog(@"Position 6don't exist on input string: " + test);
+   }
+   @finally {
+      NSLog(@"finally");
+   }
+}]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/209.html,http://projects.webappsec.org/w/page/13246936/Information%20Leakage]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:209,OWASP:2021:A4,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.InsecureTemporaryFile" message="InsecureTemporaryFile: Creating and using insecure temporary files can leave application and system data vulnerable to attack." class="com.optimyth.qaking.objectivec.rules.security.InsecureTemporaryFile" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,global,infoleak,privacy]]></tags>
+    <description><![CDATA[When using the method writeToFile:atomically: in ObjectiveC by providing a YES value to the
+atomically: argument, then the information is previously stored into a temporary folder, and at the end it's moved to the
+output destination.
+
+This intermediate copy to a temporary path may compromise this information, since it could be accessible by a
+malicious attacker, and even the temporary copy might not been correctly deleted.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid exposing sensitive data.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[@implementation MYClass {
+  UITextField passwordTextField;
+}
+
+  -(BOOL)textFieldShouldReturn:(UITextField *)textField {
+    NSData *data = [passwordTextField.text dataUsingEncoding:NSUTF8StringEncoding];
+        NSError *error;
+        NSData *encryptedData = [RNEncryptor encryptData:data
+                                            withSettings:kRNCryptorAES256Settings
+                                                password:@"Secret-Key"
+                                                   error:&error];
+
+        [data writeToFile:dataPath atomically:YES];    // VIOLATION
+
+@end]]></example>
+    <repair><![CDATA[@implementation MYClass {
+  UITextField passwordTextField;
+}
+
+  -(BOOL)textFieldShouldReturn:(UITextField *)textField {
+    NSData *data = [passwordTextField.text dataUsingEncoding:NSUTF8StringEncoding];
+        NSError *error;
+        NSData *encryptedData = [RNEncryptor encryptData:data
+                                            withSettings:kRNCryptorAES256Settings
+                                                password:@"Secret-Key"
+                                                   error:&error];
+
+        [data writeToFile:dataPath atomically:NO];    // OK
+
+@end]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/Information-Leakage,https://developer.apple.com/documentation/foundation/nsdata/1408033-writetofile,http://cwe.mitre.org/data/definitions/377.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:377,OWASP-M:2016:M2,OWASP:2021:A2,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.KeyboardCachingLeak" message="KeyboardCachingLeak: Sensitive data leaked through keyboard cache" class="com.optimyth.qaking.objectivec.rules.security.KeyboardCachingLeak" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,global,infoleak,privacy]]></tags>
+    <description><![CDATA[According to apple, iOS keyboard usually caches text input values from user inputs to improves the autocorrection feature.
+
+Some exceptions are:
+  - When text field is marked as secure.
+  - When text field has disabled autocorrection.
+
+If a malicious attacker gain access to the system, he / she might recover all of these cache logs gaining access to
+emails, passwords, bank account numbers,...etc.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information. Thus sensitive info must be hidden before moving the
+application to background.
+
+This rule reports violation when potential sensitive fields are cached by the keyboard.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[@interface Test: UIViewController
+
+@property (weak, nonatomic) IBOutlet UITextField *secretNameTextField;    // VIOLATION
+
+@end
+
+@implementation Test
+
+  @synthesize secretNameTextField;
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.navigationController.navigationBar.tintColor = kNavigationTintColor;
+    [self.slidingViewController.topViewController.view addGestureRecognizer:self.slidingViewController.panGesture];
+}
+
+
+@end]]></example>
+    <repair><![CDATA[@interface Test: UIViewController
+
+@property (weak, nonatomic) IBOutlet UITextField *secretNameTextField;
+
+@end
+
+@implementation Test
+
+  @synthesize secretNameTextField;
+
+  - (void)viewDidLoad {
+      [super viewDidLoad];
+
+      self.navigationController.navigationBar.tintColor = kNavigationTintColor;
+      [self.slidingViewController.topViewController.view addGestureRecognizer:self.slidingViewController.panGesture];
+      [secretNameTextField secureTextEntry:YES];
+  }
+
+@end]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Privacy_Violation,http://projects.webappsec.org/Information-Leakage,http://cwe.mitre.org/data/definitions/359.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP-M:2016:M2,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.LogForging" message="LogForging: Improper Output Neutralization for Logs" class="com.optimyth.qaking.objectivec.rules.security.LogForging" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:7.3.1,ASVS-v4.0.2:7.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[When the application writes untrusted input to a log destination (using any ObjectiveC logging API),
+a "log forging" attack could be launched to inject false log entries, corrupt log entries,
+or even exploit a vulnerability in an external "log viewer" application.
+
+Corrupted log entries could hinder detection for malicious activity, or implicate another party
+in the commission of a malicious act.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[int main() {
+  NSFileHandle *input = [NSFileHandle fileHandleWithStandardInput];
+  NSData *inputData = [NSData dataWithData:[input availableData]];
+  NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+
+  NSLog("Value is = %@", inputString);      /* VIOLATION */
+}]]></example>
+    <repair><![CDATA[int main() {
+  NSFileHandle *input = [NSFileHandle fileHandleWithStandardInput];
+  NSData *inputData = [NSData dataWithData:[input availableData]];
+  NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+
+  NSRegularExpression *regex = [NSRegularExpression
+           regularExpressionWithPattern:@"^[+0]+(?=\\d*)"
+                                 options:NSRegularExpressionCaseInsensitive
+                                   error:&error];
+
+    NSString neutralized = [regex   // neutralization
+                                          stringByReplacingMatchesInString:inputString
+                                                                   options:0
+                                                                     range:NSMakeRange(0, [string length])
+                                                              withTemplate:@"+"];;
+
+  NSLog("Value is = %@", neutralized);      /* OK */
+}]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/117.html,https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:117,OWASP-M:2016:M7,OWASP:2021:A9,PCI-DSS:10.5.2,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.MailCommandInjection" message="MailCommandInjection: Mail Command Injection" class="com.optimyth.qaking.objectivec.rules.security.MailCommandInjection" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Integrity]]></tags>
+    <description><![CDATA[Mail command injection vulnerabilities occur when an attacker can influence the commands sent to an SMTP mail server.
+
+If the library or the developer fails to safely encode the line breaks, an attacker controlling any of the arguments for these commands
+will be able to inject line breaks and new commands after them.
+
+As line breaks are the usual mechanism that attackers use to change the expected behaviour, this vulnerability
+is considered a special CRLF Injection attack.
+
+What the attacker may launch by exploiting a Mail Command Injection vulnerability include:
+- Generate spam (SMTP). The application acts as a "mail proxy" that attackers may use to create spam messages.
+- Abusing a trusted server to send HTML emails with malicious contents.
+- Change authentication or security options, to skip security controls in mail servers.
+
+See "MX Injection: Capturing and Exploiting Hidden Mail Servers", from Vicente Aguilera, for a full description on
+the benefits that an attacker may gain.
+
+The rule checks when vulnerable mail libraries are called with untrusted input, without validation, which might be vulnerable
+to Mail Command Injection attacks.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid Mail Command Injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[int main() {
+  NSFileHandle *input = [NSFileHandle fileHandleWithStandardInput];
+  NSData *inputData = [NSData dataWithData:[input availableData]];
+  NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+
+  if([MFMailComposeViewController canSendMail]) {
+     MFMailComposeViewController *mailCont = [[MFMailComposeViewController alloc] init];
+     mailCont.mailComposeDelegate = self;
+
+    [mailCont setSubject:@"yo!"];
+    [mailCont setToRecipients:[NSArray arrayWithObject:@"joel@stackoverflow.com"]];
+    [mailCont setMessageBody:@"Don't ever want to give you up" + inputString isHTML:NO];   // VIOLATION
+
+    [self presentModalViewController:mailCont animated:YES];
+    [mailCont release];
+  }
+}]]></example>
+    <repair><![CDATA[Sanitize user inputs before using them into a mail command.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/93.html,http://projects.webappsec.org/w/page/13246948/Mail%20Command%20Injection,OWASP Testing for IMAP/SMTP injection: https://www.owasp.org/index.php/Testing_for_IMAP/SMTP_Injection_(OTG-INPVAL-011)]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:93,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:30]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.MissingContentValidation" message="MissingContentValidation: Missing Content Validation" class="com.optimyth.qaking.objectivec.rules.security.MissingContentValidation" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[If you inherit from SLComposeServiceViewController is necessary overriding isContentValid() method. The method validateContent()
+calls isContentValid() and should be implemented in SLComposeServiceViewController subclasses to perform a custom validation. If you don't override isContentValid()
+it always returns True, which could be dangerous because user input never would be checked.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Design error</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Overriding isContentValid() method helps to validate the user input.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "MobileCoreServices.h"
+
+@implementation ShareViewController: SLComposeServiceViewController // VIOLATION
+
+    - (void)didSelectPost {
+
+    }
+
+@end]]></example>
+    <repair><![CDATA[@implementation ShareViewController2: SLComposeServiceViewController
+
+     - (void)didSelectPost {
+
+     }
+
+    - (BOOL)isContentValid {
+      return TRUE;
+    }
+
+@end]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/501.html,https://developer.apple.com/documentation/social/slcomposeserviceviewcontroller/1488550-validatecontent,https://developer.apple.com/library/content/documentation/General/Conceptual/ExtensibilityPG/Share.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:501,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.MissingPasswordFieldMasking" message="MissingPasswordFieldMasking: Password input field is not masked" class="com.optimyth.qaking.objectivec.rules.security.MissingPasswordFieldMasking" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,infoleak,privacy]]></tags>
+    <description><![CDATA[When a form contains a password input field then the field must be masked, otherwise an attacker directly or indirectly
+watching the user might capture it. This vulnerability is also known as Shoulder Surfing.
+
+Field masking can be performed either programmatically by using the attribute isSecureTextEntry from the UITextInputTraits
+class or by using the attribute secureTextEntry in the interface descriptors xib and storyboard.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/549.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:549]]></security>
+    </normatives>
+    <properties>
+      <property name="pattern" descname="Pattern to use. If blank, the default pattern is used." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.NoSQLInjection" message="NoSQLInjection: Improper neutralization of special elements in data query logic (NoSQL injection)" class="com.optimyth.qaking.objectivec.rules.security.NoSQLInjection" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,NoSQL]]></tags>
+    <description><![CDATA[The application generates a query intended to access or manipulate data in a data store such as a NoSQL database,
+but it does not neutralize or incorrectly neutralizes special elements that can modify the intended logic of the query.
+
+Depending on the capabilities of the query language, an attacker could inject additional login into the query to:
+- Modify the intended selection criteria, thus changing which data entities (e.g., records) are returned, modified, or otherwise manipulated.
+- Append additional commands to the query.
+- Return more or fewer entities than intended.
+- Cause entities to be sorted in an unexpected way.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent NoSQL injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[[ MyClass.h ]
+#import <UIKit/UIKit.h>
+
+@interface MyClass : UIViewController
+    @property (nonatomic,weak) IBOutlet UITextField *passwordTextField;
+@end
+
+[ MyClass.m ]
+#import "UIAlertController+EasyBlock.h"
+#import "YapDatabase.h"
+
+static NSString *const YapKeyPassword = @"YapKeyPassword";
+
+@implementation MyClass
+
+    -(void)saveData {
+        NSString *databaseName = @"YapDatabase.sqlite";
+        NSURL *baseURL = [[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory
+                                                                inDomain:NSUserDomainMask
+                                                       appropriateForURL:nil
+                                                                  create:YES
+                                                                   error:NULL];
+        NSURL *databaseURL = [baseURL URLByAppendingPathComponent:databaseName isDirectory:NO];
+        NSString *databasePath = databaseURL.filePathURL.path;
+
+        YapDatabase *database = [[YapDatabase alloc] initWithPath:databasePath];
+        YapDatabaseConnection *connection = [database newConnection];
+        [connection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            [transaction setObject:self.passwordTextField.text forKey:YapKeyPassword inCollection:@"iGoat"];    // VIOLATION
+        }];
+    }
+
+    - (void)viewDidLoad {
+        [super viewDidLoad];
+        [self saveData];
+    }
+@end]]></example>
+    <repair><![CDATA[// Validate external inputs passed as NoSQL filters to ensure that the query semantics does not change]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/943.html,https://technopy.com/mongodb-injection-how-to-hack-mongodb-html/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:943,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.PasswordInCommentRule" message="PasswordInCommentRule: Storing passwords or password details in plaintext anywhere in the system or system code can compromise system security" class="com.optimyth.qaking.objectivec.rules.security.PasswordInComments" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[It is never a good idea to hardcode a password. Storing password details within comments
+is equivalent to hardcoding passwords.
+
+Not only does it allow all of the project's developers to view the password, it also makes fixing the problem extremely
+difficult.
+
+Once the code is in production, the password is now leaked to the outside world and cannot be protected or changed
+without patching the software.
+
+If the account protected by the password is compromised, the owners of the system will be forced to choose between
+security and availability.
+
+The rule checks if there are comments in the code that contain expressions that match with the pattern, so it can lead
+to several false positives and/or false negatives.]]></description>
+    <priority>4</priority>
+    <effort>1</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Ensuring that password is kept in secret improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[@implementation YapDatabaseQuery
+{
+	NSString *queryString;
+	NSArray *queryParameters;
+}
+
+/**
+ *
+ * password: someFunnyWorDs   // VIOLATION
+ **/
++ (instancetype)queryWithFormat:(NSString *)format, ...
+{
+    va_list arguments;
+    va_start(arguments, format);
+    id query = [self queryWithFormat:format arguments:arguments];
+    va_end(arguments);
+    return query;
+}
+
+@end]]></example>
+    <repair><![CDATA[Do not code passwords in source code comments.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/615.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:615,OWASP-M:2016:M2,OWASP:2021:A7,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="passwordPattern" descname="Pattern to check for hardcoded passwords in comments. If blank, the default pattern will be used." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.PasswordInConfigurationFile" message="PasswordInConfigurationFile: Use of credentials into configuration file" class="com.optimyth.qaking.objectivec.rules.security.PasswordInConfigurationFile" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Passwords written into a configuration file which is distributed along with the code are
+visible to any person reading the source code. If the resource protected by such hardcoded credentials is important, this
+may compromise system security.
+
+A better programming practice would be storing these credential into an environment variable.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credential leakage.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>KeychainPath</key>
+    <string>/path/to/filename.keychain</string>
+    <key>KeychainPassword</key>
+    <string>password</string>
+  </dict>
+</plist>]]></example>
+    <repair><![CDATA[// Use an environment variable to store credentials.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/260.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:260,OWASP-M:2016:M2,OWASP:2021:A5]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.PasteboardCachingLeak" message="PasteboardCachingLeak: Sensitive data leaked through the pasteboard caching mechanism" class="com.optimyth.qaking.objectivec.rules.security.PasteboardCachingLeak" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,global,infoleak,privacy]]></tags>
+    <description><![CDATA[According to the Apple official documentation, when a text is copied it's stored into a cache where it can be accessed later.
+
+When an application collect sensitive data and then this info is copied to the pasteboard, then the sensitive data might be
+accessed by other applications.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information. Thus sensitive info must be hidden before moving the
+application to background.
+
+This rule reports violation when potential sensitive fields can be accessed through the pasteboard.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[@interface Test: UIViewController
+
+@property (weak, nonatomic) IBOutlet UITextField *secretNameTextField;    // VIOLATION
+
+@end
+
+@implementation Test
+
+  @synthesize secretNameTextField;
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.navigationController.navigationBar.tintColor = kNavigationTintColor;
+    [self.slidingViewController.topViewController.view addGestureRecognizer:self.slidingViewController.panGesture];
+}
+
+
+@end]]></example>
+    <repair><![CDATA[@interface Test: UIViewController
+
+@property (weak, nonatomic) IBOutlet UITextField *secretNameTextField;
+
+@end
+
+@implementation Test
+
+  @synthesize secretNameTextField;
+
+  - (void)viewDidLoad {
+      [super viewDidLoad];
+
+      self.navigationController.navigationBar.tintColor = kNavigationTintColor;
+      [self.slidingViewController.topViewController.view addGestureRecognizer:self.slidingViewController.panGesture];
+      [secretNameTextField secureTextEntry:YES];
+  }
+
+@end]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/Information-Leakage,https://www.owasp.org/index.php/Privacy_Violation,http://cwe.mitre.org/data/definitions/359.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP-M:2016:M2,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.PlaintextStorageInACookieRule" message="PlaintextStorageInACookieRule: Cleartext Storage of Sensitive Information in a Cookie" class="com.optimyth.qaking.objectivec.rules.security.PlaintextStorageInACookieRule" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Sensitive data stored in a encoded way makes harder to read it than it was stored in plaintext.
+
+An attacker could use widely-available tools to view cookie content.
+
+The rule checks whether a cookie with sensitive data is being stored without any kind of encoding.]]></description>
+    <priority>3</priority>
+    <effort>4</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Encoding data to be stored in a cookie improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+    NSString SECRET = @"KennedyWasKilledBy...";
+    NSDictionary *cookieProperties = @{ SECRET : key, @"domain" : @"www.example.com", @"value" : value, @"path" : "/service" };
+    NSHTTPCookie *cookie = [NSHTTPCookie cookieWithProperties:cookieProperties];    // VIOLATION
+}
+
+@end]]></example>
+    <repair><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+    NSString SECRET = @"KennedyWasKilledBy...";
+    NSDictionary *cookieProperties = [NSDictionary dictionary];
+  	NSData *plain = [SECRET dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *cipher = [plain AES256EncryptWithKey:key];
+    [cookieProperties setObject:[[cipher description] UTF8String] forKey:@"oldpass"];    // OK
+    NSHTTPCookie *cookie = [[NSHTTPCookie alloc] initWithProperties:cookieProperties];
+}
+
+@end]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Plaintext_Storage_in_Cookie,https://cwe.mitre.org/data/definitions/315.html,https://cwe.mitre.org/data/definitions/312.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:312,CWE:315]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.PotentialInfiniteLoop" message="PotentialInfiniteLoop: Loop with Unreachable Exit Condition ('Infinite Loop')" class="com.optimyth.qaking.objectivec.rules.security.PotentialInfiniteLoop" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Availability,essential,potential-bug]]></tags>
+    <description><![CDATA[The program contains an iteration or loop with an exit condition that cannot be reached, i.e., an infinite loop.
+Such infinite loop conditions are due typically to logical errors in the loop exit conditions and/or loop variables update,
+where the loop exit condition is never reached.
+
+An infinite loop will cause unexpected consumption of resources, such as CPU cycles or memory, and might compromise software availability.
+
+NOTE: Rule OPT.OBJECTIVEC.SECURITY.UncheckedInputInLoopCondition (CWE-606) checks when an untrusted input, not validated, might influence
+loop termination leading to a denial-of-service condition.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Control flow management</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid DDOS.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[int main() {
+  while (true) {  // VIOLATION
+      doDDOS();
+  }
+}]]></example>
+    <repair><![CDATA[int main() {
+  while (false) {  // OK
+      doDDOS();
+  }
+}]]></repair>
+    <reference><![CDATA[https://blog.jooq.org/2015/01/16/infinite-loops-or-anything-that-can-possibly-go-wrong-does/,https://cwe.mitre.org/data/definitions/835.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:835,CWETOP25:2020:36]]></security>
+    </normatives>
+    <properties>
+      <property name="allowExplicitInfiniteLoops" descname="Intentional non-empty infinite loops, coded as &quot;while (true)&quot;, are allowed." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.PrivacyViolation" message="PrivacyViolation: Exposure of Private Information ('Privacy Violation')" class="com.optimyth.qaking.objectivec.rules.security.PrivacyViolation" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[Managing private user information can compromise user privacy.
+
+Privacy violations occur when private user data are stored in an external location, when they are appended to the log or
+when they are sent as plain-text.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "HealthKit.h"
+#import "Foundation.h"
+#import "UIKit.h"
+
+int main() {
+  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+  // Add password to user defaults
+  [defaults setObject:@"Super Secret" forKey:@"passwd"];      // maybe a defect but too much violations when we look for this
+
+  HKHealthStore *healthStore =  [[HKHealthStore alloc]init];
+  HKBloodTypeObject *blood = [healthStore bloodTypeWithError];   // source;
+
+  // Add blood type to user defaults
+  [defaults setObject:@"Super Secret" forKey:blood.bloodType];      // VIOLATION
+
+  NSString *deviceName = [[UIDevice currentDevice] name];
+  printf(@"Device ID: " + deviceName);      // VIOLATION
+}]]></example>
+    <repair><![CDATA[// Avoid exposing sensitive data]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Privacy_Violation,http://cwe.mitre.org/data/definitions/359.html,http://projects.webappsec.org/Information-Leakage]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP-M:2016:M2,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.ResourceInjection" message="ResourceInjection: Improper control of resource identifiers (&quot;Resource Injection&quot;)" class="com.optimyth.qaking.objectivec.rules.security.ResourceInjection" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software takes from an untrusted source the identifier for a system resource (like a port number),
+and allows access to a non-expected resource. Attackers may use the flaw for malicious behaviour,
+for example a port scan, change software configuration, transmit sensitive information to a third-party server,
+etc.
+
+This vulnerability is also known as "Insecure Direct Object Reference" instead of "Resource Injection".
+
+Note: Please note that other rules may check injection flaws for specific resources (like Path Traversal rule for filesystem resources,
+or SSRF for network addresses). This rule reports injection flaws on resource identifiers not covered by other rules.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[int main() {
+
+  NSFileHandle *input = [NSFileHandle fileHandleWithStandardInput];
+  NSData *inputData = [NSData dataWithData:[input availableData]];
+  NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+
+  CFStreamCreatePairWithSocketToHost(kCFAllocatorDefault, inputString, 80, &readStream, &writeStream);      // VIOLATION
+}]]></example>
+    <repair><![CDATA[// Validate (white-list approach) the untrusted input first]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Resource_Injection,https://cwe.mitre.org/data/definitions/99.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:99,OWASP-M:2016:M7,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.ScreenCachingLeak" message="ScreenCachingLeak: Sensitive data leaked through the screen caching mechanism when app is backgrounded" class="com.optimyth.qaking.objectivec.rules.security.ScreenCachingLeak" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,global,infoleak,privacy]]></tags>
+    <description><![CDATA[According to the Apple official documentation, when an app is moved to background then the system takes an screenshot from
+the actual application state, so it can be shown as thumbnail and also to be used by the animations when the app is life
+cycle state changes.
+
+When an application collect sensitive data and it's moved to background, then the sensitive data which is currently showing
+will be captured by the screenshot. If a malicious attacker gain access to the system, he / she might recover all of these
+screenshots and gain access to emails, passwords, bank account numbers,...etc.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information. Thus sensitive info must be hidden before moving the
+application to background.
+
+This rule reports violation when potential sensitive fields are not hidden when the app is backgrounded.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[@interface Test: UIViewController
+
+@property (weak, nonatomic) IBOutlet UITextField *secretNameTextField;    // VIOLATION
+
+@end
+
+@implementation Test
+
+  @synthesize secretNameTextField;
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.navigationController.navigationBar.tintColor = kNavigationTintColor;
+    [self.slidingViewController.topViewController.view addGestureRecognizer:self.slidingViewController.panGesture];
+}
+
+
+@end]]></example>
+    <repair><![CDATA[@interface Test: UIViewController
+
+@property (weak, nonatomic) IBOutlet UITextField *secretNameTextField;
+
+@end
+
+@implementation Test
+
+  @synthesize secretNameTextField;
+
+  - (void)viewDidLoad {
+      [super viewDidLoad];
+
+      self.navigationController.navigationBar.tintColor = kNavigationTintColor;
+      [self.slidingViewController.topViewController.view addGestureRecognizer:self.slidingViewController.panGesture];
+      [secretNameTextField secureTextEntry:YES];
+  }
+
+@end]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/Information-Leakage,http://cwe.mitre.org/data/definitions/359.html,https://www.owasp.org/index.php/Privacy_Violation,https://developer.apple.com/library/content/documentation/iPhone/Conceptual/iPhoneOSProgrammingGuide/StrategiesforHandlingAppStateTransitions/StrategiesforHandlingAppStateTransitions.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP-M:2016:M2,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.SensitiveCoreData" message="SensitiveCoreData: Sensitive data stored into CoreData('Privacy Violation')" class="com.optimyth.qaking.objectivec.rules.security.SensitiveCoreData" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[Managing private user information can compromise user privacy.
+
+Privacy violations occur when private user data are stored into the CoreData object due to its content is written to
+the filesystem as plain-text.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[static NSString *const CoreDataEmail = @"bond@test.com";
+static NSString *const CoreDataPassword = @"mysecretPassw";
+
+@implementation MyClass
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self storeDetails];
+}
+
+-(void)storeDetails {
+    AppDelegate * appDelegate = (AppDelegate *)(UIApplication.sharedApplication.delegate);
+
+    NSManagedObjectContext *context =[appDelegate managedObjectContext];
+
+    User user = [NSEntityDescription insertNewObjectForEntityForName:@"User"   // VIOLATION   // VIOLATION
+                                                  inManagedObjectContext:context];
+    user.email = CoreDataEmail;
+    user.password = CoreDataPassword;
+    NSError *error;
+    if (![context save:&error]) {
+        NSLog(@"Error in saving data: %@", [error localizedDescription]);
+
+    } else {
+        NSLog(@"data stored in core data");
+    }
+}
+@end]]></example>
+    <repair><![CDATA[// Don't store sensitive data into the CoreData]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP-M:2016:M2,OWASP:2021:A4,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.SensitiveDataAccessedFromItunes" message="SensitiveDataAccessedFromItunes: Sensitive data accessed from Itunes ('Privacy Violation')" class="com.optimyth.qaking.objectivec.rules.security.SensitiveDataAccessedFromItunes" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[Documents directory is intended to store temporary - non sensitive - data , allowing the user, in example, running the
+application even when the data network is down.
+
+However, if property UIFileSharingEnabled is enabled into the application Info.plist, then iTunes can have access to all
+these decrypted data.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "Foundation.h"
+
+int main() {
+  NSString *docsDirectory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+  NSString *passwd_path = [docsDirectory stringByAppendingPathComponent:@"passwords.txt"];
+
+  NSString *password = [user password];
+  [password writeToFile:passwd_path atomically:YES encoding:NSUTF8StringEncoding error:nil];    // VIOLATION
+}
+
+[Info.plist]
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>plistKeys</key>
+    <array>
+      <string>MinimumOSVersion</string>
+      <string>UIFileSharingEnabled</string>
+      <string>CFBundleURLTypes</string>
+      <string>UIBackgroundModes</string>
+      <string>FacebookAppID</string>
+    </array>
+    <key>UIFileSharingEnabled</key>
+    <true/>
+  </dict>
+</plist>]]></example>
+    <repair><![CDATA[#import "Foundation.h"
+
+int main() {
+  NSString *docsDirectory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+  NSString *passwd_path = [docsDirectory stringByAppendingPathComponent:@"passwords.txt"];
+
+  NSString *password = [user password];
+  [password writeToFile:passwd_path atomically:YES encoding:NSUTF8StringEncoding error:nil];    // OK
+}
+
+[Info.plist]
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>plistKeys</key>
+    <array>
+      <string>MinimumOSVersion</string>
+      <string>UIFileSharingEnabled</string>
+      <string>CFBundleURLTypes</string>
+      <string>UIBackgroundModes</string>
+      <string>FacebookAppID</string>
+    </array>
+    <key>UIFileSharingEnabled</key>
+    <false/>
+  </dict>
+</plist>]]></repair>
+    <reference><![CDATA[https://developer.apple.com/library/content/documentation/General/Reference/InfoPlistKeyReference/Articles/iPhoneOSKeys.html#//apple_ref/doc/uid/TP40009252-SW20,http://projects.webappsec.org/Information-Leakage,https://www.owasp.org/index.php/Privacy_Violation,http://cwe.mitre.org/data/definitions/359.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP-M:2016:M2,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.SensitiveNoSQL" message="SensitiveNoSQL: Sensitive data stored into a NoSQL database('Privacy Violation')" class="com.optimyth.qaking.objectivec.rules.security.SensitiveNoSQL" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[Managing private user information can compromise user privacy.
+
+Privacy violations occur when private user data are stored into a NoSQL database which stores the data as plaintext.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "UIAlertController+EasyBlock.h"
+#import "YapDatabase.h"
+
+static NSString *const YapValueEmail = @"myMail@server.com";
+static NSString *const YapValuePassword = @"secret!!";
+
+static NSString *const YapKeyEmail = @"YapKeyEmail";
+static NSString *const YapKeyPassword = @"YapKeyPassword";
+
+
+@implementation MyClass
+
+    -(void)saveData {
+        NSString *databaseName = @"YapDatabase.sqlite";
+        NSURL *baseURL = [[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory
+                                                                inDomain:NSUserDomainMask
+                                                       appropriateForURL:nil
+                                                                  create:YES
+                                                                   error:NULL];
+        NSURL *databaseURL = [baseURL URLByAppendingPathComponent:databaseName isDirectory:NO];
+        NSString *databasePath = databaseURL.filePathURL.path;
+
+        YapDatabase *database = [[YapDatabase alloc] initWithPath:databasePath];
+        YapDatabaseConnection *connection = [database newConnection];
+        [connection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            [transaction setObject:YapValueEmail forKey:YapKeyEmail inCollection:@"iGoat"];   // VIOLATION
+            [transaction setObject:YapValuePassword forKey:YapKeyPassword inCollection:@"iGoat"];   // VIOLATION
+        }];
+    }
+
+    - (void)viewDidLoad {
+        [super viewDidLoad];
+        [self saveData];
+    }
+@end]]></example>
+    <repair><![CDATA[// Don't store sensitive data into a NoSQL database as plaintext]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP-M:2016:M2,OWASP:2021:A4,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.SensitiveSQL" message="SensitiveSQL: Sensitive data stored into a SQL database('Privacy Violation')" class="com.optimyth.qaking.objectivec.rules.security.SensitiveSQL" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[Managing private user information can compromise user privacy.
+
+Privacy violations occur when private user data are stored into a SQL database which stores the data as plaintext.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[static NSString *const RealmCardName = @"Bond";
+static NSString *const RealmCardNumber = @"1111 2222 3333 4444";
+static NSString *const RealmCardCVV = @"091";
+
+@implementation MyClass
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self saveData];
+}
+
+-(void)saveData {
+    if ([[RCreditInfo allObjects] count] == 0) {
+        RLMRealm *realm = [RLMRealm defaultRealm];
+        RCreditInfo *creditInfo = [RCreditInfo new];
+        creditInfo.name = RealmCardName;
+        creditInfo.cardNumber = RealmCardNumber;
+        creditInfo.cvv = RealmCardCVV;
+        [realm transactionWithBlock:^{ [realm addObject:creditInfo];}];   // VIOLATION
+    }
+}
+
+@end]]></example>
+    <repair><![CDATA[// Don't store sensitive data into a SQL database as plaintext]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/Information-Leakage,https://www.owasp.org/index.php/Privacy_Violation,http://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP-M:2016:M2,OWASP:2021:A4,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.SensitiveUserDefaults" message="SensitiveUserDefaults: Sensitive data stored into NSUserDefaults('Privacy Violation')" class="com.optimyth.qaking.objectivec.rules.security.SensitiveUserDefaults" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[Managing private user information can compromise user privacy.
+
+Privacy violations occur when private user data are stored into the NSUserDefaults object due to its content is written to
+the filesystem as plain-text.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "Foundation.h"
+
+int main() {
+  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+  NSFetchRequest *fr = [NSUser fetchRequest];
+  fr.returnsObjectsAsFaults = false;
+  fr.predicate = [NSPredicate predicateWithFormat:@"(email LIKE 'email' AND password LIKE 'password')", regex];
+
+  NSArray *users = [context fetch:fr];
+
+ [defaults setObject:users[0].email forKey:@"Person"];      // VIOLATION
+ [defaults setBool:TRUE forKey:"loggedin"];
+ [defaults synchronize];
+}]]></example>
+    <repair><![CDATA[// Don't store sensitive data into the UserDefaults object]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP-M:2016:M2,OWASP:2021:A4,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.SerializableClassContainingSensitiveData" message="SerializableClassContainingSensitiveData: Serializable Class Containing Sensitive Data" class="com.optimyth.qaking.objectivec.rules.security.SerializableClassContainingSensitiveData" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[ObjectiveC provides the NSCoding interface as mechanism to convert an object to a
+byte sequence. Once the object has been serialized it can be deserialized and stored into the memory like any other
+object.
+
+Classes containing sensitive data can be converted into a sensible object which could be accessed by a malicious attacker
+by transforming it into a byte sequence.
+
+This rule reports violation when a serializable class contains sensitive data.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improving sensitive data protection improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[@interface SerializableClassContainingSensitiveData: NSCoding
+  @property (class, nonatomic, assign, readonly) NSInteger ssn;   // VIOLATION
+@end
+        }]]></example>
+    <repair><![CDATA[Avoid storing sensible information into a serializable class.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/499.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:499]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.SerializationInjection" message="SerializationInjection: Deserialization of untrusted data" class="com.optimyth.qaking.objectivec.rules.security.SerializationInjection" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.5.2,ASVS-v4.0.2:5.5.1,ASVS-v4.0.2:5.5.3,CWEScope:Availability,CWEScope:Integrity,serialization]]></tags>
+    <description><![CDATA[When application deserializes untrusted data (possibly chosen by an attacker), malformed
+data or unexpected data could be used to abuse application logic, deny service, or execute arbitrary code, when
+deserialized.
+
+The vulnerability occurs when user-supplied input is not properly sanitized before being passed to one of the encode()
+functions from NSCoder. Since ObjectiveC allows object serialization, attackers could pass ad-hoc serialized strings to a vulnerable call, resulting
+in an arbitrary ObjectiveC object(s) injection into the application scope.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid deserializing untrusted data inputs.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "Foundation.h"
+#import "NSControl.h"
+
+@implementation MyClass
+
+- (void) encodeWithCoder:(NSCoder *)encoder {
+    NSControl control;
+    NSString recordName = [control stringValue];    // source
+
+    [encoder encodeObject:recordName forKey:kTitleKey];   // VIOLATION
+}
+
+@end]]></example>
+    <repair><![CDATA[#import "Foundation.h"
+#import "NSControl.h"
+
+@implementation MyClass
+
+- (void) encodeWithCoder:(NSCoder *)encoder {
+    NSControl control;
+    NSString recordName = [control stringValue];
+
+    NSRegularExpression *regex = [NSRegularExpression
+           regularExpressionWithPattern:@"^[+0]+(?=\\d*)"
+                                 options:NSRegularExpressionCaseInsensitive
+                                   error:&error];
+
+    NSString neutralized = [regex   // neutralization
+                                          stringByReplacingMatchesInString:recordName
+                                                                   options:0
+                                                                     range:NSMakeRange(0, [string length])
+                                                              withTemplate:@"+"];;
+
+    [encoder encodeObject:neutralized forKey:kTitleKey];
+}
+
+@end]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/502.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:502,CWETOP25:2021:13,OWASP-M:2016:M8,OWASP:2021:A8,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.ServerTrustCredentialCheck" message="ServerTrustCredentialCheck: Evaluate server certificate trust chain" class="com.optimyth.qaking.objectivec.rules.security.ServerTrustCredentialCheck" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.9.2,ASVS-v4.0.2:9.2.1,CWEScope:Authentication,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When credentials are create using a server certificate. its trust must be evaluated beforehand to ensure credentials are
+safe.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Ensure credentials are safe.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[@implementation MyClass
+  int main() {
+    SecTrustRef trust = [[challenge protectionSpace] serverTrust];
+    SecTrustResultType result = kSecTrustResultInvalid;
+    OSStatus status = SecTrustEvaluate(trust, &result);
+    completionHandler(NSURLSessionAuthChallengeUseCredential, [challenge proposedCredential]);
+  }
+@end]]></example>
+    <repair><![CDATA[@implementation MyClass
+  int main() {
+    SecTrustRef trust = [[challenge protectionSpace] serverTrust];
+    SecTrustResultType result = kSecTrustResultInvalid;
+    OSStatus status = SecTrustEvaluate(trust, &result);
+    if (status == 0) {
+      completionHandler(NSURLSessionAuthChallengeUseCredential, [challenge proposedCredential]);
+    }
+  }
+@end]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/295.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:295,CWETOP25:2021:26,OWASP-M:2016:M3,OWASP:2021:A7,WASC:04]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.ThirdPartyKeyboardAllowed" message="ThirdPartyKeyboardAllowed: Avoid exposing sensitive data to third party keyboards." class="com.optimyth.qaking.objectivec.rules.security.ThirdPartyKeyboardAllowed" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.6,ASVS-v4.0.2:14.2.3,ASVS-v4.0.2:14.2.4,ASVS-v4.0.2:2.10.3,ASVS-v4.0.2:5.3.9,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Third party keyboards might not be completely trustable and using them can be a risk when
+the application handles sensitive information.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[@implementation AppDelegate: UIApplicationDelegate  // VIOLATION
+
+@synthesize managedObjectContext = _managedObjectContext;
+@synthesize managedObjectModel = _managedObjectModel;
+@synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
+
+@end]]></example>
+    <repair><![CDATA[@implementation AppDelegate: UIApplicationDelegate
+
+@synthesize managedObjectContext = _managedObjectContext;
+@synthesize managedObjectModel = _managedObjectModel;
+@synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
+
+-(BOOL)application:(UIApplication *)application shouldAllowExtensionPointIdentifier:(NSString *)extensionPointIdentifier
+{
+    if (extensionPointIdentifier == UIApplicationKeyboardExtensionPointIdentifier)
+    {
+        return NO;
+    }
+
+    return YES;
+}
+
+@end]]></repair>
+    <reference><![CDATA[http://iossolves.blogspot.com/2016/07/disabling-third-party-keyboards.html,https://cwe.mitre.org/data/definitions/829.html,https://cwe.mitre.org/data/definitions/522.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:522,CWE:829,CWETOP25:2021:21,OWASP:2021:A8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.UnsafeCookie" message="UnsafeCookie: Generate server-side cookies with adequate security properties" class="com.optimyth.qaking.objectivec.rules.security.UnsafeCookie" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:3.2.3,ASVS-v4.0.2:3.4.1,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Checks that cookies generated server-side have the following security properties:
+
+* Non persistent - Cookie is not stored persistently by the browser (it is hold in memory)
+* Secure - Cookie is sent in HTTP/SSL communications only (more difficult to capture on the net)
+* Path - Path should not match a certain patterns that allow transmission to unintended web applications.
+* Domain - Domain should not be too wide so the cookie is sent to unintended servers.
+
+Additionally, the name of any session cookie should be chosen to avoid providing common names that may give clues
+to the attacker about how are sessions handled in the server.
+
+Other rules (like HeaderManipulation) check other conditions, like HTTP Splitting, that could be
+produced when the cookie value depends on user-controlled input non properly neutralized.
+
+NOTE: Not setting domain or path forces browser to send the cookie to the originator's domain and
+application path, so this is considered secure.]]></description>
+    <priority>3</priority>
+    <effort>4</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+int main() {
+
+  NSDictionary *cookieProperties = @{ @"name" : key, @"domain" : @"www.example.com", @"value" : value, @"path" : "/service" };
+  NSHTTPCookie *cookie = [NSHTTPCookie cookieWithProperties:cookieProperties];        /* VIOLATION Insecure cookie */
+
+  NSDictionary *cookieProperties1 = [NSDictionary dictionaryWithObjectsAndKeys: key, @"name",
+                                       	@"lol", @"Value", @"/service", @"Path", @".test.com", @"Domain", 60 * 60 * 24 * 365, @"expiresDate", "TRUE", @"secure"];        /* VIOLATION Persistent cookie */
+  NSHTTPCookie *cookie1 = [NSHTTPCookie cookieWithProperties:cookieProperties1];
+
+  NSDictionary *cookieProperties2 = @{ @"name" : key, @"domain" : @".com", @"value" : value, @"path" : "/service", @"secure" : TRUE };        /* VIOLATION Bad domain */
+  NSHTTPCookie *cookie2 = [NSHTTPCookie cookieWithProperties:cookieProperties2];
+
+  NSDictionary *cookieProperties3 = @{ @"name" : key, @"domain" : @"www.example.com", @"value" : value, @"path" : "/", @"secure" : TRUE };        /* VIOLATION Bad path */
+  NSHTTPCookie *cookie3 = [NSHTTPCookie cookieWithProperties:cookieProperties3];
+}]]></example>
+    <repair><![CDATA[int main() {
+
+  NSDictionary *cookieProperties = [NSDictionary dictionaryWithObjectsAndKeys: key, @"name",
+                                         	@"lol", @"Value", @"/service", @"Path", @".test.com", @"Domain", 60 * 60 * 24 * 365, @"expiresDate", "TRUE", @"secure", "TRUE", @"sessionOnly"];
+  NSHTTPCookie *cookie = [NSHTTPCookie cookieWithProperties:cookieProperties];      /* Ok, cookie is discarded when session ends */
+}]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/w/page/13246936/Information%20Leakage,http://cwe.mitre.org/data/definitions/614.html,http://cwe.mitre.org/data/definitions/539.html,http://cwe.mitre.org/data/definitions/200.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:1004,CWE:200,CWE:539,CWE:614,CWETOP25:2021:20,PCI-DSS:6.5.3,WASC:13]]></security>
+    </normatives>
+    <properties>
+      <property name="domainPatternToAvoid" descname="Domain pattern to avoid" value="\.[^\.]+"/>
+      <property name="avoidPersistentCookies" descname="Avoid persistent cookies" value="true"/>
+      <property name="avoidInsecureCookies" descname="Avoid unsecure cookies" value="false"/>
+      <property name="pathPatternToAvoid" descname="Path pattern to avoid" value="/"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.URLSchemeHijacking" message="URLSchemeHijacking: URL scheme hijacking though user input" class="com.optimyth.qaking.objectivec.rules.security.URLSchemeHijacking" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Integrity]]></tags>
+    <description><![CDATA[An iOS application can send a message to other iOS application. Concatenating untrusted
+input to that request may allow an attacker to override/add unexpected request parameters.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Performing input data validation improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[[ MyClass.h ]
+@interface MyClass
+@property (nonatomic, weak)  IBOutlet UITextField *mobileNumberTxtField;
+@end
+
+
+[ Implementation ]
+#import "MyClass.h"
+
+@implementation MyClass
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+}
+
+-(IBAction)sendMessageItemPressed:(id)sender {
+    NSString *mobileNumberStr = self.mobileNumberTxtField.text;
+
+    NSString *urlString = [[NSString stringWithFormat:@"iApp://?contactNumber=%",mobileNumberStr] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+
+    UIApplication *app = [UIApplication sharedApplication];
+    NSURL *url = [NSURL URLWithString:urlString];
+    if ([app canOpenURL:url]) {
+        [app openURL:url];    // VIOLATION
+    }
+}
+
+@end]]></example>
+    <repair><![CDATA[// Validate user input]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/939.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:939]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.UserControlledSQLPrimaryKey" message="UserControlledSQLPrimaryKey: Avoid using an user controlled Primary Key into a query" class="com.optimyth.qaking.objectivec.rules.security.UserControlledSQLPrimaryKey" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The software constructs all or part of an SQL command using externally-controlled input, but it does not neutralize
+properly that input that could modify the intended SQL command when it is sent to a database interaction method.
+
+Commonly a database table contains information that should not be accessible to all the users. However, if an user can
+modify the query to specify a primary key, then it's possible for him to access unauthorized records.
+
+The rule detects a path in code between an user-input statement specifying the primary key (source) and a database call
+(sink), with SQL sentence depending on non neutralized input.
+
+It must be known that if SQL does not depend on user-controlled input (e.g. Parametrized SQL), there is no possibility
+for attacker to view unauthorized records.
+
+This rule also checks NSFetchRequest requests used along with a predicate which can be externally controlled.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoiding bypassing security authorizations avoids access to sensible information, improving security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[int main () {
+   NSFileHandle *input = [NSFileHandle fileHandleWithStandardInput];
+   NSData *inputData = [NSData dataWithData:[input availableData]];
+   NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+
+   NSFetchRequest *fetchRequest = [[NSFetchRequest init] alloc];
+
+   NSEntityDescription *entity = [NSEntityDescription entityForName:"Registries" inManagedObjectContext: managedContext];
+   fetchRequest.entity = entity;
+   NSPredicate pred = [NSPredicate predicateWithFormat:"(userid = %@ || id = %@)", "a", inputString];     /* VIOLATION */
+   fetchRequest.predicate = pred;
+   @try {
+       let results = [managedContext executeFetchRequest:fetchRequest];
+       NSManagedObject result = results.first;
+   } @catch (NSException * e) {
+       print(e);
+   }
+ }]]></example>
+    <repair><![CDATA[// Validate input before using it to select a primary key]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/566.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:566]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.WeakKeyDerivationIteration" message="WeakKeyDerivationIteration: Too weak iteration count on key derivation" class="com.optimyth.qaking.objectivec.rules.security.WeakKeyDerivationIteration" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.4.1,ASVS-v4.0.2:2.4.2,ASVS-v4.0.2:2.4.3,ASVS-v4.0.2:2.4.4,ASVS-v4.0.2:2.4.5,CWEScope:Access-Control,crypto]]></tags>
+    <description><![CDATA[When a key is derived from a password (and other data) and an iteration count, it's mandatory using a enough number of
+iterations to ensure the key is not weak.
+
+Otherwise key would result weak to dictionary or rainbow tables attacks.
+
+This rule set the minimum iterations number in 100000, but it can be modified in the "minIterations" parameter.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Making strong keys allows keeping sensitive data safe]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "CommonCrypto.h"
+
+int main() {
+  CCKeyDerivationPBKDF(kCCPBKDF2,     /* VIOLATION */
+                       password,
+                       passwordLen,
+                       salt_cstr,
+                       salt.length,
+                       kCCPRFHmacAlgSHA256,
+                       100000,
+                       derivedKey,
+                       derivedKeyLen);]]></example>
+    <repair><![CDATA[#import "CommonCrypto.h"
+
+int main() {
+  CCKeyDerivationPBKDF(kCCPBKDF2,     /* VIOLATION */
+                       password,
+                       passwordLen,
+                       salt_cstr,
+                       salt.length,
+                       kCCPRFHmacAlgSHA256,
+                       1000000,
+                       derivedKey,
+                       derivedKeyLen);
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/916.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:916,OWASP-M:2016:M5,OWASP:2021:A2]]></security>
+    </normatives>
+    <properties>
+      <property name="minIterations" descname="Minimum number of iterations when deriving a key." value="100000"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.WeakKeyDerivationPassword" message="WeakKeyDerivationPassword: Empty or nil password used in key derivation" class="com.optimyth.qaking.objectivec.rules.security.WeakKeyDerivationPassword" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.6.1,ASVS-v4.0.2:1.6.2,ASVS-v4.0.2:1.6.3,ASVS-v4.0.2:1.6.4,ASVS-v4.0.2:2.8.2,ASVS-v4.0.2:2.9.1,ASVS-v4.0.2:6.4.2,CWEScope:Access-Control,crypto]]></tags>
+    <description><![CDATA[When a key is derived from a password (and other data) and an iteration count, it's mandatory using a strong password. It
+shouldn't be at least empty or nil.
+
+Otherwise key would result weak to dictionary or rainbow tables attacks.
+
+This rule checks if password is empty or nil.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Making strong keys allows keeping sensitive data safe.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "CommonCrypto.h"
+
+int main() {
+  CCKeyDerivationPBKDF(CCPBKDFAlgorithm(kCCPBKDF2),       /* VIOLATION */
+  "",
+  999999,
+  salt,
+  saltLen,
+  CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
+  100000,
+  derivedKey,
+  derivedKeyLen);
+}]]></example>
+    <repair><![CDATA[// Do not use an empty password]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/320.html,http://cwe.mitre.org/data/definitions/760.html,http://cwe.mitre.org/data/definitions/321.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:320,CWE:321,OWASP-M:2016:M5,OWASP:2021:A2,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.SECURITY.XMLInjection" message="XMLInjection: XML Injection (aka Blind XPath Injection)" class="com.optimyth.qaking.objectivec.rules.security.XMLInjection" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The extensible markup language (XML) is used in a wide range of applications, from remote
+procedure calls to storage, exchange and retrieval of data.
+
+By injecting XML content or structures into an XML document, an attacker can alter the logic of the application or
+insert malicious content.
+
+Input data must be validated before writing into an XML document.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent XML injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "Foundation.h"
+
+int main() {
+  NSFileHandle *input = [NSFileHandle fileHandleWithStandardInput];
+  NSData *inputData = [NSData dataWithData:[input availableData]];
+  NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+
+  NSXMLElement root = [NSXMLElement initWithName: "root"];
+  NSXMLDocument xml = [NSXMLDocument initWithRootElement: root];
+  [root addChild: [NSXMLElement initWithName: "foo" stringValue:inputString]];     /* VIOLATION */
+  printf(xml.XMLString);
+}]]></example>
+    <repair><![CDATA[#import "Foundation.h"
+
+int main() {
+  NSFileHandle *input = [NSFileHandle fileHandleWithStandardInput];
+  NSData *inputData = [NSData dataWithData:[input availableData]];
+  NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+
+  NSRegularExpression *regex = [NSRegularExpression
+           regularExpressionWithPattern:@"^[+0]+(?=\\d*)"
+           options:NSRegularExpressionCaseInsensitive
+           error:&error];
+
+  NSString neutralized = [regex   // neutralization
+           stringByReplacingMatchesInString:inputString
+           options:0
+           range:NSMakeRange(0, [string length])
+           withTemplate:@"+"];;
+
+  NSXMLElement root = [NSXMLElement initWithName: "root"];
+  NSXMLDocument xml = [NSXMLDocument initWithRootElement: root];
+  [root addChild: [NSXMLElement initWithName: "foo" stringValue:neutralized]];     /* VIOLATION */
+  printf(xml.XMLString);
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/91.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP:2021:A3,WASC:23]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.URLSchemesHandling" message="URLSchemesHandling: Verify invoker application identity" class="com.optimyth.qaking.objectivec.rules.security.URLSchemesHandling" technology="OBJECTIVEC" active="true">
+    <description><![CDATA[URL schemes allow native applications integration and data sharing.
+
+In order to prevent use of data received from an untrusted source application, invoker application identity must be checked.
+
+Use of application:handleOpenURL: (deprecated in iOS 4.2) must be replaced by application:openURL:sourceApplication:annotation:, invoker application identity must be checked.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent access to data received from an untrusted source application.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[@implementation MYApplicationDelegate
+
+- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
+  [self doSomething:url];   // VIOLATION - external input cannot be checked
+  return YES;
+}
+
+@end
+
+@implementation MYOtherApplicationDelegate
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+ [self doSomething:url];   // VIOLATION - external input not checked
+}
+
+@end]]></example>
+    <repair><![CDATA[@implementation MYApplicationDelegate
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+  
+  if ( [self checkSourceApplication:sourceApplication] ) {    // OK
+    [self doSomething:url];   
+  }
+}
+
+@end
+
+@implementation MYOtherApplicationDelegate
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+  
+  if ( [self checkSourceApplication:sourceApplication] ) {  // OK
+    [self doSomething:url];   
+  }
+}
+
+@end]]></repair>
+    <reference><![CDATA[http://palpapers.plynt.com/issues/2011Dec/ios-app-flaws/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:939]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.WeakCryptographicHash" message="WeakCryptographicHash: Weak cryptographic hashes cannot guarantee data integrity" class="com.optimyth.qaking.objectivec.rules.security.WeakCryptographicHash" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.4.1,ASVS-v4.0.2:2.4.2,ASVS-v4.0.2:2.4.3,ASVS-v4.0.2:2.4.4,ASVS-v4.0.2:2.4.5,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Weak cryptographic hashes cannot guarantee data integrity and should not be used in security-critical contexts.
+
+MD2, MD4, MD5 and SHA-1 are popular cryptographic hash algorithms often used to verify the integrity of
+messages and other data.
+
+Recent advances in cryptanalysis have discovered weaknesses in both algorithms. Consequently, MD5 and SHA-1 should no
+longer be used to verify the authenticity of data in security-critical contexts.
+
+Techniques for breaking MD5 hashes are advanced and widely available enough that the algorithm must not be used in any
+security context.
+
+In the case of SHA-1, current techniques still require a significant amount of computational power and are more
+difficult to implement.
+
+However, attackers have found the Achilles' heel for the algorithm, and techniques for breaking it will likely lead to
+the discovery of even faster attacks.
+
+Note: SHA-1 is not a recommended algorithm for hash password, for digital signature generation/verification, and other
+uses (NIST).
+
+The rule checks if the cryptographic hash algorithm used is one of the allowed ones; the rule can lead to false
+negatives if the algorithm value argument cannot be inferred statically.
+
+In addition, we should take special attention to salts, as they should:
+  * Not be nil or empty, and long enough to guarantee a secure encryption.
+  * Not be hardcoded, as any person with access to the source code will know its value. Also changing a hardcoded salt
+    once it is in production is extremely difficult.
+  * Not be reused, because this makes easier to break the encryption, due to two users with the same password will have
+    the same hash.
+  * Not be controlled by user input.
+  * Not have an iteration count, used to derive a key from a base key, too low.
+
+This rule checks if an insecure hash algorithm is being used, and also if hash can be considered secure.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve security, by avoiding not allowed access to sensible data or information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "MYClass.h"
+
+#define ITERATION 50
+
+@implementation MYClass
+
+- (void) doSomething {
+
+    NSData *imageData = [NSData dataWithContentsOfFile:file];
+    CC_MD5(imageData, [imageData length], result);    // Violation
+}
+
+- (void) doSomethingMore {
+
+    NCCKeyDerivationPBKDF(kCCPBKDF2,    // Violation
+                     password,
+                     passwordLen,
+                     "",    // empty salt
+                     0,
+                     kCCPRFHmacAlgSHA256,
+                     100000,
+                     derivedKey,
+                     derivedKeyLen);
+
+    CCKeyDerivationPBKDF(kCCPBKDF2,   // Violation
+                     password,
+                     passwordLen,
+                     "2!@$(5#@532@#$253l5#@$",    // hardcoded salt
+                     2,
+                     kCCPRFHmacAlgSHA256,
+                     100000,
+                     derivedKey,
+                     derivedKeyLen);
+
+    CCKeyDerivationPBKDF(kCCPBKDF2,   // Violation
+                     password,
+                     passwordLen,
+                     salt,
+                     saltLen,
+                     kCCPRFHmacAlgSHA256,
+                     ITERATION,   // too low iteration value
+                     derivedKey,
+                     derivedKeyLen);
+
+    CCKeyDerivationPBKDF(kCCPBKDF2,   // Violation
+                     password,
+                     passwordLen,
+                     nil,   // null salt
+                     0,
+                     kCCPRFHmacAlgSHA256,
+                     100000,
+                     derivedKey,
+                     derivedKeyLen);
+
+    NSControl *control;
+    NSString *salt = [control stringValue];
+  const char *salt_cstr = [salt cStringUsingEncoding:NSUTF8StringEncoding];
+
+  CCKeyDerivationPBKDF(kCCPBKDF2,   // Violation
+                     password,
+                     passwordLen,
+                     salt_cstr,   // salt from user input
+                     salt.length,
+                     kCCPRFHmacAlgSHA256,
+                     100000,
+                     derivedKey,
+                     derivedKeyLen);
+}
+
+@end]]></example>
+    <repair><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+    NSData *keyData=[NSData dataWithBytes:s length:strlen(s)];
+
+    uint8_t digest[CC_SHA256_DIGEST_LENGTH]={0};
+    CC_SHA256(keyData.bytes, keyData.length, digest);    // Ok
+}
+
+- (void) doSomethingMore {
+
+    NCCKeyDerivationPBKDF(kCCPBKDF2,    // Ok
+                     password,
+                     passwordLen,
+                     salt,    // Non empty, hardcoded, nil or user input dependant salt
+                     0,
+                     kCCPRFHmacAlgSHA256,
+                     100000,    // valid iteration value
+                     derivedKey,
+                     derivedKeyLen);
+}
+
+@end]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/916.html,https://cwe.mitre.org/data/definitions/328.html,https://cwe.mitre.org/data/definitions/760.html,https://cwe.mitre.org/data/definitions/759.html,https://www.owasp.org/index.php/Guide_to_Cryptography#Hashes,Key derivation: https://en.wikipedia.org/wiki/PBKDF2]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:328,CWE:759,CWE:760,CWE:916,OWASP-M:2016:M5,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:50]]></security>
+    </normatives>
+    <properties>
+      <property name="minIterations" descname="Minimum number of iterations when derivating a key." value="100000"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.WeakEncryption" message="WeakEncryption: Weak encryption algorithm" class="com.optimyth.qaking.objectivec.rules.security.WeakEncryption" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.9.3,ASVS-v4.0.2:6.2.2,ASVS-v4.0.2:8.3.7,CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,crypto]]></tags>
+    <description><![CDATA[Old encryption algorithms such as DES no longer provide sufficient protection for sensitive data.
+
+Encryption algorithms rely on key size as one of the primary mechanism to ensure cryptographic strength. This is often
+measured by the time and computational power needed to generate a valid key. Current cryptography guidelines suggest
+that effective key lengths for symmetric encryption should be at least 128 bits, while 2048 bits for RSA keys are recommended
+for long-term security.
+
+The initialization vector must be generated with a cryptographic pseudorandom number generator.
+Hardcoded or null initialization vectors are not a great idea since they are easily compromised.
+
+
+Other relevant thing is the mode of operation, which usually is ECB (Electronic Codebook), CFB (Cipher Block Chaining)
+or CBC (Cipher Feedback). ECB mode must be avoided as it has been proved to be weak.
+
+Also key and key length should not depend on user input, as this would compromise encryption integrity.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve security, by avoiding not allowed access to sensible data or information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+    CCCrypt(kCCEncrypt,   // Violation
+        kCCAlgorithmDES,
+        kCCOptionPKCS7Padding,
+        key,
+        kCCKeySizeDES, // 64-bit key size
+        iv,
+        plaintext,
+        sizeof(plaintext),
+        ciphertext,
+        sizeof(ciphertext),
+        &numBytesEncrypted);
+}
+
+- (void) doSomethingMore {
+
+    NSString *iv = @"1234567812345678";  //Bad idea to hard code IV
+    char ivPtr[kCCBlockSizeAES128];
+
+    [iv getCString:ivPtr maxLength:sizeof(ivPtr) encoding:NSASCIIStringEncoding];
+
+    ccStatus = CCCrypt(   kCCEncrypt,   // Violation
+                      kCCAlgorithmAES128,
+                      kCCOptionPKCS7Padding,
+                      [key cStringUsingEncoding:NSASCIIStringEncoding],
+                      kCCKeySizeAES128,
+                      ivPtr, /*IV should be something random (not null and not constant)*/
+                      [self bytes], dataLength, /* input */
+                      buffer, bufferSize, /* output */
+                      &numBytesEncrypted
+                  );
+
+
+    ccStatus = CCCrypt( kCCEncrypt,   // Violation
+                    kCCAlgorithmAES,
+                    kCCOptionECBMode, // Uses ECB mode
+                    key,
+                    kCCKeySizeAES128,
+                    iv,
+                    plaintext,
+                    sizeof(plaintext),
+                    ciphertext,
+                    sizeof(ciphertext),
+                    &numBytesEncrypted);
+
+    CCCrypt(kCCEncrypt,   // Violation
+          kCCAlgorithmDES,
+          kCCOptionPKCS7Padding,
+          key,
+          kCCKeySizeDES, // 64-bit key size
+          iv,
+          plaintext,
+          sizeof(plaintext),
+          ciphertext,
+          sizeof(ciphertext),
+          &numBytesEncrypted);
+
+    NSControl *control;
+    NSString *keyLen = [control stringValue];
+
+    CCCrypt(kCCEncrypt, // Violation
+        kCCAlgorithmAES,
+        kCCOptionPKCS7Padding,
+        key,
+        sizeof(keyLen),   // User input key len
+        iv,
+        plaintext,
+        sizeof(plaintext),
+        ciphertext,
+        sizeof(ciphertext),
+        &numBytesEncrypted);
+
+}
+
+@end]]></example>
+    <repair><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething {
+
+    CCCrypt(kCCEncrypt,   // Ok
+        kCCAlgorithmAES128,
+        kCCOptionPKCS7Padding,
+        key,
+        kCCKeySizeAES128,
+        iv,
+        plaintext,
+        sizeof(plaintext),
+        ciphertext,
+        sizeof(ciphertext),
+        &numBytesEncrypted);/
+}
+
+@end]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Guide_to_Cryptography#Cryptographic_Algorithms,https://cwe.mitre.org/data/definitions/327.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:327,OWASP-M:2016:M5,OWASP:2021:A2,PCI-DSS:6.5.8,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="minAsymmetricKeySize" descname="Minimun Asymmetric key size." value="2048"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.XMLEntityInjection" message="XMLEntityInjection: XML entity injection" class="com.optimyth.qaking.objectivec.rules.security.XMLEntityInjection" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.5.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[In XML parsers, when XML document to parse could be altered by untrusted input, and the
+untrusted input may alter the Document Type Definition (DTD, embedded or external), the parser should be configured to
+avoid two kinds of potential attacks:
+
+* XML entity expansion DoS (XML bomb or "billion laughs attack"), CWE-776, where well-formed DTD with internal entities
+  are expanded exponentially until they exhaust memory.
+
+* XML external entity injection (XXE), CWE-611, where an external entity controlled by the attacker refers to the URL of
+  a resource that gives unauthorized access to sensitive files on the server machine, or to a resource like /dev/random
+  in Unix systems that, when entity is expanded, leads to a denial-of-service condition.
+  A variant of this attack is the server-side request forgery (SSRF), where the URL for external DTD or XML-Schema is
+  processed by the URL handler used by the XML parser, allowing the attacker access to an unexpected network resource
+  (for cross-site request forgery attacks or port-scanning enumeration).
+
+DTD is not the unique element that an attacker could use for injection: XML-Schema attributes could be specified on any
+tag, so SSRF injection may happen at any place in the XML document, not only at the start where DTD should be placed.
+
+XML parsing could be hidden in other frameworks and libraries. For example, with REST, when a resource has an XML
+representation, the REST framework typically use an underlying XML parser for processing the request message, which
+obviusly is fully under control of a potential attacker.
+
+To be safe during XML processing coming from untrusted sources, a number of XML features should be disabled
+when configuring the parser:
+* DTD interpretation - Ensure DOCTYPE tags are ignored, or documents containing them are rejected.
+* Ignore or reject external entities.
+* schemaLocation and noNamespaceSchemaLocation should not fetch URLs.
+* XIncludes - Should be disabled or left disabled.
+
+The rule checks that there is a path between an untrusted input and the XML document to parse,
+then verifies that the XML parser is configured to avoid both external entity and entity expansion attacks.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XML entity attacks that could cause denial-of-service and information leakage.]]></benefits>
+    <inconvenients><![CDATA[Dependencies on certain features related to DTD or entity expansion may render runtime errors.]]></inconvenients>
+    <example><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) parseSomeXML: (NSString *) rawXml {
+
+    BOOL success;
+    NSData *rawXmlConvToData = [rawXml dataUsingEncoding:NSUTF8StringEncoding];
+    NSXMLParser *myParser = [[NSXMLParser alloc] initWithData:rawXmlConvToData];
+    [myParser setShouldResolveExternalEntities:YES];    // Violation
+    [myParser setDelegate:self];
+}
+
+@end
+
+This code is vulnerable to well-known XML attack vectors like:
+
+* "billion laughs" attack, 1K payload expands to 3GB!:
+<?xml version="1.0"?>
+<!DOCTYPE lolz [
+ <!ENTITY lol "lol">
+ <!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">
+ <!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">
+ <!ENTITY lol4 "&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;">
+ <!ENTITY lol5 "&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;">
+ <!ENTITY lol6 "&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;">
+ <!ENTITY lol7 "&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;">
+ <!ENTITY lol8 "&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;">
+ <!ENTITY lol9 "&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;">
+]>
+<lolz>&lol9;</lolz>
+
+* XXE (external entity attack), for sensitive file disclosure:
+<!DOCTYPE roottag [
+ <!ENTITY windowsfile SYSTEM "file:///c:/boot.ini">
+]>
+<roottag>
+ <sometag>&windowsfile;</sometag>
+</roottag>
+
+* XXE, for denial-of-service under Unix servers:
+<!DOCTYPE foo [
+  <!ELEMENT root ANY >
+  <!ENTITY unixfile SYSTEM "file:///dev/random" >
+]>
+<root>&unixfile;</root>]]></example>
+    <repair><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) parseSomeXML: (NSString *) rawXml {
+
+    BOOL success;
+    NSData *rawXmlConvToData = [rawXml dataUsingEncoding:NSUTF8StringEncoding];
+    NSXMLParser *myParser = [[NSXMLParser alloc] initWithData:rawXmlConvToData];
+    [myParser setShouldResolveExternalEntities:NO];    // Ok, also avoiding this is valid, this is disabled by default
+    [myParser setDelegate:self];
+}
+
+@end]]></repair>
+    <reference><![CDATA[OWASP XML External Entity Processing: https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Processing,http://projects.webappsec.org/w/page/13247002/XML%20Entity%20Expansion,http://projects.webappsec.org/w/page/13247003/XML%20External%20Entities,https://cwe.mitre.org/data/definitions/776.html,http://cwe.mitre.org/data/definitions/611.h]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:611,CWE:776,CWETOP25:2021:23,OWASP-M:2016:M8,OWASP:2021:A5,PCI-DSS:6.5.1,WASC:43,WASC:44]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+      <property name="parametersAsSources" descname="Assume that method parameters are untrusted inputs" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.OBJECTIVEC.XPathInjection" message="XPathInjection: Improper Neutralization of Data within XPath Expressions ('XPath Injection')" class="com.optimyth.qaking.objectivec.rules.security.XPathInjection" technology="OBJECTIVEC" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.10,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[The software uses external input to dynamically construct an XPath expression used to
+retrieve data from an XML database, but it does not neutralize or incorrectly neutralizes that input.
+This allows an attacker to control the structure of the query.
+
+Effect: the attacker will have control over the information selected from the XML database and may use that ability
+to control application flow, modify logic, retrieve unauthorized data, or bypass important checks (e.g. authentication).
+
+This check looks for calls that create or execute an XPath expression, and detects if an untrusted input could
+change the XPath code used at that call.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid Xpath injection attacks produced by non neutralized user inputs.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething: (NSString *) accountStr {
+
+    xmlXPathContextPtr xpathCtx;
+
+    NSControl control;
+    NSString *query = [control stringValue];
+
+    xpathCtx = xmlXPathNewContext(doc);
+
+    /* Evaluate XPath expression */
+    xmlChar *queryString = (xmlChar *)[query cStringUsingEncoding:NSUTF8StringEncoding];
+    xpathObj = xmlXPathEvalExpression(queryString, xpathCtx);	// Violation
+}
+
+- (void) doSomethingMore {
+
+	NSControl *control;
+	NSString * query = [control stringValue];
+
+	NSXMLNode * theDocument;
+	NSArray *nodes = [theDocument nodesForXPath:query  error:&err];		// Violation
+}
+
+@end]]></example>
+    <repair><![CDATA[#import "MYClass.h"
+
+@implementation MYClass
+
+- (void) doSomething: (NSString *) accountStr {
+
+    xmlXPathContextPtr xpathCtx;
+
+    NSControl control;
+    NSString *query = [control stringValue];
+    NSString validate = validate (query);   // Validation...
+
+    xpathCtx = xmlXPathNewContext(doc);
+
+    /* Evaluate XPath expression */
+    xmlChar *queryString = (xmlChar *)[validate cStringUsingEncoding:NSUTF8StringEncoding];
+    xpathObj = xmlXPathEvalExpression(queryString, xpathCtx);	// Ok
+}
+
+- (void) doSomethingMore {
+
+	NSControl *control;
+	NSString * query = [control stringValue];
+    NSString validate = validate (query);   // Validation...
+
+	NSXMLNode * theDocument;
+	NSArray *nodes = [theDocument validate  error:&err];		// Ok
+}
+
+@end]]></repair>
+    <reference><![CDATA[Prevent XPath Injection: https://www.securecoding.cert.org/confluence/pages/viewpage.action?pageId=62849047,http://cwe.mitre.org/data/definitions/643.html,http://projects.webappsec.org/w/page/13247005/XPath%20Injection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:643,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:39]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+      <property name="parametersAsSources" descname="Assume that method parameters are untrusted inputs" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="OBJECTIVEC" technology="OBJECTIVEC" active="true" weight="1.0">
+      <description><![CDATA[OBJECTIVEC rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="OBJECTIVEC" active="true" weight="0.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="OBJECTIVEC" active="true" weight="0.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="OBJECTIVEC" active="true" weight="0.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="OBJECTIVEC" active="true" weight="0.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="OBJECTIVEC" active="true" weight="10.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

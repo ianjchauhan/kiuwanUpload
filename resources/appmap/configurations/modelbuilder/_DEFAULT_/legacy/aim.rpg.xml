@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for rpg4 language</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-rpg4.xml"/>
+  <import resource="classpath:resources/qaking-tech-sql.xml"/>
+
+  <bean id="aim.rpg4.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>rpg4 parser</description>
+    <property name="filter" ref="aim.rpg.filter"/>
+    <property name="languageSupport">
+      <bean parent="ls_rpg4">
+        <property name="processSQL" value="${aim.rpg.rule.parseSqlDependencies}"/>
+      </bean>
+    </property>
+  </bean>
+
+  <!-- Rules -->
+  <bean id="aim.rpg4.rule" class="com.optimyth.apm.builder.rules.rpg.RpgBuilderRule">
+    <description>rpg4 rule</description>
+    <property name="active" value="${aim.rpg.rule.active}"/>
+    <property name="filter" ref="aim.rpg.filter"/>
+    <property name="callback" ref="aim.rpg4.rule.callback"/>
+  </bean>
+
+  <bean id="aim.rpg4.rule.callback" class="com.optimyth.apm.builder.rules.rpg.BasicRpgCallback">
+    <property name="parseFileDependencies" value="${aim.rpg.rule.parseFileDependencies}" />
+    <property name="parseSqlDependencies" value="${aim.rpg.rule.parseSqlDependencies}" />
+    <property name="registerProcedures" value="${aim.rpg.rule.registerProcedures}" />
+    <property name="registerUnresolved" value="${aim.rpg.rule.registerUnresolved}" />
+    <property name="softwareName" value="${aim.rpg.rule.software}"/>
+
+    <property name="copyResolver" ref="aim.rpg.resolver.copy" />
+    <property name="calledResolver" ref="aim.rpg.resolver.progcalls" />
+
+    <property name="sqlProcessor">
+      <bean class="com.optimyth.apm.builder.rules.sql.BasicSqlProcessor">
+        <property name="addSqlToModel" value="${aim.rpg.rule.addSqlToModel}"/>
+        <property name="parseSqlColumns" value="${aim.rpg.rule.parseSqlColumns}"/>
+        <property name="sqlParser" ref="ls_sql_parser"/>
+        <property name="sqlCallback">
+          <bean class="com.optimyth.apm.builder.rules.sql.BasicSqlCallback">
+            <property name="dbType" value="${aim.rpg.rule.dbsystem}"/>
+            <property name="dbInstance" value="${aim.rpg.rule.dbname}"/>
+            <property name="ignoreCase" value="${aim.common.ignoreCase}"/>
+            <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+          </bean>
+        </property>
+      </bean>
+    </property>
+  </bean>
+
+  <!-- Filters -->
+  <bean id="aim.rpg.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.rpg.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.rpg.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.rpg.filter.pattern"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.rpg.filter.default" parent="ls_rpg4_matcher"/>
+
+  <bean id="aim.rpg.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.rpg.filter.pattern}"/>
+  </bean>
+  
+  <!-- Resolvers -->
+  <bean id="aim.rpg.file.resolver.inmodel" class="com.optimyth.apm.builder.rules.common.fileresolution.InModelFileResolver">
+  </bean>
+
+  <bean id="aim.rpg.resolver.copy" parent="aim.common.resolver.base" class="com.optimyth.apm.builder.rules.rpg.RpgCopyResolver">
+    <description>Resolver for copies (/copy | /include) in RPG programs (in same software)</description>
+    <property name="extension" value="${aim.rpg.resolver.rpg.extensions}"/>
+    <property name="language" value="rpg4"/>
+    <property name="fileResolver" ref="aim.rpg.file.resolver.inmodel" />
+  </bean>
+
+  <bean id="aim.rpg.resolver.progcalls" class="com.optimyth.apm.builder.rules.common.callresolution.CompositeCalledResolver">
+    <description>
+      Resolver for program calls. Remember that in Cobol the program name could refer different things:
+      - Another RPG program
+      - Another cobol program
+      - A "batch" script (a CL/400 script)
+    </description>
+    <property name="resolvers"><list>
+      <ref bean="aim.rpg.resolver.progcalls.rpg"/>
+      <ref bean="aim.rpg.resolver.progcalls.cobol"/>
+      <ref bean="aim.rpg.resolver.progcalls.job"/>
+      <ref bean="aim.rpg.resolver.progcalls.fallback"/>
+    </list></property>
+  </bean>
+
+  <bean id="aim.rpg.resolver.progcalls.rpg" parent="aim.common.resolver.base">
+    <description>Resolver for calls to RPG programs (in same software)</description>
+    <property name="extension" value="${aim.rpg.resolver.rpg.extensions}"/>
+    <property name="language" value="rpg4"/>
+    <property name="fileResolver" ref="aim.rpg.file.resolver.inmodel" />
+  </bean>
+
+  <bean id="aim.rpg.resolver.progcalls.cobol" parent="aim.common.resolver.base">
+    <description>Resolver for calls to other Cobol programs (in same software)</description>
+    <property name="extension" value="${aim.rpg.resolver.cobol.extensions}"/>
+    <property name="language" value="cobol"/>
+    <property name="fileResolver" ref="aim.rpg.file.resolver.inmodel" />
+  </bean>
+
+  <bean id="aim.rpg.resolver.progcalls.fallback" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>
+      Process aim.rpg.resolver.progcalls.registerUnresolvedCalls
+      to choose the right fallback resolver for program calls
+    </description>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.callresolution.CalledResolver"/>
+    <property name="key" value="${aim.rpg.rule.registerUnresolved}"/>
+    <property name="map"><map>
+      <entry key="true" value-ref="aim.common.resolver.fallback"/>
+      <entry key="false" value-ref="aim.common.resolver.null"/>
+    </map></property>
+  </bean>
+
+  <!-- resolver for calls to cl400 scripts -->
+  <bean id="aim.rpg.resolver.progcalls.job" parent="aim.common.resolver.base">
+    <description>Resolver for calls to CL/400 scripts (in same software)</description>
+    <property name="extension" value="${aim.rpg.resolver.job.extensions}"/>
+    <property name="fileResolver" ref="aim.rpg.file.resolver.inmodel" />
+    <property name="language" value="cl400"/>
+  </bean>
+
+</beans>

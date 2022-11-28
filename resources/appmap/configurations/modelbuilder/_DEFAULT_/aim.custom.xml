@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>Custom rules</description>
+
+  <import resource="common/aim.common.xml"/>
+  <bean id="analyzer_template" class="com.als.core.main.SingleTechnologyStaticAnalyzer"/>
+
+  <!-- An extended, customized Components helper could replace this default bean, when necessary -->
+  <bean id="aim.componentsHelper" class="com.optimyth.apm.builder.rules.model.ComponentsHelper">
+    <property name="classifier" ref="aim.extensions.classifier"/>
+  </bean>
+
+  <bean id="aim.engineFilter" class="com.optimyth.apm.builder.file.NotFileFilter">
+    <description>
+      The file filter for engine. This default is normally OK, unless you want to skip
+      some other file or use com.optimyth.apm.builder.file.AllFileFilter
+    </description>
+    <constructor-arg>
+      <bean class="com.optimyth.apm.builder.file.AntPatternFilter">
+        <property name="pattern" value="${aim.common.excludeDirsPatterns}"/>
+      </bean>
+    </constructor-arg>
+  </bean>
+
+  <!--
+    You may change this with your own DatabaseObjectResolver implementation.
+    To activate, set aim.common.dbresolver.name=custom (in aim.common.properties in your configuration)
+  -->
+  <bean id="aim.custom.databaseObjectResolver" parent="aim.common.databaseObjectResolver.default"/>
+
+  <!-- Place custom AIM beans here -->
+
+</beans>

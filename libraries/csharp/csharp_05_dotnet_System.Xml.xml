@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="System.Xml" technology="csharp">
+
+  <description url="https://docs.microsoft.com/dotnet/api/system.xml">.NET Support for XML processing</description>
+
+  <class name="System.Xml.XmlNode">
+    <field name="ChildNodes" type="System.Xml.XmlNodeList" />
+  </class>
+
+  <class name="System.Xml.XmlNodeList" supertypes="System.Collections.IEnumerable,System.IDisposable">
+    <field name="Count" type="int" >
+      <tags>potential_infinite_loop_neutralizer</tags>
+    </field>
+  </class>
+
+  <!--  XPath injection -->
+  <class name="System.Xml.XPath.XPathNavigator">
+    <description>Provides a cursor model for navigating and editing XML data.</description>
+    <method name="AppendChild" signature="AppendChild(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="Compile" signature="Compile(string)">
+      <return type="System.Xml.XPath.XPathExpression"/>
+      <sink argpos="0" kind="xpath_injection" resource="other"/>
+    </method>
+    <method name="Evaluate" signature="Evaluate(string)">
+      <sink argpos="0" kind="xpath_injection" resource="other"/>
+    </method>
+    <method name="Evaluate" signature="Evaluate(string,System.Xml.IXmlNamespaceResolver)">
+      <sink argpos="0" kind="xpath_injection" resource="other"/>
+    </method>
+    <method name="InsertAfter" signature="InsertAfter(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="InsertBefore" signature="InsertBefore(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="PrependChild" signature="PrependChild(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="ReplaceSelf" signature="ReplaceSelf(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="Select" signature="Select(string)">
+      <return type="System.Xml.XPath.XPathNodeIterator"/>
+      <sink argpos="0" kind="xpath_injection" resource="other"/>
+    </method>
+    <method name="Select" signature="Select(string,System.Xml.IXmlNamespaceResolver)">
+      <return type="System.Xml.XPath.XPathNodeIterator"/>
+      <sink argpos="0" kind="xpath_injection" resource="other"/>
+    </method>
+    <method name="SelectAncestors" signature="SelectAncestors(string,string,Boolean)">
+      <return type="System.Xml.XPath.XPathNodeIterator"/>
+      <sink argpos="0,1" kind="xpath_injection" resource="other"/>
+    </method>
+    <method name="SelectChildren" signature="SelectChildren(string,string)">
+      <return type="System.Xml.XPath.XPathNodeIterator"/>
+      <sink argpos="0,1" kind="xpath_injection" resource="other"/>
+    </method>
+    <method name="SelectDescendants" signature="SelectDescendants(string,string,Boolean)">
+      <return type="System.Xml.XPath.XPathNodeIterator"/>
+      <sink argpos="0,1" kind="xpath_injection" resource="other"/>
+    </method>
+    <method name="SelectSingleNode" signature="SelectSingleNode(string)">
+      <return type="System.Xml.XPath.XPathNavigator"/>
+      <sink argpos="0" kind="xpath_injection" resource="other"/>
+    </method>
+    <method name="SelectSingleNode" signature="SelectSingleNode(string,System.Xml.IXmlNamespaceResolver)">
+      <return type="System.Xml.XPath.XPathNavigator"/>
+      <sink argpos="0" kind="xpath_injection" resource="other"/>
+    </method>
+  </class>
+
+  <class name="System.ServiceModel.Dispatcher.SeekableXPathNavigator" supertypes="System.Xml.XPath.XPathNavigator"/>
+
+  <class name="System.Xml.XmlDocument">
+    <description>Represents an XML document.</description>
+    <method name="CreateElement" signature="CreateElement(string)">
+      <return type="System.Xml.XmlElement"/>
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="CreateElement" signature="CreateElement(string,string)">
+      <return type="System.Xml.XmlElement"/>
+      <sink argpos="0,1" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="CreateElement" signature="CreateElement(string,string,string)">
+      <return type="System.Xml.XmlElement"/>
+      <sink argpos="0,1,2" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="CreateNode" signature="CreateNode(string,string,string)">
+      <return type="System.Xml.XmlNode"/>
+      <sink argpos="0,1,2" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="CreateNode" signature="CreateNode(System.Xml.XmlNodeType,string,string,string)">
+      <return type="System.Xml.XmlNode"/>
+      <sink argpos="1,2,3" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="GetElementById" signature="GetElementById(string)">
+      <return type="System.Xml.XmlElement"/>
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="GetElementsByTagName" signature="GetElementsByTagName(string)">
+      <return type="System.Xml.XmlNodeList"/>
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="GetElementsByTagName" signature="GetElementsByTagName(string,string)">
+      <return type="System.Xml.XmlNodeList"/>
+      <sink argpos="0,1" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="Load" signature="Load(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="LoadXml" signature="LoadXml(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="Save" signature="Save(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="SelectNodes" signature="SelectNodes(string)">
+      <sink argpos="0" kind="xpath_injection" resource="other"/>
+    </method>
+    <method name="SelectNodes" signature="SelectNodes(string,XmlNamespaceManager)">
+      <sink argpos="0" kind="xpath_injection" resource="other"/>
+    </method>
+    <method name="SelectSingleNode" signature="SelectSingleNode(string)">
+      <return type="System.Xml.XmlNodeList"/>
+      <sink argpos="0" kind="xpath_injection" resource="other"/>
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="SelectSingleNode" signature="SelectSingleNode(string,XmlNamespaceManager)">
+      <return type="System.Xml.XmlNode"/>
+      <sink argpos="0" kind="xpath_injection" resource="other"/>
+    </method>
+  </class>
+
+  <class name="System.Xml.XPath.XPathDocument">
+    <constructor name="XPathDocument" signature="XPathDocument()" match="name" />
+
+    <method name="createNavigator" signature="createNavigator()" >
+      <return type="System.Xml.XPath.XPathNavigator" />
+    </method>
+  </class>
+
+  <!-- XML injection -->
+  <class name="System.Xml.XmlWriter">
+    <description>Represents a writer that provides a fast, non-cached, forward-only way to generate streams or files that contain XML data.</description>
+    <method name="WriteAttributeString" signature="WriteAttributeString(string,string)">
+      <sink argpos="0,1" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteAttributeString" signature="WriteAttributeString(string,string,string)">
+      <sink argpos="0,2" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteAttributeString" signature="WriteAttributeString(string,string,string,string)">
+      <sink argpos="1,3" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteAttributeStringAsync" signature="WriteAttributeStringAsync(string,string,string,string)">
+      <sink argpos="1,3" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteBase64" signature="WriteBase64(byte[],Int32,Int32)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteBase64Async" signature="WriteBase64Async(byte[],Int32,Int32)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteBinHex" signature="WriteBinHex(byte[],Int32,Int32)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteBinHexAsync" signature="WriteBinHexAsync(byte[],Int32,Int32)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteCData" signature="WriteCData(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteCDataAsync" signature="WriteCDataAsync(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteChars" signature="WriteChars(char[],Int32,Int32)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteCharsAsync" signature="WriteCharsAsync(byte[],Int32,Int32)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteElementString" signature="WriteElementString(string,string)">
+      <sink argpos="0,1" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteElementString" signature="WriteElementString(string,string,string)">
+      <sink argpos="0,2" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteElementString" signature="WriteElementString(string,string,string,string)">
+      <sink argpos="1,3" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteElementStringAsync" signature="WriteElementStringAsync(string,string,string,string)">
+      <sink argpos="1,3" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteRaw" signature="WriteRaw(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteRawAsync" signature="WriteRawAsync(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteRaw" signature="WriteRaw(char[],Int32,Int32)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteRawAsync" signature="WriteRawAsync(char[],Int32,Int32)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteStartElement" signature="WriteStartElement(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteStartElement" signature="WriteStartElement(string,string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteStartElement" signature="WriteStartElement(string,string,string)">
+      <sink argpos="1" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteStartElementAsync" signature="WriteStartElementAsync(string,string,string)">
+      <sink argpos="1" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteString" signature="WriteString(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteStringAsync" signature="WriteStringAsync(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+    <method name="WriteValue" signature="WriteValue(string)">
+      <sink argpos="0" kind="xml_injection" resource="other"/>
+    </method>
+  </class>
+
+  <class name="System.Xml.XmlReader">
+    <method name="Create" signature="Create(Stream)" match="name" >
+      <return type="System.Xml.XmlReader" />
+      <sink argpos="0" kind="xml_injection" resource="other" />
+    </method>
+    <method name="ReadValueChunk" signature="ReadValueChunk(char[],int,int)" alias="ReadValueChunkAsync">
+      <tags>retval-needs-check</tags>
+    </method>
+  </class>
+
+  <class name="System.Xml.XmlDictionaryWriter" supertypes="System.Xml.XmlWriter"/>
+  <class name="System.IdentityModel.DelegatingXmlDictionaryWriter" supertypes="System.Xml.XmlDictionaryWriter"/>
+  <class name="System.Xml.XmlTextWriter" supertypes="System.Xml.XmlWriter"/>
+
+  <class name="System.Xml.XmlTextReader">
+    <constructor name="XmlTextReader" signature="XmlTextReader()" match="name" >
+      <sink argpos="0" kind="xml_injection" resource="other" />
+    </constructor>
+  </class>
+
+  <!-- XML injection neutralizations -->
+  <class name="System.Xml.Linq.XElement" supertypes="System.Xml.Linq.XContainer">
+    <method name="Load" signature="Load(string)" match="name">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="Save" signature="Save(string)" match="name">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </method>
+
+  </class>
+
+  <!-- XSLT injection -->
+  <class name="System.Xml.Xsl.XslCompiledTransform">
+    <description>Executes the transform using the input document specified by the URI and outputs the results to a file.</description>
+    <method name="Load" signature="Load(string)">
+      <sink argpos="0" kind="xslt_injection" resource="other"/>
+    </method>
+    <method name="Load" signature="Load(string,System.Xml.Xsl.XsltSettings,System.Xml.Xsl.XmlResolver)">
+      <sink argpos="0" kind="xslt_injection" resource="other"/>
+    </method>
+    <method name="Transform" signature="Transform(string,string)" match="name">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </method>
+  </class>
+  <class name="System.Xml.Xsl.XslTransform" supertypes="System.Xml.Xsl.XslCompiledTransform"/>
+
+  <class name="System.Xml.Serialization.CodeExporter"/>
+  <class name="System.Xml.Serialization.XmlCodeExporter" supertypes="System.Xml.Serialization.CodeExporter"/>
+
+  <class name="System.Xml.Serialization.XmlSerializer">
+    <constructor name="XmlSerializer" signature="XmlSerializer(System.Type)" match="name"></constructor>
+    <method name="FromTypes" signature="FromTypes(System.Type[])" instance="false">
+      <return type="System.Xml.Serialization.XmlSerializer[]"/>
+    </method>
+    <method name="Deserialize" signature="Deserialize(System.IO.Stream)" match="name">
+      <return type="object"/>
+      <sink argpos="0" kind="code_injection_deserialization"><tags>reason:CONTROLLED_EXPECTED_TYPE</tags><checker id="code_injection_deserialization"/></sink>
+    </method>
+    <method name="Serialize" signature="Serialize(System.IO.Stream,object)" match="name"></method>
+  </class>
+
+</library>

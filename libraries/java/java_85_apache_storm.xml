@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="apache.storm" standard="Apache_Storm" technology="java">
+  <description url="https://storm.apache.org">Data Streams processing library</description>
+
+  <!-- https://storm.apache.org/releases/current/javadocs/index.html -->
+
+  <module name="storm.topology" >
+    <class name="org.apache.storm.topology.base.BaseComponent" />
+    <class name="org.apache.storm.topology.base.BaseRichBolt" supertypes="org.apache.storm.topology.base.BaseComponent" />
+    <class name="org.apache.storm.topology.base.BaseTickTupleAwareRichBolt" supertypes="org.apache.storm.topology.base.BaseRichBolt" />
+  </module>
+
+  <module name="storm.jdbc" >
+    <class name="org.apache.storm.jdbc.bolt.AbstractJdbcBolt" supertypes="org.apache.storm.topology.base.BaseTickTupleAwareRichBolt" >
+      <field name="connectionProvider" type="org.apache.storm.jdbc.common.ConnectionProvider" />
+      <field name="jdbClient" type="org.apache.storm.jdbc.common.JdbcClient" />
+    </class>
+    <class name="org.apache.storm.jdbc.common.ConnectionProvider" >
+      <method name="getConnection" signature="getConnection()" >
+        <return type="java.sql.Connection" />
+      </method>
+    </class>
+    <class name="org.apache.storm.jdbc.bolt.JdbcInsertBolt" supertypes="org.apache.storm.jdbc.bolt.AbstractJdbcBolt" >
+      <method name="withInsertQuery" signature="withInsertQuery(java.lang.String)" >
+        <return type="org.apache.storm.jdbc.bolt.JdbcInsertBolt" />
+        <sink kind="sql_injection" argpos="0" resource="database" />
+      </method>
+      <method name="withQueryTimeoutSecs" signature="withQueryTimeoutSecs(int)" >
+        <return type="org.apache.storm.jdbc.bolt.JdbcInsertBolt" />
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="withTablename" signature="withTablename(java.lang.String)" >
+        <return type="org.apache.storm.jdbc.bolt.JdbcInsertBolt" />
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+    </class>
+    <class name="org.apache.storm.jdbc.bolt.JdbcLookupBolt" supertypes="org.apache.storm.jdbc.bolt.AbstractJdbcBolt" />
+
+    <class name="org.apache.storm.jdbc.common.HikariCPConnectionProvider" supertypes="org.apache.storm.jdbc.common.ConnectionProvider" />
+    <class name="org.apache.storm.jdbc.common.JdbcClient" >
+      <method name="executeInsertQuery" signature="executeInsertQuery(java.lang.String,java.util.List)" >
+        <sink kind="sql_injection" argpos="0" resource="database" />
+      </method>
+      <method name="executeSql" signature="executeSql(java.lang.String)" >
+        <sink kind="sql_injection" argpos="0" resource="database" />
+      </method>
+      <method name="insert" signature="insert(java.lang.String,java.util.List)" >
+        <sink kind="sql_injection" argpos="0" resource="database" />
+      </method>
+      <method name="select" signature="select(java.lang.String,java.util.List)" >
+        <sink kind="sql_injection" argpos="0" resource="database" />
+      </method>
+    </class>
+  </module>
+
+  <module name="storm.jms" >
+    <class name="org.apache.storm.jms.JmsProvider" >
+      <method name="connectionFactory" signature="connectionFactory()" >
+        <return type="javax.jms.ConnectionFactory" />
+      </method>
+      <method name="destination" signature="destination()" >
+        <return type="javax.jms.Destination" />
+      </method>
+    </class>
+  </module>
+  
+  <module name="storm.messaging" >
+    <class name="org.apache.storm.messaging.TransportFactory" >
+      <field name="LOG" type="org.slf4j.Logger" />
+
+      <method name="makeContext" signature="makeContext(java.util.Map)" >
+        <return type="org.apache.storm.messaging.IContext" />
+      </method>
+    </class>
+    <class name="org.apache.storm.messaging.IContext" >
+      <method name="bind" signature="bind(java.lang.String,int,org.apache.storm.messaging.IConnectionCallback,java.util.function.Supplier)" >
+        <return type="org.apache.storm.messaging.IConnection" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </method>
+      <method name="connect" signature="connect(java.lang.String,java.lang.String,int,java.util.concurrent.atomic.AtomicBoolean)" >
+        <return type="org.apache.storm.messaging.IConnection" />
+        <sink kind="ssrf" argpos="1" resource="network" />
+        <sink kind="insecure_transport" argpos="1" resource="web" />
+        <sink kind="resource_injection" argpos="2" resource="network" />
+      </method>
+    </class>
+    <class name="org.apache.storm.messaging.netty.Context" supertypes="org.apache.storm.messaging.IContext" />
+    <class name="org.apache.storm.messaging.local.Context" supertypes="org.apache.storm.messaging.IContext" />
+  </module>
+
+  <module name="storm.mqtt" >
+    <class name="org.fusesource.mqtt.client.Tracer" />
+    <class name="org.apache.storm.mqtt.MqttLogger" supertypes="org.fusesource.mqtt.client.Tracer" >
+      <method name="debug" signature="debug(java.lang.String,...java.lang.Object)" >
+        <sink kind="log_forging" argpos="0" resource="other" />
+      </method>
+    </class>
+  </module>
+</library>

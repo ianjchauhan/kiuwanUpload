@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="cpp.xml" standard="xml" technology="cpp">
+
+  <description>XML processing libraries for C/C++</description>
+
+  <module name="libxml2" standard="libxml2">
+    <description url="http://xmlsoft.org">libxml2</description>
+    <function name="xmlCtxtReadDoc" signature="xmlCtxtReadDoc(xmlParserCtxt* ctxt, const char *cur, const char *URL, const char *encoding, int options)"
+              match="name" alias="xmlCtxtReadFd">
+      <tags>parserCtx:0, parserOptions:4</tags>
+      <return type="xmlDoc*"/>
+      <sink kind="xml_entity_injection" argpos="1"/>
+    </function>
+    <function name="xmlReadDoc" signature="xmlReadDoc(const char *cur, const char *URL, const char *encoding, int options)"
+              match="name" alias="xmlReadFd">
+      <tags>parserOptions:3</tags>
+      <return type="xmlDoc*"/>
+      <sink kind="xml_entity_injection" argpos="0"/>
+    </function>
+    <function name="xmlReadFile" signature="xmlReadFile(const char *filename, const char *encoding, int options)" match="name">
+      <tags>parserOptions:2</tags>
+      <return type="xmlDoc*"/>
+      <sink kind="xml_entity_injection" argpos="0"/>
+      <sink kind="path_traversal" argpos="0"/>
+    </function>
+    <function name="xmlCtxtReadMemory" signature="xmlCtxtReadMemory(xmlParserCtxt* ctxt, const char *buffer, int size, const char *URL, const char *encoding, int options)"
+              match="name" alias="xmlCtxtReadFd">
+      <tags>parserCtx:0, parserOptions:5</tags>
+      <return type="xmlDoc*"/>
+      <sink kind="xml_entity_injection" argpos="1"/>
+    </function>
+    <function name="xmlCtxtReadMemory" signature="xmlReadMemory(const char *buffer, int size, const char *URL, const char *encoding, int options)"
+              match="name" alias="xmlCtxtReadFd">
+      <tags>parserOptions:4</tags>
+      <return type="xmlDoc*"/>
+      <sink kind="xml_entity_injection" argpos="0"/>
+    </function>
+    <function name="xmlCtxtReadFile" signature="xmlCtxtReadFile(xmlParserCtxt* ctxt, const char *filename, const char *encoding, int options)" match="name">
+      <tags>parserCtx:0, parserOptions:3</tags>
+      <return type="xmlDoc*"/>
+      <sink kind="xml_entity_injection" argpos="1"/>
+      <sink kind="path_traversal" argpos="1"/>
+    </function>
+    <function name="xmlCtxtReadIO" signature="xmlCtxtReadIO()">
+      <tags>parserCtx:0, parserOptions:6</tags>
+      <return type="xmlDoc*"/>
+    </function>
+    <function name="xmlReadIO" signature="xmlReadIO()">
+      <tags>parserOptions:5</tags>
+      <return type="xmlDoc*"/>
+    </function>
+    <function name="xmlCtxtUseOptions" signature="xmlCtxtUseOptions(xmlParserCtxt* ctxt, int options)">
+      <tags>parserCtx:0, parserOptions:1</tags>
+      <return type="int"/>
+      <propagate from="1" to="0"/>
+    </function>
+    <function name="xmlParseInNodeContext" signature="xmlParseInNodeContext(xmlNode* node, const char *data, int datalen, int options, xmlNode **lst)">
+      <tags>parserOptions:3</tags>
+      <return type="xmlParserErrors"/>
+      <sink kind="xml_entity_injection" argpos="1"/>
+    </function>
+
+    <function name="xmlXPathNewContext" signature="xmlXPathContextPtr xmlXPathNewContext(xmlDocPtr doc)">
+      <parameters>
+        <param type="xmlDocPtr"/>
+      </parameters>
+      <return type="xmlXPathContextPtr"/>
+      <propagate from="0" to="-2"/>
+    </function>
+
+    <function name="xmlXPathEvalExpression" signature="xmlXPathObjectPtr xmlXPathEvalExpression(const xmlChar *str, xmlXPathContextPtr ctxt)">
+      <parameters>
+        <param type="xmlChar*"/>
+        <param type="xmlXPathContextPtr"/>
+      </parameters>
+      <return type="xmlXPathObjectPtr"/>
+      <sink argpos="0" kind="xpath_injection" resource="other"/>
+    </function>
+  </module>
+
+  <module name="libxml++" standard="libxml++">
+    <description url="http://libxmlplusplus.sourceforge.net/">C++ binding for libxml2</description>
+    
+    <class name="xmlpp.Parser" kind="abstract_class">
+      <method name="parse_file" signature="parse_file(string&amp; filename)">
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <sink argpos="0" kind="xml_entity_injection"/>
+      </method>
+      <method name="parse_memory_raw" signature="parse_memory_raw(const char *contents, size_t count)">
+        <sink argpos="0" kind="xml_entity_injection"/>
+      </method>
+      <method name="parse_memory" signature="parse_memory(string&amp; content)">
+        <sink argpos="0" kind="xml_entity_injection"/>
+      </method>
+      <method name="parse_stream" signature="parse_stream(instream&amp; in)">
+        <sink argpos="0" kind="xml_entity_injection"/>
+      </method>
+      <method name="set_substitute_entities" signature="set_substitute_entities(bool val = true)">
+        <tags>xee</tags>
+      </method>
+      <method name="set_parser_options" signature="set_parser_options(int set_options = 0, int clear_options = 0)"></method>
+    </class>
+
+    <class name="xmlpp.SaxParser" supertypes="xmlpp.Parser">
+      <method name="parse_chunk" signature="parse_chunk(string&amp; chunk)">
+        <sink argpos="0" kind="xml_entity_injection"/>
+      </method>
+      <method name="parse_chunk_raw" signature="parse_chunk_raw(const char *contents, size_t count)">
+        <sink argpos="0" kind="xml_entity_injection"/>
+      </method>
+    </class>
+
+    <class name="xmlpp.DomParser" supertypes="xmlpp.Parser">
+      <method name="set_xinclude_options" signature="set_xinclude_options(bool process_xinclude = true, bool generate_xinclude_nodes = true, bool fixup_base_uris = true)">
+        <tags>xee</tags>
+      </method>
+      <method name="get_document" signature="get_document()"><return type="xmlpp.Document"/></method>
+    </class>
+
+    <class name="xmlpp.TextReader.ParserProperties" kind="enum">
+      <field name="LoadDtd" type="int"/>
+      <field name="DefaultAttrs" type="int"/>
+      <field name="Validate" type="int"/>
+      <field name="SubstEntities" type="int"/>
+    </class>
+
+    <class name="xmlpp.TextReader" supertypes="xmlpp.Parser">
+      <constructor name="TextReader" signature="TextReader(const char* data, size_t size, ustring&amp; uri = ustring())" match="name">
+        <sink kind="xml_entity_injection" argpos="0"/>
+      </constructor>
+      <method name="set_parser_property" signature="set_parser_property(ParserProperties property, bool value)"></method>
+    </class>
+  </module>
+
+  <module name="xercesc" standard="Xerces-c">
+    <description url="https://xerces.apache.org/xerces-c/">Apache Xerces-C++</description>
+
+    <class name="xercesc.DOMDocument"></class>
+
+    <class name="xercesc.AbstractDOMParser">
+      <method name="parse" signature="parse(const char *systemId)">
+        <sink kind="xml_entity_injection" argpos="0"/>
+      </method>
+      <method name="parseFirst" signature="parseFirst(const char *systemId, xercesc.XMLPScanToken&amp; toFill)">
+        <sink kind="xml_entity_injection" argpos="0"/>
+      </method>
+
+      <method name="getDocument" signature="getDocument()" alias="adoptDocument">
+        <return type="xercesc.DOMDocument*"/>
+      </method>
+
+      <method name="useScanner" signature="useScanner(char *scannerName)">
+        <description>
+          Specify the scanner to use (default: fgWFXMLScanner).
+          fgWFXMLScanner is non-validating (DTD and schemas are ignored), safe.
+          fgDGXMLScanner considers DTD but no schemas.
+          fgSGXMLScanner ignores DTD but allows schema processing.
+          fgIGXMLScanner is the default. Allows both DTD and schema processing.
+        </description>
+      </method>
+      <method name="setCreateEntityReferenceNodes" signature="setCreateEntityReferenceNodes(bool b)">
+        <description>if false, entities are expanded (Similar to the XML_NOENT, unsafe against XEE). This flag is true by default</description>
+      </method>
+      <method name="setLoadExternalDTD" signature="setLoadExternalDTD(bool b)">
+        <description>if true, external DTD is loaded</description>
+      </method>
+      <method name="setDisableDefaultEntityResolution" signature="setDisableDefaultEntityResolution(bool b)">
+        <description>If true, external entity resolution is disabled. If false, XXE is possible</description>
+      </method>
+      <method name="setValidationScheme" signature="setValidationScheme(xercesc.AbstractDOMParser.ValSchemes val)">
+        <description>Only Val_Never (the default) is safe</description>
+      </method>
+      <method name="setDoXInclude" signature="setDoXInclude(bool b)">
+        <description>If true, this allows XXE variant, using xml elements instead of DTD external entities...</description>
+      </method>
+      <method name="setSecurityManager" signature="setSecurityManager(xercesc.SecurityManager* sm)">
+        <description>This might protect againts entity expansion attacks (XEE), but not agains external entity injection (XXE)</description>
+      </method>
+    </class>
+
+    <class name="xercesc.XercesDOMParser" supertypes="xercesc.AbstractDOMParser"></class>
+
+    <class name="xercesc.SAXParser">
+      <method name="parse" signature="parse(const char *systemId)">
+        <sink kind="xml_entity_injection" argpos="0"/>
+      </method>
+      <method name="parseFirst" signature="parseFirst(const char *systemId, xercesc.XMLPScanToken&amp; toFill)">
+        <sink kind="xml_entity_injection" argpos="0"/>
+      </method>
+
+      <method name="setLoadExternalDTD" signature="setLoadExternalDTD(bool b)">
+        <description>if true, external DTD is loaded</description>
+      </method>
+      <method name="setDisableDefaultEntityResolution" signature="setDisableDefaultEntityResolution(bool b)">
+        <description>If true, external entity resolution is disabled. If false, XXE is possible</description>
+      </method>
+      <method name="setValidationScheme" signature="setValidationScheme(xercesc.AbstractDOMParser.ValSchemes val)">
+        <description>Only Val_Never (the default) is safe</description>
+      </method>
+      <method name="setSecurityManager" signature="setSecurityManager(xercesc.SecurityManager* sm)">
+        <description>This might protect againts entity expansion attacks (XEE), but not agains external entity injection (XXE)</description>
+      </method>
+    </class>
+
+    <class name="xercesc.SAX2XMLReader" supertypes="xercesc.SAXParser">
+      <method name="setFeature" signature="setFeature(const char* name, bool value)">
+        <description>
+          fgXercesDisableDefaultEntityResolution = setDisableDefaultEntityResolution
+          fgXercesLoadExternalDTD = setLoadExternalDTD
+        </description>
+      </method>
+      <method name="setProperty" signature="setProperty(const char* name, void* value)">
+        <description>fgXercesSecurityManager</description>
+      </method>
+    </class>
+
+    <class name="xercesc.SAX2XMLFilter" supertypes="xercesc.SAX2XMLReader"/>
+
+    <class name="xercesc.DOMConfiguration">
+      <method name="setParameter" signature="setParameter(char *name, bool val)">
+        <!-- fgDOMEntities = "entities" = false means XEE enabled (default is true) -->
+        <!-- fgDOMDisallowDoctype = "disallow-doctype" = false means XEE and XXE enabled (default is true)-->
+        <!-- fgXercesLoadExternalDTD = true means XXE enabled (default = true) -->
+        <!-- fgXercesDisableDefaultEntityResolution = false means XXE enabled (default = false) -->
+        <!-- fgXercesSecurityManager -->
+      </method>
+    </class>
+
+    <class name="xercesc.DOMLSParser">
+      <method name="parse" signature="parse(xercesc.DOMLSInput* src)">
+        <return type="xercesc.DOMDocument*"/>
+        <sink kind="xml_entity_injection" argpos="0"/>
+      </method>
+      <method name="parseURI" signature="parseURI(char *uri)">
+        <return type="xercesc.DOMDocument*"/>
+        <sink kind="xml_entity_injection" argpos="0"/>
+      </method>
+      <method name="parseWithContext" signature="parseWithContext(xercesc.DOMLSInput* src)" match="name">
+        <return type="xercesc.DOMNode*"/>
+        <sink kind="xml_entity_injection" argpos="0"/>
+      </method>
+      <method name="getDomConfig" signature="getDomConfig()">
+        <return type="xercesc.DOMConfiguration*"/>
+      </method>
+    </class>
+
+    <class name="xercesc.AbstractDOMParser.ValSchemes" kind="enum">
+      <field name="Val_Never"/><field name="Val_Always"/><field name="Val_Auto"/>
+    </class>
+
+    <class name="xercesc.DOMImplementationLS">
+      <method name="getImplementation" signature="getImplementation()" instance="false">
+        <return type="xercesc.DOMImplementation*"/>
+      </method>
+      <method name="createLSParser" signature="createLSParser()" match="name">
+        <return type="xercesc.DOMLSParser*"/>
+      </method>
+    </class>
+
+    <class name="xercesc.DOMImplementation" supertypes="xercesc.DOMImplementationLS"></class>
+
+
+    <class name="xercesc.DOMImplementationRegistry">
+      <method name="getDOMImplementation" signature="getDOMImplementation()" match="name" instance="false">
+        <return type="xercesc.DOMImplementation*"/>
+      </method>
+    </class>
+    
+    <class name="xercesc.XMLReaderFactory">
+      <method name="createXMLReader" signature="createXMLReader()" match="name" instance="false">
+        <return type="xercesc.SAX2XMLReader"/>
+      </method>
+    </class>
+
+  </module>
+
+  <!--
+    Other popular XML libraries that could be added in the future:
+    RapidXML - http://rapidxml.sourceforge.net/
+    puigxml - https://pugixml.org/
+    TinyXML2 - https://github.com/leethomason/tinyxml2
+    XmlParser - http://www.applied-mathematics.net/tools/xmlParser.html
+    -->
+
+</library>  

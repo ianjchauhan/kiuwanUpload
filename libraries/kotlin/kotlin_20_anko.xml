@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="kotlin.anko" technology="kotlin" standard="Anko">
+
+  <description url="https://github.com/Kotlin/anko">Kotlin library for Android</description>
+
+  <module name="org.jetbrains.anko" >
+    <class name="org.jetbrains.anko.AnkoLogger">
+      <method name="debug" signature="debug(kotlin.Any,...)" alias="info,error,warn,verbose,wtf" match="name" >
+        <tags>not_propagate_between_args</tags>
+        <sink argpos="0,1,2,3" kind="log_forging" />
+      </method>
+    </class>
+
+    <function name="org.jetbrains.anko.find" signature="org.jetbrains.anko.find(java.lang.Int)" alias="org.jetbrains.anko.findOptional" />
+
+    <module name="org.jetbrains.anko.db">
+      <description url="https://github.com/Kotlin/anko/wiki/Anko-SQLite">Anko SQLite</description>
+
+      <function name="org.jetbrains.anko.db.select" signature="org.jetbrains.anko.db.select()" match="name" >
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </function>
+      <function name="org.jetbrains.anko.db.update" signature="org.jetbrains.anko.db.update()" match="name" >
+        <return type="org.jetbrains.anko.db.SelectQueryBuilder" />
+      </function>
+      <function name="org.jetbrains.anko.db.createTable" signature="org.jetbrains.anko.db.createTable(java.lang.String, boolean, kotlin.Pair)" match="name">
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </function>
+
+      <class name="org.jetbrains.anko.db.ManagedSQLiteOpenHelper" supertypes="android.database.sqlite.SQLiteOpenHelper" >
+        <method name="use" signature="use(f SQLiteDatabase.()->T)" />
+      </class>
+    </module>
+  </module>
+</library>

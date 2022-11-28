@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="revel" standard="Revel">
+
+  <description url="http://revel.github.io/">Revel web framework</description>
+
+  <module name="github.com.revel.revel" >
+    <globalObject name="github.com.revel.revel.Filters" type="go.slice" elementType="github.com.revel.revel.Filter" />
+
+    <class name="github.com.revel.revel.Controller" kind="struct" >
+      <field name="Name" type="go.string" />
+      <field name="ClientIp" type="go.string" >
+        <source argpos="-1" kind="sensitive_info" resource="web" />
+      </field>
+      <field name="Request" type="github.com.revel.revel.Request" />
+      <field name="Response" type="github.com.revel.revel.Response" />
+      <field name="Result" type="github.com.revel.revel.Result" />
+      <field name="Flash" type="github.com.revel.revel.Flash" />
+      <field name="Session" type="github.com.revel.revel.session.Session" />
+      <field name="Params" type="github.com.revel.revel.Params" />
+      <field name="Args" type="go.map" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="ViewArgs" type="go.map" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+
+      <method name="Redirect" signature="Redirect(go.interface,...go.interface)" >
+        <return type="github.com.revel.revel.Result" />
+        <sink argpos="0" kind="open_redirect" resource="web" />
+        <sink kind="execution_after_redirect" argpos="0" resource="web"/>
+      </method>
+      <method name="RenderJSONP" signature="RenderJSONP(go.string,go.interface)" >
+        <tags>serialization:1</tags>
+        <return type="github.com.revel.revel.Result" />
+        <sink argpos="0" kind="some_injection" resource="web" />
+        <sink argpos="1" kind="jsonp_hijacking" resource="web" />
+      </method>
+    </class>
+    <class name="github.com.revel.revel.Params" kind="struct" supertypes="net.url.Values">
+      <field name="Fixed" type="net.url.Values" />
+      <field name="Route" type="net.url.Values" />
+      <field name="Query" type="net.url.Values" />
+      <field name="Form" type="net.url.Values" />
+      <field name="Files" type="mime.multipart.FileHeader" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="JSON" type="go.slice">
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+    </class>
+    <class name="github.com.revel.revel.Flash" kind="struct" >
+      <field name="Data" type="go.map"  >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+    </class>
+    <class name="github.com.revel.revel.GoContext" kind="struct" >
+      <field name="Request" type="github.com.revel.revel.GoRequest" />
+      <field name="Response" type="github.com.revel.revel.GoResponse" />
+      <field name="WebSocket" type="github.com.revel.revel.GoWebSocket" />
+    </class>
+    <class name="github.com.revel.revel.GoCookie" supertypes="net.http.Cookie" >
+      <method name="GetValue" signature="GetValue()" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+    <class name="github.com.revel.revel.GoHttpServer" >
+      <field name="Server" type="net.http.Server" />
+    </class>
+    <class name="github.com.revel.revel.GoMultipartForm" kind="struct" >
+      <field name="Form" type="mime.multipart.Form" />
+      <method name="GetFiles" signature="GetFiles()" >
+        <return type="go.map" elementType="mime.multipart.FileHeader" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetValues" signature="GetValues()" >
+        <return type="go.map" elementType="net.url.Values" />
+      </method>
+    </class>
+    <class name="github.com.revel.revel.GoRequest" kind="struct" >
+      <field name="Original" type="net.http.Request" />
+      <field name="WebSocket" type="net.websocket.Conn" />
+      <field name="ParsedForm" type="github.com.revel.revel.GoMultipartForm" />
+      <field name="Goheader" type="github.com.revel.revel.GoHeader" />
+      <field name="Engine" type="github.com.revel.revel.GoHttpServer" />
+
+      <method name="Get" signature="Get(go.int)" >
+        <return type="go.interface,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetForm" signature="GetForm()" >
+        <return type="net.url.Values,go.error" />
+      </method>
+      <method name="GetHeader" signature="GetHeader()" >
+        <return type="github.com.revel.revel.ServerHeader" />
+      </method>
+      <method name="GetMultipartForm" signature="GetMultipartForm()" >
+        <return type="github.com.revel.revel.ServerMultipartForm,go.error" />
+      </method>
+    </class>
+    <class name="github.com.revel.revel.GoResponse" kind="struct" >
+      <field name="Original" type="net.http.ResponseWriter" />
+      <field name="Goheader" type="net.http.GoHeader" />
+      <field name="Writer" type="io.Writer" />
+      <field name="Request" type="github.com.revel.revel.GoRequest" />
+      <field name="Engine" type="github.com.revel.revel.GoHttpServer" />
+
+      <method name="Get" signature="Get(go.int)" >
+        <return type="go.interface,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetRaw" signature="GetRaw()" >
+        <return type="go.interface" />
+      </method>
+      <method name="Header" signature="Header()" >
+        <return type="github.com.revel.revel.ServerHeader" />
+      </method>
+    </class>
+    <class name="github.com.revel.revel.GoTemplate" kind="struct" supertypes="html.template.Template" />
+    <class name="github.com.revel.revel.GoWebSocket" kind="struct" supertypes="github.com.revel.revel.GoResponse" >
+      <field name="Conn" type="net.websocket.Conn" />
+    </class>
+    <class name="github.com.revel.revel.Request" kind="struct" >
+      <field name="In" type="github.com.revel.revel.ServerRequest" />
+      <field name="Header" type="github.com.revel.revel.RevelHeader" />
+      <field name="WebSocket" type="github.com.revel.revel.ServerWebSocket" />
+      <field name="RemoteAddr" type="go.string" />
+      <field name="Host" type="go.string" />
+      <field name="URL" type="net.url.URL" />
+      <field name="Form" type="net.url.Values" />
+      <field name="MultipartForm" type="github.com.revel.revel.MultipartForm" />
+
+      <method name="Args" signature="Args()" >
+        <return type="go.map" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Context" signature="Context()" >
+        <return type="context.Context" />
+      </method>
+      <method name="Cookie" signature="Cookie(go.string)" >
+        <return type="github.com.revel.revel.ServerCookie,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" >
+          <tags>CWE:784</tags>
+        </source>
+      </method>
+      <method name="FormValue" signature="FormValue(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetBody" signature="GetBody()" >
+        <return type="io.Reader" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetForm" signature="GetForm()" >
+        <return type="net.url.Values,go.error" />
+      </method>
+      <method name="GetHttpHeader" signature="GetHttpHeader()" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetMultipartForm" signature="GetMultipartForm()" >
+        <return type="github.com.revel.revel.ServerMultipartForm,go.error" />
+      </method>
+      <method name="GetQuery" signature="GetQuery()" >
+        <return type="net.url.Values" />
+      </method>
+      <method name="GetValue" signature="GetValue(go.string)" >
+        <return type="go.interface" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="PostFormValue" signature="PostFormValue(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+    <class name="github.com.revel.revel.Response" kind="struct" >
+      <field name="Out" type="github.com.revel.revel.OutResponse" />
+    </class>
+    <class name="github.com.revel.revel.OutResponse" kind="struct" >
+      <field name="Server" type="github.com.revel.revel.ServerResponse" />
+    </class>
+    <class name="github.com.revel.revel.RevelHeader" kind="struct" >
+      <field name="Server" type="github.com.revel.revel.ServerHeader" />
+
+      <method name="Add" signature="Add(go.string,go.string)" >
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="Get" signature="Get(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetAll" signature="GetAll(go.string)" >
+        <return type="go.slice" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Set" signature="Set(go.string,go.string)" >
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="SetCookie" signature="Set(go.string)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+    </class>
+    <class name="github.com.revel.revel.session.Session" >
+      <method name="Set" signature="Set(go.string,go.interface)" >
+        <tags>write</tags>
+        <return type="go.error" />
+        <sink argpos="1" kind="trust_boundary" resource="web" />
+      </method>
+    </class>
+
+    <function name="github.com.revel.revel.session.NewSession" signature="ggithub.com.revel.revel.session.NewSession()" >
+      <return type="github.com.revel.revel.session.Session" />
+    </function>
+    <function name="github.com.revel.revel.NewGoContext" signature="github.com.revel.revel.NewGoContext(github.com.revel.revel.GoHttpServer)" >
+      <return type="github.com.revel.revel.GoContext" />
+    </function>
+    <function name="github.com.revel.revel.GetResponse" signature="github.com.revel.revel.GetResponse()" >
+      <return type="github.com.revel.revel.ServerResponse" />
+    </function>
+    <function name="github.com.revel.revel.NewRequest" signature="github.com.revel.revel.NewRequest(github.com.revel.revel.ServerRequest)" >
+      <return type="github.com.revel.revel.Request" />
+    </function>
+    <function name="github.com.revel.revel.NewResponse" signature="github.com.revel.revel.NewResponse(github.com.revel.revel.ServerResponse)" >
+      <return type="github.com.revel.revel.Response" />
+    </function>
+  </module>
+
+  <module name="github.com.revel.modules.orm.gorp" standard="Re">
+    <description url="https://github.com/revel/modules/tree/master/orm/gorp/app">
+      Revel module for Gorp and Squirrel
+    </description>
+
+    <class name="github.com.revel.modules.orm.gorp.app.controllers.gorpController.Controller" kind="struct" supertypes="github.com.revel.revel.Controller" >
+      <field name="Txn" type="gopkg.in.gorp.Transaction" />
+      <field name="Db" type="github.com.revel.modules.orm.gorp.app.gorp.DbGorp" />
+    </class>
+
+    <class name="github.com.revel.modules.orm.gorp.app.gorp.DbGorp" kind="struct" >
+      <field name="Map" type="github.com.revel.modules.orm.gorp.app.gorp.DbMap" />
+      <field name="SqlStatementBuilder" type="github.com.Masterminds.squirrel.StatementBuilderType" />
+      <field name="Info" type="github.com.revel.modules.orm.gorp.app.gorp.DbInfo" />
+
+      <method name="OpenDb" signature="OpenDb()" >
+        <return type="go.error" />
+      </method>
+      <method name="Select" signature="Select(go.interface,github.com.Masterminds.squirrel.SqlStatementBuilder)" >
+        <return type="go.interface,go.error" />
+        <source argpos="0" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectOne" signature="SelectOne(go.interface,github.com.Masterminds.squirrel.SqlStatementBuilder)" >
+        <return type="go.error" />
+        <source argpos="0" kind="database_input" resource="database" />
+      </method>
+      <method name="SelectInt" signature="SelectInt(github.com.Masterminds.squirrel.SqlStatementBuilder)" >
+        <return type="go.int64" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecUpdate" signature="ExecUpdate(github.com.Masterminds.squirrel.SqlStatementBuilder)" >
+        <tags>write</tags>
+        <return type="go.int64" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="ExecInsert" signature="ExecInsert(github.com.Masterminds.squirrel.SqlStatementBuilder)" >
+        <tags>write</tags>
+        <return type="go.int64" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Insert" signature="Insert(...go.interface)" >
+        <tags>write</tags>
+        <return type="go.error" />
+      </method>
+      <method name="Update" signature="Update(...go.interface)" >
+        <tags>write</tags>
+        <return type="go.int64,go.error" />
+      </method>
+      <method name="Get" signature="Get(go.interface,...go.interface)" >
+        <return type="go.interface,go.error" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="Delete" signature="Delete(..go.interface)" >
+        <tags>write</tags>
+        <return type="go.int64,go.error" />
+      </method>
+      <method name="Builder" signature="Builder()" >
+        <return type="github.com.Masterminds.squirrel.StatementBuilderType" />
+      </method>
+      <method name="GetMap" signature="GetMap()" >
+        <return type="github.com.revel.modules.orm.gorp.app.gorp.DbMap" />
+      </method>
+    </class>
+
+    <class name="github.com.revel.modules.orm.gorp.app.gorp.simpleTrace " kind="struct" supertypes="github.com.revel.revel.logger.MultiLogger" >
+      <method name="Printf" signature="Printf(go.string,...go.interface)" >
+        <tags>write</tags>
+        <sink argpos="0" kind="format_injection" />
+        <sink argpos="1,2,3,4" kind="log_forging" />
+      </method>
+    </class>
+  </module>
+
+  <module name="github.com.cbonello.revel-csrf" standard="revel-csrf">
+    <description url="https://pkg.go.dev/github.com/cbonello/revel-csrf" >
+      Synchronizer CRSF Token Pattern implementation
+    </description>
+
+    <globalObject name="github.com.cbonello.revel-csrf.csrf.CSRFFilter" type="go.func" >
+      <tags>csrfFilter</tags>
+    </globalObject>
+  </module>
+</library>

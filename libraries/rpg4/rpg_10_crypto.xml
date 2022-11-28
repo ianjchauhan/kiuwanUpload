@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="iseries.crypto" technology="rpg4">
+
+  <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/catcrypt.htm">iSeries Cryptographic Services APIs</description>
+
+  <module name="icrypto.prng">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/catcrypt5.htm">iSeries Pseudo-random Number Generation</description>
+    <function name="QC3GENRN" alias="Qc3GenPRNs">
+      <tags>prng</tags>
+    </function>
+    <function name="QC3ADDSD">
+      <tags>prng-seed</tags>
+    </function>
+
+    <function name="CEERAN0">
+      <description>non-crypto PRNG</description>
+      <sink kind="insecure_random" argpos="1"/>
+    </function>
+  </module>
+  
+  <module name="icrypto.cipher">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/catcrypt2.htm">iSeries Encryption and Decryption</description>
+    <function name="QC3DECDT" alias="Qc3DecryptData">
+      <description>Decrypt data</description>
+      <tags>decrypt, cipherText:0, algo:2, algoFormat:3, key:4, keyFormat:5, data:8</tags>
+      <neutralization argpos="8" kind="decryption" resource="crypto"/>
+    </function>
+    <function name="QC3DECWM" alias="Qc3DecryptWithMAC">
+      <description>Decrypt with MAC</description>
+      <tags>decrypt, cipherText:0, algo:4, algoFormat:5, key:6, keyFormat:7, data:10</tags>
+      <neutralization argpos="10" kind="decryption" resource="crypto"/>
+    </function>
+    <function name="QC3ENCDT" alias="Qc3EncryptData">
+      <description>Encrypt data</description>
+      <tags>encrypt, data:0, algo:3, algoFormat:4, key:5, keyFormat:6, cipherText:9</tags>
+      <neutralization argpos="9" kind="encryption" resource="crypto"/>
+    </function>
+    <function name="QC3ENCWM" alias="Qc3EncryptWithMAC">
+      <description>Encrypt data with MAC</description>
+      <tags>encrypt, data:0, algo:4, algoFormat:5, key:6, keyFormat:7, cipherText:10</tags>
+      <neutralization argpos="10" kind="encryption" resource="crypto"/>
+    </function>
+    <function name="QC3TRNDT" alias="Qc3TranslateData">
+      <description>Translate data - Decrypts with one key and encrypts with other</description>
+      <neutralization argpos="8" kind="encryption" resource="crypto"/>
+    </function>
+  </module>
+  
+  <module name="icrypto.authentication">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/catcrypt3.htm">iSeries Crypto Authentication</description>
+    <function name="QC3CALHA" alias="Qc3CalculateHash">
+      <description>Calculate hash</description>
+      <tags>hash, data:0, algo:3, algoFormat:4, digest:8</tags>
+      <neutralization argpos="8" kind="hash" resource="crypto"/>
+    </function>
+    <function name="QC3CALHM" alias="Qc3CalculateHMAC, QC3CALMA, Qc3CalculateMAC">
+      <description>Calculate MAC, either HMAC or CBC-residue</description>
+      <tags>hmac, data:0, algo:3, algoFormat:4, key:5, keyFormat:6, mac:9</tags>
+      <neutralization argpos="9" kind="hash" resource="crypto"/>
+    </function>
+    <function name="QC3CALSG" alias="Qc3CalculateSignature">
+      <description>Calculate Signature</description>
+      <tags>sign, data:0, algo:3, algoFormat:4, key:5, keyFormat;6, signature:9</tags>
+    </function>
+    <function name="QC3VFYSG" alias="Qc3VerifySignature">
+      <description>Verify Signature</description>
+      <tags>verifySign, signature:0, data:2, algo:5, algoFormat:6, key:7, keyFormat:8</tags>
+    </function>
+  </module>
+  
+  <module name="icrypto.keygen">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/catcrypt4.htm">iSeries Key Generation</description>
+    <function name="QC3GENSK" alias="Qc3GenSymmetricKey">
+      <description>Generate symmetric key</description>
+      <tags>keygen, algo:0, keylen:1, keyFormat:2, keyForm:3, kek:4, kekAlgo:5, key:8</tags>
+    </function>
+    <function name="QC3GENPK" alias="Qc3GenPKAKeyPair">
+      <description>Generate PKA key pair</description>
+      <tags>keygen, algo:0, keylen:1, pubExp:2, keyFormat:3, keyForm:4, kek:5, kekAlgo:6, privkey:9, pubkey:12</tags>
+    </function>
+    <function name="QC3GENECC" alias="Qc3GenECCKeyPair">
+      <description>Generate ECC key pair</description>
+      <tags>keygen, algo:2, keyFormat:3, keyForm:4, kek:5, kekAlgo:6, privkey:9, pubkey:12</tags>
+    </function>
+  </module>
+
+  <module name="icrypto.context">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/catcrypt1.htm">iSeries Crypto Context</description>
+    <function name="QC3CRTAX" alias="Qc3CreateAlgorithmContext">
+      <description>Create algorithm context</description>
+      <tags>createAlgoContext, algo:0, algoFormat:1, token:2</tags>
+    </function>
+    <function name="QC3CRTKX" alias="Qc3CreateKeyContext">
+      <description>Create key context</description>
+      <tags>createAlgoContext, key:0, keyFormat:2, algo:3, keyForm:4, kek:5, kekAlgo:6, token:7</tags>
+    </function>
+  </module>
+
+</library>

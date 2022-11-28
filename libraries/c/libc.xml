@@ -1,0 +1,1315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="libc" standard="libc" technology="cpp">
+
+  <description url="https://www.gnu.org/software/libc/manual/html_mono/libc.html">
+    Standard C library (C89).
+  </description>
+
+  <header name="errno.h">
+    <macro name="EDOM" type="int">33</macro>
+    <macro name="ERANGE" type="int">34</macro>
+    <globalObject name="errno" type="int"><value>(* _errno())</value></globalObject>
+  </header>
+
+  <header name="float.h"></header>
+
+  <header name="limits.h"></header>
+
+  <header name="stddef.h">
+    <macro name="NULL" type="void*">((void*) 0)</macro>
+    <typedef name="ptrdiff_t" type="int"/>
+    <typedef name="size_t" type="unsigned int"/>
+    <typedef name="wchar_t" type="int"/>
+    <macro name="offsetof(type,member)" kind="function"><![CDATA[((unsigned long) &(((type*)0)->member))]]></macro>
+  </header>
+
+  <header name="assert.h">
+    <macro name="assert(ignore)" kind="function">((void)0)</macro>
+  </header>
+
+  <header name="ctype.h">
+    <function name="isalnum" signature="int isalnum(int c)">
+      <description>Tests for any character for which isalpha or isdigit is true</description>
+    </function>
+    <function name="isalpha" signature="int isalpha(int c)">
+      <description>
+        Tests for any character for which isupper or islower is true. or any character that is one of an
+        implementation-defined set of characters for which none of iscntrl. isdigit, ispunct. or isspace is true.
+        In the "C" locale. isalpha returns true only for the characters for which isupper or islower is true.
+      </description>
+    </function>
+    <function name="iscntrl" signature="int iscntrl(int c)">
+      <description>Tests for any control character</description>
+    </function>
+    <function name="isdigit" signature="int isdigit(int c)">
+      <description>Tests for any decimal-digit character</description>
+    </function>
+    <function name="isgraph" signature="int isgraph(int c)">
+      <description>Test for any printing character except space</description>
+    </function>
+    <function name="islower" signature="int islower(int c)">
+      <description>
+        Tests for lowercase letter or one of the implementation-defined set of characters for which none of the
+        iscntrl, isdigit, ispunct or isspace is true. In the "C" locale, islower returns true only for the characters
+        defined as lowercase.
+      </description>
+    </function>
+    <function name="isprint" signature="int isprint(int c)">
+      <description>Tests for any printing character including space</description>
+    </function>
+    <function name="ispunct" signature="int ispunct(int c)">
+      <description>Tests for a printing character that is neither a space nor a character for which isalnum is true</description>
+    </function>
+    <function name="isspace" signature="int isspace(int c)">
+      <description>
+        Tests for any character that is a standard white-space character or is one of an implementation-defined
+        set of characters for which isalnum is false.
+      </description>
+    </function>
+    <function name="isupper" signature="int isupper(int c)">
+      <description>
+        Tests for any character that is an uppercase letter or is one of an implementation-defined set of characters
+        for which none of iscntrl. isdigit. ispunct, or isspace is true. In the "C" locale, isupper returns true
+        only for the characters defined as uppercase letters.
+      </description>
+    </function>
+    <function name="isxdigit" signature="int isxdigit(int c)">
+      <description>Tests for any hexadecimal-digit character</description>
+    </function>
+    <function name="tolower" signature="int tolower(int c)">
+      <description>Converts an uppercase letter to the corresponding lowercase letter</description>
+    </function>
+    <function name="toupper" signature="int toupper(int c)">
+      <description>Converts a lowercase letter to the corresponding uppercase letter</description>
+    </function>
+  </header>
+
+  <header name="locale.h">
+    <typedef name="lconv" kind="struct">
+      <member name="decimal_point" type="char*"/>
+      <member name="thousands_sep" type="char*"/>
+      <member name="grouping" type="char*"/>
+      <member name="int_curr_symbol" type="char*"/>
+      <member name="currency_symbol" type="char*"/>
+      <member name="mon_decimal_point" type="char*"/>
+      <member name="mon_thousands_sep" type="char*"/>
+      <member name="mon_grouping" type="char*"/>
+      <member name="positive_sign" type="char*"/>
+      <member name="negative_sign" type="char*"/>
+      <member name="int_frac_digits" type="char"/>
+      <member name="frac_digits" type="char"/>
+      <member name="p_cs_precedes" type="char"/>
+      <member name="p_sep_by_space" type="char"/>
+      <member name="n_cs_precedes" type="char"/>
+      <member name="n_sep_by_space" type="char"/>
+      <member name="p_sign_posn" type="char"/>
+      <member name="n_sign_posn" type="char"/>
+    </typedef>
+    <macro name="LC_ALL">0</macro>
+    <macro name="LC_COLLATE">1</macro>
+    <macro name="LC_CTYPE">2</macro>
+    <macro name="LC_MONETARY">3</macro>
+    <macro name="LC_NUMERIC">4</macro>
+    <macro name="LC_TIME">5</macro>
+    <function name="setlocale" signature="char* setlocale(int category, const char* locale)">
+      <description>
+        Selects the appropriate portion of the program's locale as specified by the category and locale arguments.
+      </description>
+      <tags>nullptr:-1</tags>
+    </function>
+    <function name="localeconv" signature="struct lconv* localeconv(void)">
+      <description>
+        Sets the components of an object with type struct lconv with values appropriate for the formatting of
+        numeric quantities (monetary and otherwise) according to the rules of the current locale.
+      </description>
+      <tags>thread-unsafe</tags>
+    </function>
+  </header>
+
+  <header name="math.h">
+    <macro name="HUGE_VAL" type="double"/>
+    <macro name="HUGE_VALF" type="float" standard="c99"/>
+    <macro name="HUGE_VALL" type="long double" standard="c99"/>
+    <macro name="NAN" type="float" standard="c99"/>
+    <macro name="INFINITY" type="float" standard="c99"/>
+    <function name="sin" signature="double sin(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="cos" signature="double cos(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="tan" signature="double tan(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="sinh" signature="double sinh(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="cosh" signature="double cosh(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="tanh" signature="double tanh(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="asin" signature="double asin(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="acos" signature="double acos(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="atan" signature="double atan(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="atan2" signature="double atan2(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="exp" signature="double exp(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="log" signature="double log(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="log10" signature="double log10(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="pow" signature="double pow(double, double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="sqrt" signature="double sqrt(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="ceil" signature="double ceil(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="floor" signature="double floor(double)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="fabs" signature="double fabs(double)">
+      <description>Computes the absolute value of a floating-point number</description>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="ldexp" signature="double ldexp(double,int)">
+      <description>Multiplies a floating-point number by an integral power of 2</description>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="frexp" signature="double frexp(double value, int* exp)">
+      <description>
+        Breaks a floating-point number into a normalized fraction and an integral power of 2.
+        It stores the integer in the int object pointed to by exp.
+      </description>
+      <parametersSet>1</parametersSet>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="modf" signature="double modf(double value, double* iptr)">
+      <description>
+        Breaks the argument value into integral and fractional parts, each of which has the same sign as the argument.
+        It stores the integral part as a double in the object pointed to by iptr
+      </description>
+      <parametersSet>1</parametersSet>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="fmod" signature="double fmod(double x, double y)">
+      <description>Computes the floating-point remainder of x/y</description>
+      <errorProcessing kind="errno"/>
+    </function>
+  </header>
+
+  <header name="setjmp.h">
+    <typedef name="jmp_buf" kind="array" type="int[]"/>
+    <function name="setjmp" signature="int setjmp(jmp_buf env)">
+      <description>
+        Saves its calling environment in its jmp_buf argument for later use by the long jmp function.
+      </description>
+      <parametersSet>0</parametersSet>
+    </function>
+    <function name="longjmp" signature="void longjmp(jmp_buf env, int val)">
+      <description>
+        Restores the environment saved by the most recent invocation of the setjmp macro in the same invocation
+        of the program with the corresponding jmp_buf argument.
+      </description>
+      <tags>termination</tags>
+    </function>
+  </header>
+
+  <header name="signal.h">
+    <typedef name="sig_atomic_t" type="int"/>
+    <typedef name="__p_sig_fn_t" kind="function-pointer" type="void (* __p_sig_fn_t)(int)"/>
+    <macro name="SIG_DFL" type="__p_sig_fn_t">((__p_sig_fn_t) 0)</macro>
+    <macro name="SIG_IGN" type="__p_sig_fn_t">((__p_sig_fn_t) 1)</macro>
+    <macro name="SIG_ERR" type="__p_sig_fn_t">((__p_sig_fn_t) -1)</macro>
+    <macro name="SIGINT" type="int">2</macro>
+    <macro name="SIGILL" type="int">4</macro>
+    <macro name="SIGFPE" type="int">8</macro>
+    <macro name="SIGSEGV" type="int">11</macro>
+    <macro name="SIGTERM" type="int">15</macro>
+    <macro name="SIGBREAK" type="int">21</macro>
+    <macro name="SIGABRT" type="int">22</macro>
+    <function name="signal" signature="__p_sig_fn_t signal(int sig, __p_sig_fn_t)">
+      <description>Registers a handler for signal handling</description>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="raise" signature="int raise(int sig)">
+      <description>Raise the signal indicated by sig. Returns non-zero on success.</description>
+    </function>
+  </header>
+
+  <header name="stdarg.h">
+    <typedef name="va_list" type="void*"/>
+    <macro name="va_start(vargs,argN)" kind="function" type="void"/>
+    <macro name="va_arg(vargs,type)" kind="function"/>
+    <macro name="va_copy(vargsDest,vargsSrc)" kind="function" type="void" standard="c99"/>
+    <macro name="va_end(vargs)" kind="function" type="void"/>
+  </header>
+
+  <header name="stdio.h">
+    <typedef name="FILE" kind="struct"/>
+    <typedef name="fpos_t" type="long"/>
+    <macro name="_IOFBF" type="int">0x0000</macro>
+    <macro name="_IOLBF" type="int">0x0040</macro>
+    <macro name="_IONBF" type="int">0x0004</macro>
+    <macro name="_IOEOF" type="int">0x0010</macro>
+    <macro name="_IOERR" type="int">0x0020</macro>
+    <macro name="_IOAPPEND" type="int" standard="posix">0x0200</macro>
+    <macro name="BUFSIZ" type="int">512</macro>
+    <macro name="EOF" type="int">(-1)</macro>
+    <macro name="FOPEN_MAX" type="int">(20)</macro>
+    <macro name="TMP_MAX" type="int">32767</macro>
+    <macro name="FILENAME_MAX" type="int">(260)</macro>
+    <macro name="L_tmpnam" type="int">(16)</macro>
+    <macro name="SEEK_SET" type="int">0</macro>
+    <macro name="SEEK_CUR" type="int">1</macro>
+    <macro name="SEEK_END" type="int">2</macro>
+    <globalObject name="stdin" type="FILE*"/>
+    <globalObject name="stdout" type="FILE*"/>
+    <globalObject name="stderr" type="FILE*"/>
+
+    <function name="fopen" signature="FILE* fopen(const char* filename, const char* mode)">
+      <tags>fileop,nullptr:-1</tags>
+      <errorProcessing kind="errno"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="freopen" signature="FILE* freopen(const char* filename, const char* mode, FILE* stream)">
+      <tags>fileop,nullptr:-1</tags>
+      <errorProcessing kind="errno"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="popen" signature="FILE *popen(const char *command, const char *type)" standard="posix">
+      <errorProcessing kind="errno"/>
+      <sink argpos="0" kind="command_injection" resource="os"/>
+    </function>
+    <function name="fflush" signature="int fflush(FILE* stream)">
+      <tags>fileop</tags>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="fclose" signature="int fclose(FILE* stream)">
+      <tags>fileop</tags>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="remove" signature="int remove(const char* filename)">
+      <tags>fileop</tags>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="rename" signature="int rename(const char* from, const char* to)">
+      <tags>fileop</tags>
+      <sink argpos="0,1" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="tmpfile" signature="FILE* tmpfile(void)">
+      <tags>fileop, tempfile, unsafe, nullptr:-1</tags>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="tmpfile_s" signature="errno_t tmpfile_s(FILE **streamptr)">
+      <description>Reasonably safe under Linux</description>
+      <tags>fileop, tempfile, nullptr:-1</tags>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="tmpnam" signature="char* tmpnam(char* filename)">
+      <description>
+        Generates a string that is a valid file name and that is not the same as the name of an existing file.
+        If the argument is a null pointer. the tmpnam function leaves its result in an internal static
+        object and returns a pointer to that object. Subsequent calls to the tmpnam function may modify
+        the same object. If the argument is not a null pointer, it is assumed to point to an array of at
+        least L-tmpnam chars: the tmpnam function writes its result in that array and returns the
+        argument as its value.
+      </description>
+      <tags>fileop, tempfile, nullptr:-1</tags>
+      <parametersSet>0</parametersSet>
+    </function>
+    <function name="tmpnam_s" signature="errno_t tmpnam_s(char *filename, size_t maxsize)">
+      <tags>fileop, tempfile, maxsize:1</tags>
+    </function>
+    <!-- _tempnam, _rmtmp, _unlink -->
+    <function name="tempnam" alias="_tempnam" signature="char* tempnam(const char* dir, const char* prefix)">
+      <description>
+        Generates a pathname that may be used for a temporary file.
+        The dir argument points to the name of the directory in which the file is to be created.
+        If dir is a null pointer or points to a string which is not a name for an appropriate directory, the path prefix defined as {P_tmpdir} in the stdio.h header is used.
+        If that directory is not accessible, an implementation-dependent directory may be used.
+        prefix may be a null pointer or point to a string of up to five bytes to be used as the beginning of the filename.
+      </description>
+      <tags>fileop, tempfile, nullptr:-1</tags>
+      <sink argpos="0,1" resource="filesystem" kind="path_traversal"/>
+    </function>
+    <function name="rmtmp" alias="_rmtmp" signature="int rmtmp(void)">
+      <description>Closes and deletes all temporary files in all directories that are held open by the calling process.</description>
+      <tags>fileop</tags>
+    </function>
+    <function name="unlink" alias="_unlink" signature="int unlink(const char* filename)" standard="posix">
+      <description>Remove a link to a file (or dir).</description>
+      <tags>fileop</tags>
+      <errorProcessing kind="errno"/>
+      <sink argpos="0" resource="filesystem" kind="path_traversal"/>
+    </function>
+    <function name="setvbuf" signature="int setvbuf(FILE* stream, char* buffer, int mode, size_t size)">
+      <description>Sets buffer for file I/O operations. Mode could be _IOFBF, _IOLBL, _IONBF.</description>
+      <tags>fileop, maxsize:3</tags>
+      <parametersSet>1</parametersSet>
+      <propagate from="0" to="1"/>
+    </function>
+    <function name="setbuf" signature="int setbuf(FILE* stream, char* buffer)">
+      <description>
+        Equivalent to setvbuf(stream, buf, _IOFBF, BUFSIZ) if buf is not NULL, or setvbuf(stream, buf, _IONBF, BUFSIZ) if buf is NULL.
+      </description>
+      <tags>fileop</tags>
+      <parametersSet>1</parametersSet>
+      <propagate from="0" to="1"/>
+    </function>
+
+    <function name="fprintf" alias="fwprintf, vfprintf, vfwprintf" signature="int fprintf(FILE* stream, const char* format, ...)">
+      <description>
+        Writes output to the stream pointed to by stream, under control of the string pointed to by format.
+      </description>
+      <tags>formattedOutput,file write,dest:0,src:2</tags>
+      <sink resource="filesystem" argpos="0" kind="filewrite"/>
+      <sink resource="formatstr" argpos="1" kind="format_injection"/>
+      <propagate from="2" to="0"/>
+      <!-- Needed by ObjC -->
+      <sink resource="filesystem" argpos="0,1,2,3" kind="log_forging"/>
+      <sink resource="filesystem" argpos="0,1,2,3" kind="privacy_violation">
+        <tags>cwe:532</tags>
+      </sink>
+    </function>
+    <function name="printf" alias="wprintf, vwprintf" signature="int printf(const char* format, ...)">
+      <description>
+        Writes output to stdout, under control of the string pointed to by format.
+      </description>
+      <tags>formattedOutput</tags>
+      <sink resource="formatstr" argpos="0" kind="format_injection"/>
+      <!-- Needed by ObjC -->
+      <sink resource="filesystem" argpos="0,1,2,3" kind="log_forging"/>
+      <sink resource="filesystem" argpos="0,1,2,3" kind="privacy_violation">
+        <tags>cwe:532</tags>
+      </sink>
+    </function>
+    <function name="sprintf" alias="swprintf, vsprintf, vswprintf, _sprintf, _vsprintf, _vswprintf" signature="int sprintf(char* s, const char* format, ...)">
+      <description>
+        Equivalent to fprintf. s specifies an array into which the generated output is to be written, rather than to a stream.
+        A null character is written at the end of the characters written: it is not counted as part of the returned sum.
+        If copying takes place between objects that overlap, the behavior is undefined.
+      </description>
+      <tags>formattedOutput,string transformation,dest:0,src:2</tags>
+      <parametersSet>0</parametersSet>
+      <sink argpos="0" resource="memory" kind="buffer_overflow"/>
+      <sink argpos="1" resource="formatstr" kind="format_injection"/>
+      <propagate from="2" to="0"/>
+      <propagate from="1" to="0"/>
+      <!-- Needed by ObjC -->
+      <sink resource="filesystem" argpos="0,1,2,3" kind="log_forging"/>
+      <sink resource="filesystem" argpos="0,1,2,3" kind="privacy_violation">
+        <tags>cwe:532</tags>
+      </sink>
+    </function>
+    <function name="snprintf" alias="_snprintf,_snwprintf,vsnprintf,_vsnprintf,_sntprintf,_vsntprintf" signature="int snprintf(char* s, size_t size, const char* format, ...)" standard="c99">
+      <tags>formattedOutput,string transformation,dest:0,maxsize:1,src:3</tags>
+      <parametersSet>0</parametersSet>
+      <sink argpos="0" resource="memory" kind="buffer_overflow"/>
+      <sink argpos="2" resource="formatstr" kind="format_injection"/>
+      <propagate from="3" to="0"/>
+      <!-- Needed by ObjC -->
+      <sink resource="filesystem" argpos="0,1,2,3" kind="log_forging"/>
+      <sink resource="filesystem" argpos="0,1,2,3" kind="privacy_violation">
+        <tags>cwe:532</tags>
+      </sink>
+    </function>
+    <function name="asprintf" signature="int asprintf(char** strp, const char* fmt, ...)" alias="vasprintf">
+      <tags>formattedOutput,string transformation,dest:0,src:2</tags>
+      <parametersSet>0</parametersSet>
+      <sink argpos="1" resource="formatstr" kind="format_injection"/>
+      <propagate from="2" to="0"/>
+    </function>
+
+    <function name="fscanf" alias="fwscanf, vfscanf, vfwscanf" signature="int fscanf(FILE* stream, const char* format, ...)">
+      <description>
+        Reads input from stream under control of the format string, using subsequent arguments as pointers to objects
+        that receive the formatted input.
+      </description>
+      <tags>formattedInput,file read,src:0,dest:2</tags>
+      <parametersSet>2</parametersSet>
+      <source resource="filesystem" argpos="0" kind="file_input"/>
+      <sink resource="formatstr" argpos="1" kind="format_injection"/>
+      <propagate from="0" to="2"/>
+      <propagate from="1" to="2"/>
+    </function>
+    <function name="scanf" alias="wscanf, vscanf, vwscanf" signature="int scanf(const char* format, ...)">
+      <description>fscanf on stdin</description>
+      <tags>formattedInput</tags>
+      <parametersSet>1</parametersSet>
+      <sink resource="formatstr" argpos="0" kind="format_injection"/>
+      <source resource="environment" kind="user_input" argpos="1"/>
+    </function>
+    <function name="sscanf" alias="swscanf, s2scanf, vsscanf, vswscanf" signature="int sscanf(const char* s, const char* format, ...)">
+      <description>fscanf on s</description>
+      <tags>formattedInput,string transformation,src:0,dest:2</tags>
+      <parametersSet>2</parametersSet>
+      <sink resource="formatstr" argpos="1" kind="format_injection"/>
+      <propagate from="0" to="2"/>
+      <propagate from="1" to="2"/>
+    </function>
+
+    <function name="fgetc" alias="fgetc_unlocked,getc,fgetwc,getwc" signature="int fgetc(FILE* stream)">
+      <description>
+        Obtains the next character (if present) as an unsigned char converted to an int from the input stream pointed to by stream,
+        and advances the associated file position indicator for the stream (if defined).
+
+        Note: getc is equivalent to fgetc, except that it is implemented as a macro.
+      </description>
+      <tags>characterInput,src:0,dest:-1</tags>
+      <source resource="filesystem" argpos="-1" kind="file_input"/>
+      <source resource="environment" argpos="-1" kind="user_input">
+        <checker id="cpp.checkers.stdin"><property name="argpos" value="0"/></checker>
+      </source>
+    </function>
+    <function name="getchar" signature="int getchar(void)" alias="getwchar">
+      <description>
+        Equivalent to getc() with the argument stdin.
+        Return EOF if stream is at end-of-file or a read error occurs.
+      </description>
+      <source resource="environment" argpos="-1" kind="user_input"/>
+    </function>
+    <function name="fgets" alias="fgets_unlocked, fgetws" signature="char* fgets(char* s, int n, FILE* stream)">
+      <description>
+        Reads at most one less than the number of characters specified by n from the stream pointed to by stream into the array pointed to by s.
+        No additional characters are read after a new-line character (which is retained) or after end-of-file.
+        A null character is written immediately after the last character read into the array.
+
+        If end-of-file is encountered and no characters have been read into the array, the contents of the array remain unchanged
+        and a null pointer is returned. If a read error occurs during the operation, the array contents are indeterminate
+        and null pointer is returned.
+      </description>
+      <tags>characterInput,nullptr:-1,file read,dest:0,src:2</tags>
+      <parametersSet>0</parametersSet>
+      <source argpos="0,-1" resource="filesystem" kind="file_input"/>
+      <source argpos="0,-1" resource="environment" kind="user_input">
+        <checker id="cpp.checkers.stdin" ><property name="argpos" value="2"/></checker>
+      </source>
+    </function>
+    <function name="gets" signature="char* gets(char* s)">
+      <description>
+        Reads characters from stdin into the array pointed to by s, up to EOF or EOL.
+        EOL is discarded, and a null character is written immediately after the last character read into the array.
+
+        If end-of-file is encountered and no characters have been read into the array, the contents of the array remain unchanged
+        and a null pointer is returned. If a read error occurs during the operation, the array contents are indeterminate
+        and null pointer is returned.
+      </description>
+      <tags>characterInput,nullptr:-1,dest:0</tags>
+      <parametersSet>0</parametersSet>
+      <source argpos="0,-1" resource="environment" kind="user_input"/>
+    </function>
+    <function name="fputc" alias="fputc_unlocked,putc,fputwc,putwc" signature="int fputc(int c, FILE* stream)">
+      <description>
+        Writes the character specified by c (converted to an unsigned char) to the output stream pointed to by stream.
+        Returns the character written. If a write error occurs, error indicator for the stream is set and fputc returns EOF.
+
+        Note: putc() is usually implemented as a macro: it may evaluate stream more than one, so it should be an expression with no side-effects.
+      </description>
+      <sink resource="filesystem" argpos="0,-1" kind="filewrite"/>
+      <errorProcessing kind="errno"/>
+      <sideEffects>filewrite</sideEffects>
+    </function>
+    <function name="putchar" signature="int putchar(int c)" alias="putwchar">
+      <description>Equivalent to putc with the second argument stdout.</description>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="fputs" signature="int fputs(const char* s, FILE* stream)" alias="fputws">
+      <description>
+        Writes the string pointed to by s to the output stream pointed to by stream. The terminating null character is not written.
+        The fputs function returns EOF if a write error occurs; otherwise it returns the number of characters written.
+      </description>
+      <tags>file write,src:0,dest:1</tags>
+      <sink resource="filesystem" argpos="0" kind="filewrite"/>
+      <errorProcessing kind="errno"/>
+      <sideEffects>filewrite</sideEffects>
+    </function>
+    <function name="puts" signature="int puts(const char* s)">
+      <description>
+        Writes the string pointed to by s to stdout. The terminating null character is not written, a newline character is appended.
+        The puts function returns EOF if a write error occurs; otherwise it returns the number of characters written.
+      </description>
+      <sink resource="filesystem" argpos="0" kind="filewrite"/>
+      <errorProcessing kind="errno"/>
+      <!-- sideEffects>filewrite</sideEffects -->
+    </function>
+    <function name="ungetc" signature="int ungetc(int c, FILE* stream)" alias="ungetwc">
+      <description>
+        Pushes the character specified by c (converted to an unsigned char) back onto the input stream pointed to by stream.
+        The pushed-back characters will be returned by subsequent reads on that stream in the reverse order of their pushing.
+        A successful intervening call (with the stream pointed to by stream) to a file positioning function (fseek.
+        fsetpos. or rewind) discards any pushedlback characters for the stream. The external storage corresponding to the stream is unchanged.
+      </description>
+    </function>
+
+    <function name="fread" signature="size_t fread(void* ptr, size_t size, size_t nmemb, FILE* stream)">
+      <description>
+        The fread function reads into the array pointed to by ptr, up to nmemb elements whose size is specified by size from stream pointed to by stream.
+        The file position indicator for the stream (if defined) is advanced by the number of characters successfully read.
+        If an error occurs. the resulting value of the file position indicator for the stream is indeterminate.
+        If a partial element is read. its value is indeterminate.
+
+        The fread function returns the number of elements successfully read, which may be less than nmemb if a read error or end-of-file is encountered.
+        If size or nmemb is zero, fread returns zero and the contents of the array and the state of the stream remain unchanged.
+      </description>
+      <tags>directIO,file read,dest:0,maxsize:1*2,src:3</tags>
+      <parametersSet>0</parametersSet>
+      <source resource="filesystem" kind="file_input" argpos="0"/>
+      <source resource="environment" kind="user_input" argpos="0">
+        <checker id="cpp.checkers.stdin"><property name="argpos" value="3"/></checker>
+      </source>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="fwrite" signature="size_t fwrite(const void* ptr, size_t size, size_t nmemb, FILE* stream)">
+      <description>
+        Writes from the array pointed to by ptr, up to nmemb elements whose size is specified by size to the stream pointed to by stream.
+        The file position indicator for the stream (if defined) is advanced by the number of characters successfully written.
+        If an error occurs, the resulting value of the file position indicator for the stream is indeterminate.
+      </description>
+      <tags>directIO,file write,src:0,maxsize:1*2,dest:3</tags>
+      <sink argpos="0" resource="filesystem" kind="filewrite"/>
+      <errorProcessing kind="errno"/>
+    </function>
+
+    <function name="fgetpos" signature="int fgetpos(FILE* stream, fpos_t* pos)">
+      <description>
+        Stores the current value of the file position indicator for the stream pointed to by stream in the object pointed to by pos.
+      </description>
+      <tags>file positioning</tags>
+      <parametersSet>1</parametersSet>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="fseek" signature="int fseek(FILE* stream, long int offset, int whence)">
+      <description></description>
+      <tags>file positioning</tags>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="fsetpos" signature="int fsetpos(FILE* stream, const fpos_t* pos)">
+      <description>
+        Sets the file position indicator for the stream pointed to by stream according to the object pointed to by pos,
+        a value obtained from a previous call to fgetpos.
+        A successful call to the fsetpos function clears the end-of-file indicator for the stream and undoes any effects
+        of the ungetc function on the same stream. After an fsetpos call, the next operation on an update stream may be either input or output.
+      </description>
+      <tags>file positioning</tags>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="ftell" signature="long int ftell(FILE* stream)">
+      <description>
+        Obtains the current value of the file position indicator for the stream pointed to by stream.
+        For a binary stream, the value is the number of characters from the beginning of the file.
+        For a text stream. its tile position indicator contains unspecified information, usable by the fseek function
+        for returning the file position indicator for the stream to its position at the time of the ftell call:
+        the difference between two such return values is not necessarily a meaningful measure of the number of characters
+        written or read.
+        On failure returns -1L and stores implementation-defined positive value in errno
+      </description>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="rewind" signature="void rewind(FILE* stream)">
+      <description>
+        Sets the file position indicator for the stream pointed to by stream to the beginning of the file.
+        Equivalent to (void) fseek (stream, OL, SEEK_SET). Error indicator for the file is also cleared.
+      </description>
+      <errorProcessing kind="errno"/>
+    </function>
+
+    <function name="clearerr" signature="void clearerr(FILE* stream)">
+      <description>Clears the end-of-file and error indicators for the stream pointed to by stream</description>
+      <tags>error handling</tags>
+    </function>
+    <function name="feof" signature="int feof(FILE* stream)">
+      <description>Tests the end-of-file indicator for the stream pointed to by stream</description>
+      <tags>error handling</tags>
+    </function>
+    <function name="ferror" signature="int ferror(FILE* stream)">
+      <description>Tests the end-of-file indicator for the stream pointed to by stream</description>
+      <tags>error handling</tags>
+    </function>
+    <function name="perror" signature="void perror(const char* s)">
+      <description>
+        Map the error number in the integer expression errno to an error message.
+        It writes a sequence of characters to the standard error stream thus: first (if s is not a null pointer and
+        the character pointed to by s is not the null character), the string pointed to by s followed by a colon (:) and a space,
+        then an appropriate error message string followed by a new-line character. The contents of the error message strings
+        are the same as those returned by strerror function with argument errno, which are implementation-defined.
+      </description>
+      <tags>error handling</tags>
+    </function>
+  </header>
+
+  <header name="stdlib.h">
+    <description>Also c++ cstdlib header</description>
+    <typedef name="div_t" kind="struct">
+      <member name="quot" type="int"/>
+      <member name="rem" type="int"/>
+    </typedef>
+    <typedef name="ldiv_t" kind="struct">
+      <member name="quot" type="long"/>
+      <member name="rem" type="long"/>
+    </typedef>
+    <macro name="EXIT_SUCCESS" type="int">0</macro>
+    <macro name="EXIT_FAILURE" type="int">1</macro>
+    <macro name="RAND_MAX" type="int">0x7FFF</macro>
+    <macro name="MB_CUR_MAX" type="int"/>
+
+    <function name="atof" signature="double atof(const char* nptr)">
+      <description>Converts string to double, similar to strtod(nptr, (char**)NULL)</description>
+      <tags>string conversion</tags>
+      <propagate from="0" to="-1"/>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="atoi" signature="int atoi(const char* nptr)">
+      <description>Converts string to int, similar to strtol(nptr, (char**)NULL, 10)</description>
+      <tags>string conversion</tags>
+      <propagate from="0" to="-1"/>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="atol" signature="long int atol(const char* nptr)">
+      <description>Converts string to long int, similar to strtol(nptr, (char**)NULL)</description>
+      <tags>string conversion</tags>
+      <propagate from="0" to="-1"/>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="strtod" signature="double strtod(const char* nptr, char** endptr)">
+      <description>Convert string to a double-precision number</description>
+      <tags>string conversion</tags>
+      <parametersSet>1</parametersSet>
+      <propagate from="0" to="-1"/>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="strtof" signature="float strtof(const char* nptr, char** endptr)" standard="c99">
+      <description>Convert string to a float-precision number</description>
+      <tags>string conversion</tags>
+      <parametersSet>1</parametersSet>
+      <propagate from="0" to="-1"/>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="strtold" signature="long double strtold(const char* nptr, char** endptr)" standard="c99">
+      <description>Convert string to a long double-precision number</description>
+      <tags>string conversion</tags>
+      <parametersSet>1</parametersSet>
+      <propagate from="0" to="-1"/>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="strtol" signature="long int strtol(const char* nptr, char** endptr, int base)">
+      <description>Convert string to a long integer</description>
+      <tags>string conversion</tags>
+      <parametersSet>1</parametersSet>
+      <propagate from="0" to="-1"/>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="strtoll" signature="long long strtoll(const char* nptr, char** endptr, int base)">
+      <description>Convert string to a long long integer</description>
+      <tags>string conversion</tags>
+      <parametersSet>1</parametersSet>
+      <propagate from="0" to="-1"/>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="strtoul" signature="unsigned long int strtoul(const char* nptr, char** endptr, int base)">
+      <description>Convert string to an unsigned long integer</description>
+      <tags>string conversion</tags>
+      <parametersSet>1</parametersSet>
+      <propagate from="0" to="-1"/>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="strtoull" signature="unsigned long long strtoull(const char* nptr, char** endptr, int base)">
+      <description>Convert string to an unsigned long integer</description>
+      <tags>string conversion</tags>
+      <parametersSet>1</parametersSet>
+      <propagate from="0" to="-1"/>
+      <errorProcessing kind="errno"/>
+    </function>
+
+    <function name="rand" signature="int rand(void)" alias="drand48,erand48,jrand48,lrand48,mrand48,nrand48" match="name">
+      <!-- Posix defines drand48, erand48, jrand48, lcong48, lrand48, mrand48, nrand48, seed48, srand48 - generate uniformly distributed pseudo-random numbers -->
+      <description>
+        Computes a sequence of pseudo-random integers in the range 0 to RAND_MAX.
+        Not thread-safe. This function should be avoided whenever non-trivial requirements (including safety) have to be fulfilled.
+      </description>
+      <tags>prng, thread-unsafe</tags>
+      <sink argpos="-1" kind="insecure_random" resource="crypto"/>
+    </function>
+    <function name="srand" signature="void srand(unsigned int seed)" alias="srand48">
+      <description>Sets seed for sequence of pseudo-random numbers</description>
+      <tags>prng, seed, thread-unsafe</tags>
+    </function>
+    <function name="rand_r" signature="int rand_r(unsigned int* seed)" standard="posix">
+      <description>
+        Same as rand(), but thread-safe.
+        This function should be avoided whenever non-trivial requirements (including safety) have to be fulfilled.
+      </description>
+      <tags>prng, thread-safe</tags>
+      <sink argpos="-1" kind="insecure_random" resource="crypto"/>
+    </function>
+    <function name="random" signature="long random(void)" standard="posix">
+      <tags>prng, thread-unsafe</tags>
+      <sink argpos="-1" kind="insecure_random" resource="crypto"/>
+    </function>
+    <function name="srandom" signature="srandom(unsigned int seed)">
+      <tags>prng, seed, thread-unsafe</tags>
+    </function>
+    <function name="initstate" signature="char *initstate(unsigned int seed, char *state, size_t n)">
+      <tags>prng, seed, thread-unsafe, dest:1, maxsize:2</tags>
+      <parametersSet>1</parametersSet>
+    </function>
+    <function name="setstate" signature="char *setstate(char *state)">
+      <tags>prng, seed, thread-unsafe</tags>
+    </function>
+    <function name="random_r" signature="int random_r(struct random_date *buf, int32_t *result)" standard="glibc">
+      <tags>prng, thread-safe</tags>
+      <errorProcessing kind="errno"/>
+      <sink argpos="1" kind="insecure_random" resource="crypto"/>
+    </function>
+    <function name="srandom_r" signature="int srandom_r(unsigned int seed, struct random_date *buf)" standard="glibc">
+      <tags>prng, seed, thread-safe</tags>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="initstate_r" signature="int initstate_r(unsigned int seed, char *state, size_t n, struct random_date *buf)" standard="glibc">
+      <tags>prng, seed, thread-safe, dest:1, maxsize:2</tags>
+      <parametersSet>1</parametersSet>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="setstate_r" signature="int setstate_r(char *state, struct random_date *buf)" standard="glibc">
+      <tags>prng, seed, thread-safe</tags>
+      <errorProcessing kind="errno"/>
+    </function>
+
+    <function name="malloc" signature="void* malloc(size_t size)">
+      <description>Allocates space for an object whose size is specified by size and whose value is indeterminate.</description>
+      <tags>memory allocation,nullptr:-1,memsize:0</tags>
+      <errorProcessing kind="errno"/>
+      <source resource="memory" argpos="-1" kind="memory_allocation"/>
+    </function>
+    <function name="calloc" signature="void* calloc(size_t nmemb, size_t size)">
+      <description>Allocates space for an array of nmemb objects, each of whose size is size. The space is initialized to all bits zero.</description>
+      <tags>memory allocation,nullptr:-1,arrsize:0,itemsize:1,initialized</tags>
+      <errorProcessing kind="errno"/>
+      <source resource="memory" argpos="-1" kind="memory_allocation"/>
+    </function>
+    <function name="realloc" signature="void* realloc(void* ptr, size_t size)">
+      <description>
+        Changes the size of the object pointed to by ptr to the size specified by size.
+        The contents of the object shall be unchanged up to the lesser of the new and old sizes.
+        If the new size is larger, the value of the newly allocated portion of the object is indeterminate.
+        If ptr is a null pointer, the realloc function behaves like the malloc function for the specified size.
+        Otherwise, if ptr does not match a pointer earlier returned by the calloc, malloc, or realloc function,
+        or if the space has been deallocated by a call to the free or realloc function, the behavior is undefined.
+        If the space cannot be allocated, the object pointed to by ptr is unchanged.
+        If size is zero and ptr is not a null pointer, the object it points to is freed
+      </description>
+      <tags>memory reallocation,nullptr:-1,pointer:0,memsize:1</tags>
+      <errorProcessing kind="errno"/>
+      <source resource="memory" argpos="-1" kind="memory_allocation"/>
+      <propagate from="0" to="-1"/>
+    </function>
+    <function name="aligned_alloc" signature="void* aligned_alloc(size_t alignment, size_t size)">
+      <tags>memory allocation,nullptr:-1,memsize:1</tags>
+      <source resource="memory" argpos="-1" kind="memory_allocation"/>
+    </function>
+    <function name="free" signature="void free(void* ptr)">
+      <description>
+        The space pointed to by ptr to be deallocated. that is, made available for funher allocation.
+        If ptr is a null pointer. no action occurs. Otherwise, if the argument does not match a function,
+        or if the space has undefined.
+      </description>
+      <tags>memory deallocation,pointer:0</tags>
+    </function>
+    <function name="malloc_usable_size" signature="size_t malloc_usable_size(void* ptr)">
+      <tags>memory size, glibc, pointer:0</tags>
+    </function>
+
+    <function name="abort" signature="void abort(void)" alias="terminate">
+      <description>
+        Causes abnormal process termination to occur, unless the signal SIGABRT is being caught and the signal handler does not return.
+        The abnormal termination processing includes at least the effect of fclose() on all open streams, and message catalogue descriptors,
+        and the default actions defined for SIGABRT. The SIGABRT signal is sent to the calling process as if by means of raise() with the argument SIGABR.
+      </description>
+      <tags>communication,termination</tags>
+    </function>
+    <function name="atexit" signature="int atexit(void (*)(void))" alias="at_quick_exit">
+      <description>Register handler for normal program termination</description>
+      <tags>communication</tags>
+    </function>
+    <function name="exit" signature="int exit(int status)" alias="_Exit, _exit, quick_exit">
+      <description>
+        Causes normal program termination to occur. If more than one call to the exit function is executed by a program,
+        the behavior is undefined.
+        First, all functions registered by the atexit function are called, in the reverse order of their registration.
+        Next, all open streams with unwritten buffered data are flushed. all open streams are closed, and all files
+        created by the tmpfile function are removed.
+        Finally. control is returned to the host environment If the value of status is zero or EXIT_SUCCESS,
+        an implementation-detined form of the status successful termination is returned.
+        If the value of status is EXIT_FAILURE. an implementation-defined form of the status unsuccessful termination is returned.
+        Otherwise the status returned is implementation-defined.
+      </description>
+      <tags>termination</tags>
+    </function>
+    <function name="getenv" signature="char* getenv(const char* name)">
+      <description>
+        Searches an environment list. provided by the host environment, for a string that matches the string pointed to by name.
+      </description>
+      <tags>nullptr:-1,thread-unsafe</tags>
+      <source argpos="-1" resource="environment" kind="user_input"/>
+      <propagate from="0" to="-1"/>
+    </function>
+    <function name="system" signature="int system(const char* cmd)">
+      <description>
+        Passes the string pointed to by string to the host environment to be executed by a command processor in an implementation-defined manner.
+        A null pointer may be used for string to inquire whether a command processor exists (return non-zero only if command processor available).
+        Return the termination status of command-line interpreter. If child process cannot be created, sets errno and returns -1.
+      </description>
+      <errorProcessing kind="errno"/>
+      <sink argpos="0" resource="environment" kind="command_injection"/>
+    </function>
+
+    <function name="bsearch" signature="void* bsearch(const void* key, const void* base, size_t nmemb, size_t size, int (* compar)(const void *, const void *))">
+      <description>
+        Searches an array of nmemb objects, the initial element of which is pointed to by base, for an element that matches the object pointed to by key.
+        The size of each element of the array is specifed by size. Uses the function pointer compar for pair comparisons.
+      </description>
+      <tags>searching sorting,nullptr:-1</tags>
+      <propagate from="0,1" to="-1"/>
+    </function>
+    <function name="qsort" signature="void qsort(void* base, size_t nmemb, size_t size, int (* compar)(const void *, const void *))">
+      <description></description>
+      <tags>searching sorting</tags>
+    </function>
+
+    <function name="abs" signature="int abs(int j)">
+      <description>Absolute value</description>
+      <tags>integer arithmetic</tags>
+    </function>
+    <function name="labs" signature="long int abs(long int j)">
+      <description>Absolute value</description>
+      <tags>integer arithmetic</tags>
+    </function>
+    <function name="div" signature="div_t div(int number, int denom)">
+      <description>Integer division</description>
+      <tags>integer arithmetic</tags>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="ldiv" signature="ldiv_t ldiv(long int number, long int denom)">
+      <description>Integer division</description>
+      <tags>integer arithmetic</tags>
+      <errorProcessing kind="errno"/>
+    </function>
+    
+    <function name="mblen" signature="int mblen(const char* s, size_t n)">
+      <description>Determines the number of bytes contained in the multibyte character pointed to by s</description>
+      <tags>multibyte character</tags>
+    </function>
+    <function name="mbtowc" signature="int mbtowc(wchar_t* pwc, const char* s, size_t n)">
+      <description>
+        Determines the number of bytes that are contained in the multibyte character pointed to by s.
+        It then determines the code for the value of type wchar_t that corresponds to that multibyte character
+        (The value of the code corresponding to the null character is zero). If the multibyte character is valid and pwc is not a null pointer,
+        the mbtowc function stores the code in the object pointed to by pwc. At most n bytes of the array pointed to by s will be examined.
+      </description>
+      <tags>multibyte character, maxsize:2</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="1" to="0"/>
+    </function>
+    <function name="wctomb" signature="int wctomb(char* s, wchar_t wchar)">
+      <description>
+        Determines the number of bytes needed to represent the multibyte character corresponding to the code whose value is wchar.
+        It stores the multibyte character representation in the array object pointed to by s (if s is not a null pointer).
+      </description>
+      <tags>multibyte character,thread-unsafe</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="1" to="0"/>
+    </function>
+    
+    <function name="mbstowcs" signature="size_t mbstowcs(wchar_t* pwcs, const char* s, size_t n)">
+      <description>convert a character string to a wide-character string</description>
+      <tags>multibyte string, maxsize:2</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="1" to="0"/>
+    </function>
+    <function name="wcstombs" signature="size_t wcstombs(char* s, const wchar_t* pwcs, size_t n)">
+      <description>convert a wide-character string to a character string</description>
+      <tags>multibyte string, maxsize:2</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="1" to="0"/>
+    </function>
+  </header>
+
+  <header name="string.h" standard="libc">
+    <function name="memcpy" signature="void* memcpy(void* s1, const void* s2, size_t n)">
+      <description>Copy bytes in memory</description>
+      <tags>memory copy,overlap-unsafe,size-check,src:1,dest:0,size:2</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="1" to="0,-1"/>
+    </function>
+    <function name="memmove" signature="void* memmove(void* s1, const void* s2, size_t n)">
+      <description>Copy bytes in memory</description>
+      <tags>memory copy,overlap-safe,size-check,src:1,dest:0,size:2</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="1" to="0,-1"/>
+    </function>
+    <function name="strcpy" signature="char* strcpy(char* sl, const char* s2)">
+      <description>Copy a string</description>
+      <tags>string copy,overlap-unsafe,no-size-check,src:1,dest:0</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="1" to="0,-1"/>
+    </function>
+    <function name="strcpy_s" signature="errno_t strcpy_s(char* dest, size_t destsz, const char* src)">
+      <description>Copy a string, with limits</description>
+      <tags>string copy, overlap-safe, size-check, src:2, dest:0, size:1</tags>
+      <parametersSet>0</parametersSet>
+      <errorProcessing kind="errno"/>
+      <propagate from="2" to="0"/>
+    </function>
+    <function name="strncpy" signature="char* strncpy(char* s1, const char* s2, size_t n)">
+      <description>Copy a string, with limits</description>
+      <tags>string copy,overlap-unsafe,size-check,src:1,dest:0,size:2</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="1" to="0,-1"/>
+    </function>
+    <function name="strncpy_s" signature="errno_t strncpy_s(char* s1, size_t destsz, const char* s2, size_t count)">
+      <description>Copy a string, with limits</description>
+      <tags>string copy,overlap-safe,size-check,src:2,dest:0,size:2</tags>
+      <parametersSet>0</parametersSet>
+      <errorProcessing kind="errno"/>
+      <propagate from="2" to="0"/>
+    </function>
+    <function name="strlcpy" signature="size_t strlcpy(char* dest, const char* src, size_t n)">
+      <tags>string copy,overlap-unsafe,size-check,src:1,dest:0,size:2</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="1" to="0"/>
+    </function>
+    <function name="strxfrm" signature="size_t strxfrm(char* s1, const char* s2, size_t n)">
+      <description>string transformation (copy with locale transformation)</description>
+      <tags>string transformation,overlap-unsafe,size-check,src:1,dest:0,size:2</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="1" to="0"/>
+    </function>
+
+    <function name="strcat" signature="char* strcat(char* s1, const char* s2)">
+      <description>Concatenate a string</description>
+      <tags>string copy,overlap-unsafe,no-size-check,src:1,dest:0</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="1" to="0,-1"/>
+    </function>
+    <function name="strcat_s" signature="errno_t strcat_s(char* dest, size_t destsz, const char* src)">
+      <tags>string copy,overlap-safe,size-check,src:2,dest:0,size:1</tags>
+      <parametersSet>0</parametersSet>
+      <errorProcessing kind="errno"/>
+      <propagate from="2" to="0"/>
+    </function>
+    <function name="strncat" signature="char* strncat(char* s1, const char* s2, size_t n)">
+      <description>Concatenate a string, with limits</description>
+      <tags>string copy,overlap-unsafe,size-check,src:1,dest:0,size:2</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="1" to="0,-1"/>
+    </function>
+    <function name="strncat_s" signature="errno_t strncat_s(char* dest, size_t destsz, const char* src, size_t count)">
+      <description>Concatenate a string, with limits</description>
+      <tags>string copy,overlap-safe,size-check,src:2,dest:0,size:3</tags>
+      <parametersSet>0</parametersSet>
+      <errorProcessing kind="errno"/>
+      <propagate from="2" to="0"/>
+    </function>
+    <function name="strlcat" signature="size_t strlcat(char* s1, const char* s2, size_t n)">
+      <description>Concatenate a string, with limits</description>
+      <tags>string copy,overlap-unsafe,size-check,src:1,dest:0,size:2</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="1" to="0"/>
+    </function>
+
+    <function name="memcmp" signature="int memcmp(const void* s1, const void* s2, size_t n)">
+      <description>Compare bytes in memory</description>
+      <tags>string comparison,size-check,size:2</tags>
+    </function>
+    <function name="strcmp" signature="int strcmp(const char* s1, const char* s2)">
+      <description>Compare strings</description>
+      <tags>string comparison,no-size-check</tags>
+    </function>
+    <function name="strcoll" signature="int strcoll(const char* s1, const char* s2)">
+      <description>String comparison using collating information</description>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="strncmp" signature="int strncmp(const char* s1, const char* s2, size_t n)">
+      <description>Compare (part of) two strings</description>
+      <tags>string comparison,size-check,size:2</tags>
+    </function>
+
+    <function name="memchr" signature="void* memchr(const void* s, int c, size_t n)">
+      <description>find byte in memory</description>
+      <tags>string search,size-check,nullptr:-1,size:2</tags>
+      <propagate from="0" to="-1"/>
+    </function>
+    <function name="strchr" signature="char* strchr(const char* s, int c)">
+      <description>find char in string</description>
+      <tags>string search,no-size-check,nullptr:-1</tags>
+      <propagate from="0" to="-1"/>
+    </function>
+    <function name="strcspn" signature="size_t strcspn(const char* s1, const char* s2)">
+      <description>get length of a complementary substring</description>
+      <tags>string search,no-size-check</tags>
+    </function>
+    <function name="strpbrk" signature="char* strpbrk(const char* s1, const char* s2)">
+      <description>scan string for byte</description>
+      <tags>string search,no-size-check,nullptr:-1</tags>
+      <propagate from="0" to="-1"/>
+    </function>
+    <function name="strrchr" signature="char* strrchr(const char* s, int c)">
+      <description>find last occurrence of c in s</description>
+      <tags>string search,no-size-check,nullptr:-1</tags>
+      <propagate from="0" to="-1"/>
+    </function>
+    <function name="strspn" signature="size_t strspn(const char* s1, const char* s2)">
+      <description>get length of a substring</description>
+      <tags>string search,no-size-check</tags>
+    </function>
+    <function name="strstr" signature="char* strstr(const char* s1, const char* s2)">
+      <description>find substring</description>
+      <tags>string search,no-size-check,nullptr:-1</tags>
+      <propagate from="0" to="-1"/>
+    </function>
+    <function name="strtok" signature="char* strtok(char* str, const char* delim)">
+      <description>split string into tokens</description>
+      <tags>string search,no-size-check,thread-unsafe,nullptr:-1</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="0" to="-1"/>
+    </function>
+    <function name="strtok_r" signature="char* strtok_r(char* str, const char* delim, char** saveptr)" standard="posix">
+      <description>split string into tokens, reentrant</description>
+      <tags>string search,no-size-check,thread-safe,nullptr:-1</tags>
+      <parametersSet>0</parametersSet>
+      <propagate from="0" to="-1"/>
+    </function>
+
+    <function name="memset" signature="void* memset(void* s, int c, size_t n)">
+      <description>set bytes in memory</description>
+      <tags>memory set,size-check,dest:0,size:2</tags>
+      <parametersSet>0</parametersSet>
+      <neutralization argpos="0,-1" kind="memory-set"/>
+    </function>
+    <function name="strerror" signature="char* strerror(int errnum)">
+      <description>get error message string</description>
+      <tags>error message,thread-unsafe,nullptr:-1</tags>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="strerror_r" signature="int strerror_r(int errnum, char* strerrbuf, size_t buflen)">
+      <description>get error message string. Sets locale-specific error message in strerrbuf.</description>
+      <tags>error message,thread-safe, dest:1, maxsize:2</tags>
+      <parametersSet>1</parametersSet>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="strlen" signature="size_t strlen(const char* s)">
+      <description>get string length</description>
+      <tags>string length, no-size-check, pointer:0</tags>
+    </function>
+    <function name="wcslen" signature="wcslen(const wchar_t* ws)">
+      <description>get wide string length</description>
+      <tags>string length, no-size-check, pointer:0</tags>
+    </function>
+    <function name="strnlen" signature="size_t strnlen(const char* s, size_t maxlen)">
+      <description>get string length</description>
+      <tags>string length, size-check, pointer:0, maxsize:1</tags>
+    </function>
+    <function name="wcsnlen" signature="size_t wcsnlen(const wchar_t* s, size_t maxlen)">
+      <description>get wide string length (GNU ext)</description>
+      <tags>string length, size-check, pointer:0, maxsize:1</tags>
+    </function>
+
+    <function name="strdup" alias="_strdup" signature="char* strdup(const char* s1)" standard="XSI">
+      <description>
+        The strdup() function shall return a pointer to a new string, which is a duplicate of the string pointed to by s1.
+        The returned pointer can be passed to free(). A null pointer is returned if the new string cannot be created.
+      </description>
+      <tags>memory allocation,string copy,nullptr:-1,pointer:0</tags>
+      <errorProcessing kind="errno"/>
+      <propagate from="0" to="-1"/>
+    </function>
+    <function name="strndup" signature="char* strndup(const char* s1, size_t size)">
+      <tags>memory allocation,string copy,nullptr:-1,size-check,pointer:0,memsize:1</tags>
+      <errorProcessing kind="errno"/>
+      <propagate from="0" to="-1"/>
+    </function>
+  </header>
+
+  <header name="time.h">
+    <typedef name="struct tm" kind="struct" type="struct tm">
+      <member name="tm_sec" type="int"/>
+      <member name="tm_min" type="int"/>
+      <member name="tm_hour" type="int"/>
+      <member name="tm_mday" type="int"/>
+      <member name="tm_mon" type="int"/>
+      <member name="tm_year" type="int"/>
+      <member name="tm_wday" type="int"/>
+      <member name="tm_yday" type="int"/>
+      <member name="tm_isdst" type="int"/>
+    </typedef>
+    <typedef name="clock_t" type="int"/>
+    <typedef name="time_t" type="long int"/>
+
+    <typedef name="struct timespec" kind="struct" type="struct timespec" standard="posix">
+      <member name="tv_sec" type="time_t"/>
+      <member name="tv_nsec" type="long int"/>
+    </typedef>
+    <typedef name="struct itimespec" kind="struct" type="struct itimespec" standard="posix">
+      <member name="it_interval" type="struct timespec"/>
+      <member name="it_value" type="struct timespec"/>
+    </typedef>
+
+    <macro name="CLK_TCK"/>
+    <macro name="CLOCKS_PER_SEC"/>
+    <macro name="CLOCK_REALTIME" standard="posix"/>
+    <macro name="TIMER_ABSTIME" standard="posix"/>
+
+    <function name="asctime" signature="char* asctime(const struct tm* timeptr)">
+      <description>convert date and time to a string</description>
+      <tags>datetime,thread-unsafe,nullptr:-1</tags>
+    </function>
+    <function name="clock" signature="clock_t clock(void)">
+      <description>
+        Report CPU time (in clock ticks) used by process since beginning.
+        To determine the time in seconds, the value returned by clock() should be divided by the value of the macro CLOCKS_PER_SEC.
+      </description>
+    </function>
+    <function name="ctime" signature="char* ctime(const time_t clock)">
+      <description>convert a time value to date and time string - equivalent to asctime(locatime(clock))</description>
+      <tags>datetime,thread-unsafe,nullptr:-1</tags>
+    </function>
+    <function name="ctime_r" signature="char* ctime_r(const time_t clock, char* buf)">
+      <description>convert a time value to date and time string - equivalent to asctime(locatime(clock))</description>
+      <tags>datetime,thread-safe,nullptr:-1</tags>
+      <parametersSet>1</parametersSet>
+    </function>
+    <function name="difftime" signature="double difftime(time_t time1, time_t time0)">
+      <description>compute the difference (in seconds) between two calendar time values</description>
+      <tags></tags>
+    </function>
+    <function name="gmtime" signature="struct tm* gmtime(const time_t* timer)">
+      <description>convert a time value to a broken-down UTC time</description>
+      <tags>datetime,thread-unsafe,nullptr:-1</tags>
+    </function>
+    <function name="localtime" signature="struct tm* localtime(const time_t* timer)">
+      <description>convert a time value to a broken-down local time</description>
+      <tags>datetime,thread-unsafe,nullptr:-1</tags>
+    </function>
+    <function name="mktime" signature="time_t mktime(struct tm* timeptr)">
+      <description>convert broken-down time into time since the Epoch</description>
+      <tags>datetime</tags>
+    </function>
+  </header>
+
+  <header name="fcntl.h">
+    <function name="open" signature="int open(const char *path, int oflags)" alias="open64">
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="open" signature="int open(const char *path, int oflags, mode_t mode)" alias="open64">
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="creat" signature="int creat(const char *pathname, mode_t mode)" alias="creat64">
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+  </header>
+
+  <header name="dirent.h">
+    <function name="opendir" signature="DIR *opendir(const char *dirname)" alias="__opendir2">
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="readdir" signature="struct dirent *readdir(DIR *dir)" alias="__readdir2,__readdir2_64">
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+  </header>
+
+  <header name="unistd.h">
+    <function name="pathconf" signature="long pathconf(const char *pathname, int varcode)" >
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="readlink" signature="int readlink(const char *path, char *buf, size_t bufsiz)" >
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="chdir" signature="int chdir(const char *pathname)" >
+      <errorProcessing kind="errno"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="chmod" signature="int chmod(const char *pathname, mode_t mode);" >
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="chown" signature="int chown(const char *pathname, uid_t owner, gid_t group)" >
+      <errorProcessing kind="errno"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      <sink argpos="0" resource="filesystem" kind="system_permissions_manipulation"/>
+    </function>
+    <function name="lchown" signature="int lchown(const char *path, uid_t owner, gid_t group)" >
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="fchown" signature="int fchown(int filedes, uid_t owner, gid_t group)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="access" signature="int access(const char *pathname, int how)" alias="accessx">
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="rmdir" signature="int rmdir(const char *path)" >
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="link" signature="int link(const char *oldfile, const char *newname)" >
+      <sink argpos="0,1" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="symlink" signature="int symlink(const char *pathname, const char *slink)" >
+      <sink argpos="0,1" kind="path_traversal" resource="filesystem" />
+    </function>
+  </header>
+
+  <header name="sys/stat.h">
+    <function name="stat" signature="int stat(const char *pathname, struct stat *info)" alias="stat64">
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="lstat" signature="int lstat(const char *pathname, struct stat *buf)" alias="lstat64">
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="fstatat" signature="int fstatat(int fd, const char *path, struct stat *buf, int flag)">
+      <sink argpos="1" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="mkdir" signature="int mkdir(const char *pathname, mode_t mode)" >
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="mkfifo" signature="int mkfifo(const char *pathname, mode_t mode)" >
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+  </header>
+
+  <header name="sys/statvfs.h">
+    <function name="statvfs" signature="int statvfs(const char *_restrict_ pathname, struct statvfs *_restrict_ fsinfo)" alias="statvfs">
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+  </header>
+
+  <header name="utime.h">
+    <function name="utime" signature="int utime(const char *pathname, const struct utimbuf *newtimes)" alias="utime64">
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="utimes" signature="int utimes(const char *path, const struct timeval times[2]);" alias="utimes64">
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+  </header>
+
+  <header name="utmpx.h">
+    <function name="__utmpxname" signature="int __utmpxname(char *file)" >
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+  </header>
+</library>

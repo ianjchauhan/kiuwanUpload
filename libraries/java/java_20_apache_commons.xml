@@ -1,0 +1,2027 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--suppress DeprecatedClassUsageInspection -->
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="apache.commons" standard="Apache_Commons" technology="java">
+
+  <description url="http://commons.apache.org/">Apache Commons libraries</description>
+
+  <!--
+  commons-validator is documented in metadata_data_validations.xml.
+  commons-dbcp is documented in metadata_database.xml
+  -->
+
+  <module name="apache.commons.cli" standard="Commons_CLI">
+    <description url="https://commons.apache.org/proper/commons-cli">Command-line parsing</description>
+
+    <class name="org.apache.commons.cli.Option">
+      <method name="getValue" signature="getValue()" match="name">
+        <return type="java.lang.String"/>
+        <source kind="user_input" argpos="-1" resource="os"/>
+      </method>
+      <method name="getValues" signature="getValues()">
+        <return type="java.lang.String[]"/>
+        <source kind="user_input" argpos="-1" resource="os"/>
+      </method>
+      <method name="getValuesList" signature="getValuesList()">
+        <return type="java.util.List" elementType="java.lang.String"/>
+        <source kind="user_input" argpos="-1" resource="os"/>
+      </method>
+    </class>
+    
+    <class name="org.apache.commons.cli.Options">
+      <method name="getOption" signature="getOption()" match="name">
+        <return type="org.apache.commons.cli.Option"/>
+      </method> 
+      <method name="getOptions" signature="getOptions()">
+        <return type="java.util.Collection" elementType="org.apache.commons.cli.Option"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.cli.CommandLine">
+      <method name="getArgList" signature="getArgList()">
+        <return type="java.util.List" elementType="java.lang.String"/>
+        <source argpos="-1" kind="user_input" resource="os"/>
+      </method>
+      <method name="getArgs" signature="getArgs()">
+        <return type="java.lang.String[]"/>
+        <source argpos="-1" kind="user_input" resource="os"/>
+      </method>
+      <method name="getOptions" signature="getOptions()">
+        <return type="org.apache.commons.cli.Option[]"/>
+      </method>
+      <method name="iterator" signature="iterator()">
+        <return type="java.util.Iterator" elementType="org.apache.commons.cli.Option"/>
+      </method>
+      <method name="getOptionObject" signature="getOptionObject(java.lang.String)" match="name" alias="getParsedOptionValue">
+        <return type="java.lang.Object"/>
+        <source argpos="-1" kind="user_input" resource="os"/>
+      </method>
+      <method name="getOptionProperties" signature="getOptionProperties(java.lang.String)">
+        <return type="java.util.Properties"/>
+        <source argpos="-1" kind="user_input" resource="os"/>
+      </method>
+      <method name="getOptionValue" signature="getOptionValue(java.lang.String)" match="name">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="user_input" resource="os"/>
+      </method>
+      <method name="getOptionValues" signature="getOptionValues(java.lang.String)" match="numargs">
+        <return type="java.lang.String[]"/>
+        <source argpos="-1" kind="user_input" resource="os"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.cli.CommandLine.Builder" >
+      <method name="addArg" signature="addArg(java.lang.String)" >
+        <return type="org.apache.commons.cli.CommandLine.Builder" />
+      </method>
+      <method name="addOption" signature="addOption(java.lang.String)" >
+        <return type="org.apache.commons.cli.CommandLine.Builder" />
+      </method>
+      <method name="build" signature="build()" >
+        <return type="org.apache.commons.cli.CommandLine" />
+      </method>
+    </class>
+    
+    <class name="org.apache.commons.cli.CommandLineParser" kind="interface">
+      <method name="parse" signature="parse(org.apache.commons.cli.Options, java.lang.String[], boolean)" match="name">
+        <return type="org.apache.commons.cli.CommandLine"/>
+        <propagate from="1" to="-1"/>
+      </method>
+    </class>
+    
+    <class name="org.apache.commons.cli.BasicParser" supertypes="org.apache.commons.cli.CommandLineParser"/>
+    <class name="org.apache.commons.cli.DefaultParser" supertypes="org.apache.commons.cli.CommandLineParser"/>
+    <class name="org.apache.commons.cli.GnuParser" supertypes="org.apache.commons.cli.CommandLineParser"/>
+    <class name="org.apache.commons.cli.Parser" supertypes="org.apache.commons.cli.CommandLineParser"/>
+    <class name="org.apache.commons.cli.PosixParser" supertypes="org.apache.commons.cli.CommandLineParser"/>
+
+  </module>
+  
+  <module name="apache.commons.codec" standard="Commons_Codec">
+    <description url="http://commons.apache.org/proper/commons-codec/">Common encoders / decoders</description>
+
+    <class name="org.apache.commons.codec.BinaryDecoder" kind="interface">
+      <method name="decode" signature="decode(byte[])"><return type="byte[]"/></method>
+    </class>
+    <class name="org.apache.commons.codec.BinaryEncoder" kind="interface">
+      <method name="encode" signature="encode(byte[])"><return type="byte[]"/></method>
+    </class>
+    <class name="org.apache.commons.codec.Decoder" kind="interface">
+      <method name="decode" signature="decode(java.lang.Object)"><return type="java.lang.Object"/></method>
+    </class>
+    <class name="org.apache.commons.codec.Encoder" kind="interface">
+      <method name="encode" signature="encode(java.lang.Object)"><return type="java.lang.Object"/></method>
+    </class>
+    <class name="org.apache.commons.codec.StringDecoder" kind="interface">
+      <method name="decode" signature="decode(java.lang.String)"><return type="java.lang.String"/></method>
+    </class>
+    <class name="org.apache.commons.codec.StringEncoder" kind="interface">
+      <method name="encode" signature="encode(java.lang.String)"><return type="java.lang.String"/></method>
+    </class>
+    <class name="org.apache.commons.codec.Resources" >
+      <method name="getInputStream" signature="getInputStream(java.lang.String)" >
+        <return type="java.io.InputStream" />
+      </method>
+    </class>
+
+    <class name="org.apache.commons.codec.binary.BaseNCodec"
+           supertypes="org.apache.commons.codec.BinaryDecoder, org.apache.commons.codec.BinaryEncoder, org.apache.commons.codec.Encoder, org.apache.commons.codec.Decoder">
+      <method name="encode" signature="encode(java.lang.Object)">
+        <return type="java.lang.Object"/>
+        <neutralization argpos="0" kind="encoding" resource="web"/>
+      </method>
+      <method name="encodeAsString" signature="encodeAsString(byte[])" alias="encodeToString">
+        <return type="java.lang.String"/>
+        <neutralization argpos="0" kind="encoding" resource="web"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.codec.binary.Base64" supertypes="org.apache.commons.codec.binary.BaseNCodec" alias="org.apache.commons.codec.binary.Base32">
+      <method name="encodeBase64" signature="encodeBase64(byte[])" instance="false" match="name"
+              alias="encodeBase64Chunked, encodeBase64URLSafe">
+        <return type="byte[]"/>
+        <neutralization argpos="0" kind="encoding" resource="other"/>
+      </method>
+      <method name="encodeBase64String" signature="encodeBase64String(byte[])" instance="false" match="name"
+              alias="encodeBase64URLSafeString">
+        <return type="byte[]"/>
+        <neutralization argpos="0" kind="encoding" resource="other"/>
+      </method>
+      <method name="encodeInteger" signature="encodeInteger(java.math.BigInteger)" instance="false">
+        <return type="byte[]"/>
+        <neutralization argpos="0" kind="encoding" resource="web"/>
+      </method>
+      <method name="isBase64" signature="isBase64(java.lang.String)" instance="false" match="name">
+        <return type="boolean"/>
+      </method>
+      <method name="decodeBase64" signature="decodeBase64(byte[])" match="name" >
+        <tags>deneutralization:encoding</tags>
+        <return type="byte[]"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.codec.binary.Base32" supertypes="org.apache.commons.codec.binary.BaseNCodec"/>
+
+    <class name="org.apache.commons.codec.binary.BinaryCodec"
+           supertypes="org.apache.commons.codec.BinaryEncoder, org.apache.commons.codec.BinaryDecoder, org.apache.commons.codec.Encoder, org.apache.commons.codec.Decoder">
+      <method name="fromAscii" signature="fromAscii(byte[])" match="name" instance="false">
+        <return type="byte[]"/>
+      </method>
+      <method name="toAsciiBytes" signature="toAsciiBytes(byte[])" instance="false"><return type="byte[]"/></method>
+      <method name="toAsciiChars" signature="toAsciiChars(byte[])" instance="false"><return type="char[]"/></method>
+      <method name="toAsciiString" signature="toAsciiString(byte[])" instance="false"><return type="java.lang.String"/></method>
+      <method name="toByteArray" signature="toByteArray(java.lang.String)" instance="false"><return type="byte[]"/></method>
+    </class>
+
+    <class name="org.apache.commons.codec.binary.Hex"
+           supertypes="org.apache.commons.codec.BinaryEncoder, org.apache.commons.codec.BinaryDecoder, org.apache.commons.codec.Encoder, org.apache.commons.codec.Decoder">
+      <method name="encode" signature="encode(byte[])" match="name">
+        <return type="byte[]"/>
+        <neutralization argpos="0" kind="encoding" resource="other"/>
+      </method>
+      <method name="encodeHex" signature="encodeHex(byte[])" match="name" instance="false">
+        <return type="char[]"/>
+        <neutralization argpos="0" kind="encoding" resource="other"/>
+      </method>
+      <method name="decodeHex" signature="decodeHex(java.lang.String)" instance="false">
+        <return type="byte[]"/>
+      </method>
+      <method name="encodeHexString" signature="encodeHexString(byte[])" match="name" instance="false">
+        <return type="java.lang.String"/>
+        <neutralization argpos="0" kind="encoding" resource="other"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.codec.binary.BaseNCodecInputStream" supertypes="java.io.FilterInputStream"/>
+    <class name="org.apache.commons.codec.binary.BaseNCodecOutputStream" supertypes="java.io.FilterOutputStream"/>
+
+    <class name="org.apache.commons.codec.binary.Base64InputStream" supertypes="org.apache.commons.codec.binary.BaseNCodecInputStream"
+           alias="org.apache.commons.codec.binary.Base32InputStream">
+      <constructor name="Base64InputStream" signature="Base64InputStream(java.io.InputStream, boolean, int, byte[])" match="name"></constructor>
+    </class>
+    <class name="org.apache.commons.codec.binary.Base64OutputStream" supertypes="org.apache.commons.codec.binary.BaseNCodecOutputStream"
+           alias="org.apache.commons.codec.binary.Base32OutputStream">
+      <constructor name="Base64OutputStream" signature="Base64OutputStream(java.io.InputStream, boolean, int, byte[])" match="name"></constructor>
+    </class>
+
+    <class name="org.apache.commons.codec.net.BCodec"
+           supertypes="org.apache.commons.codec.StringEncoder, org.apache.commons.codec.StringDecoder, org.apache.commons.codec.Encoder, org.apache.commons.codec.Decoder">
+      <description>Base64 encoded, disguised</description>
+      <method name="encode" signature="encode(java.lang.String)" match="name">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="encoding" resource="other"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.codec.net.URLCodec"
+           supertypes="org.apache.commons.codec.StringEncoder, org.apache.commons.codec.StringDecoder, org.apache.commons.codec.Encoder, org.apache.commons.codec.Decoder">
+      <method name="encode" signature="encode(java.lang.String)" match="name">
+        <return type="java.lang.String"/>
+        <neutralization argpos="0" kind="xss" resource="web"/>
+        <neutralization argpos="0" kind="header_manipulation" resource="web"/>
+        <neutralization argpos="0" kind="http_parameter_pollution" resource="web"/>
+        <propagate from="0" to="-1" />
+      </method>
+      <method name="encodeUrl" signature="encodeUrl(java.util.BitSet,byte[])" instance="false">
+        <return type="java.lang.String"/>
+        <neutralization argpos="1" kind="xss" resource="web"/>
+        <neutralization argpos="1" kind="header_manipulation" resource="web"/>
+        <neutralization argpos="1" kind="http_parameter_pollution" resource="web"/>
+        <propagate from="1" to="-1" />
+      </method>
+    </class>
+    <class name="org.apache.commons.codec.net.PercentCodec"
+           supertypes="org.apache.commons.codec.BinaryEncoder, org.apache.commons.codec.BinaryDecoder">
+      <description>Percent-encoding, unsafe for most injection payloads</description>
+    </class>
+    <class name="org.apache.commons.codec.net.QCodec" alias="org.apache.commons.codec.net.QuotedPrintableCodec"
+           supertypes="org.apache.commons.codec.BinaryEncoder, org.apache.commons.codec.BinaryDecoder,
+                       org.apache.commons.codec.StringEncoder, org.apache.commons.codec.StringDecoder">
+      <description>Quoted-Printable encoding, unsafe for most injection payloads</description>
+    </class>
+
+    <class name="org.apache.commons.codec.digest.MessageDigestAlgorithms">
+      <field name="MD2" type="java.lang.String" alias="MG5, SHA_1, SHA_224, SHA_256, SHA_384, SHA3_224, SHA3_256, SHA3_512"/>
+    </class>
+
+    <class name="org.apache.commons.codec.digest.HmacAlgorithms" kind="enum">
+      <field name="HMAC_MD5" alias="HMAC_SHA1, HMAC_SHA_224, HMAC_SHA_256, HMAC_SHA_384, HMAC_SHA_512"/>
+    </class>
+
+    <class name="org.apache.commons.codec.digest.DigestUtils">
+      <constructor name="DigestUtils" signature="DigestUtils(java.lang.String)">
+        <tags>hash,algo:0</tags>
+        <sink kind="weak_hash_algorithm" argpos="0" resource="crypto"/>
+      </constructor>
+      <method name="md2" signature="md2(byte[])" instance="false" alias="md5,sha,sha1">
+        <tags>hash,algo:method,data:0,weak-hash</tags>
+        <return type="byte[]"/>
+        <neutralization argpos="0" kind="hash" resource="crypto"/>
+        <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="md2Hex" signature="md2Hex(byte[])" instance="false" alias="md5Hex,shaHex,sha1Hex">
+        <tags>hash,algo:method,data:0,weak-hash</tags>
+        <return type="java.lang.String"/>
+        <neutralization argpos="0" kind="hash" resource="crypto"/>
+        <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="sha256" signature="sha256(byte[])" instance="false" alias="sha384,sha512">
+        <tags>hash,algo:method,data:0</tags>
+        <return type="byte[]"/>
+        <neutralization argpos="0" kind="hash" resource="crypto"/>
+        <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="sha256Hex" signature="sha256Hex(byte[])" instance="false" alias="sha384Hex,sha512Hex">
+        <tags>hash,algo:method,data:0</tags>
+        <return type="byte[]"/>
+        <neutralization argpos="0" kind="hash" resource="crypto"/>
+        <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="getDigest" signature="getDigest(java.lang.String)" match="name" instance="false">
+        <tags>hash,algo:0</tags>
+        <return type="java.security.MessageDigest"/>
+        <sink kind="weak_hash_algorithm" argpos="0" resource="crypto"/>
+      </method>
+      <method name="getMd2Digest" signature="getMd2Digest()" instance="false">
+        <tags>hash,algo:md2</tags>
+        <return type="java.security.MessageDigest"/>
+        <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="getMd5Digest" signature="getMd5Digest()" instance="false">
+        <tags>hash,algo:md5</tags>
+        <return type="java.security.MessageDigest"/>
+        <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="getSha1Digest" signature="getSha1Digest()" alias="getShaDigest" instance="false">
+        <tags>hash,algo:sha1</tags>
+        <return type="java.security.MessageDigest"/>
+        <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="getSha256Digest" signature="getSha256Digest()" instance="false">
+        <tags>hash,algo:sha256</tags>
+        <return type="java.security.MessageDigest"/>
+        <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="getSha384Digest" signature="getSha384Digest()" instance="false">
+        <tags>hash,algo:sha384</tags>
+        <return type="java.security.MessageDigest"/>
+        <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="getSha512Digest" signature="getSha512Digest()" instance="false">
+        <tags>hash,algo:sha512</tags>
+        <return type="java.security.MessageDigest"/>
+        <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+      </method>
+      <method name="digest" signature="digest(byte[])" match="numargs">
+        <tags>hash,data:0</tags>
+        <return type="byte[]"/>
+        <neutralization argpos="0" kind="hash" resource="crypto"/>
+      </method>
+      <method name="digestAsHex" signature="digest(byte[])" >
+        <tags>hash,data:0</tags>
+        <return type="java.lang.String"/>
+        <neutralization argpos="0" kind="hash" resource="crypto"/>
+      </method>
+      <method name="updateDigest" signature="updateDigest(java.security.MessageDigest,byte[])" instance="false">
+        <tags>hash,data:0</tags>
+        <return type="java.security.MessageDigest"/>
+        <neutralization argpos="1" kind="hash" resource="crypto"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.codec.digest.HmacUtils">
+      <tags>hmac</tags>
+      <constructor name="HmacUtils" signature="HmacUtils(java.lang.String, java.lang.String)" match="numargs">
+        <tags>hmac, algo:0, key:1</tags>
+        <sink kind="weak_hash_algorithm" argpos="0" resource="crypto"/>
+        <sink kind="hardcoded_crypto_key" argpos="1" resource="crypto"/>
+      </constructor>
+      <method name="getHmacMd5" signature="getHmacMd5(byte[])" instance="false"
+              alias="getHmacSha1, getHmacSha384, getHmacSha384, getHmacSha512">
+        <tags>hmac, algo:method, key:0, deprecated, deprecatedBy:getInitializedMac</tags>
+        <sink kind="hardcoded_crypto_key" argpos="1" resource="crypto"/>
+      </method>
+      <method name="getInitializedMac" signature="getInitializedMac(java.lang.String, byte[])" instance="false">
+        <tags>hmac, algo:0, key:1</tags>
+        <return type="javax.crypto.Mac"/>
+        <sink kind="weak_hash_algorithm" argpos="0" resource="crypto"/>
+        <sink kind="hardcoded_crypto_key" argpos="1" resource="crypto"/>
+      </method>
+      <method name="hmac" signature="hmac(byte[])" match="numargs">
+        <tags>hmac, data:0</tags>
+        <return type="byte[]"/>
+        <neutralization argpos="-1" kind="mac" resource="crypto"/>
+      </method>
+      <method name="hmacHex" signature="hmacHex(byte[])" match="numargs">
+        <tags>hmac, data:0</tags>
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="mac" resource="crypto"/>
+      </method>
+      <method name="updateHmac" signature="updateHmac(javax.crypto.Mac, byte[])" instance="false">
+        <tags>hmac, data:1</tags>
+        <neutralization argpos="1" kind="mac" resource="crypto"/>
+      </method>
+      <method name="hmacMd5" signature="hmacMd5(byte[], byte[])" instance="false"
+              alias="hmacSha1, hmacSha256, hmacSha384, hmacSha512">
+        <tags>hmac, key:0, data:1, algo:method, deprecated, deprecatedBy:HmacUtils.hmac</tags>
+        <return type="byte[]"/>
+        <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+        <sink kind="hardcoded_password" argpos="0" resource="crypto"/>
+        <neutralization kind="mac" argpos="1" resource="crypto"/>
+      </method>
+      <method name="hmacMd5Hex" signature="hmacMd5Hex(byte[], byte[])" instance="false"
+              alias="hmacSha1Hex, hmacSha256Hex, hmacSha384Hex, hmacSha512Gex">
+        <tags>hmac, key:0, data:1, algo:method, deprecated, deprecatedBy:HmacUtils.hmacHex</tags>
+        <return type="java.lang.String"/>
+        <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+        <sink kind="hardcoded_password" argpos="0" resource="crypto"/>
+        <neutralization kind="mac" argpos="1" resource="crypto"/>
+      </method>
+    </class>
+
+    <!-- crypt() password hashing variants, not recommended nowadays -->
+    <class name="org.apache.commons.codec.digest.Crypt">
+      <description>crypt-compatible hash method (GNU libc)</description>
+      <method name="crypt" signature="crypt(java.lang.String, java.lang.String)" match="name">
+        <tags>password_hash,data:0,salt:1,algo:crypt</tags>
+        <return type="java.lang.String"/>
+        <sink kind="hardcoded_password" argpos="0" resource="crypto"/>
+        <sink kind="hardcoded_salt" argpos="1" resource="crypto"/>
+        <neutralization kind="hash" resource="crypto" argpos="-1"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.codec.digest.Md5Crypt">
+      <description>crypt-compatible hash method, for $1$ and $apr1$ formats</description>
+      <method name="apr1Crypt" signature="apr1Crypt(java.lang.String, java.lang.String)" match="name" alias="md5Crypt">
+        <tags>password_hash,data:0,salt:1,algo:crypt</tags>
+        <return type="java.lang.String"/>
+        <sink kind="hardcoded_password" argpos="0" resource="crypto"/>
+        <sink kind="hardcoded_salt" argpos="1" resource="crypto"/>
+        <neutralization kind="hash" resource="crypto" argpos="-1"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.codec.digest.Sha2Crypt">
+      <description>crypt-compatible hash method, for crypt $5$ format</description>
+      <method name="sha256crypt" signature="sha256crypt(byte[], java.lang.String, java.util.Random)" match="name" alias="sha512crypt">
+        <tags>password_hash, data:0, salt:1, algo:crypt</tags>
+        <return type="java.lang.String"/>
+        <sink kind="hardcoded_password" argpos="0" resource="crypto"/>
+        <sink kind="hardcoded_salt" argpos="1" resource="crypto"/>
+        <neutralization kind="hash" resource="crypto" argpos="-1"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.codec.digest.UnixCrypt">
+      <description>crypt-compatible hash method, for $1$ and $apr1$ formats</description>
+      <method name="crypt" signature="crypt(java.lang.String, java.lang.String)" match="name">
+        <tags>password_hash,data:0,salt:1,algo:crypt</tags>
+        <return type="java.lang.String"/>
+        <sink kind="hardcoded_password" argpos="0" resource="crypto"/>
+        <sink kind="hardcoded_salt" argpos="1" resource="crypto"/>
+        <neutralization kind="hash" resource="crypto" argpos="-1"/>
+      </method>
+    </class>
+
+    <!-- Non-cryptographic hashes and checksums -->
+    <class name="org.apache.commons.codec.digest.MurmurHash2">
+      <description>Non-crypto hash (MUltiply/Rotate)</description>
+      <method name="hash32(java.lang.String)" signature="hash32(java.lang.String)" instance="false" match="name"><return type="int"/></method>
+      <method name="hash64(java.lang.String)" signature="hash64(java.lang.String)" instance="false" match="name"><return type="long"/></method>
+    </class>
+    <class name="org.apache.commons.codec.digest.MurmurHash3">
+      <description>Non-crypto hash (MUltiply/Rotate)</description>
+      <method name="hash32(java.lang.String)" signature="hash32(java.lang.String)" instance="false" match="name"><return type="int"/></method>
+      <method name="hash64(java.lang.String)" signature="hash64(java.lang.String)" instance="false" match="name"><return type="long"/></method>
+      <method name="hash64(java.lang.String)" signature="hash127(java.lang.String)" instance="false" match="name"><return type="long[]"/></method>
+    </class>
+    <class name="org.apache.commons.codec.digest.PureJavaCrc32" alias="org.apache.commons.codec.digest.PureJavaCrc32C, org.apache.commons.codec.digest.XXHash32">
+      <method name="update" signature="update(int)"></method>
+      <method name="update" signature="update(byte[],int,int)"></method>
+      <method name="getValue" signature="getValue()"><return type="long"/></method>
+    </class>
+
+  </module>
+
+  <module name="apache.commons.crypto" standard="Commons_Crypto">
+    <description url="http://commons.apache.org/proper/commons-crypto/">Cryptographic library optimized with AES-NI</description>
+    <class name="org.apache.commons.crypto.cipher.CryptoCipher" kind="interface">
+      <method name="init" signature="init(int,java.security.Key,java.security.spec.AlgorithmParameterSpec)">
+        <tags>cipher-init,operation:0,key:1,params:2</tags>
+      </method>
+      <method name="update" signature="update(java.nio.ByteBuffer,java.nio.ByteBuffer)">
+        <tags>encrypt,decrypt,data:0</tags>
+        <return type="int"/>
+        <propagate from="0" to="1"/>
+        <neutralization argpos="1" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+        <neutralization argpos="1" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+      </method>
+      <method name="update" signature="update(byte[],int,int,byte[],int)">
+        <tags>encrypt,decrypt,data:0</tags>
+        <return type="int"/>
+        <propagate from="0" to="3"/>
+        <neutralization argpos="3" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+        <neutralization argpos="3" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+      </method>
+      <method name="doFinal" signature="doFinal(java.nio.ByteBuffer,java.nio.ByteBuffer)">
+        <tags>encrypt,decrypt,data:0</tags>
+        <return type="int"/>
+        <propagate from="0" to="1"/>
+        <neutralization argpos="1" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+        <neutralization argpos="1" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+      </method>
+      <method name="doFinal" signature="doFinal(byte[],int,int,byte[],int)">
+        <tags>encrypt,decrypt,data:0</tags>
+        <return type="int"/>
+        <propagate from="0" to="3"/>
+        <neutralization argpos="3" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+        <neutralization argpos="3" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.crypto.cipher.CryptoCipherFactory">
+      <method name="getCryptoCipher" signature="getCryptoCipher(java.lang.String, java.util.Properties)" match="name" instance="false">
+        <tags>cipher-factory,algo:0</tags>
+        <return type="org.apache.commons.crypto.cipher.CryptoCipher"/>
+        <sink kind="weak_crypto_algorithm" argpos="0" resource="crypto"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.crypto.random.CryptoRandom" kind="interface">
+      <description>No control of seed (which is always using entropy source), *probably* safe</description>
+      <method name="nextBytes" signature="nextBytes(byte[])">
+        <propagate from="-2" to="0"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.crypto.random.CryptoRandomFactory">
+      <method name="getCryptoRandom" signature="getCryptoRandom(java.util.Properties)" match="name">
+        <return type="org.apache.commons.crypto.cipher.CryptoCipher"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.crypto.utils.Utils">
+      <method name="getCipherInstance" signature="getCipherInstance(java.lang.String, java.lang.Properties)" instance="false">
+        <tags>cipher-factory, algo:0</tags>
+        <sink kind="weak_crypto_algorithm" argpos="0" resource="crypto"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.crypto.stream.CryptoInputStream"
+           supertypes="java.io.InputStream, java.io.Closeable, java.lang.AutoCloseable, java.nio.channels.Channel, java.nio.channels.ReadableByteChannel">
+      <constructor name="CryptoInputStream" signature="CryptoInputStream(java.lang.String, java.lang.Properties, java.io.InputStream, java.security.Key, java.security.spec.AlgorithmParameterSpec)" match="numargs">
+        <tags>cipher-factory, algo:0, cipher-init, key:3, params:4</tags>
+        <sink kind="weak_crypto_algorithm" argpos="0" resource="crypto"/>
+        <neutralization kind="decryption" argpos="2"/>
+      </constructor>
+    </class>
+
+    <class name="org.apache.commons.crypto.stream.CtrCryptoInputStream" supertypes="org.apache.commons.crypto.stream.CryptoInputStream">
+      <constructor name="CtrCryptoInputStream" signature="CtrCryptoInputStream(java.lang.Properties, java.io.InputStream, java.security.Key, java.security.spec.AlgorithmParameterSpec)" match="numargs">
+        <tags>cipher-factory, algo:AES, blockmode:CTR, cipher-init, key:2, params:3</tags>
+        <neutralization kind="decryption" argpos="1"/>
+      </constructor>
+    </class>
+
+    <class name="org.apache.commons.crypto.stream.CryptoOutputStream"
+           supertypes="java.io.OutputStream, java.io.Closeable, java.io.Flushable, java.lang.AutoCloseable, java.nio.channels.Channel, java.nio.channels.WritableByteChannel">
+      <constructor name="CryptoOutputStream" signature="CryptoOutputStream(java.lang.String, java.lang.Properties, java.io.OutputStream, java.security.Key, java.security.spec.AlgorithmParameterSpec)" match="numargs">
+        <tags>cipher-factory, algo:0, cipher-init, key:3, params:4</tags>
+        <sink kind="weak_crypto_algorithm" argpos="0" resource="crypto"/>
+        <neutralization kind="encryption" argpos="2"/>
+      </constructor>
+    </class>
+
+    <class name="org.apache.commons.crypto.stream.CtrCryptoOutputStream" supertypes="org.apache.commons.crypto.stream.CryptoOutputStream">
+      <constructor name="CtrCryptoOutputStream" signature="CtrCryptoOutputStream(java.lang.Properties, java.io.OutputStream, java.security.Key, java.security.spec.AlgorithmParameterSpec)" match="numargs">
+        <tags>cipher-factory, algo:AES, blockmode:CTR, cipher-init, key:2, params:3</tags>
+        <neutralization kind="encryption" argpos="1"/>
+      </constructor>
+    </class>
+
+  </module>
+
+  <module name="apache.commons.csv" standard="Commons_CSV" >
+    <description url="http://commons.apache.org/proper/commons-csv/apidocs/index.html">Comma Separated Value (CSV) Format Support.</description>
+
+    <class name="org.apache.commons.csv.CSVParser" supertypes="java.io.Closeable,java.lang.Iterable,java.lang.Object" >
+      <constructor name="CSVParser" signature="CSVParser(java.io.Reader,org.apache.commons.csv.CSVFormat)" >
+      </constructor>
+      <constructor name="CSVParser" signature="CSVParser(java.io.Reader,org.apache.commons.csv.CSVFormat,long,long)" >
+      </constructor>
+      <method name="parse" signature="parse(java.io.File,java.nio.charset.Charset,org.apache.commons.csv.CSVFormat)" >
+        <return type="org.apache.commons.csv.CSVParser" />
+        <source kind="file_input" argpos="-1" resource="filesystem" />
+      </method>
+      <method name="parse" signature="parse(java.io.InputStream,java.nio.charset.Charset,org.apache.commons.csv.CSVFormat)" >
+        <return type="org.apache.commons.csv.CSVParser" />
+        <source kind="file_input" argpos="-1" resource="filesystem" />
+      </method>
+      <method name="parse" signature="parse(java.nio.file.Path,java.nio.charset.Charset,org.apache.commons.csv.CSVFormat)" >
+        <return type="org.apache.commons.csv.CSVParser" />
+        <source kind="file_input" argpos="-1" resource="filesystem" />
+      </method>
+      <method name="parse" signature="parse(java.io.Reader,org.apache.commons.csv.CSVFormat)" >
+        <return type="org.apache.commons.csv.CSVParser" />
+        <source kind="file_input" argpos="-1" resource="filesystem" />
+      </method>
+      <method name="parse" signature="parse(java.lang.String,org.apache.commons.csv.CSVFormat)" >
+        <return type="org.apache.commons.csv.CSVParser" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+        <source kind="file_input" argpos="-1" resource="filesystem" />
+      </method>
+      <method name="parse" signature="parse(java.net.URL,java.nio.charset.Charset,org.apache.commons.csv.CSVFormat)" >
+        <return type="org.apache.commons.csv.CSVParser" />
+        <sink argpos="0" kind="ssrf"/>
+        <sink argpos="0" kind="insecure_transport" resource="network" />
+        <source kind="external_input" argpos="-1" resource="filesystem" />
+      </method>
+      <method name="close" signature="close()" >
+      </method>
+      <method name="getCurrentLineNumber" signature="getCurrentLineNumber()" >
+        <return type="long" />
+      </method>
+      <method name="getFirstEndOfLine" signature="getFirstEndOfLine()" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="getHeaderMap" signature="getHeaderMap()" >
+        <return type="java.util.Map" />
+      </method>
+      <method name="getHeaderMapRaw" signature="getHeaderMapRaw()" >
+        <return type="java.util.Map" />
+      </method>
+      <method name="getHeaderNames" signature="getHeaderNames()" >
+        <return type="java.util.List" />
+      </method>
+      <method name="getRecordNumber" signature="getRecordNumber()" >
+        <return type="long" />
+      </method>
+      <method name="getRecords" signature="getRecords()" >
+        <return type="java.util.List" />
+      </method>
+      <method name="isClosed" signature="isClosed()" >
+        <return type="boolean" />
+      </method>
+      <method name="iterator" signature="iterator()" >
+        <return type="java.util.Iterator" />
+      </method>
+      <method name="nextRecord" signature="nextRecord()" >
+        <return type="org.apache.commons.csv.CSVRecord" />
+      </method>
+    </class>
+    <class name="org.apache.commons.csv.CSVRecord" supertypes="java.io.Serializable,java.lang.Iterable,java.lang.Object" >
+      <method name="getParser" signature="getParser()" >
+        <return type="org.apache.commons.csv.CSVParser" />
+      </method>
+    </class>
+    <class name="org.apache.commons.csv.CSVFormat" supertypes="java.io.Serializable,java.lang.Object" >
+      <method name="parse" signature="parse(java.io.Reader)" >
+        <return type="org.apache.commons.csv.CSVParser" />
+      </method>
+      <method name="print" signature="print(java.lang.Appendable)" >
+        <return type="org.apache.commons.csv.CSVPrinter" />
+      </method>
+      <method name="print" signature="print(java.io.File,java.nio.charset.Charset)" >
+        <return type="org.apache.commons.csv.CSVPrinter" />
+      </method>
+      <method name="print" signature="print(java.nio.file.Path,java.nio.charset.Charset)" >
+        <return type="org.apache.commons.csv.CSVPrinter" />
+      </method>
+      <method name="printer" signature="printer()" >
+        <return type="org.apache.commons.csv.CSVPrinter" />
+      </method>
+    </class>
+  </module>
+
+  <module name="apache.commons.dbutils" standard="Commons_Dbutils">
+    <description url="https://commons.apache.org/proper/commons-dbutils">JDBC helper library</description>
+    
+    <class name="org.apache.commons.dbutils.ResultSetHandler" kind="interface">
+      <method name="handle" signature="handle(java.sql.ResultSet)"><return type="java.lang.Object"/></method>
+    </class>
+    
+    <class name="org.apache.commons.dbutils.AbstractQueryRunner">
+      <method name="batch" signature="batch(java.lang.String, java.lang.Object[][])">
+        <return type="int[]"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="batch" signature="batch(java.sql.Connection, java.lang.String, java.lang.Object[][])">
+        <return type="int[]"/>
+        <sink kind="sql_injection" argpos="1" resource="database"/>
+      </method>
+      <method name="execute" signature="execute(java.lang.String, java.lang.Object...)" match="name">
+        <return type="int"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="insert" signature="insert(java.lang.String, java.lang.Object...)" match="name">
+        <return type="int"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="insertBatch" signature="insertBatch(java.lang.String, org.apache.commons.dbutils.ResultSetHandler, java.lang.Object[][])" match="name">
+        <return type="java.lang.Object"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="query" signature="query(java.lang.String)" match="name">
+        <return type="java.lang.Object"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+        <source kind="database_input" argpos="-1" resource="database"/>
+      </method>
+      <method name="update" signature="update(java.lang.String, java.lang.Object...)" match="name">
+        <return type="int"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.dbutils.QueryRunner" supertypes="org.apache.commons.dbutils.AbstractQueryRunner"/>
+    <class name="org.apache.commons.dbutils.AsyncQueryRunner" supertypes="org.apache.commons.dbutils.AbstractQueryRunner"/>
+    
+    <class name="org.apache.commons.dbutils.DbUtils">
+      <method name="close" signature="close(java.sql.Connection)" instance="false"
+              alias="closeQuietly, commitAndClose, commitAndCloseQuietly, rollbackAndClose, rollbackAndCloseQuietly">
+        <tags>db.connection.close</tags>
+      </method>
+      <method name="rollback" signature="rollback(java.sql.Connection)" instance="false"/>
+    </class>
+
+    <class name="org.apache.commons.dbutils.QueryLoader">
+      <method name="instance" signature="instance()" instance="false"><return type="@self"/></method>
+      <method name="load" signature="load(java.lang.String)"><return type="java.util.Map"/></method>
+      <method name="unload" signature="unload(java.lang.String)"/>
+    </class>
+  </module>
+
+  <module name="apache.commons.email" standard="Commons_Email">
+    <description url="https://commons.apache.org/proper/commons-email/">API for sending email</description>
+    
+    <class name="org.apache.commons.mail.Email">
+      <method name="addBcc" signature="addBcc(java.lang.String...)" match="name" alias="addCc, addReplyTo, addTo">
+        <return type="@self"/>
+      </method>
+      <method name="addHeader" signature="addHeader(java.lang.String, java.lang.String)">
+        <sink argpos="0,1" kind="mail_command_injection" resource="network"/>
+      </method>
+      <method name="buildMimeMessage" signature="buildMimeMessage()"/>
+      <method name="getMailSession" signature="getMailSession()"/>
+      <method name="getMimeMessage" signature="getMimeMessage()"><return type="javax.mail.internet.MimeMessage"/></method>
+      <method name="send" signature="send()" alias="sendMimeMessage"><return type="java.lang.String"/></method>
+      <method name="setAuthentication" signature="setAuthentication(java.lang.String, java.lang.String)">
+        <tags>username:0, password:1</tags>
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setAuthenticator" signature="setAuthenticator(javax.mail.Authenticator)"/>
+      <method name="setBcc" signature="setBcc(java.util.Collection)" alias="setCC,setReplyTo,setTo"><return type="@self"/></method>
+      <method name="setBounceAddress" signature="setBounceAddress(java.lang.String)"><return type="@self"/></method>
+      <method name="setContent" signature="setContent(javax.mail.internet.MimeMultipart)"/>
+      <method name="setContent" signature="setContent(java.lang.Object, java.lang.String)"/>
+      <method name="setFrom" signature="setFrom(java.lang.String)" match="name"/>
+      <method name="setHeaders" signature="setHeaders(java.util.Map)">
+        <sink argpos="0" kind="mail_command_injection" resource="network"/>
+      </method>
+      <method name="setHostName" signature="setHostName(java.lang.String)">
+        <sink kind="resource_injection" argpos="0" resource="network"/>
+      </method>
+      <method name="setMailSession" signature="setMailSession(javax.mail.Session)"/>
+      <method name="setMailSessionFromJNDI" signature="setMailSessionFromJNDI(java.lang.String)">
+        <sink kind="resource_injection" argpos="0" resource="network"/>
+      </method>
+      <method name="setMsg" signature="setMsg(java.lang.String)"><return type="org.apache.commons.mail.Email"/></method>
+      <method name="setPopBeforeSmtp" signature="setPopBeforeSmtp(boolean, java.lang.String, java.lang.String, java.lang.String)">
+        <sink kind="resource_injection" argpos="0" resource="network"/>
+        <sink kind="hardcoded_password" argpos="1,2" resource="network"/>
+      </method>
+      <method name="setSmtpPort" signature="setSmtpPort(int)" alias="setSslSmtpPort">
+        <sink kind="resource_injection" argpos="0"/>
+      </method>
+      <method name="setSsl" signature="setSsl(boolean)" alias="setSSLOnConnect, setTls, setStartTLSEnabled">
+        <return type="@self"/>
+        <sink kind="resource_injection" argpos="0"/>
+      </method>
+      <method name="setSubject" signature="setSubject(java.lang.String)">
+        <return type="@self"/>
+        <sink argpos="0" kind="mail_command_injection" resource="network"/>
+      </method>
+      <method name="updateContentType" signature="updateContentType(java.lang.String)"/>
+    </class>
+    
+    <class name="org.apache.commons.mail.SimpleEmail" supertypes="org.apache.commons.mail.Email"/>
+
+    <class name="org.apache.commons.mail.MultiPartEmail" supertypes="org.apache.commons.mail.Email">
+      <method name="addPart" signature="addPart(javax.mail.internet.MimeMultipart)" match="name">
+        <return type="@self"/>
+      </method>
+      <method name="attach" signature="attach(java.io.File)" match="name">
+        <return type="@self"/>
+        <!--sink kind="path_traversal" argpos="0" resource="filesystem"/-->
+      </method>
+      <method name="setSubType" signature="setSubType(java.lang.String)"/>
+    </class>
+
+    <class name="org.apache.commons.mail.HtmlEmail" supertypes="org.apache.commons.mail.MultiPartEmail">
+      <method name="setHtmlMsg" signature="setHtmlMsg(java.lang.String)">
+        <sink kind="xss" argpos="0" resource="web"/>
+      </method>
+      <method name="setTextMsg" signature="setTextMsg(java.lang.String)"></method>
+      <method name="embed" signature="embed(java.lang.File)" match="name">
+        <!-- sink kind="path_traversal" argpos="0" resource="filesystem"/ -->
+      </method>
+    </class>
+    
+    <class name="org.apache.commons.mail.ImageHtmlEmail" supertypes="org.apache.commons.mail.HtmlEmail"></class>
+  </module>
+
+  <module name="apache.commons.exec" standard="Commons_Exec">
+    <description url="https://commons.apache.org/proper/commons-exec/">External process execution and environment management in Java</description>
+
+    <class name="org.apache.commons.exec.CommandLine">
+      <constructor name="CommandLine" signature="CommandLine(@self)">
+        <description>Copy constructor</description>
+      </constructor>
+      <constructor name="CommandLine" signature="CommandLine(java.lang.String)">
+        <tags>command_injection.checkCommand</tags>
+        <sink kind="command_injection" argpos="0" resource="os"/>
+      </constructor>
+      <method name="parse" signature="parse(java.lang.String)" instance="false">
+        <return type="@self"/>
+        <sink kind="command_injection" argpos="0" resource="os"/>
+      </method>
+      <method name="parse" signature="parse(java.lang.String)" instance="false">
+        <return type="@self"/>
+        <sink kind="command_injection" argpos="0" resource="os"/>
+      </method>
+      <method name="parse" signature="parse(java.lang.String, java.util.Map)" instance="false">
+        <return type="@self"/>
+        <sink kind="command_injection" argpos="0" resource="os"/>
+      </method>
+      <method name="addArguments" signature="addArguments(java.lang.String[])"><return type="@self"/></method>
+      <method name="addArguments" signature="addArguments(java.lang.String[], boolean)">
+        <tags>command_injection.checkFalse:1</tags>
+        <return type="@self"/>
+        <sink kind="command_injection" argpos="0" resource="os"/>
+      </method>
+      <method name="addArgument" signature="addArgument(java.lang.String)"><return type="@self"/></method>
+      <method name="addArgument" signature="addArgument(java.lang.String, boolean)">
+        <tags>command_injection.checkBoolean:1</tags>
+        <return type="@self"/>
+        <sink kind="command_injection" argpos="0" resource="os"/>
+      </method>
+      <method name="setSubstitutionMap" signature="setSubstitutionMap(java.util.Map)"></method>
+    </class>
+
+    <class name="org.apache.commons.exec.Executor" kind="interface">
+      <description>Typically runs Runtime.getRuntime().exec(cmd.toStrings(), envVars, workingDir)</description>
+      <method name="execute" signature="execute(org.apache.commons.exec.CommandLine)" match="name"></method>
+    </class>
+    <class name="org.apache.commons.exec.DefaultExecutor" supertypes="org.apache.commons.exec.Executor"/>
+    <class name="org.apache.commons.exec.DaemonExecutor" supertypes="org.apache.commons.exec.DefaultExecutor"/>
+    <class name="org.apache.commons.exec.OS">
+      <tags>os.check</tags>
+    </class>
+    <class name="org.apache.commons.exec.environment.EnvironmentUtils">
+      <method name="getProcEnvironment" signature="getProcEnvironment()">
+        <return type="java.util.Map"/>
+        <source argpos="-1" kind="environment_input" resource="environment"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="apache.commons.fileupload" standard="Commons_Fileupload">
+    <description url="https://commons.apache.org/proper/commons-fileupload/">File upload capability</description>
+
+    <class name="org.apache.commons.fileupload.FileItem" kind="interface">
+      <method name="getInputStream" signature="getInputStream()">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="get" signature="get()">
+        <return type="byte[]"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getString" signature="getString()" match="name">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getName" signature="getName()" alias="getFieldName">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="write" signature="write(java.lang.String)">
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.fileupload.disk.DiskFileItem" supertypes="org.apache.commons.fileupload.FileItem"/>
+    <class name="org.apache.commons.fileupload.DefaultFileItem" supertypes="org.apache.commons.fileupload.FileItem"/>
+
+    <class name="org.apache.commons.fileupload.FileItemIterator" >
+      <method name="next" signature="next()" >
+        <return type="org.apache.commons.fileupload.FileItemStream" />
+      </method>
+    </class>
+    <class name="org.apache.commons.fileupload.FileItemHeadersSupport" >
+      <method name="getHeaders" signature="getHeaders()" >
+        <return type="org.apache.commons.fileupload.FileItemHeaders" />
+        <source kind="user_input" argpos="-1" resource="network"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.fileupload.FileItemStream" supertypes="org.apache.commons.fileupload.FileItemHeadersSupport" >
+      <method name="openStream" signature="openStream()" >
+        <return type="java.io.InputStream" />
+      </method>
+      <method name="getContentType" signature="getContentType()" >
+        <return type="java.lang.String" />
+        <source kind="user_input" argpos="-1" resource="network"/>
+      </method>
+      <method name="getName" signature="getName()" >
+        <return type="java.lang.String" />
+        <source kind="user_input" argpos="-1" resource="network"/>
+      </method>
+      <method name="getFieldName" signature="getFieldName()" >
+        <return type="java.lang.String" />
+        <source kind="user_input" argpos="-1" resource="network"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.fileupload.FileUploadBase" >
+      <method name="getFileItemFactory" signature="getFileItemFactory()" >
+        <return type="org.apache.commons.fileupload.FileItemFactory" />
+      </method>
+      <method name="parseRequest" signature="parseRequest(javax.servlet.http.HttpServletRequest)" >
+        <return type="java.util.List" elementType="org.apache.commons.fileupload.FileItem" />
+      </method>
+      <method name="getItemIterator" signature="getItemIterator(org.apache.commons.fileupload.RequestContext)" >
+        <return type="org.apache.commons.fileupload.FileItemIterator" />
+        <source argpos="-1" kind="user_input" resource="network" />
+      </method>
+      <method name="parseRequest" signature="parseRequest(org.apache.commons.fileupload.RequestContext)" >
+        <return type="java.util.List" elementType="org.apache.commons.fileupload.FileItem" />
+      </method>
+      <method name="parseParameterMap" signature="parseParameterMap(org.apache.commons.fileupload.RequestContext)" >
+        <return type="java.util.Map" />
+        <source argpos="-1" kind="user_input" resource="network" />
+      </method>
+      <method name="getBoundary" signature="getBoundary(java.lang.String)" >
+        <return type="byte[]" />
+        <source argpos="-1" kind="user_input" resource="network" />
+      </method>
+      <method name="getFileName" signature="getFileName(java.util.Map)" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="getFileName" signature="getFileName(org.apache.commons.fileupload.FileItemHeaders)" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="getFieldName" signature="getFieldName(org.apache.commons.fileupload.FileItemHeaders)" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="getFieldName" signature="getFieldName(java.util.Map)" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="createItem" signature="createItem(java.util.Map,boolean)" >
+        <return type="org.apache.commons.fileupload.FileItem" />
+      </method>
+      <method name="getParsedHeaders" signature="getParsedHeaders(java.lang.String)" >
+        <return type="org.apache.commons.fileupload.FileItemHeaders" />
+        <source argpos="-1" kind="user_input" resource="network" />
+      </method>
+      <method name="newFileItemHeaders" signature="newFileItemHeaders()" >
+        <return type="org.apache.commons.fileupload.util.FileItemHeadersImpl" />
+      </method>
+      <method name="parseHeaders" signature="parseHeaders(java.lang.String)" >
+        <return type="java.util.Map" />
+        <source argpos="-1" kind="user_input" resource="network" />
+      </method>
+      <method name="getHeader" signature="getHeader(java.util.Map,java.lang.String)" >
+        <return type="java.lang.String" />
+        <source argpos="-1" kind="user_input" resource="network" />
+      </method>
+    </class>
+    <class name="org.apache.commons.fileupload.FileUpload" supertypes="org.apache.commons.fileupload.FileUploadBase" />
+    <class name="org.apache.commons.fileupload.DiskFileUpload" supertypes="org.apache.commons.fileupload.FileUploadBase" />
+    <class name="org.apache.commons.fileupload.portlet.PortletFileUpload" supertypes="org.apache.commons.fileupload.FileUpload" />
+    <class name="org.apache.commons.fileupload.servlet.ServletFileUpload" supertypes="org.apache.commons.fileupload.FileUpload" />
+  </module>
+
+  <module name="apache.commons.jexl2" standard="Commons_Jexl">
+    <description url="http://commons.apache.org/proper/commons-jexl/">Java Expression Language</description>
+
+    <class name="org.apache.commons.jexl2.JexlEngine">
+      <method name="createExpression" signature="createExpression(java.lang.String)" match="name">
+        <sink argpos="0" kind="code_injection" resource="other"/>
+      </method>
+      <method name="createScript" signature="createScript(java.lang.String)" match="name">
+        <sink argpos="0" kind="code_injection" resource="other"/>
+      </method>
+      <method name="setProperty" signature="setProperty(java.lang.Object,java.lang.String,java.lang.Object)">
+        <sink argpos="1" kind="code_injection" resource="other"/>
+      </method>
+      <method name="setProperty" signature="setProperty(org.apache.commons.jexl2.JexlContext,java.lang.Object,java.lang.String,java.lang.Object)">
+        <sink argpos="2" kind="code_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.jexl2.UnifiedJEXL">
+      <method name="parse" signature="parse(java.lang.String)">
+        <return type="org.apache.commons.jexl2.UnifiedJEXL.Expression"/>
+        <sink argpos="0" kind="code_injection" resource="other"/>
+      </method>
+      <method name="createTemplate" signature="createTemplate(java.lang.String,java.io.Reader,java.lang.String...)">
+        <return type="org.apache.commons.jexl2.UnifiedJEXL.Temnplate"/>
+        <sink argpos="1" kind="code_injection" resource="other"/>
+      </method>
+      <method name="createTemplate" signature="createTemplate(java.lang.String,java.lang.String...)">
+        <return type="org.apache.commons.jexl2.UnifiedJEXL.Temnplate"/>
+        <sink argpos="0" kind="code_injection" resource="other"/>
+      </method>
+      <method name="createTemplate" signature="createTemplate(java.lang.String)">
+        <return type="org.apache.commons.jexl2.UnifiedJEXL.Temnplate"/>
+        <sink argpos="0" kind="code_injection" resource="other"/>
+      </method>
+      <method name="readTemplate" signature="readTemplate(java.lang.String,java.io.Reader)">
+        <return type="java.util.List"/>
+        <sink argpos="1" kind="code_injection" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="apache.commons.httpclient" standard="Commons_HttpClient">
+    <description url="https://hc.apache.org/httpclient-3.x/apidocs">Old Commons HttpClient, superseded by HttpComponents</description>
+
+    <class name="org.apache.commons.httpclient.HostConfiguration">
+      <method name="setHost" signature="setHost(java.lang.String)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </method>
+      <method name="setHost" signature="setHost(java.lang.String,int,java.lang.String)">
+        <sink argpos="0,1,2" kind="ssrf" resource="web"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.httpclient.HttpMethod" kind="interface">
+      <method name="getResponseBody" signature="getResponseBody()">
+        <return type="byte[]"/>
+        <source argpos="-1" kind="web_input" resource="web"/>
+      </method>
+      <method name="getResponseBodyAsString" signature="getResponseBodyAsString()">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="web_input" resource="web"/>
+      </method>
+      <method name="getResponseBodyAsStream" signature="getResponseBodyAsStream()">
+        <return type="java.io.InputStream"/>
+        <source argpos="-1" kind="web_input" resource="web"/>
+      </method>
+      <method name="getResponseHeader" signature="getResponseHeader(java.lang.String)">
+        <return type="org.apache.commons.httpclient.Header"/>
+        <source argpos="-1" kind="web_input" resource="web"/>
+      </method>
+      <method name="getResponseHeaders" signature="getResponseHeaders(java.lang.String)" match="name">
+        <return type="org.apache.commons.httpclient.Header"/>
+        <source argpos="-1" kind="web_input" resource="web"/>
+      </method>
+      <method name="getStatusText" signature="getStatusText()">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="web_input" resource="web"/>
+      </method>
+
+      <method name="addRequestHeader" signature="addRequestHeader(org.apache.commons.httpclient.Header)">
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="addRequestHeader" signature="addRequestHeader(java.lang.String,java.lang.String)">
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setRequestHeader" signature="setRequestHeader(org.apache.commons.httpclient.Header)">
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setRequestHeader" signature="setRequestHeader(java.lang.String,java.lang.String)">
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setPath" signature="setPath(java.lang.String)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </method>
+      <method name="setURI" signature="setURI(org.apache.commons.httpclient.URI)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </method>
+      <method name="setQueryString" signature="setQueryString(java.lang.String)" match="name">
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.httpclient.HttpMethodBase" kind="abstract_class" supertypes="org.apache.commons.httpclient.HttpMethod">
+      <constructor name="HttpMethodBase" signature="HttpMethodBase(java.lang.String)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </constructor>
+    </class>
+
+    <class name="org.apache.commons.httpclient.methods.GetMethod" supertypes="org.apache.commons.httpclient.HttpMethodBase">
+      <constructor name="GetMethod" signature="GetMethod(java.lang.String)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </constructor>
+    </class>
+    <class name="org.apache.commons.httpclient.methods.PostMethod" supertypes="org.apache.commons.httpclient.HttpMethodBase">
+      <constructor name="PostMethod" signature="PostMethod(java.lang.String)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </constructor>
+    </class>
+    <class name="org.apache.commons.httpclient.methods.PutMethod" supertypes="org.apache.commons.httpclient.HttpMethodBase">
+      <constructor name="PutMethod" signature="PutMethod(java.lang.String)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </constructor>
+    </class>
+    <class name="org.apache.commons.httpclient.methods.DeleteMethod" supertypes="org.apache.commons.httpclient.HttpMethodBase">
+      <constructor name="DeleteMethod" signature="DeleteMethod(java.lang.String)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </constructor>
+    </class>
+    <class name="org.apache.commons.httpclient.methods.HeadMethod" supertypes="org.apache.commons.httpclient.HttpMethodBase">
+      <constructor name="HeadMethod" signature="HeadMethod(java.lang.String)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </constructor>
+    </class>
+
+    <class name="org.apache.commons.httpclient.methods.OptionsMethod"
+           supertypes="org.apache.commons.httpclient.HttpMethodBase" standard="apache.commons.httpcomponents">
+      <constructor name="OptionsMethod" signature="OptionsMethod(java.lang.String)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </constructor>
+    </class>
+    <class name="org.apache.commons.httpclient.methods.TraceMethod"
+           supertypes="org.apache.commons.httpclient.HttpMethodBase" standard="apache.commons.httpcomponents">
+      <constructor name="TraceMethod" signature="TraceMethod(java.lang.String)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </constructor>
+    </class>
+    <class name="org.apache.commons.httpclient.methods.MultipartPostMethod"
+           supertypes="org.apache.commons.httpclient.HttpMethodBase" standard="apache.commons.httpcomponents">
+      <constructor name="MultipartPostMethod" signature="MultipartPostMethod(java.lang.String)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </constructor>
+    </class>
+
+    <class name="org.apache.commons.httpclient.Header">
+      <method name="Header" signature="Header(java.lang.String,java.lang.String)"/>
+      <method name="Header" signature="Header(java.lang.String,java.lang.String,boolean)"/>
+    </class>
+
+    <class name="org.apache.commons.httpclient.HttpHost">
+      <constructor name="HttpHost" signature="HttpHost(java.lang.String,int)">
+        <sink argpos="0,1" kind="ssrf" resource="web"/>
+      </constructor>
+      <constructor name="HttpHost" signature="HttpHost(java.lang.String)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </constructor>
+      <constructor name="HttpHost" signature="HttpHost(org.apache.commons.httpclient.URI)">
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </constructor>
+    </class>
+
+    <class name="org.apache.commons.httpclient.URI">
+      <constructor name="URI" signature="URI(java.lang.String)">
+      </constructor>
+    </class>
+
+  </module>
+
+  <module name="apache.commons.httpcomponents" standard="Commons_Httpcomponents">
+    <description url="https://hc.apache.org/">HTTP protocol support: Core + Client + AsyncClient</description>
+
+    <class name="org.apache.http.HttpHost">
+      <constructor name="HttpHost" signature="HttpHost(java.lang.String,int,java.lang.String)" match="name">
+        <sink argpos="0,1,2,3" kind="ssrf" resource="web"/>
+      </constructor>
+    </class>
+
+    <class name="org.apache.http.HttpEntity" kind="interface"/>
+
+    <class name="org.apache.http.HttpMessage" kind="interface">
+      <method name="getHeaders" signature="getHeaders(java.lang.String)">
+        <return type="org.apache.http.Header[]"/>
+        <source argpos="-1" kind="web_input" resource="web"/>
+      </method>
+      <method name="getAllHeaders" signature="getAllHeaders()">
+        <return type="org.apache.http.Header[]"/>
+        <source argpos="-1" kind="web_input" resource="web"/>
+      </method>
+      <method name="getFirstHeader" signature="getFirstHeader(java.kang.String)">
+        <return type="org.apache.http.Header"/>
+        <source argpos="-1" kind="web_input" resource="web"/>
+      </method>
+      <method name="getLastHeader" signature="getLastHeader(java.kang.String)">
+        <return type="org.apache.http.Header"/>
+        <source argpos="-1" kind="web_input" resource="web"/>
+      </method>
+      <method name="setHeader" signature="setHeader(java.lang.String,java.lang.String)" alias="addHeader">
+        <tags>header.name:0,header.value:1</tags>
+        <!--sink argpos="0,1" kind="header_manipulation" resource= "web"/--><!-- encoding ? -->
+      </method>
+      <method name="getParams" signature="getParams()">
+        <source argpos="-1" kind="web_input" resource="web"/>
+      </method>
+    </class>
+
+    <class name="org.apache.http.params.HttpParams" kind="interface"></class>
+
+    <class name="org.apache.commons.httpclient.HttpURL">
+      <constructor name="HtptURL" signature="HttpURL()" match="name">
+        <sink argpos="0,1,2,3,4,5,6" kind="ssrf" resource="web"/>
+      </constructor>
+    </class>
+
+    <class name="org.apache.http.HttpResponse" supertypes="org.apache.http.HttpMessage" kind="interface">
+      <method name="getEntity" signature="getEntity()">
+        <source argpos="-1" kind="web_input" resource="web"/>
+      </method>
+      <method name="getStatusLine" signature="getStatusLine()">
+        <source argpos="-1" kind="web_input" resource="web"/>
+      </method>
+    </class>
+
+    <module name="apache.commons.httpcomponents.httpclient" standard="apache.commons.httpcomponents.httpclient">
+      <description>HttpComponents HttpClient submodule</description>
+
+      <class name="org.apache.http.client.methods.CloseableHttpResponse" kind="interface" supertypes="org.apache.http.HttpResponse"/>
+
+      <class name="org.apache.http.client.HttpClient" kind="interface"/>
+      <class name="org.apache.http.impl.client.CloseableHttpClient" kind="abstract_class" supertypes="org.apache.http.client.HttpClient"/>
+
+      <class name="org.apache.http.client.methods.HttpRequestBase" kind="abstract_class">
+        <method name="setURI" signature="setURI(java.net.URI)">
+          <sink argpos="0" kind="ssrf" resource="web"/>
+          <!--sink argpos="0" kind="http_parameter_pollution" resource="web"/-->
+        </method>
+        <method name="addHeader" signature="addHeader(org.apache.http.Header)">
+          <tags>header:0</tags>
+          <sink argpos="0" kind="header_manipulation" resource="web"/>
+        </method>
+        <method name="addHeader_2" signature="addHeader(java.lang.String,java.lang.String)">
+          <tags>header.name:0,header.value:1</tags>
+          <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+        </method>
+        <method name="setHeader" signature="setHeader(org.apache.http.Header)">
+          <tags>header:0</tags>
+          <sink argpos="0" kind="header_manipulation" resource="web"/>
+        </method>
+        <method name="setHeader_2" signature="setHeader(java.lang.String,java.lang.String)">
+          <tags>header.name:0,header.value:1</tags>
+          <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+        </method>
+        <method name="setHeaders" signature="setHeaders(org.apache.http.Header[])">
+          <sink argpos="0" kind="header_manipulation" resource="web"/>
+        </method>
+      </class>
+
+      <class name="org.apache.http.client.methods.HttpGet" supertypes="org.apache.http.client.methods.HttpRequestBase">
+        <constructor name="HttpGet" signature="HttpGet(java.lang.String)">
+          <sink argpos="0" kind="ssrf" resource="web"/>
+        </constructor>
+      </class>
+      <class name="org.apache.http.client.methods.HttpHead" supertypes="org.apache.http.client.methods.HttpRequestBase">
+        <constructor name="HttpHead" signature="HttpHead(java.lang.String)">
+          <sink argpos="0" kind="ssrf" resource="web"/>
+        </constructor>
+      </class>
+      <class name="org.apache.http.client.methods.HttpDelete" supertypes="org.apache.http.client.methods.HttpRequestBase">
+        <constructor name="HttpDelete" signature="HttpDelete(java.lang.String)">
+          <sink argpos="0" kind="ssrf" resource="web"/>
+        </constructor>
+      </class>
+      <class name="org.apache.http.client.methods.HttpOptions" supertypes="org.apache.http.client.methods.HttpRequestBase">
+        <constructor name="HttpOptions" signature="HttpOptions(java.lang.String)">
+          <sink argpos="0" kind="ssrf" resource="web"/>
+        </constructor>
+      </class>
+      <class name="org.apache.http.client.methods.HttpTrace" supertypes="org.apache.http.client.methods.HttpRequestBase">
+        <constructor name="HttpTrace" signature="HttpTrace(java.lang.String)">
+          <sink argpos="0" kind="ssrf" resource="web"/>
+        </constructor>
+      </class>
+
+      <class name="org.apache.http.client.methods.HttpEntityEnclosingRequestBase" kind="abstract_class" supertypes="org.apache.http.client.methods.HttpRequestBase">
+        <method name="setEntity" signature="setEntity(org.apache.http.HttpEntity)">
+          <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        </method>
+      </class>
+      <class name="org.apache.http.client.methods.HttpPost" supertypes="org.apache.http.client.methods.HttpEntityEnclosingRequestBase">
+        <constructor name="HttpPost" signature="HttpTrace(java.lang.String)">
+          <sink argpos="0" kind="ssrf" resource="web"/>
+        </constructor>
+      </class>
+      <class name="org.apache.http.client.methods.HttpPut" supertypes="org.apache.http.client.methods.HttpEntityEnclosingRequestBase">
+        <constructor name="HttpPut" signature="HttpPut(java.lang.String)">
+          <sink argpos="0" kind="ssrf" resource="web"/>
+        </constructor>
+      </class>
+
+      <class name="org.apache.http.client.entity.UrlEncodedFormEntity">
+        <constructor name="UrlEncodedFormEntity" signature="UrlEncodedFormEntity(java.util.List)">
+          <neutralization argpos="0" kind="http_parameter_pollution" resource="web"/>
+        </constructor>
+      </class>
+    </module>
+
+    <class name="org.apache.http.ssl.SSLContexts">
+      <method name="createDefault" signature="createDefault()" alias="createSystemDefault">
+        <return type="javax.net.ssl.SSLContext"/>
+      </method>
+      <method name="custom" signature="custom()">
+        <return type="org.apache.http.ssl.SSLContextBuilder"/>
+      </method>
+    </class>
+
+    <class name="org.apache.http.ssl.SSLContextBuilder">
+      <method name="create" signature="create()">
+        <return type="org.apache.http.ssl.SSLContextBuilder"/>
+      </method>
+      <method name="loadTrustMaterial" signature="loadTrustMaterial(java.security.KeyStore,org.apache.http.ssl.TrustStrategy)">
+        <return type="org.apache.http.ssl.SSLContextBuilder"/>
+        <sink argpos="1" kind="insecure_ssl" resource="network"/>
+      </method>
+      <method name="loadTrustMaterial_2" signature="loadTrustMaterial(org.apache.http.ssl.TrustStrategy)">
+        <return type="org.apache.http.ssl.SSLContextBuilder"/>
+        <sink argpos="0" kind="insecure_ssl" resource="network"/>
+      </method>
+      <method name="loadTrustMaterial_3" signature="loadTrustMaterial(java.io.File,char[],org.apache.http.ssl.TrustStrategy)">
+        <return type="org.apache.http.ssl.SSLContextBuilder"/>
+        <sink argpos="0" kind="insecure_ssl" resource="network"/>
+      </method>
+      <method name="loadKeyMaterial" signature="loadKeyMaterial()" match="name">
+        <return type="org.apache.http.ssl.SSLContextBuilder"/>
+      </method>
+      <method name="useProtocol" signature="useProtocol(java.lang.String)">
+        <return type="org.apache.http.ssl.SSLContextBuilder"/>
+      </method>
+      <method name="setSecureRandom" signature="setSecureRandom(java.security.SecureRandom)">
+        <return type="org.apache.http.ssl.SSLContextBuilder"/>
+      </method>
+      <method name="build" signature="build()">
+        <return type="javax.net.ssl.SSLContext"/>
+      </method>
+    </class>
+
+    <class name="org.apache.http.auth.UsernamePasswordCredentials">
+      <constructor name="UsernamePasswordCredentials" signature="UsernamePasswordCredentials(java.lang.String)">
+        <tags>username:0, password:0</tags>
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+      <constructor name="UsernamePasswordCredentials_2" signature="UsernamePasswordCredentials(java.lang.String,java.lang.String)">
+        <tags>username:0, password:1</tags>
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+    </class>
+
+    <class name="org.apache.http.auth.NTCredentials">
+      <constructor name="NTCredentials" signature="NTCredentials(java.lang.String)">
+        <tags>username:0, password:0</tags>
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+      <constructor name="NTCredentials_2" signature="NTCredentials(java.lang.String,java.lang.String,java.lang.String,java.lang.String)">
+        <tags>username:0, password:1, workstation:2, domain:3</tags>
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+    </class>
+
+    <class name="org.apache.http.auth.NTUserPrincipal">
+      <constructor name="NTUserPrincipal" signature="NTUserPrincipal(java.lang.String,java.lang.String)">
+        <tags>domain:0, username:1</tags>
+        <sink argpos="1" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+    </class>
+
+    <class name="org.apache.http.auth.BasicUserPrincipal">
+      <constructor name="BasicUserPrincipal" signature="BasicUserPrincipal(java.lang.String)">
+        <tags>username:0</tags>
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+    </class>
+
+  </module>
+
+  <module name="apache.commons.io" standard="Commons_IO">
+    <description url="https://commons.apache.org/proper/commons-io/">Collection of I/O utilities</description>
+
+    <class name="org.apache.commons.io.FilenameUtils">
+      <method name="getName" signature="getName(java.lang.String)">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="path_traversal" resource="filesystem"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="getExtension" signature="getExtension(java.lang.String)">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="path_traversal" resource="filesystem"/>
+        <neutralization argpos="-1" kind="string"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="getBaseName" signature="getBaseName(java.lang.String)">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="string" />
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="wildcardMatch" signature="wildcardMatch(java.lang.String,java.lang.String)" match="name" alias="wildcardMatchOnSystem">
+        <return type="boolean"/>
+        <neutralization argpos="0" kind="path_traversal" resource="filesystem"/>
+      </method>
+      <method name="normalize" signature="normalize(java.lang.String)" match="name" >
+        <tags>path-canonicalization:0</tags>
+        <return type="java.lang.String" />
+        <neutralization argpos="-1" kind="path_traversal" resource="filesystem"/>
+        <propagate from="-2" to="-1" />
+      </method>
+    </class>
+
+  </module>
+
+  <module name="org.apache.commons.net" standard="Commons_Net">
+    <description url="http://commons.apache.org/proper/commons-net/">Network utilities and protocol implementations</description>
+
+    <class name="org.apache.commons.net.DatagramSocketFactory" >
+      <method name="createDatagramSocket" signature="createDatagramSocket()" >
+        <return type="java.net.DatagramSocket" />
+      </method>
+      <method name="createDatagramSocket" signature="createDatagramSocket(int)" >
+        <return type="java.net.DatagramSocket" />
+        <sink kind="resource_injection" argpos="0" resource="network" />
+      </method>
+      <method name="createDatagramSocket" signature="createDatagramSocket(int,java.net.InetAddress)" >
+        <return type="java.net.DatagramSocket" />
+        <sink kind="resource_injection" argpos="0,1" resource="network" />
+      </method>
+    </class>
+    <class name="org.apache.commons.net.DefaultDatagramSocketFactory" supertypes="java.lang.Object,org.apache.commons.net.DatagramSocketFactory" />
+    <class name="org.apache.commons.net.DefaultSocketFactory" supertypes="javax.net.SocketFactory" >
+      <method name="createSocket" signature="createSocket()" >
+        <return type="java.net.Socket" />
+      </method>
+      <method name="createSocket" signature="createSocket(java.lang.String,int)" match="fullsignature" >
+        <return type="java.net.Socket" />
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </method>
+      <method name="createSocket" signature="createSocket(java.net.InetAddress,int)" match="fullsignature" >
+        <return type="java.net.Socket" />
+        <sink kind="resource_injection" argpos="0,1" resource="network" />
+      </method>
+      <method name="createSocket" signature="createSocket(java.lang.String,int,java.net.InetAddress,int)" match="fullsignature" >
+        <return type="java.net.Socket" />
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="resource_injection" argpos="1,2" resource="network" />
+      </method>
+      <method name="createSocket" signature="createSocket(java.net.InetAddress,int,java.net.InetAddress,int)" match="fullsignature" >
+        <return type="java.net.Socket" />
+        <sink kind="resource_injection" argpos="0,1,2" resource="network" />
+      </method>
+      <method name="createServerSocket" signature="createServerSocket(int)" >
+        <return type="java.net.ServerSocket" />
+        <sink kind="resource_injection" argpos="0" resource="network" />
+      </method>
+      <method name="createServerSocket" signature="createServerSocket(int,int)" >
+        <return type="java.net.ServerSocket" />
+        <sink kind="resource_injection" argpos="0" resource="network" />
+      </method>
+      <method name="createServerSocket" signature="createServerSocket(int,int,java.net.InetAddress)" >
+        <return type="java.net.ServerSocket" />
+        <sink kind="resource_injection" argpos="0,2" resource="network" />
+      </method>
+    </class>
+    <class name="org.apache.commons.net.SocketClient" >
+      <method name="connect" signature="connect(java.net.InetAddress,int)" match="fullsignature" >
+        <sink kind="resource_injection" argpos="0,1" resource="network" />
+      </method>
+      <method name="connect" signature="connect(java.lang.String,int)" match="fullsignature" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </method>
+      <method name="connect" signature="connect(java.net.InetAddress,int,java.net.InetAddress,int)" match="fullsignature" >
+        <sink kind="resource_injection" argpos="1,2,3" resource="network" />
+      </method>
+      <method name="connect" signature="connect(java.lang.String,int,java.net.InetAddress,int)" match="fullsignature" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="resource_injection" argpos="1,2,3" resource="network" />
+      </method>
+      <method name="connect" signature="connect(java.net.InetAddress)" match="fullsignature" >
+        <sink kind="resource_injection" argpos="0" resource="network" />
+      </method>
+      <method name="connect" signature="connect(java.lang.String)" match="fullsignature" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+      </method>
+      <method name="setDefaultPort" signature="setDefaultPort(int)" >
+        <sink kind="resource_injection" argpos="0" resource="network" />
+      </method>
+      <method name="getServerSocketFactory" signature="getServerSocketFactory()" >
+        <return type="javax.net.ServerSocketFactory" />
+      </method>
+    </class>
+
+    <class name="org.apache.commons.net.bsd.RExecClient" supertypes="org.apache.commons.net.SocketClient" >
+      <method name="_createErrorStream" signature="_createErrorStream()" >
+        <return type="java.io.InputStream" />
+      </method>
+      <method name="getInputStream" signature="getInputStream()" >
+        <return type="java.io.InputStream" />
+      </method>
+      <method name="getOutputStream" signature="getOutputStream()" >
+        <return type="java.io.OutputStream" />
+      </method>
+      <method name="getErrorStream" signature="getErrorStream()" >
+        <return type="java.io.InputStream" />
+      </method>
+      <method name="rexec" signature="rexec(java.lang.String,java.lang.String,java.lang.String,boolean)" >
+        <tags>username:0,password:1</tags>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="network" />
+      </method>
+      <method name="rexec" signature="rexec(java.lang.String,java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="network" />
+      </method>
+    </class>
+    <class name="org.apache.commons.net.bsd.RCommandClient" supertypes="org.apache.commons.net.bsd.RExecClient" >
+      <method name="rcommand" signature="rcommand(java.lang.String,java.lang.String,java.lang.String,boolean)" >
+        <tags>username:0,username:1</tags>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="network" />
+      </method>
+      <method name="rcommand" signature="rcommand(java.lang.String,java.lang.String,java.lang.String)" >
+        <tags>username:0,username:1</tags>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="network" />
+      </method>
+    </class>
+    <class name="org.apache.commons.net.bsd.RLoginClient" supertypes="org.apache.commons.net.bsd.RCommandClient" >
+      <method name="rlogin" signature="rlogin(java.lang.String,java.lang.String,java.lang.String,int)" >
+        <tags>username:0,username:1</tags>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="network" />
+      </method>
+      <method name="rlogin" signature="rlogin(java.lang.String,java.lang.String,java.lang.String)" >
+        <tags>username:0,username:1</tags>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="network" />
+      </method>
+    </class>
+    <class name="org.apache.commons.net.chargen.CharGenTCPClient" supertypes="org.apache.commons.net.SocketClient" />
+    <class name="org.apache.commons.net.chargen.CharGenUDPClient" supertypes="org.apache.commons.net.DatagramSocketClient" >
+      <method name="send" signature="send(java.net.InetAddress,int)" >
+        <sink kind="resource_injection" argpos="0,1" resource="network" />
+      </method>
+      <method name="send" signature="send(java.net.InetAddress)" >
+        <sink kind="resource_injection" argpos="0,1" resource="network" />
+      </method>
+      <method name="receive" signature="receive()" >
+        <return type="byte[]" />
+        <source argpos="-1" kind="external_input" resource="network" />
+      </method>
+    </class>
+    <class name="org.apache.commons.net.daytime.DaytimeTCPClient" supertypes="org.apache.commons.net.SocketClient" />
+    <class name="org.apache.commons.net.daytime.DaytimeUDPClient" supertypes="org.apache.commons.net.DatagramSocketClient" />
+    <class name="org.apache.commons.net.discard.DiscardTCPClient" supertypes="org.apache.commons.net.SocketClient" />
+    <class name="org.apache.commons.net.discard.DiscardUDPClient" supertypes="org.apache.commons.net.DatagramSocketClient" >
+      <method name="send" signature="send(byte[],int,java.net.InetAddress,int)" >
+        <sink kind="resource_injection" argpos="2,3" resource="network" />
+      </method>
+      <method name="send" signature="send(byte[],int,java.net.InetAddress)" >
+        <sink argpos="2" kind="resource_injection" resource="network"/>
+      </method>
+      <method name="send" signature="send(byte[],java.net.InetAddress)" >
+        <sink argpos="1" kind="resource_injection" resource="network"/>
+      </method>
+    </class>
+    <class name="org.apache.commons.net.echo.EchoTCPClient" supertypes="org.apache.commons.net.discard.DiscardTCPClient" >
+      <method name="getInputStream" signature="getInputStream()" >
+        <return type="java.io.InputStream" />
+      </method>
+    </class>
+    <class name="org.apache.commons.net.echo.EchoUDPClient" supertypes="org.apache.commons.net.discard.DiscardUDPClient" >
+      <method name="receive" signature="receive(byte[],int)" >
+        <return type="int" />
+        <source argpos="-1" kind="external_input" resource="network" />
+      </method>
+      <method name="receive" signature="receive(byte[])" >
+        <return type="int" />
+        <source argpos="-1" kind="external_input" resource="network" />
+      </method>
+    </class>
+    <class name="org.apache.commons.net.finger.FingerClient" supertypes="org.apache.commons.net.SocketClient" >
+      <method name="query" signature="query(boolean,java.lang.String)" >
+        <tags>username:1</tags>
+        <return type="java.lang.String" />
+        <sink kind="hardcoded_credentials" argpos="1" resource="network" />
+      </method>
+      <method name="query" signature="query(boolean)" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="getInputStream" signature="getInputStream(boolean,java.lang.String)" >
+        <return type="java.io.InputStream" />
+      </method>
+      <method name="getInputStream" signature="getInputStream(boolean,java.lang.String,java.lang.String)" >
+        <return type="java.io.InputStream" />
+      </method>
+      <method name="getInputStream" signature="getInputStream(boolean)" >
+        <return type="java.io.InputStream" />
+      </method>
+    </class>
+    <class name="org.apache.commons.net.ftp.FTP" supertypes="org.apache.commons.net.SocketClient" >
+      <method name="sendCommand" signature="sendCommand(java.lang.String,java.lang.String)" match="name" />
+      <method name="user" signature="user(java.lang.String)" >
+        <tags>username:0</tags>
+        <return type="int" />
+        <sink kind="hardcoded_credentials" argpos="0" resource="network" />
+      </method>
+      <method name="pass" signature="pass(java.lang.String)" >
+        <tags>password:1</tags>
+        <return type="int" />
+        <sink kind="hardcoded_credentials" argpos="0" resource="network" />
+      </method>
+      <method name="acct" signature="acct(java.lang.String)" >
+        <return type="int" />
+      </method>
+      <method name="cwd" signature="cwd(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="smnt" signature="smnt(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="port" signature="port(java.net.InetAddress,int)" >
+        <return type="int" />
+        <sink kind="resource_injection" argpos="0,1" resource="network" />
+      </method>
+      <method name="eprt" signature="eprt(java.net.InetAddress,int)" >
+        <return type="int" />
+        <sink kind="resource_injection" argpos="0,1" resource="network" />
+      </method>
+      <method name="retr" signature="retr(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="stor" signature="stor(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="stou" signature="stou(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="appe" signature="appe(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="mdtm" signature="mdtm(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="mfmt" signature="mfmt(java.lang.String,java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="rnfr" signature="rnfr(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="rnto" signature="rnto(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="dele" signature="dele(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="rmd" signature="rmd(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="mkd" signature="mkd(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="list" signature="list(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="mlsd" signature="mlsd(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="mlst" signature="mlst(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="nlst" signature="nlst(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="stat" signature="stat(java.lang.String)" >
+        <return type="int" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+    </class>
+    <class name="org.apache.commons.net.ftp.FTPClient" supertypes="org.apache.commons.net.ftp.Configurable,org.apache.commons.net.ftp.FTP" >
+      <method name="connect" signature="connect(java.lang.String)" >
+        <sink argpos="0" kind="insecure_transport" resource="network" >
+          <tags>insecure:ftp</tags>
+        </sink>
+      </method>
+      <method name="login" signature="login(java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <return type="boolean" />
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="network" />
+      </method>
+      <method name="login" signature="login(java.lang.String,java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <return type="boolean" />
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="network" />
+      </method>
+      <method name="remoteRetrieve" signature="remoteRetrieve(java.lang.String)" >
+        <return type="boolean" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="remoteStore" signature="remoteStore(java.lang.String)" >
+        <return type="boolean" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="remoteStoreUnique" signature="remoteStoreUnique(java.lang.String)" >
+        <return type="boolean" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="remoteStoreUnique" signature="remoteStoreUnique()" >
+        <return type="boolean" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="remoteAppend" signature="remoteAppend(java.lang.String)" >
+        <return type="boolean" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="retrieveFile" signature="retrieveFile(java.lang.String,java.io.OutputStream)" >
+        <return type="boolean" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="retrieveFileStream" signature="retrieveFileStream(java.lang.String)" >
+        <return type="java.io.InputStream" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="storeFile" signature="storeFile(java.lang.String,java.io.InputStream)" >
+        <return type="boolean" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="storeFileStream" signature="storeFileStream(java.lang.String)" >
+        <return type="java.io.OutputStream" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="appendFile" signature="appendFile(java.lang.String,java.io.InputStream)" >
+        <return type="boolean" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="appendFileStream" signature="appendFileStream(java.lang.String)" >
+        <return type="java.io.OutputStream" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="storeUniqueFile" signature="storeUniqueFile(java.lang.String,java.io.InputStream)" >
+        <return type="boolean" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="storeUniqueFileStream" signature="storeUniqueFileStream(java.lang.String)" >
+        <return type="java.io.OutputStream" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="storeUniqueFile" signature="storeUniqueFile(java.io.InputStream)" >
+        <return type="boolean" />
+      </method>
+      <method name="storeUniqueFileStream" signature="storeUniqueFileStream()" >
+        <return type="java.io.OutputStream" />
+      </method>
+      <method name="mlistFile" signature="mlistFile(java.lang.String)" >
+        <return type="org.apache.commons.net.ftp.FTPFile" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="mlistDir" signature="mlistDir()" >
+        <return type="org.apache.commons.net.ftp.FTPFile[]" />
+      </method>
+      <method name="mlistDir" signature="mlistDir(java.lang.String)" >
+        <return type="org.apache.commons.net.ftp.FTPFile[]" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="mlistDir" signature="mlistDir(java.lang.String,org.apache.commons.net.ftp.FTPFileFilter)" >
+        <return type="org.apache.commons.net.ftp.FTPFile[]" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="rename" signature="rename(java.lang.String,java.lang.String)" >
+        <return type="boolean" />
+        <sink kind="path_traversal" argpos="0,1" resource="network" />
+      </method>
+      <method name="deleteFile" signature="deleteFile(java.lang.String)" >
+        <return type="boolean" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="removeDirectory" signature="removeDirectory(java.lang.String)" >
+        <return type="boolean" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="makeDirectory" signature="makeDirectory(java.lang.String)" >
+        <return type="boolean" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="listNames" signature="listNames(java.lang.String)" >
+        <return type="java.lang.String[]" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="listNames" signature="listNames()" >
+        <return type="java.lang.String[]" />
+      </method>
+      <method name="listFiles" signature="listFiles(java.lang.String)" >
+        <return type="org.apache.commons.net.ftp.FTPFile[]" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="listFiles" signature="listFiles()" >
+        <return type="org.apache.commons.net.ftp.FTPFile[]" />
+      </method>
+      <method name="listFiles" signature="listFiles(java.lang.String,org.apache.commons.net.ftp.FTPFileFilter)" >
+        <return type="org.apache.commons.net.ftp.FTPFile[]" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="listDirectories" signature="listDirectories()" >
+        <return type="org.apache.commons.net.ftp.FTPFile[]" />
+      </method>
+      <method name="listDirectories" signature="listDirectories(java.lang.String)" >
+        <return type="org.apache.commons.net.ftp.FTPFile[]" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+      <method name="mdtmFile" signature="mdtmFile(java.lang.String)" >
+        <return type="org.apache.commons.net.ftp.FTPFile" />
+        <sink kind="path_traversal" argpos="0" resource="network" />
+      </method>
+    </class>
+    <class name="org.apache.commons.net.ftp.FTPHTTPClient" supertypes="org.apache.commons.net.ftp.FTPClient" >
+      <constructor name="FTPHTTPClient" signature="FTPHTTPClient(java.lang.String,int,java.lang.String,java.lang.String,java.nio.charset.Charset)" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </constructor>
+      <constructor name="FTPHTTPClient" signature="FTPHTTPClient(java.lang.String,int,java.lang.String,java.lang.String)" >
+        <tags>username:2,password:3</tags>
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+        <sink kind="hardcoded_credentials" argpos="2,3" resource="network" />
+      </constructor>
+      <constructor name="FTPHTTPClient" signature="FTPHTTPClient(java.lang.String,int)" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </constructor>
+      <constructor name="FTPHTTPClient" signature="FTPHTTPClient(java.lang.String,int,java.nio.charset.Charset)" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </constructor>
+    </class>
+    <class name="org.apache.commons.net.ftp.FTPSClient" supertypes="org.apache.commons.net.ftp.FTPClient" />
+    <class name="org.apache.commons.net.ftp.FTPSServerSocketFactory" supertypes="javax.net.ServerSocketFactory" />
+    <class name="org.apache.commons.net.ftp.FTPSSocketFactory" supertypes="javax.net.SocketFactory" />
+
+    <class name="org.apache.commons.net.imap.IMAP" supertypes="org.apache.commons.net.SocketClient" />
+    <class name="org.apache.commons.net.imap.IMAPClient" supertypes="org.apache.commons.net.imap.IMAP" />
+    <class name="org.apache.commons.net.imap.IMAPSClient" supertypes="org.apache.commons.net.imap.IMAPClient" />
+
+    <class name="org.apache.commons.net.io.CRLFLineReader" supertypes="java.io.BufferedReader" />
+    <class name="org.apache.commons.net.io.SocketInputStream" supertypes="java.io.FilterInputStream" />
+    <class name="org.apache.commons.net.io.SocketOutputStream" supertypes="java.io.FilterOutputStream" />
+    <class name="org.apache.commons.net.io.ToNetASCIIInputStream" supertypes="java.io.FilterInputStream" />
+    <class name="org.apache.commons.net.io.ToNetASCIIOutputStream" supertypes="java.io.FilterOutputStream" />
+
+    <class name="org.apache.commons.net.nntp.NNTP" supertypes="org.apache.commons.net.SocketClient" />
+    <class name="org.apache.commons.net.nntp.NNTPClient" supertypes="org.apache.commons.net.nntp.NNTP" />
+
+    <class name="org.apache.commons.net.ntp.NTPUDPClient" supertypes="org.apache.commons.net.DatagramSocketClient" />
+
+    <class name="org.apache.commons.net.telnet.TelnetClient" supertypes="org.apache.commons.net.SocketClient" />
+
+    <class name="org.apache.commons.net.smtp.SMTP" supertypes="org.apache.commons.net.SocketClient" />
+    <class name="org.apache.commons.net.smtp.SMTPClient" supertypes="org.apache.commons.net.smtp.SMTP" />
+
+    <class name="org.apache.commons.net.tftp.TFTP" supertypes="org.apache.commons.net.DatagramSocketClient" />
+    <class name="org.apache.commons.net.tftp.TFTPClient" supertypes="org.apache.commons.net.tftp.TFTP" />
+
+    <class name="org.apache.commons.net.pop3.POP3">
+      <method name="sendCommand" signature="sendCommand(java.lang.String)" match="name">
+        <sink argpos="0,1" kind="mail_command_injection" resource="network"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.net.pop3.POP3Client" supertypes="org.apache.commons.net.pop3.POP3">
+      <method name="login" signature="login(java.lang.String,java.lang.String)" match="name">
+        <sink argpos="0,1,2" kind="mail_command_injection" resource="network"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.net.pop3.POP3SClient" supertypes="org.apache.commons.net.pop3.POP3Client">
+    </class>
+
+    <class name="org.apache.commons.net.pop3.ExtendedPOP3Client" supertypes="org.apache.commons.net.pop3.POP3SClient">
+      <method name="auth" signature="auth()" match="name">
+        <sink argpos="1,2" kind="mail_command_injection" resource="network"/>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="apache.commons.lang" standard="Commons_Lang">
+    <description url="https://commons.apache.org/proper/commons-lang/">Extra functionality for classes in java.lang</description>
+
+    <class name="org.apache.commons.lang.StringEscapeUtils" >
+      <method name="escapeHtml" signature="escapeHtml(java.lang.String)" alias="escapeJava,escapeJavaScript">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="xss" resource="web"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <!-- NOT considered a proper neutralization against SQL-i
+      <method name="escapeSql" signature="escapeSql(java.lang.String)">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="sql_injection" resource="web"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      -->
+      <method name="escapeXml" signature="escapeXml(java.lang.String)">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="xss" resource="web"/>
+        <neutralization argpos="-1" kind="xml_injection" resource="web"/>
+        <neutralization argpos="-1" kind="xpath_injection" resource="web"/>
+        <propagate from="0" to="-1"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.lang3.StringEscapeUtils">
+      <field name="ESCAPE_HTML3" type="org.apache.commons.lang3.text.translate.CharSequenceTranslator"
+             alias="ESCAPE_HTML4,ESCAPE_JAVA,ESCAPE_ECMASCRIPT" >
+        <tags>neutralizer:xss</tags>
+      </field>
+      <field name="ESCAPE_JSON" type="org.apache.commons.lang3.text.translate.CharSequenceTranslator" >
+        <tags>neutralizer:xss|json_injection</tags>
+      </field>
+      <field name="ESCAPE_XML" type="org.apache.commons.lang3.text.translate.CharSequenceTranslator"
+             alias="ESCAPE_XML10,ESCAPE_XML11" >
+        <tags>neutralizer:xss|xml_injection|xpath_injection|json_injection</tags>
+      </field>
+
+      <!-- Deprecated, use org.apache.commons.text.StringEscapeUtils instead-->
+      <method name="escapeHtml3" signature="escapeHtml3(java.lang.String)" alias="escapeHtml4,escapeJava,escapeEcmaScript" instance="false">
+        <tags>deprecated, deprecatedBy:Commons-Text</tags>
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="xss" resource="web" />
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="escapeJson" signature="escapeJson(java.lang.String)" instance="false">
+        <tags>deprecated, deprecatedBy:Commons-Text</tags>
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="xss" resource="web"/>
+        <neutralization argpos="-1" kind="json_injection" resource="web"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="escapeXml" signature="escapeXml(java.lang.String)" alias="escapeXml10,escapeXml11" instance="false">
+        <tags>deprecated, deprecatedBy:Commons-Text</tags>
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="xss" resource="web"/>
+        <neutralization argpos="-1" kind="xml_injection" resource="web"/>
+        <neutralization argpos="-1" kind="xpath_injection" resource="web"/>
+        <propagate from="0" to="-1"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.lang3.text.translate.CharSequenceTranslator" >
+      <method name="translate" signature="translate(java.lang.CharSequence)" >
+        <neutralization argpos="-1" kind="xss" resource="web">
+          <checker id="j2se.apache.validation"/>
+        </neutralization>
+        <neutralization argpos="-1" kind="xml_injection" resource="web">
+          <checker id="j2se.apache.validation"/>
+        </neutralization>
+        <neutralization argpos="-1" kind="xpath_injection" resource="web">
+          <checker id="j2se.apache.validation"/>
+        </neutralization>
+        <neutralization argpos="-1" kind="json_injection" resource="web">
+          <checker id="j2se.apache.validation"/>
+        </neutralization>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.lang.StringUtils">
+      <method name="replaceChars" signature="replaceChars(java.lang.String, java.lang.String, java.lang.String)" >
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="string" resource="web"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.lang.Validate">
+      <method name="notNull" signature="notNull()" match="name" instance="false">
+        <tags>npe:0</tags>
+      </method>
+      <method name="isTrue" signature="isTrue()" match="name" instance="false">
+        <tags>npeBoolean:0</tags>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.lang3.Validate">
+      <method name="notNull" signature="notNull(java.lang.Object)" match="name" instance="false">
+        <tags>npe:0</tags>
+      </method>
+      <method name="isTrue" signature="isTrue(boolean)" match="name" instance="false" alias="validState">
+        <tags>npeBoolean:0</tags>
+      </method>
+      <method name="exclusiveBetween" signature="exclusiveBetween(double,double,double)" match="name"  instance="false"
+              alias="inclusiveBetween">
+        <neutralization argpos="2" kind="numeric2numeric"/>
+      </method>
+      <method name="finite" signature="finite(double)" match="name" instance="false" alias="notNan(double)"/>
+      <method name="isAssignableFrom" signature="isAssignableFrom(java.lang.Class,java.lang.Class)" match="name"  instance="false"/>
+      <method name="isInstanceOf" signature="isInstanceOf(java.lang.Class, java.lang.Object)" match="name" instance="false"/>
+      <method name="isTrue" signature="isTrue(boolean)" match="name" instance="false"/>
+      <method name="matchesPattern" signature="matchesPattern(java.lang.CharSequence,java.lang.String)">
+        <neutralization kind="string" argpos="0"/>
+        <sink kind="regex_dos" argpos="1" resource="other"/>
+      </method>
+      <method name="noNullElements" signature="noNullElements(java.lang.Iterable)" match="name" instance="false">
+        <return type="java.lang.Iterable"/>
+      </method>
+      <method name="notBlank" signature="notBlank(java.lang.CharSequence)" match="name" instance="false" alias="notEmpty">
+        <return type="java.lang.CharSequence"/>
+      </method>
+      <method name="validIndex" signature="validIndex(java.lang.Object[], int)" match="name" instance="false">
+        <return type="java.lang.Object[]"/>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="apache.commons.logging" standard="Commons_Logging">
+    <description url="https://commons.apache.org/proper/commons-logging/">Bridge between different logging implementations</description>
+
+    <class name="org.apache.commons.logging.LogFactory" kind="abstract_class">
+      <method name="getFactory" signature="getFactory()">
+        <return type="org.apache.commons.logging.LogFactory"/>
+      </method>
+      <method name="getLog" signature="getLog(*)">
+        <return type="org.apache.commons.logging.Log"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.logging.impl.LogFactoryImpl" supertypes="org.apache.commons.logging.LogFactory"/>
+
+    <class name="org.apache.commons.logging.Log" kind="interface">
+      <tags>logger</tags>
+      <method name="debug" signature="debug(java.lang.Object)" match="name" alias="error,fatal,info,trace,warn">
+        <tags>not_propagate_between_args</tags>
+        <sink argpos="0" kind="log_forging"/>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="apache.commons.text" standard="Commons_Text">
+    <description url="https://commons.apache.org/proper/commons-text/">Algorithms working on strings</description>
+
+    <class name="org.apache.commons.text.StringEscapeUtils">
+      <method name="escapeHtml3" signature="escapeHtml3(java.lang.String)" alias="escapeHtml4,escapeJava,escapeEcmaScript">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="xss" resource="web"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="escapeJson" signature="escapeJson(java.lang.String)">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="xss" resource="web"/>
+        <neutralization argpos="-1" kind="json_injection" resource="web"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="escapeXml" signature="escapeXml(java.lang.String)" alias="escapeXml10,escapeXml11">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="xss" resource="web"/>
+        <neutralization argpos="-1" kind="xml_injection" resource="web"/>
+        <neutralization argpos="-1" kind="xpath_injection" resource="web"/>
+        <propagate from="0" to="-1"/>
+      </method>
+    </class>
+
+  </module>
+
+</library>

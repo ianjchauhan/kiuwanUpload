@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+
+  <description>AIM rules for Enterprise Java Beans (EJB)</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="aim.java.xml"/>
+  
+  <bean id="aim.j2ee.rule.ejb" parent="aim.j2ee.rule.abstractRule" class="com.optimyth.apm.builder.rules.j2ee.ejb.Ejb3BuilderRule">
+    <description>
+      Discovers EJB3 beans (stateless and stateful session beans, entity beans, and message-drive beans).
+      EJB3 beans that use J2EE 5+ EJB (javax.ejb.*) and JPA (javax.persistence.*) annotations are supported.
+      Database dependencies declared via JPA annotations are resolved (on tables/views and sequences).
+      If the bean implementation uses JDBC or other API to refer to databases, you activate the j2ee/jdbc
+      module to resolve such dependencies.
+    </description>
+    <property name="active" value="${aim.j2ee.rule.ejb.active}"/>
+    <property name="filter" ref="aim.j2ee.filter.javaSource"/>
+    <property name="resolveEntities" value="${aim.j2ee.rule.ejb.resolveEntities}"/>
+    <property name="ejbCallback" ref="aim.j2ee.rule.ejb.callback"/>
+  </bean>
+
+  <bean id="aim.j2ee.rule.ejb.callback" class="com.optimyth.apm.builder.rules.j2ee.ejb.BasicEjb3DependenciesCallback">
+    <description>Callback for modelling EJB3 beans</description>
+    <property name="application" value="${aim.j2ee.rule.java.software}"/>
+    <property name="databaseName" value="${aim.j2ee.rule.ejb.dbsystem}"/>
+    <property name="defaultSchema" value="${aim.j2ee.rule.ejb.dbname}"/>
+    <property name="ignoreCase" value="${aim.j2ee.rule.ejb.ignoreCase}"/>
+    <property name="softwareResolver" ref="aim.global.applicationResolver"/>
+    <property name="classCallback" ref="aim.j2ee.rule.java.callback"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+
+  <bean id="aim.j2ee.rule.ejbDescriptor" class="com.optimyth.apm.builder.rules.j2ee.ejb.EjbDescriptorRule">
+    <description>
+      Process EJB ejb-jar.xml descriptors to find EJB beans.
+      The alternative, for EJB3, is to use annotations to describe EJB elements.
+    </description>
+    <property name="active" value="${aim.j2ee.rule.ejbDescriptor.active}"/>
+    <property name="ejbCallback" ref="aim.j2ee.rule.ejb.callback"/>
+    <property name="patterns" value="${aim.j2ee.rule.ejbDescriptor.patterns}"/>
+  </bean>
+  
+  
+</beans>

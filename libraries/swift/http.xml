@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="swift" name="http" standard="swift">
+
+  <description url="http://alamofire.github.io/Alamofire/">HTTP networking library</description>
+
+  <module name="Alamofire" >
+    <class name="Alamofire">
+    <function name="request" signature="request(url, method: Alamofire.HTTPMethod, parameters: Dictionary, encoding: Alamofire.Encoding, headers: Alamofire.HTTPHeaders)" >
+      <tags>open_redirect:headers</tags>
+      <parameters>
+        <param type="String" />
+        <param type="Alamofire.HTTPMethod" name="method" />
+        <param type="Dictionary" />
+        <param type="Alamofire.Encoding" />
+        <param type="Alamofire.HTTPHeaders" />
+      </parameters>
+      <return type="Alamofire.Request"/>
+      <sink argpos="0" kind="insecure_transport" resource="network" />
+      <sink argpos="0" kind="privacy_violation" resource="network" >
+        <checker id="alamofire.httpGetChecker"/>
+      </sink>
+      <sink paramNames="headers" kind="header_manipulation" resource="web"/>
+      <sink paramNames="method" kind="resource_injection" resource="database" />
+    </function>
+    </class>
+    
+    <class name="Request">
+      <method name="response" signature="response" >
+        <closures>
+          <closure>
+            <source argpos="0" kind="user_input" resource="other" />
+          </closure>
+        </closures>
+        <return type="Alamofire.Request" />
+      </method>
+      <method name="responseData" signature="responseData" >
+        <closures>
+          <closure>
+            <source argpos="0" kind="user_input" resource="other" />
+          </closure>
+        </closures>
+        <return type="Alamofire.Request" />
+      </method>
+      <method name="responseString" signature="responseString" >
+        <closures>
+          <closure>
+            <source argpos="0" kind="user_input" resource="other" />
+          </closure>
+        </closures>
+        <return type="Alamofire.Request" />
+      </method>
+      <method name="responseJSON" signature="responseJSON" >
+        <closures>
+          <closure>
+            <source argpos="0" kind="user_input" resource="other" />
+          </closure>
+        </closures>
+        <return type="Alamofire.Request" />
+      </method>
+      <method name="responsePropertyList" signature="responsePropertyList" >
+        <closures>
+          <closure>
+            <source argpos="0" kind="user_input" resource="other" />
+          </closure>
+        </closures>
+        <return type="Alamofire.Request" />
+      </method>
+
+      <method name="validate" signature="validate(statusCode: Range)" >
+        <parameters>
+          <param type="Range" name="statusCode" />
+        </parameters>
+        <return type="Alamofire.Request" />
+      </method>
+      <method name="validate" signature="validate(contentType: type)" >
+        <parameters>
+          <param type="Array" name="contentType" />
+        </parameters>
+        <return type="Alamofire.Request" />
+      </method>
+      <method name="validate" signature="validate()" >
+        <return type="Alamofire.Request" />
+      </method>
+    </class>
+
+    <class name="HTTPMethod" kind="enum" />
+    <class name="HTTPHeaders" supertypes="Dictionary" />
+
+    <class name="URLSession" supertypes="Foundation.URLSession">
+      <field name="serverTrustPolicyManager" type="Alamofire.ServerTrustPolicyManager" />
+    </class>
+
+    <class name="ServerTrustPolicyManager">
+      <function name="serverTrustPolicy" signature="serverTrustPolicy(forHost host: String)">
+        <parameters>
+          <param type="String" name="forHost" />
+        </parameters>
+        <return type="Alamofire.ServerTrustPolicy" />
+      </function>
+    </class>
+
+    <class name="ServerTrustPolicy">
+      <function name="evaluate" signature="evaluate(_ serverTrust: SecTrust, forHost host: String)" >
+        <tags>certificate_check</tags>
+        <parameters>
+          <param type="Security.Trust.SecTrust" />
+          <param type="String" name="forHost" />
+        </parameters>
+      </function>
+    </class>
+  </module>
+</library>

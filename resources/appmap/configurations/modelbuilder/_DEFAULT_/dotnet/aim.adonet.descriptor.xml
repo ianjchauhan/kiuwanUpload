@@ -1,0 +1,79 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='dotnet' subtech='adonet' descriptor='dotnet/aim.adonet.xml' label='Process dependencies between C#/VB.net classes and database objects in ADO.NET APIs'>
+  <description>
+    Process dependencies between C#/VB.net classes and database objects in embedded SQL code in ADO.NET APIs.
+  </description>
+
+  <dependencies>
+    <dependency>dotnet/dotnet</dependency>
+    <dependency>database/plsql</dependency>
+    <dependency>database/transactsql</dependency>
+  </dependencies>
+
+  <properties>
+
+    <property id='aim.adonet.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>If true, processing of ADO.NET API calls in C#/vb.NET classes is performed.</description>
+    </property>
+
+    <property id='aim.adonet.dbtype' type='enum'>
+      <name>dbtype</name>
+      <example>sql92</example>
+      <description>Syntax of database SQL code to process.</description>
+      <possible>
+        <enumval name="sql92">ANSI SQL-92 SQL syntax.</enumval>
+        <enumval name="oracle">Embedded SQL code is processed using PlSql syntax.</enumval>
+        <enumval name="sqlserver">Embedded SQL code is processed using Transact-Sql syntax.</enumval>
+      </possible>
+    </property>
+    
+    <property id='aim.adonet.rule.addCodeToRelations' type='bool'>
+      <name>addCodeToRelations</name>
+      <example>${aim.common.addCodeToRelations}</example>
+      <description>If true, code for a dependency is added as property to the generated relation.</description>
+    </property>    
+
+    <property id='aim.adonet.dbsystem' type='string'>
+      <name>dbsystem</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>The default database system (or database name) to use when the target database entity cannot be resolved.</description>
+    </property>
+
+    <property id='aim.adonet.dbname' type='string'>
+      <name>dbname</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>The default database name (or schema) to use when the target database entity cannot be resolved.</description>
+    </property>
+
+    <property id='aim.adonet.ignoreCase' type='string'>
+      <name>ignoreCase</name>
+      <example>${aim.common.ignoreCase}</example>
+      <description>If true, case is ignored, for the names of the database entities found in code.</description>
+    </property>
+    
+    <property id='aim.adonet.rule.ignoreMethodCalls' type="bool">
+      <name>ignoreMethodCalls</name>
+      <example>true</example>
+      <description>
+        If false, method calls are replaced by SQL placeholders. If true, method calls are ignored.
+        Depending on how the SQL is produced in code, set this flag to increase parsing ratio of the extracted SQL code.
+      </description>
+    </property>    
+    
+    <property id='aim.adonet.rule.createSqlComponents' type='bool'>
+      <name>createSqlComponents</name>
+      <example>true</example>
+      <description>
+        If true, intermediate SQL components between C#/VB.NET classes and target database entities are created.
+        If false (the default), no intermediate SQL components are created, and direct relations between C#/VB.NET class
+        and target database entities are created.
+      </description>
+    </property>
+
+  </properties>
+
+  <importantConfigurations activation="aim.adonet.rule.active" />
+
+</block>

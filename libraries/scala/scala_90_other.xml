@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="scala" name="other" standard="Third_party_libs">
+
+  <description>Other third-party Scala libraries</description>
+
+  <module name="scala.scalajs" standard="Scala.js">
+    <description url="https://www.scala-js.org/">Compiles Scala code to JS</description>
+
+    <class name="scala.scalajs.js">
+      <method name="eval" signature="eval(String)" >
+        <return type="String" />
+        <sink argpos="0" paramNames="x" kind="code_injection" resource="os" />
+      </method>
+    </class>
+  </module>
+
+  <module name="net.liftweb.json" standard="Lift_json">
+    <description url="https://www.liftweb.net/api/32/api/net/liftweb/json/index.html" >JSON Parsing and formatting utilities for Scala</description>
+
+    <class name="net.liftweb.json">
+      <function name="parse" signature="parse(String)" alias="parseOpt">
+        <return type="net.liftweb.json.JValue" />
+        <sink argpos="0" paramNames="s" kind="json_injection" resource="other" />
+      </function>
+    </class>
+  </module>
+
+  <module name="org.json4" standard="JSON4S">
+    <description url="https://github.com/json4s/json4s" >JSON Parsing and formatting utilities for Scala</description>
+
+    <class name="org.json4">
+      <function name="parse" signature="parse(String)" >
+        <return type="org.json4.JValue" />
+        <sink argpos="0" kind="json_injection" resource="other" />
+      </function>
+    </class>
+  </module>
+
+  <module name="io.circe" standard="circe">
+    <description url="https://circe.github.io/circe/" >JSON library for Scala</description>
+
+    <class name="io.circe">
+      <function name="parse" signature="parse(String)" >
+        <return type="io.circe.JSON" />
+        <sink argpos="0" kind="json_injection" resource="other" />
+      </function>
+    </class>
+  </module>
+
+  <module name="jawn.ast" standard="Jawn">
+    <description url="https://github.com/typelevel/jawn">JSON library</description>
+
+    <class name="jawn.ast.JParser">
+      <method name="parseFromString" signature="parseFromString(String)" >
+        <sink argpos="0" kind="json_injection" resource="other" />
+      </method>
+    </class>
+  </module>
+
+  <module name="rapture.json" standard="Rapture_JSON">
+    <description url="https://github.com/forthy/rapture-json" >JSON library</description>
+
+    <class name="rapture.json.JSON">
+      <method name="parse" signature="parse(String)" >
+        <sink argpos="0" kind="json_injection" resource="other" />
+      </method>
+    </class>
+  </module>
+
+  <module name="cirrus" standard="Cirrus">
+    <description url="https://github.com/GodisCorp/Cirrus">HTTP client</description>
+
+    <class name="cirrus.internal.BasicRequest" supertypes="cirrus.internal.Request">
+      <method name="BasicRequest" signature="BasicRequest(String, String, List, List, String)" >
+        <sink argpos="1" paramNames="address" kind="insecure_transport" resource="network" />
+        <sink argpos="1" paramNames="address, params" kind="http_parameter_pollution" resource="network" />
+      </method>
+    </class>
+
+    <!-- This is not correct, but a unit test uses the inccorrect package name -->
+    <class name="cirrus.clients.BasicRequest" supertypes="cirrus.internal.BasicRequest"/>
+
+    <class name="cirrus.clients.BasicHTTP">
+      <method name="GET" signature="GET(String)" alias="POST, PUT, DELETE">
+        <return type="cirrus.internal.HTTPVerb" />
+        <sink argpos="0" paramNames="address" kind="insecure_transport" resource="network" />
+        <sink argpos="0" paramNames="address" kind="http_parameter_pollution" resource="network" />
+      </method>
+    </class>
+
+    <class name="cirrus.internal.HTTPVerb" kind="trait" supertypes="cirrus.internal.HeaderManipulation" />
+
+    <class name="cirrus.internal.HeaderManipulation" kind="trait">
+      <method name="withHeader" signature="withHeader" >
+        <sink argpos="0" kind="header_manipulation" resource="web" />
+      </method>
+      <method name="withHeaders" signature="withHeaders" >
+        <sink argpos="0" kind="header_manipulation" resource="web" />
+      </method>
+    </class>
+  </module>
+
+  <module name="scalaj.http" standard="scalaj-http">
+    <description url="https://github.com/scalaj/scalaj-http">Wrapper for HttpURLConnection</description>
+
+    <class name="scalaj.http.Http" >
+      <method name="Http" signature="Http()" >
+        <return type="scalaj.http.HttpResponse" />
+        <sink argpos="0" kind="insecure_transport" resource="network" />
+        <sink argpos="0" kind="http_parameter_pollution" resource="network" />
+      </method>
+      <method name="postData" signature="postData()" >
+        <return type="scalaj.http.HttpResponse" />
+      </method>
+      <method name="postMulti" signature="postMulti()" >
+        <return type="scalaj.http.HttpResponse" />
+      </method>
+      <method name="method" signature="method()" >
+        <return type="scalaj.http.HttpResponse" />
+      </method>
+      <method name="option" signature="option()" >
+        <return type="scalaj.http.HttpResponse" />
+      </method>
+      <method name="oauth" signature="oauth()" >
+        <return type="scalaj.http.HttpResponse" />
+      </method>
+      <method name="timeout" signature="timeout()" >
+        <return type="scalaj.http.HttpResponse" />
+      </method>
+      <method name="proxy" signature="proxy()" >
+        <return type="scalaj.http.HttpResponse" />
+      </method>
+      <method name="proxyAuth" signature="proxyAuth()" >
+        <tags>username:0, password:1</tags>
+        <return type="scalaj.http.HttpResponse" />
+        <sink argpos="1" kind="plaintext_storage" resource="filesystem" />
+      </method>
+      <method name="cookie" signature="cookie()" >
+        <return type="scalaj.http.HttpResponse" />
+      </method>
+      <method name="cookies" signature="cookies()" >
+        <return type="scalaj.http.HttpResponse" />
+      </method>
+      <method name="digestAuth" signature="digestAuth()" >
+        <tags>username:0, password:1</tags>
+        <return type="scalaj.http.HttpResponse" />
+        <sink argpos="1" kind="plaintext_storage" resource="filesystem" />
+      </method>
+      <method name="exec" signature="exec()" >
+        <return type="scalaj.http.HttpResponse" />
+      </method>
+      <method name="put" signature="put()" >
+        <return type="scalaj.http.HttpResponse" />
+      </method>
+      <method name="param" signature="param()" >
+        <return type="scalaj.http.HttpResponse" />
+        <sink argpos="0" kind="http_parameter_pollution" resource="web" />
+      </method>
+      <method name="header" signature="header()" >
+        <return type="scalaj.http.HttpResponse" />
+        <sink argpos="0" kind="header_manipulation" resource="network" />
+      </method>
+      <method name="headers" signature="headers()" >
+        <return type="scalaj.http.HttpResponse" />
+        <sink argpos="0" kind="header_manipulation" resource="network" />
+      </method>
+    </class>
+  </module>
+  
+  <module name="spray" standard="Spray">
+    <description url="https://github.com/spray/spray">HTTP client and server (superseded by Akka HTTP)</description>
+
+    <class name="spray.httpx.RequestBuilding">
+      <method name="Get" signature="Get()" alias="Post, Put, Patch, Delete">
+        <return type="spray.httpx.HttpRequest" />
+        <sink argpos="0" kind="insecure_transport" resource="network" />
+        <sink argpos="0" kind="http_parameter_pollution" resource="network" />
+      </method>
+      <method name="withParams" signature="withParams()" >
+        <sink argpos="0" kind="http_parameter_pollution" resource="network" />
+      </method>
+    </class>
+
+    <class name="spray.httpx.HttpRequest">
+      <method name="HttpRequest" signature="HttpRequest" >
+        <sink paramNames="uri" kind="insecure_transport" resource="network" />
+        <sink paramNames="uri" kind="http_parameter_pollution" resource="network" />
+      </method>
+
+      <method name="encode" signature="encode()" >
+        <return type="spray.httpx.HttpRequest" />
+      </method>
+      <method name="addHeader" signature="addHeader()" >
+        <return type="spray.httpx.HttpRequest" />
+        <sink argpos="0" kind="header_manipulation" resource="web" />
+      </method>
+      <method name="addHeaders" signature="addHeaders()" >
+        <return type="spray.httpx.HttpRequest" />
+        <sink argpos="0" kind="header_manipulation" resource="web" />
+      </method>
+      <method name="mapHeaders" signature="mapHeaders()" >
+        <return type="spray.httpx.HttpRequest" />
+      </method>
+      <method name="removeHeader" signature="removeHeader()" >
+        <return type="spray.httpx.HttpRequest" />
+      </method>
+      <method name="removeHeaders" signature="removeHeaders()" >
+        <return type="spray.httpx.HttpRequest" />
+      </method>
+      <method name="addCredentials" signature="addCredentials()" >
+        <return type="spray.httpx.HttpRequest" />
+      </method>
+    </class>
+  </module>
+
+  <module name="dispatch" >
+    <description url="https://dispatchhttp.org/Dispatch.html">Library for asynchronous HTTP interaction</description>
+
+    <class name="dispatch">
+      <function name="Http" signature="Http()" >
+        <sink argpos="0" kind="insecure_transport" resource="network" />
+        <sink argpos="0" kind="http_parameter_pollution" resource="network" />
+      </function>
+    </class>
+  </module>
+
+  <module name="akka.actor" standard="Akka_Actors">
+    <description url="https://doc.akka.io/docs/akka/current/actors.html" >Akka Actor API</description>
+
+    <class name="akka.actor.Actor">
+      <method name="receive" signature="receive()" >
+        <return type="akka.actor.Actor.Receive" />
+      </method>
+    </class>
+  </module>
+
+  <module name="com.typesafe.config">
+    <description url="https://github.com/lightbend/config">Configuration library for JVM languages using HOCON files</description>
+
+    <!-- https://javadoc.io/doc/com.typesafe/config/latest/index.html -->
+
+    <class name="com.typesafe.config.parser.ConfigDocumentFactory">
+      <method name="parseFile" signature="parseFile(java.io.File)" match="name">
+        <return type="com.typesafe.config.parser.ConfigDocument" />
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="parseReader" signature="parseReader(java.io.Reader)" match="name">
+        <return type="com.typesafe.config.parser.ConfigDocument" />
+        <source argpos="-1" kind="other_input" resource="filesystem" />
+      </method>
+      <method name="parseString" signature="parseString(java.lang.String)" match="name">
+        <return type="com.typesafe.config.parser.ConfigDocument" />
+        <source argpos="-1" kind="other_input" resource="filesystem" />
+      </method>
+    </class>
+
+    <class name="com.typesafe.config.parser.ConfigDocument">
+      <method name="withoutPath" signature="withoutPath(String)" >
+        <return type="com.typesafe.config.parser.ConfigDocument" />
+      </method>
+      <method name="withValue" signature="withValue(String)" >
+        <return type="com.typesafe.config.parser.ConfigDocument" />
+      </method>
+      <method name="withValueText" signature="withValueText(String)" >
+        <return type="com.typesafe.config.parser.ConfigDocument" />
+      </method>
+    </class>
+
+    <class name="com.typesafe.config.Config" kind="trait" >
+      <method name="getString" signature="getString()" >
+        <return type="String" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="getValue" signature="getValue()" >
+        <return type="com.typesafe.config.ConfigValue" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="getInt" signature="getInt()" >
+        <return type="Int" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+    </class>
+
+    <class name="com.typesafe.config.ConfigFactory" kind="trait" >
+      <method name="load" signature="load()" >
+        <return type="com.typesafe.config.Config" />
+      </method>
+      <method name="defaultApplication" signature="defaultApplication()" >
+        <return type="com.typesafe.config.Config" />
+      </method>
+      <method name="defaultOverrides" signature="defaultOverrides()" >
+        <return type="com.typesafe.config.Config" />
+      </method>
+      <method name="defaultReference" signature="defaultReference()" >
+        <return type="com.typesafe.config.Config" />
+      </method>
+      <method name="empty" signature="empty()" >
+        <return type="com.typesafe.config.Config" />
+      </method>
+      <method name="parseFile" signature="parseFile()" >
+        <return type="com.typesafe.config.Config" />
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="parseFileAnySyntax" signature="parseFileAnySyntax()" >
+        <return type="com.typesafe.config.Config" />
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="parseMap" signature="parseMap()" >
+        <return type="com.typesafe.config.Config" />
+      </method>
+      <method name="parseProperties" signature="parseProperties()" >
+        <return type="com.typesafe.config.Config" />
+      </method>
+      <method name="parseReader" signature="parseReader()" >
+        <return type="com.typesafe.config.Config" />
+      </method>
+      <method name="parseResources" signature="parseResources()" >
+        <return type="com.typesafe.config.Config" />
+      </method>
+      <method name="parseResourcesAnySyntax" signature="parseResourcesAnySyntax()" >
+        <return type="com.typesafe.config.Config" />
+      </method>
+      <method name="parseString" signature="parseString()" >
+        <return type="com.typesafe.config.Config" />
+      </method>
+      <method name="parseURL" signature="parseURL()" >
+        <return type="com.typesafe.config.Config" />
+      </method>
+      <method name="systemEnvironment" signature="systemEnvironment()" >
+        <return type="com.typesafe.config.Config" />
+      </method>
+      <method name="systemProperties" signature="systemProperties()" >
+        <return type="com.typesafe.config.Config" />
+      </method>
+    </class>
+  </module>
+
+  <module name="better.files" standard="better-files">
+    <description url="https://pathikrit.github.io/better-files/latest/api/better/files/">Scala wrapper around Java NIO</description>
+
+    <class name="better.files.File">
+      <method name="File" signature="File()" >
+        <return type="better.files.File" />
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="newGzipInputStream" signature="newGzipInputStream()" >
+        <sink argpos="-2" kind="path_traversal" resource="filesystem" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="newZipInputStream" signature="newZipInputStream()" >
+        <sink argpos="-2" kind="path_traversal" resource="filesystem" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="unzip" signature="unzip()" >
+        <sink argpos="-2" kind="path_traversal" resource="filesystem" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="unGzipTo" signature="unGzipTo()" >
+        <sink argpos="-2,0" paramNames="destination" kind="path_traversal" resource="filesystem" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="unzipTo" signature="unzipTo()" >
+        <sink argpos="-2,0" paramNames="destination" kind="path_traversal" resource="filesystem" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="GzipInputStream" signature="GzipInputStream()" >
+        <sink argpos="-2" kind="path_traversal" resource="filesystem" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="zipInputStream" signature="zipInputStream()" >
+        <sink argpos="-2" kind="path_traversal" resource="filesystem" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+    </class>
+  </module>
+
+  <module name="grizzled.slf4j" >
+    <description url="http://software.clapper.org/grizzled-slf4j/api/">Scala layer on top of the SLF4J</description>
+
+    <class name="grizzled.slf4j.Logger">
+      <method name="Logger" signature="Logger()">
+        <return type="grizzled.slf4j.Logger" />
+      </method>
+      <method name="debug" signature="debug()" match="name" alias="error,info,trace,warn">
+        <tags>not_propagate_between_args</tags>
+        <sink argpos="0,1" paramNames="msg" kind="log_forging" resource="other"/>
+      </method>
+    </class>
+    <class name="grizzled.slf4j.Logging" kind="trait" supertypes="grizzled.slf4j.Logger">
+      <method name="logger" signature="logger">
+        <return type="grizzled.slf4j.Logger"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="com.typesafe.scalalogging" standard="scala-logging">
+    <description url="https://github.com/lightbend/scala-logging">Library for Scala wrapping SLF4J</description>
+
+    <class name="com.typesafe.scalalogging.Logger">
+      <function name="Logger" signature="Logger">
+        <return type="com.typesafe.scalalogging.Logger" />
+      </function>
+      <method name="debug" signature="debug()" alias="error,info,trace,warn">
+        <tags>not_propagate_between_args</tags>
+        <sink argpos="0,1" paramNames="msg" kind="log_forging" resource="other"/>
+      </method>
+    </class>
+    <class name="com.typesafe.scalalogging.LazyLogging" kind="trait">
+      <method name="logger" signature="logger">
+        <return type="com.typesafe.scalalogging.Logger"/>
+      </method>
+    </class>
+    <class name="com.typesafe.scalalogging.StrictLogging" kind="trait">
+      <method name="logger" signature="logger">
+        <return type="com.typesafe.scalalogging.Logger"/>
+      </method>
+    </class>
+    <class name="com.typesafe.scalalogging.LoggerTakingImplicit" supertypes="com.typesafe.scalalogging.Logger">
+      <field name="CanLogEv" type="com.typesafe.scalalogging.CanLog"></field>
+    </class>
+    <class name="com.typesafe.scalalogging.CanLog" kind="trait">
+      <method name="logMessage" signature="logMessage(originalMsg: String, a: A): String">
+        <return type="String"/>
+        <sink argpos="0" paramNames="msg" kind="log_forging" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="courier">
+    <description url="https://github.com/dmurvihill/courier">Mailing library for Scala</description>
+
+    <class name="courier.Mailer">
+      <method name="Mailer" signature="Mailer(scala.String, scala.int)" >
+        <return type="courier.Mailer" />
+        <sink argpos="0" paramNames="host" kind="ssrf" resource="network" />
+        <sink argpos="0" paramNames="port" kind="resource_injection" resource="network" />
+      </method>
+      <method name="auth" signature="auth(scala.String, scala.String)" >
+        <return type="courier.Mailer" />
+      </method>
+      <method name="startTls" signature="startTls(scala.String, scala.String)" >
+        <return type="courier.Mailer" />
+      </method>
+      <method name="as" signature="as(scala.String, scala.String)" >
+        <tags>username:0, password:1</tags>
+        <return type="courier.Mailer" />
+      </method>
+      <method name="trustAll" signature="trustAll(scala.boolean)" >
+        <return type="courier.Mailer" />
+      </method>
+      <method name="debug" signature="debug(scala.boolean)" >
+        <return type="courier.Mailer" />
+      </method>
+      <method name="ssl" signature="ssl(scala.boolean)" >
+        <return type="courier.Mailer" />
+      </method>
+      <method name="host" signature="ssl(scala.boolean)" >
+        <sink argpos="0" paramNames="host" kind="ssrf" resource="network" />
+      </method>
+      <method name="port" signature="ssl(scala.boolean)" >
+        <sink argpos="0" paramNames="port" kind="resource_injection" resource="network" />
+      </method>
+      <method name="socketFactory" signature="socketFactory(scala.boolean)" >
+        <return type="courier.Mailer" />
+      </method>
+      <method name="sslSocketFactory " signature="sslSocketFactory (scala.boolean)" >
+        <return type="courier.Mailer" />
+      </method>
+      <method name="withSigner" signature="withSigner(scala.boolean)" >
+        <return type="courier.Mailer" />
+      </method>
+    </class>
+    <class name="courier.Envelope">
+      <method name="from" signature="from(javax.mail.internet.InternetAddress)" >
+        <return type="courier.Envelope" />
+      </method>
+      <method name="subject" signature="subject(scala.String)" >
+        <return type="courier.Envelope" />
+        <sink argpos="0" kind="mail_command_injection" resource="web" />
+      </method>
+      <method name="to" signature="to(javax.mail.internet.InternetAddress)" >
+        <return type="courier.Envelope" />
+      </method>
+      <method name="cc" signature="cc(javax.mail.internet.InternetAddress)" >
+        <return type="courier.Envelope" />
+      </method>
+      <method name="bcc" signature="bcc(javax.mail.internet.InternetAddress)" >
+        <return type="courier.Envelope" />
+      </method>
+      <method name="replyTo" signature="replyTo(javax.mail.internet.InternetAddress)" >
+        <return type="courier.Envelope" />
+      </method>
+      <method name="replyAll" signature="replyAll(scala.String)" >
+        <return type="courier.Envelope" />
+      </method>
+      <method name="headers" signature="headers()" >
+        <return type="courier.Envelope" />
+      </method>
+      <method name="content" signature="content(scala.String)" >
+        <return type="courier.Envelope" />
+      </method>
+    </class>
+  </module>
+
+  <module name="kantan.xpath">
+    <description url="https://nrinaudo.github.io/kantan.xpath/">XPath expression evaluation library</description>
+
+    <class name="kantan.xpath.ops.XmlSourceOps">
+      <method name="evalXPath" signature="evalXPath()" >
+        <sink argpos="0" kind="xpath_injection" resource="other" />
+      </method>
+    </class>
+
+    <class name="kantan.xpath.ops.XmlSourceOps">
+      <method name="evalXPath" signature="evalXPath()" >
+        <sink argpos="0" kind="xpath_injection" resource="other" />
+      </method>
+    </class>
+  </module>
+
+  <module name="com.elsevier.spark_xml_utils" standard="spark-xml-utils">
+    <description url="https://github.com/elsevierlabs-os/spark-xml-utils">XPath, XSLT, and XQuery tools</description>
+
+    <class name="com.elsevier.spark_xml_utils.xslt.XSLTProcessor">
+      <method name="getInstance" signature="getInstance()" >
+        <return type="com.elsevier.spark_xml_utils.xslt.XSLTProcessor" />
+      </method>
+      <method name="transform" signature="transform(scala.String)" >
+        <sink argpos="0" kind="xslt_injection" resource="other" />
+      </method>
+    </class>
+  </module>
+</library>

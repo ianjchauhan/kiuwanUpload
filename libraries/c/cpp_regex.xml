@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="cpp.regex" standard="regex" technology="cpp">
+
+  <description url="https://en.cppreference.com/w/cpp/regex">C++ Regular Expression library</description>
+
+  <!-- See https://www.regular-expressions.info/stdregex.html for details -->
+
+  <class name="basic_regex" alias="boost.basic_regex">
+    <method name="assign" signature="assign(char* pattern, flag_type options)" match="name">
+      <return type="basic_regex&amp;"/>
+      <sink kind="regex_dos" argpos="0"/>
+    </method>
+    <method name="mark_count" signature="mark_count()"><return type="unsigned"/></method>
+    <method name="flags" signature="flags()"><return type="flag_type"/></method>
+    <method name="getloc" signature="getloc()"><return type="locale_type"/></method>
+    <method name="imbue" signature="imbue(locale_type)"><return type="locale_type"/></method>
+
+    <field name="icase" type="regex_constants.syntax_option_type" alias="nosubs, optimize, collate, multiline">
+      <tags>regexp.modifier</tags>
+    </field>
+    <field name="ECMAScript" type="regex_constants.syntax_option_type" alias="basic, extended, awk, grep, egrep">
+      <tags>regexp.grammar</tags>
+    </field>
+  </class>
+  
+  <class name="regex" supertypes="basic_regex" alias="boost.regex">
+    <constructor name="regex" signature="regex(char* pattern, flag_type options)" match="name">
+      <sink kind="regex_dos" argpos="0"/>
+    </constructor>
+  </class>
+
+  <class name="wregex" supertypes="basic_regex" alias="boost.wregex">
+    <constructor name="wregex" signature="wregex(wchar_t* pattern, flag_type options)" match="name">
+      <sink kind="regex_dos" argpos="0"/>
+    </constructor>
+  </class>
+
+  <function name="regex_match"
+            signature="regex_match(char* subject, match_results&amp; res, basic_regex&amp; regex, regex_constants.match_flag_type flags)"
+            match="name" alias="boost.regex_match">
+    <return type="bool"/>
+    <neutralization argpos="0" kind="string"/>
+  </function>
+  <function name="regex_search"
+            signature="regex_search(char* subject, match_results&amp; res, basic_regex&amp; regex, regex_constants.match_flag_type flags)"
+            match="name" alias="boost.regex_search">
+    <return type="bool"/>
+    <neutralization argpos="0" kind="string"/>
+  </function>
+  <function name="regex_replace" signature="regex_replace(char* subject, basic_regex&amp; regex, char* fmt)"
+            match="name" alias="boost.regex_replace">
+    <return type="basic_string"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+
+</library>

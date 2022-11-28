@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="other_db" technology="python">
+
+  <description>Python DB drivers and ORM packages</description>
+
+  <module name="records">
+    <description url="https://github.com/kennethreitz/records">SQL for Humans</description>
+    <class name="Database">
+      <constructor name="Database" signature="Database(url)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="query" signature="query(sql)" match="name">
+        <return type="object" />
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+    </class>
+  </module>
+
+  <!-- peewee TODO complete this -->
+  <module name="peewee">
+    <description url="http://docs.peewee-orm.com/en/latest/">Python Object-Relational Manager</description>
+    <class name="Model">
+      <method name="create" signature="create" match="name">
+      </method>
+      <method name="save" signature="save" match="name">
+      </method>
+      <method name="delete_instance" signature="delete_instance" match="name">
+      </method>
+      <method name="select" signature="select" match="name">
+        <return type="object" />
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+    </class>
+  </module>
+
+  <!-- PonyORM -->
+  <module name="pony">
+    <description url="https://ponyorm.org/">Python Object-Relational Manager</description>
+    <module name="orm">
+      <function name="Database" signature="Database()">
+        <return type="pony.orm.Database"/>
+      </function>
+
+      <class name="Database">
+        <method name="bind" signature="bind(dsn, user='', password='', host='', database='')" match="name">
+          <sink argpos="0,1" paramNames="dsn" kind="connection_string_injection" resource="database" />
+          <sink paramNames="user" kind="sensitive_data" resource="database" />
+          <sink paramNames="password,passwd" kind="sensitive_data" resource="database" />
+          <sink paramNames="host" kind="ssrf" resource="database" />
+          <sink paramNames="database,db" kind="resource_injection" resource="database" />
+        </method>
+
+        <method name="commit" signature="commit()" match="name"/>
+        <method name="create_tables" signature="create_tables()" match="name"/>
+        <method name="disconnect" signature="disconnect()" match="name"/>
+        <method name="drop_all_tables" signature="drop_all_tables()" match="name"/>
+        <method name="drop_table" signature="drop_table()" match="name"/>
+        <method name="execute" signature="execute()" match="name">
+          <return type="object" />
+          <source argpos="-1" resource="database" kind="database_input" />
+        </method>
+        <method name="exists" signature="exists()" match="name"/>
+        <method name="flush" signature="flush()" match="name"/>
+        <method name="get" signature="get()" match="name">
+          <return type="object" />
+          <source argpos="-1" resource="database" kind="database_input" />
+        </method>
+        <method name="get_connection" signature="get_connection()" match="name">
+          <return type="DBAPI.connect" />
+        </method>
+        <method name="insert" signature="insert()" match="name"/>
+        <method name="merge_local_stats" signature="merge_local_stats()" match="name">
+        </method>
+        <method name="rollback" signature="rollback()" match="name"/>
+        <method name="select" signature="select()" match="name">
+          <return type="object" />
+          <source argpos="-1" resource="database" kind="database_input" />
+        </method>
+      </class>
+    </module>
+  </module>
+
+  <!-- SQLObject -->
+  <module name="SQLObject">
+    <description url="https://pypi.org/project/SQLObject/">Python Object-Relational Manager</description>
+    <function name="createTable" signature="createTable()" match="name">
+    </function>
+    <function name="get" signature="get()" match="name">
+      <return type="object" />
+      <source argpos="-1" resource="database" kind="database_input" />
+    </function>
+    <function name="select" signature="select()" match="name">
+      <return type="object" />
+      <source argpos="-1" resource="database" kind="database_input" />
+    </function>
+    <function name="selectBy" signature="selectBy()" match="name">
+      <return type="object" />
+      <source argpos="-1" resource="database" kind="database_input" />
+    </function>
+  </module>
+
+  <!-- psycopg2 -->
+  <module name="psycopg2" standard="Psycopg">
+    <description url="https://www.psycopg.org/docs/">DBAPI adapter for PostgreSQL</description>
+
+    <function name="connect" signature="connect()" match="name">
+      <return type="psycopg2.connection" />
+    </function>
+
+    <class name="connection">
+      <method name="cursor" signature="cursor()" match="name" >
+        <return type="psycopg2.cursor" />
+      </method>
+    </class>
+
+    <class name="cursor">
+      <method name="execute" signature="execute()" match="name" >
+        <return type="NoneType" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="executemany" signature="executemany()" match="name" >
+        <return type="NoneType" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+    </class>
+  </module>
+
+  <!-- pymongo -->
+  <module name="pymongo" standard="PyMongo">
+    <description url="https://pymongo.readthedocs.io/">Python client for MongoDB</description>
+    <class name="MongoClient">
+      <constructor name="MongoClient" signature="MongoClient(host, port, db, collection)" >
+        <sink argpos="0, 1, 2" kind="resource_injection" resource="database" />
+        <sink paramNames="username,password" kind="sensitive_data" resource="database" />
+      </constructor>
+
+      <field name="event_listeners" type="array" elementType="pymongo.monitoring.Listener"/>
+      <field name="address" type="array" elementType="str"/>
+      <field name="primary" type="array" elementType="str"/>
+      <field name="secondaries" type="array" elementType="array"/>
+      <field name="arbiters" type="array" elementType="array"/>
+      <field name="nodes" type="array" elementType="array"/>
+      <field name="is_primary" type="bool"/>
+      <field name="is_mongos" type="bool"/>
+      <field name="is_locked" type="bool"/>
+      <field name="max_pool_size" type="int"/>
+      <field name="max_bson_size" type="int"/>
+      <field name="max_message_size" type="int"/>
+      <field name="max_write_batch_size" type="int"/>
+      <field name="min_pool_size" type="int"/>
+      <field name="local_threshold_ms" type="int"/>
+      <field name="server_selection_timeout" type="int"/>
+      <field name="codec_options" type="str"/>
+      <field name="read_preference" type="str"/>
+      <field name="read_concern" type="str"/>
+      <field name="write_concern" type="str"/>
+      <field name="*" type="pymongo.database.Database"/>
+
+      <method name="command"
+              signature="command(command, value=1, check=True, allowable_errors=None, read_preference=None, codec_options=None, session=None, **kwargs)">
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+      </method>
+
+      <method name="drop_database" signature="drop_database(database, session=None)" match="name">
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+      </method>
+
+      <method name="get_database" signature="get_database(name)" match="name">
+        <return type="pymongo.database.Database"/>
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="get_default_database" signature="get_default_database()">
+        <return type="pymongo.database.Database"/>
+      </method>
+
+    </class>
+
+    <class name="monitoring.Listener"/>
+
+    <class name="database.Database">
+      <constructor name="Database" signature="Database(client, name, codec_options=None, read_preference=None, write_concern=None, read_concern=None)">
+        <sink argpos="1" kind="resource_injection" resource="database" />
+      </constructor>
+      
+      <field name="codec_options" type="str"/>
+      <field name="client" type="pymongo.MongoClient"/>
+      <field name="read_preference" type="str"/>
+      <field name="read_concern" type="str"/>
+      <field name="write_concern" type="str"/>
+      <field name="incoming_copying_manipulators" type="object"/>
+      <field name="incoming_manipulators" type="object"/>
+      <field name="name" type="str"/>
+      <field name="outgoing_copying_manipulators" type="object"/>
+      <field name="outgoing_manipulators" type="object"/>
+      <field name="system_js" type="object"/>
+      <field name="*" type="pymongo.collection.Collection"/>
+
+      <method name="add_user" signature="add_user(name, password=None, read_only=None, session=None, **kwargs)">
+        <sink argpos="0,1" kind="sensitive_data" resource="database" />
+        <sink argpos="0,1" kind="resource_injection" resource="database" />
+      </method>
+      <method name="remove_user" signature="remove_user(name, session=None)">
+        <sink argpos="0" kind="sensitive_data" resource="database" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="authenticate" signature="authenticate(name=None, password=None, source=None, mechanism='DEFAULT', **kwargs)">
+        <sink argpos="0,1" kind="sensitive_data" resource="database" />
+      </method>
+      <method name="command" signature="command(command, value)" match="name">
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="create_collection" signature="create_collection(name)" match="name">
+        <return type="pymongo.collection.Collection"/>
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="drop_collection" signature="drop_collection(name)" match="name">
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="eval" signature="eval(code, *args)">
+        <sink argpos="0" kind="code_injection" resource="database"/>
+      </method>
+      <method name="get_collection" signature="get_collection(name)" match="name">
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+    </class>
+
+    <class name="collection.Collection">
+      <constructor name="Collection" signature="Collection(database, name, create=False, **kwargs)">
+        <sink argpos="1" kind="resource_injection" resource="database" />
+      </constructor>
+      <field name="name" type="str"/>
+      <field name="full_name" type="str"/>
+      <field name="database" type="pymongo.database.Database"/>
+      <field name="codec_options" type="str"/>
+      <field name="read_preference" type="str"/>
+      <field name="read_concern" type="str"/>
+      <field name="write_concern" type="str"/>
+      <field name="*" type="pymongo.collection.Collection"/>
+
+      <method name="with_options" signature="with_options()" match="name">
+        <return type="pymongo.collection.Collection"/>
+      </method>
+      <method name="bulk_write" signature="bulk_write(requests)" match="name"></method>
+      <method name="insert_one" signature="insert_one(document)" match="name"></method>
+      <method name="insert_many" signature="insert_many(documents)" match="name"></method>
+      <method name="replace_one" signature="replace_one(filter, replacement)" match="name">
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+      </method>
+      <method name="update_one" signature="update_one(filter, update)" match="name" alias="update_many">
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+      </method>
+      <method name="delete_one" signature="delete_one(filter)" match="name" alias="delete_many">
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+      </method>
+      <method name="aggregate" signature="aggregate()" match="name" alias="aggregate_raw_batches,watch"/>
+      <method name="find" signature="find(filter, projection)">
+        <return type="pymongo.cursor.Cursor"/>
+        <sink argpos="0,1" kind="nosql_injection" resource="database"/>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="find_one" signature="find_one(filter)" alias="find_one_and_delete,find_one_and_replace,find_one_and_update,find_and_modify">
+        <return type="dict"/><!-- SOM document is not exactly a Python dict, but... -->
+        <sink argpos="0,1" kind="nosql_injection" resource="database"/>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="count_documents" signature="count_documents(filter)" match="name" alias="count">
+        <return type="int"/>
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+      </method>
+      <method name="distinct" signature="distinct(key,filter)" match="name">
+        <return type="list" elementType="str"/>
+        <sink argpos="1" kind="nosql_injection" resource="database"/>
+      </method>
+      <method name="rename" signature="rename(new_name)" match="name">
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="insert" signature="insert(documents)"/>
+      <method name="save" signature="save(documents)"/>
+    </class>
+
+    <class name="cursor.Cursor"></class>
+  </module>
+
+  <!-- LR what is this??? Not matching sqlalchemy module (http://docs.sqlalchemy.org). If used only in flask, move to flask.xml -->
+  <module name="SQLAlchemy" >
+    <module name="engine" >
+      <module name="base" >
+        <class name="Engine" >
+          <method name="connect" signature="connect()" >
+            <return type="SQLAlchemy.engine.base.Connection" />
+          </method>
+
+          <method name="execute" signature="execute(sql)" >
+            <return type="object" />
+            <sink argpos="0" kind="sql_injection" resource="database" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+        </class>
+
+        <class name="Connection" >
+          <method name="execute" signature="execute(sql)" >
+            <return type="object" />
+            <sink argpos="0" kind="sql_injection" resource="database" />
+            <source argpos="-1" resource="database" kind="database_input" />
+          </method>
+        </class>
+      </module>
+    </module>
+  </module>
+
+  <!-- SQLAlchemy -->
+  <module name="sqlalchemy">
+    <description url="https://pypi.org/project/SQLAlchemy/">Python SQL Toolkit and Object Relational Mapper</description>
+
+    <function name="create_engine" signature="create_engine(url,**kwargs)" match="name">
+      <return type="sqlalchemy.engine.Engine"/>
+      <sink argpos="0" kind="connection_string_injection" resource="database"/>
+    </function>
+    <function name="engine_from_config" signature="engine_from_config(config,**kwargs)" match="name">
+      <return type="sqlalchemy.engine.Engine"/>
+    </function>
+    
+    <module name="engine">
+      <class name="Connectable">
+        <method name="connect" signature="connect(**kwargs)" alias="contextual_connect">
+          <return type="sqlalchemy.engine.Connection"/>
+          <sink paramNames="user" kind="sensitive_data" resource="database" />
+          <sink paramNames="passwd,password" kind="sensitive_data" resource="database" />
+          <sink paramNames="host,port" kind="ssrf" resource="database" />
+          <sink paramNames="db,database" kind="resource_injection" resource="database" />
+        </method>
+        <method name="execute" signature="execute(statement,*params,**kwparams)" match="name" alias="scalar">
+          <return type="sqlalchemy.engine.ResultProxy"/>
+          <sink argpos="0" kind="sql_injection" resource="database"/>
+        </method>
+        <method name="create" signature="create(entity,**kwargs)" alias="drop">
+          <description>Yeah, if attacker can control the table name, we have SQLi</description>
+          <sink argpos="0" kind="sql_injection" resource="database"/>
+        </method>
+      </class>
+
+      <class name="Engine" supertypes="sqlalchemy.engine.Connectable">
+        <method name="begin" signature="begin()"><return type="sqlalchemy.engine.Connection"/></method>
+
+        <method name="raw_connection" signature="raw_connection()">
+          <return type="pep249.Connection"/>
+        </method>
+
+        <method name="run_callable" signature="run_callable(callable,*args,**kwargs)" match="name">
+          <return type="sqlalchemy.engine.ResultProxy"/>
+          <sink argpos="0" kind="sql_injection" resource="database"/>
+        </method>
+      </class>
+
+      <class name="Connection" supertypes="sqlalchemy.engine.Connectable">
+        <field name="connection" type="pep249.Connection"/>
+        <method name="connect" signature="connect()">
+          <return type="sqlalchemy.engine.Connection"/>
+        </method>
+        <method name="execute" signature="execute(statement,*params,**kwparams)" match="name" alias="scalar">
+          <return type="sqlalchemy.engine.ResultProxy"/>
+          <sink argpos="0" kind="sql_injection" resource="database"/>
+        </method>
+        <method name="run_callable" signature="run_callable(callable,*args,**kwargs)" match="name">
+          <return type="sqlalchemy.engine.ResultProxy"/>
+          <sink argpos="0" kind="sql_injection" resource="database"/>
+        </method>
+      </class>
+
+      <class name="ResultProxy" supertypes="pep249.Cursor">
+        <method name="first" signature="first()" alias="scalar">
+          <source argpos="-1" resource="database" kind="database_input" />
+        </method>
+      </class>
+    </module>
+  </module>
+
+  <!--
+  Most common MySQL drivers
+  -->
+
+  <!-- the venerable _mysql, porting from MySQL C API. Implements an API similar to PEP 249  -->
+  <module name="_mysql">
+    <description url="http://zetcode.com/db/mysqlpython/">Old Python port from MySQL C API</description>
+    <function name="connect" signature="connect(host='', user='', passwd='',db='')" >
+      <return type="_mysql.Connection" />
+      <sink argpos="0" paramNames="host,named_pipe" kind="ssrf" resource="database" />
+      <sink argpos="1" paramNames="user" kind="sensitive_data" resource="database" />
+      <sink argpos="2" paramNames="passwd" kind="sensitive_data" resource="database" />
+      <sink argpos="3" paramNames="db" kind="resource_injection" resource="database" />
+      <sink paramNames="port" kind="ssrf" resource="database"/>
+    </function>
+
+    <function name="escape_string" signature="escape_string(input)">
+      <neutralization argpos="0" kind="sql_injection" resource="database"/>
+    </function>
+
+    <class name="Connection" supertypes="pep249.Connection">
+      <method name="query" signature="query(sql)" match="name">
+        <return type="object" />
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="use_result" signature="use_result()" >
+        <return type="_mysql.Cursor" />
+      </method>
+      <method name="store_result" signature="store_result()" >
+        <return type="_mysql.Cursor" />
+      </method>
+      <method name="cursor" signature="cursor()" >
+        <return type="_mysql.Cursor()" />
+      </method>
+    </class>
+
+    <class name="Cursor" supertypes="pep249.Cursor">
+      <method name="executescript" signature="executescript(sql_script)">
+        <return type="iter" />
+        <return type="object" />
+        <sink argpos="0" kind="sql_injection"/>
+      </method>
+    </class>
+  </module>
+
+  <!-- Standard MySQL python connector (mysql.connector) -->
+  <module name="mysql">
+    <description url="https://dev.mysql.com/doc/connector-python/en/connector-python-reference.html">MySQL Connector/Python</description>
+    <module name="connector">
+      <function name="connect" signature="connect(dsn,user,password,host,database,**kwargs)" alias="MySQLConnection" match="name">
+        <return type="mysql.connector.MySQLConnection"/>
+        <sink argpos="0" paramNames="dsn" kind="connection_string_injection" resource="database" />
+        <sink argpos="1,2" paramNames="user,password" kind="sensitive_data" resource="database" />
+        <sink argpos="3" paramNames="host" kind="ssrf" resource="database" />
+        <sink argpos="4" paramNames="database" kind="resource_injection" resource="database" />
+      </function>
+
+      <class name="MySQLConnection" supertypes="pep249.Connection">
+        <constructor name="MySQLConnection" signature="MySQLConnection(dsn,user,password,host,database,**kwargs)">
+          <sink argpos="0" paramNames="dsn" kind="connection_string_injection" resource="database" />
+          <sink argpos="1,2" paramNames="user,password,passwd" kind="sensitive_data" resource="database" />
+          <sink argpos="3" paramNames="host,port" kind="ssrf" resource="database" />
+          <sink argpos="4" paramNames="database" kind="resource_injection" resource="database" />
+        </constructor>
+        <method name="cursor" signature="cursor()">
+          <return type="mysql.connector.MySQLCursor"/>
+        </method>
+      </class>
+
+      <class name="MySQLCursor" supertypes="pep249.Cursor">
+        <field name="statement" type="str"/>
+      </class>
+
+      <module name="pooling">
+        <class name="MySQLConnectionPoool">
+          <constructor name="MySQLConnectionPoool" signature="MySQLConnectionPoool" match="name">
+            <sink paramNames="user,password" kind="sensitive_data" resource="database" />
+            <sink paramNames="host,port" kind="ssrf" resource="database" />
+            <sink paramNames="database" kind="resource_injection" resource="database" />
+          </constructor>
+          <method name="get_connection" signature="get_connection()">
+            <return type="mysql.connector.MySQLConnection"/>
+          </method>
+          <method name="set_config" signature="set_config(*kwargs)">
+            <sink paramNames="user,password" kind="sensitive_data" resource="database" />
+            <sink paramNames="host,port" kind="ssrf" resource="database" />
+            <sink paramNames="database" kind="resource_injection" resource="database" />
+          </method>
+        </class>
+      </module>
+    </module>
+  </module>
+
+  <module name="MySQLdb">
+    <description url="https://pypi.org/project/MySQL-python/">DBAPI adapter for MySQL</description>
+    <!-- MuSQLdb: built over _mysql module - https://github.com/farcepest/MySQLdb1 -->
+    <function name="connect" signature="connect(**kwargs)">
+      <return type="pep249.Connection"/>
+      <sink argpos="0" paramNames="host,named_pipe" kind="ssrf" resource="database" />
+      <sink argpos="1" paramNames="user" kind="sensitive_data" resource="database" />
+      <sink argpos="1,2" paramNames="user,passwd" kind="sensitive_data" resource="database" />
+      <sink argpos="3" paramNames="db" kind="resource_injection" resource="database" />
+      <sink paramNames="port" kind="ssrf" resource="database"/>
+    </function>
+  </module>
+
+  <module name="pymysql">
+    <description url="https://pypi.org/project/PyMySQL/">Pure Python DBAPI client library for MySQL</description>
+    <function name="connect" signature="connect(**kwargs)">
+      <return type="pep249.Connection"/>
+      <sink argpos="0" paramNames="host,named_pipe" kind="ssrf" resource="database" />
+      <sink argpos="1,2" paramNames="user,password,passwd" kind="sensitive_data" resource="database" />
+      <sink argpos="3" paramNames="database,db" kind="resource_injection" resource="database" />
+      <sink paramNames="port" kind="ssrf" resource="database"/>
+    </function>
+  </module>
+
+  <module name="oursql">
+    <description url="https://pythonhosted.org/oursql/">MySQL bindings for python</description>
+    <function name="connect" signature="connect(**kwargs)">
+      <return type="pep249.Connection"/>
+      <sink argpos="0" paramNames="host,named_pipe" kind="ssrf" resource="database" />
+      <sink argpos="1,2" paramNames="user,password,passwd" kind="sensitive_data" resource="database" />
+      <sink argpos="3" paramNames="database,db" kind="resource_injection" resource="database" />
+      <sink paramNames="port" kind="ssrf" resource="database"/>
+    </function>
+  </module>
+
+  <module name="cx_Oracle">
+    <description url="https://oracle.github.io/python-cx_Oracle/">cx_Oracle - DBAPI adapter for Oracle</description>
+    <function name="connect" signature="connect" match="name">
+      <return type="pep249.Connection"/>
+      <sink argpos="0" kind="connection_string_injection" resource="database"/>
+    </function>
+  </module>
+
+  <module name="aiopg" >
+    <description url="https://aiopg.readthedocs.io/">Access to PostgreSQL from asyncio framework</description>
+    <module name="connection">
+      <class name="Connection" supertypes="pep249.Connection" />
+    </module>
+  </module>
+</library>

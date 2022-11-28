@@ -1,0 +1,790 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="cpp.database" standard="database" technology="cpp">
+
+  <description>C/C++ database libraries</description>
+
+  <!-- include dotnet database libraries (could be called from Microsoft C++) -->
+  <include name="$LIBRARIES/csharp/csharp_02_dotnet_db.xml" import="true"/>
+
+  <module name="SQLAPI.h" standard="SQLAPI++">
+    <description url="https://www.sqlapi.com/">SQLAPI++</description>
+
+    <class name="SAConnection">
+      <tags>database_connection</tags>
+      <method name="Connect" signature="Connect(const SAString &amp; dbStr, const SAString&amp; user, const SAString&amp; pass, SAClient_t client)" match="name">
+        <tags>username:1, password:2, dbOpen, dbHandle:-2</tags>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="hardcoded_credentials" argpos="1, 2" resource="database"/>
+      </method>
+      <method name="Disconnect" signature="Disconnet()" alias="Destroy, Reset">
+        <tags>dbClose, dbHandle:-2</tags>
+      </method>
+    </class>
+    <class name="SACommand">
+      <constructor name="SACommand" signature="SACommand(SAConnection* conn, const SAString&amp; cmd)" match="name">
+        <tags>stmtCreate, stmtHandle:-2, dbHandle:0</tags>
+        <sink kind="sql_injection" argpos="1" resource="database"/>
+      </constructor>
+      <method name="Close" signature="Close()" alias="Destroy, Reset">
+        <tags>stmtClose, stmtHandle:-2</tags>
+      </method>
+      <method name="Connection" signature="Connection()">
+        <return type="SAConnection*"/>
+      </method>
+      <method name="setConnection" signature="setConnection(SAConnection* conn)"/>
+      <method name="setCommandText" signature="setCommandText(const SAString&amp; sql)" match="name">
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="CommandText" signature="CommandText()">
+        <return type="SAString"/>
+      </method>
+      <method name="Field" signature="Field()" match="name">
+        <return type="SAField&amp;"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="SAString" supertypes="string"></class>
+  </module>
+
+  <module name="soci.h">
+    <description url="http://soci.sourceforge.net/doc/master/api/client/">SOCI</description>
+    <class name="soci.session">
+      <tags>database_connection</tags>
+      <constructor name="session" signature="session(string&amp; backend, string&amp; connstr)" match="numargs">
+        <sink kind="resource_injection" argpos="0" resource="database"/>
+        <sink kind="connection_string_injection" argpos="1" resource="database"/>
+      </constructor>
+      <constructor name="session" signature="session(string&amp; connstr)" match="numargs">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </constructor>
+      <method name="open" signature="open(string&amp; backend, string&amp; connstr)" match="numargs">
+        <sink kind="resource_injection" argpos="0" resource="database"/>
+        <sink kind="connection_string_injection" argpos="1" resource="database"/>
+      </method>
+      <method name="open" signature="open(string&amp; connstr)" match="numargs">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+      <field name="once" type="@self"/>
+      <field name="prepare" type="@self"/>
+    </class>
+    <class name="soci.statement">
+      <constructor name="statement" signature="statement(soci.session&amp;)"/>
+      <method name="prepare" signature="prepare(string&amp; query)">
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+    <class name="soci.connection_parameters">
+      <constructor name="connection_parameters" signature="connection_parameters(string&amp; backend, string&amp; connstr)" match="numargs">
+        <sink kind="resource_injection" argpos="0" resource="database"/>
+        <sink kind="connection_string_injection" argpos="1" resource="database"/>
+      </constructor>
+      <constructor name="connection_parameters" signature="connection_parameters(string&amp; connstr)" match="numargs">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </constructor>
+      <method name="set_option" signature="void set_option(char *name, string&amp; value)">
+        <sink kind="connection_string_injection" argpos="1" resource="database"/>
+      </method>
+    </class>
+    <class name="soci.connection_pool">
+      <tags>database_connection_pool</tags>
+      <method name="at" signature="at(size_t pos)">
+        <return type="soci.session&amp;"/>
+      </method>
+    </class>
+    <class name="soci.transaction">
+      <constructor name="transaction" signature="transaction(session &amp;)"/>
+      <method name="commit" signature="commit()"/>
+      <method name="rollback" signature="rollback()"/>
+    </class>
+    <function name="soci.into" signature="soci.into(T &amp;)">
+      <source argpos="0" kind="database_input" resource="database"/>
+    </function>
+    <function name="soci.use" signature="soci.use(T &amp;)">
+      <neutralization kind="sql_injection" argpos="-1" resource="database"/>
+    </function>
+  </module>
+
+  <module name="otlv4.h">
+    <description url="http://otl.sourceforge.net/">OTL - Oracle, ODBC and DB2 template library</description>
+    <class name="otl_connect">
+      <tags>database_connection</tags>
+      <constructor name="otl_connect" signature="otl_connect(char* conn, int autoCommit)" match="name">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </constructor>
+      <method name="change_password" signature="change_password(char* user, char* oldpass, char* newpass)">
+        <sink kind="hardcoded_credentials" argpos="0,1,2" resource="database"/>
+      </method>
+      <method name="rlogon" signature="rlogon(char* conn, int autoCommit)" match="name">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="session_begin" signature="session_begin(char* user, char* pass)" match="name">
+        <tags>username:0, password:1</tags>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="database"/>
+      </method>
+    </class>
+    <class name="otl_stream">
+      <constructor name="otl_stream" signature="otl_stream(int bufsize, char* stl, otl_connect&amp; db)" match="name">
+        <sink kind="sql_injection" argpos="1" resource="database"/>
+      </constructor>
+    </class>
+  </module>
+  
+  <module name="sqlite3.h" standard="sqlite3">
+    <description url="https://www.sqlite.org/c3ref/intro.html">SQLite C API</description>
+    <class name="sqlite3_int64" supertypes="int64_t"/>
+    <class name="sqlite3_uint64" supertypes="uint64_t"/>
+    <class name="sqlite_int64" supertypes="int64_t"/>
+    <class name="sqlite_uint64" supertypes="uint64_t"/>
+
+    <class name="sqlite3" kind="struct"/>
+    <class name="sqlite3_stmt" kind="struct"/>
+
+    <function name="sqlite3_open" signature="int sqlite3_open(char* filename, sqlite3** db)" alias="sqlite3_open16">
+      <return type="int"/>
+      <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      <sink  argpos="0" kind="resource_injection" resource="database"/>
+    </function>
+
+    <function name="sqlite3_open_v2" signature="sqlite3_open_v2(char* filename, sqlite3** db, int flags, char* zvfs)">
+      <return type="int"/>
+      <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      <sink argpos="0" kind="resource_injection" resource="database"/>
+    </function>
+
+    <function name="sqlite3_prepare"
+              signature="sqlite3_prepare(sqlite3* db, const char* sql, int nb, sqlite3_stmt** stmt, char** tail)"
+              match="name" alias="sqlite3_prepare_v2, sqlite3_prepare_v3, sqlite3_prepare16, sqlite3_prepare16_v2, sqlite3_prepare16_v3">
+      <parameters><param type="sqlite3*"/><param type="const char*"/></parameters>
+      <sink kind="sql_injection" argpos="1" resource="database"/>
+      <sink argpos="1" kind="sensitive_sql" resource="database"><checker id="sensitiveSQLChecker"/></sink>
+    </function>
+
+    <function name="sqlite3_bind_blob" signature="sqlite3_bind_blob(sqlite3_stmt* stmt, int pos, void* param, int sz, funcptr* destr)" match="name"
+              alias="sqlite3_bind_blob64, sqlite3_bind_text, sqlite3_bind_text16">
+      <tags>position:1, data:2, potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_text64" signature="sqlite3_bind_text64(sqlite3_stmt* stmt, int pos, const char* param, funcptr* destr, unsigned char encoding)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_double" signature="sqlite3_bind_double(sqlite3_stmt* stmt, int pos, T param)"
+              alias="sqlite3_bind_int, sqlite3_bind_int64">
+      <tags>position:1, data:2, potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_null" signature="sqlite3_bind_null(sqlite3_stmt* stmt, int pos)">
+      <tags>position:1, potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_zero_blob" signature="sqlite3_bind_zero_blob(sqlite3_stmt* stmt, int pos, int sz)" match="name"
+              alias="sqlite_bind_zero_blob64">
+      <tags>position:1, potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_value" signature="sqlite3_bind_value(sqlite3_stmt* stmt, int pos, const sqlite3_value* data)" match="name">
+      <tags>position:1, data:2, potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_pointer" signature="sqlite3_bind_pointer(sqlite3_stmt* stmt, int pos, void* ptr, const char* type, funcptr* destr)" >
+      <tags>position:1, data:2, potentialPk:1</tags>
+    </function>
+
+    <function name="sqlite3_step" signature="sqlite3_step(sqlite3_stmt* stmt)"/>
+    <function name="sqlite3_column_blob" signature="sqlite3_column_blob(sqlite3_stmt* stmt, int iCol)"
+              alias="sqlite3_column_double, sqlite3_column_int, sqlite3_column_int64, sqlite3_column_text, sqlite3_column_text16, sqlite3_column_value, sqlite3_column_bytes, sqlite3_column_bytes16, sqlite3_column_type">
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+
+    <function name="sqlite3_finalize" signature="sqlite3_finalize(sqlite3_stmt *pStmt)"></function>
+    <function name="sqlite3_close" signature="sqlite3_close(sqlite3* db)" alias="sqlite3_close_v2"/>
+
+    <function name="sqlite3_exec" signature="sqlite3_exec(sqlite3* db, char* sql, funcptr* callback, void* payload, char** errmsg)">
+      <!-- data returned via arguments to callback function -->
+      <sink kind="sql_injection" argpos="1" resource="database"/>
+      <sink argpos="1" kind="sensitive_sql" resource="database"><checker id="sensitiveSQLChecker"/></sink>
+      <source argpos="2" kind="database_input" resource="database"/>
+    </function>
+    <function name="sqlite3_get_table" signature="sqlite3_get_table(sqlite3* db, char* sql, char** result, int* nRows, int* nCols, char** errmsg)">
+      <!-- data returned in heap -->
+      <sink kind="sql_injection" argpos="1" resource="database"/>
+      <source argpos="2" kind="database_input" resource="database"/>
+    </function>
+
+    <functionAlias name="sqlite3Malloc" super="malloc"><tags>size-check</tags></functionAlias>
+    <functionAlias name="sqlite3_malloc" super="malloc"><tags>size-check</tags></functionAlias>
+    <functionAlias name="sqlite3_malloc64" super="malloc"><tags>size-check</tags></functionAlias>
+    <function name="sqlite3MallocSize" signature="int sqlite3MallocSize(void* ptr)">
+      <tags>memory size, pointer:0</tags>
+    </function>
+    <function name="sqlite3_msize" signature="sqlite3_uint64 sqlite3_msize(void* ptr)">
+      <tags>memory size, pointer:0</tags>
+    </function>
+    <functionAlias name="sqlite3_free" super="free"/>
+    <function name="sqlite3DbFree" signature="void sqlite3DbFreeNN(sqlite3* db, void* p)" alias="sqlite3DbFreeNN">
+      <tags>memory deallocation,pointer:1</tags>
+    </function>
+    <functionAlias name="sqlite3Realloc" signature="void* sqlite3Realloc(void* pOld, u64 nBytes)" super="realloc">
+      <return type="void*"/>
+    </functionAlias>
+    <functionAlias name="sqlite3_realloc" signature="void* sqlite3_realloc(void* pOld, int nBytes)" super="realloc">
+    </functionAlias>
+    <functionAlias name="sqlite3MallocZero" signature="void* sqlite3MallocZero(u64 n)" super="malloc">
+      <tags>buffer-set, initialized,size-check</tags>
+    </functionAlias>
+    <functionAlias name="sqlite3DbMallocZero" signature="void* sqlite3DbMallocZero(sqlite3* db, u64 n)" super="malloc">
+      <tags>buffer-set, memsize:1, initialized,size-check</tags>
+    </functionAlias>
+    <functionAlias name="sqlite3DbMallocRaw" signature="void* sqlite3DbMallocZero(sqlite3* db, u64 n)" super="malloc">
+      <tags>memsize:1,size-check</tags>
+    </functionAlias>
+    <functionAlias name="sqlite3DbMallocRawNN" signature="void* sqlite3DbMallocRawNN(sqlite3* db, u64 n)" super="malloc">
+      <tags>memsize:1,size-check</tags>
+    </functionAlias>
+    <functionAlias name="sqlite3DbRealloc" signature="void* sqlite3DbRealloc(sqlite3 *db, void *p, u64 n)" super="realloc">
+      <tags>pointer:1,memsize:2</tags>
+      <propagate from="1" to="-1"/>
+    </functionAlias>
+    <functionAlias name="sqlite3DbReallocOrFree" super="sqlite3DbRealloc"/>
+    <functionAlias name="sqlite3DbStrDup" signature="char* sqlite3DbStrDup(sqlite3* db, const char* z)" super="strdup">
+      <tags>pointer:1</tags>
+      <propagate from="1" to="-1"/>
+    </functionAlias>
+    <functionAlias name="sqlite3DbStrNDup" signature="char* sqlite3DbStrDup(sqlite3* db, const char* z, u64 n)" super="strndup">
+      <tags>pointer:1,memsize:2</tags>
+    </functionAlias>
+    <functionAlias name="sqlite3Strlen30" super="strlen"/>
+
+    <class name="sqlite3_api_routines">
+      <functionAlias name="free" super="free"/>
+      <functionAlias name="malloc" super="malloc"><tags>size-check</tags></functionAlias>
+      <functionAlias name="malloc64" super="malloc"><tags>size-check</tags></functionAlias>
+      <functionAlias name="realloc" super="realloc"/>
+      <functionAlias name="msize" super="sqlite3_msize"/>
+      
+      <functionAlias name="open" super="sqlite3_open"/>
+      <functionAlias name="open16" super="sqlite3_open"/>
+      <functionAlias name="open_v2" super="sqlite3_open_v2"/>
+      
+      <functionAlias name="prepare" super="sqlite3_prepare"/>
+      <functionAlias name="prepare16" super="sqlite3_prepare"/>
+      <functionAlias name="prepare_v2" super="sqlite3_prepare"/>
+      <functionAlias name="prepare16_v2" super="sqlite3_prepare"/>
+      <functionAlias name="prepare_v3" super="sqlite3_prepare"/>
+      <functionAlias name="prepare16_v3" super="sqlite3_prepare"/>
+
+      <functionAlias name="exec" super="sqlite3_exec"/>
+      <functionAlias name="get_table" super="sqlite3_get_table"/>
+
+      <functionAlias name="bind_blob" super="sqlite3_bind_blob"/>
+      <functionAlias name="bind_blob64" super="sqlite3_bind_blob"/>
+      <functionAlias name="bind_text" super="sqlite3_bind_blob"/>
+      <functionAlias name="bind_text16" super="sqlite3_bind_blob"/>
+      <functionAlias name="bind_text64" super="sqlite3_bind_text64"/>
+      <functionAlias name="bind_double" super="sqlite3_bind_double"/>
+      <functionAlias name="bind_int" super="sqlite3_bind_double"/>
+      <functionAlias name="bind_int64" super="sqlite3_bind_double"/>
+      <functionAlias name="bind_null" super="sqlite3_bind_null"/>
+      <functionAlias name="bind_zero_blob" super="sqlite3_bind_zero_blob"/>
+      <functionAlias name="bind_zero_blob64" super="sqlite3_bind_zero_blob"/>
+      <functionAlias name="bind_value" super="sqlite3_bind_value"/>
+      <functionAlias name="bind_pointer" super="sqlite3_bind_pointer"/>
+
+      <functionAlias name="step" super="sqlite3_step"/>
+      <functionAlias name="column_blob" super="sqlite3_column_blob"/>
+      <functionAlias name="column_double" super="sqlite3_column_blob"/>
+      <functionAlias name="column_int" super="sqlite3_column_blob"/>
+      <functionAlias name="column_int64" super="sqlite3_column_blob"/>
+      <functionAlias name="column_text" super="sqlite3_column_blob"/>
+      <functionAlias name="column_text16" super="sqlite3_column_blob"/>
+      <functionAlias name="column_value" super="sqlite3_column_blob"/>
+      <functionAlias name="column_bytes" super="sqlite3_column_blob"/>
+      <functionAlias name="column_bytes16" super="sqlite3_column_blob"/>
+      <functionAlias name="column_type" super="sqlite3_column_blob"/>
+
+      <functionAlias name="finalize" super="sqlite3_finalize"/>
+      <functionAlias name="close" super="sqlite3_close"/>
+    </class>
+  </module>
+
+  <globalObject name="sqlite3_api" type="sqlite3_api_routines*"/>
+
+  <module name="mysql.h" standard="libmysqlclient">
+    <description url="https://dev.mysql.com/doc/refman/8.0/en/c-api.html">MySQL C API</description>
+    <function name="mysql_connect" match="name">
+      <tags>host:1, username:2, password:3, dbopen, dbHandle:-1</tags>
+      <return type="MYSQL*"/>
+      <sink kind="hardcoded_credentials" argpos="2,3" resource="database"/>
+      <sink kind="resource_injection" resource="database" argpos="1"/>
+    </function>
+    <function name="mysql_real_connect" match="name" alias="mysql_real_connect_nonblocking">
+      <tags>host:1, username:2, password:3, database:4, port:5</tags>
+      <return type="MYSQL*"/>
+      <sink kind="hardcoded_credentials" argpos="2,3" resource="database"/>
+      <sink kind="resource_injection" resource="database" argpos="1,4,5,6"/>
+    </function>
+    <function name="mysql_change_user" match="name">
+      <tags>username:1, password:2, database:3</tags>
+      <sink kind="hardcoded_credentials" argpos="1,2" resource="database"/>
+    </function>
+    <function name="mysql_select_db" match="name">
+      <sink kind="resource_injection" resource="database" argpos="1"/>
+    </function>
+    <function name="mysql_query" alias="mysql_real_query, mysql_real_query_nonblocking" match="name">
+      <tags>dbExec, dbHandle:0, stmtHandle:-1</tags>
+      <sink kind="sql_injection" resource="database" argpos="0" neutralizer="sql_injection"/>
+    </function>
+    <class name="MYSQL_STMT" kind="struct"/>
+    <function name="mysql_stmt_bind_result" signature="bool mysql_stmt_bind_result(MYSQL_STMT *stmt, MYSQL_BIND *bind)">
+      <source kind="database_input" argpos="1" resource="database"/>
+    </function>
+    <function name="mysql_stmt_fetch_column" signature="int mysql_stmt_fetch_column(MYSQL_STMT *stmt, MYSQL_BIND *bind, unsigned int column, unsigned long offset)">
+      <source kind="database_input" argpos="1" resource="database"/>
+    </function>
+    <function name="mysql_stmt_init" match="name">
+      <tags>dbExec, dbHandle:0, stmtHandle:1</tags>
+      <return type="MYSQL_STMT*"/>
+    </function>
+    <function name="mysql_stmt_prepare" signature="int mysql_stmt_prepare(MYSQL_STMT *stmt, const char *sql, size_t length)">
+      <sink kind="sql_injection" resource="database" argpos="1" neutralizer="sql_injection"/>
+    </function>
+    <function name="mysql_stmt_bind_param" signature="bool mysql_stmt_bind_param(MYSQL_STMT *stmt, MYSQL_BIND *bind)">
+    </function>
+    <function name="mysql_stmt_execute" signature="int mysql_stmt_execute(MYSQL_STMT *stmt)">
+      <tags>dnExec</tags>
+    </function>
+    <function name="mysql_stmt_close" match="name"><tags>dbExecClose, stmtHandle:0</tags></function>
+    <function name="mysql_close" match="name">
+      <tags>dbClose, dbHandle:0</tags>
+    </function>
+
+    <function name="mysql_escape_string" match="name" alias="mysql_real_escape_string">
+      <!-- see https://stackoverflow.com/questions/5741187/sql-injection-that-gets-around-mysql-real-escape-string -->
+      <!-- <neutralization kind="sql_injection" resource="database"/>  --> <!-- could be escaped, should not be used -->
+      <neutralization argpos="-1" kind="command_injection" resource="database"/>
+    </function>
+    <function name="mysql_real_escape_string_quote" match="name">
+      <neutralization argpos="-1" kind="sql_injection" resource="database"/>
+      <neutralization argpos="-1" kind="command_injection" resource="database"/>
+    </function>
+  </module>
+  
+  <module name="cppconn/driver.h" standard="jdbc">
+    <!-- This is the same as the JDBC API (!) -->
+    <description url="https://dev.mysql.com/doc/connector-cpp/1.1/en/connector-cpp-getting-started-examples.html">MySQL Connector/C++</description>
+    
+    <class name="sql.SQLString" supertypes="string"/>
+    
+    <class name="sql.Driver" kind="abstract_class">
+      <method name="connect" signature="connect(const char *connStr, const char *user, const char *pass)" match="name">
+        <tags>username:1, password:2</tags>
+        <return type="sql.Connection"/>
+        <sink kind="connection_string_injection" argpos="0"/>
+        <sink kind="hardcoded_credentials" argpos="1,2"/>
+      </method>
+    </class>
+    
+    <class name="sql.Connection" kind="abstract_class">
+      <method name="nativeSQL" signature="nativeSQL(sql.String)">
+        <return type="sql.String"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="createStatement" signature="createStatement()">
+        <return type="sql.Statement"/>
+      </method>
+      <method name="prepareCall" signature="prepareCall(sql.String)">
+        <return type="sql.CallableStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareCall_2" signature="prepareCall(sql.String, int, int)">
+        <return type="sql.CallableStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareCall_3" signature="prepareCall(sql.String, int, int, int)">
+        <return type="sql.CallableStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareStatement" signature="prepareStatement(sql.String)">
+        <return type="sql.PreparedStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareStatement_2" signature="prepareStatement(sql.String, int)">
+        <return type="sql.PreparedStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareStatement_3" signature="prepareStatement(sql.String, int[])">
+        <return type="sql.PreparedStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareStatement_4" signature="prepareStatement(sql.String, int, int)">
+        <return type="sql.PreparedStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareStatement_5" signature="prepareStatement(sql.String, int, int, int)">
+        <return type="sql.PreparedStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareStatement_6" signature="prepareStatement(sql.String, sql.String[])">
+        <return type="sql.PreparedStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="setCatalog" signature="setCatalog(sql.String)" alias="setSchema">
+        <sink argpos="0" kind="configuration_setting_injection" resource="database"/>
+      </method>
+      <method name="setClientInfo" signature="setClientInfo(sql.String, sql.String)" match="name">
+        <sink argpos="0,1" kind="configuration_setting_injection" resource="database"/>
+      </method>
+    </class>
+    
+    <class name="sql.Statement" kind="abstract_class">
+      <method name="addBatch" signature="addBatch(sql.String)">
+        <tags>write</tags>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="execute" signature="execute(sql.String)" match="name">
+        <tags>write</tags>
+        <return type="boolean"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="executeQuery" signature="executeQuery(sql.String)">
+        <tags>read</tags>
+        <return type="sql.ResultSet"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="executeUpdate" signature="executeUpdate(sql.String)" match="name">
+        <tags>write</tags>
+        <return type="int"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="executeLargeUpdate" signature="executeLargeUpdate(sql.String)" match="name">
+        <tags>write</tags>
+        <return type="long"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>      
+    </class>
+    
+    <class name="sql.PreparedStatement" kind="abstract_class" supertypes="sql.Statement">
+      <method name="setArray" signature="setArray()" match="name">
+        <tags>potentialPk::1</tags>
+      </method>
+      <method name="setAsciiStream" signature="setAsciiStream()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setBigDecimal" signature="setBigDecimal()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setBinaryStream" signature="setBinaryStream()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setBlob" signature="setBlob()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setBoolean" signature="setBoolean()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setBlob" signature="setBlob()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setByte" signature="setByte()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setBytes" signature="setBytes()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setCharacterStream" signature="setCharacterStream()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setClob" signature="setClob()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setDate" signature="setDate()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setDouble" signature="setDouble()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setFloat" signature="setFloat()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setInt" signature="setInt()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setLong" signature="setLong()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setObject" signature="setObject()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setString" signature="setString()" match="name">
+        <tags>potentialPk:</tags>
+      </method>
+      <method name="setURL" signature="setURL()" match="name">
+        <tags>potentialPk:</tags>
+      </method>      
+    </class>
+
+    <class name="sql.ResultSet" kind="abstract_class">
+      <tags>jdbc</tags>
+      <method name="getString" signature="getString(int)">
+        <return type="sql.String"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getString" signature="getString(sql.String)">
+        <return type="sql.String"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getObject" signature="getObject(int)">
+        <return type="java.lang.Object" />
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getObject" signature="getObject(sql.String)">
+        <return type="java.lang.Object" />
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getInt" signature="getInt(int)">
+        <return type="int"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getInt" signature="getInt(sql.String)">
+        <return type="int"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getLong" signature="getLong(int)">
+        <return type="long" />
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="getLong" signature="getLong(sql.String)">
+        <return type="long" />
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="next" signature="next()" match="name">
+        <tags>potential_infinite_loop_neutralizer</tags>
+        <return type="boolean" />
+        <propagate from="-2" to="-1"/>
+      </method>
+    </class>
+    
+    <function name="get_driver_instance" signature="get_driver_instance()">
+      <return type="sql.Driver"/>
+    </function>
+    <function name="get_driver_instance_by_name" signature="get_driver_instance_by_name(const char* clientlib)">
+      <return type="sql.Driver"/>
+      <sink kind="process_control" argpos="0" resource="filesystem"/>
+    </function>
+
+    <class name="sql.mysql.MySQL_Driver" supertypes="sql.Driver">
+      <method name="get_mysql_driver_instance" match="name" signature="get_mysql_driver_instance()" instance="false">
+        <return type="sql.mysql.MySQL_Driver"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="mysqlx/xdevapi.h" standard="mysql/connector++">
+    <description url="https://dev.mysql.com/doc/dev/connector-cpp/8.0">X DevAPI for MySQL 8.x</description>
+    <!-- TODO -->
+  </module>
+  
+  <module name="libpq-fe.h" standard="libpq">
+    <description url="https://www.postgresql.org/docs/12/libpq.html">Postgres C library</description>
+
+    <class name="pqbool" supertypes="bool"/>
+
+    <function name="PQconnectdbParams" signature="PQconnectdbParams(const char* *keywords, const char* *values, int expName)" match="name"
+              alias="PQconnectStartParams">
+      <return type="PGConn*"/>
+      <sink kind="resource_injection" argpos="1" resource="database"/>
+    </function>
+    <function name="PQconnectdb" match="name" signature="PQconnectdb(const char *conninfo)" alias="PQconnectStart">
+      <!-- postgresql://[user[:password]@][netloc][:port][,...][/dbname][?param1=value1&...] -->
+      <return type="PGConn*"/>
+      <sink kind="connection_string_injection" argpos="1" resource="database"/>
+    </function>
+    <function name="PQsetdbLogin" match="name">
+      <tags>username:5, password:6</tags>
+      <sink kind="resource_injection" argpos="0,1,4,5,6"/>
+      <sink kind="hardcoded_credentials" argpos="5,6"/>
+    </function>
+
+    <function name="PQexec" signature="PGresult *PQexec(PGconn *conn, const char *command)" match="name"
+              alias="PQexecParams">
+      <return type="PGresult*"/>
+      <sink kind="sql_injection" argpos="1" resource="database"/>
+    </function>
+    <function name="PQprepare" signature="PGresult *PQprepare(PGconn *conn, const char *stmtName, const char *query, int nParams, const Oid *paramTypes)">
+      <return type="PGresult*"/>
+      <sink kind="sql_injection" argpos="2" resource="database"/>
+    </function>
+    <function name="PQexecPrepared" match="name">
+      <!-- This executes a previously prepared stmt with params, no sqli -->
+      <return type="PGresult*"/>
+    </function>
+    <function name="PQsendQuery" signature="int PQsendQuery(PGconn *conn, const char *command)" match="name"
+              alias="PQsendQueryParams">
+      <sink kind="sql_injection" argpos="1" resource="database"/>
+    </function>
+    <function name="PQsendPrepare" match="name">
+      <sink kind="sql_injection" argpos="2" resource="database"/>
+    </function>
+    <function name="PQsendQueryPrepared" match="name"></function>
+
+    <function name="PQgetResult" signature="PGresult *PQgetResult(PGconn *conn)" match="name">
+      <return type="PGresult*"/>
+    </function>
+    <function name="PQgetvalue" match="name" signature="char *PQgetvalue(const PGresult *res, int rownun, int colnum)">
+      <return type="char*"/>
+      <source argpos="-1" resource="database" kind="database_input"/>
+      <propagate from="0" to="-1"/>
+    </function>
+    <function name="PQprint" match="name" signature="void PQprint(FILE *fout, const PGresult *res, const PQprintOpt *po)">
+    </function>
+
+    <function name="PQputCopyData" signature="int PQputCopyData(PGconn *conn, const char *buffer, int nbytes)"/>
+    <function name="PQputline" alias="PQputnbytes"/>
+    <function name="PQgetCopyData" signature="int PQgetCopyData(PGconn *conn, char **buffer, int async)"
+              alias="PQgetline, PQgetlineAsync">
+      <source argpos="1" resource="database" kind="database_input"/>
+    </function>
+
+    <function name="PQescapeLiteral" match="name" signature="char *PQescapeLiteral(PGconn *conn, const char *str, size_t length)" 
+              alias="PQescapeIdentifier">
+      <return type="char*"/>
+      <neutralization argpos="-1" kind="sql_injection" resource="database"/>
+      <propagate from="1" to="-1"/>
+    </function>
+    <function name="PQescapeStringConn" match="name" signature="size_t PQescapeStringConn(PGconn *conn, char *to, const char *from, size_t length, int *error)">
+      <neutralization argpos="1" kind="sql_injection" resource="database"/>
+      <propagate from="2" to="1"/>
+    </function>
+    <function name="PQescapeString" signature="size_t PQescapeString(char *to, const char *from, size_t length)">
+      <neutralization argpos="0" kind="sql_injection" resource="database"/>
+      <propagate from="1" to="0"/>
+    </function>
+    <function name="PQescapeByteaConn" signature="unsigned char *PQescapeByteaConn(PGconn *conn, const unsigned char *from, size_t from_length, size_t *to_length)">
+      <neutralization argpos="-1" kind="sql_injection" resource="database"/>
+      <propagate from="1" to="-1"/>
+    </function>
+    <function name="PQescapeBytea" signature="unsigned char *PQescapeByteaConn(const unsigned char *from, size_t from_length, size_t *to_length)">
+      <neutralization argpos="-1" kind="sql_injection" resource="database"/>
+      <propagate from="0" to="-1"/>
+    </function>
+    <function name="PQunescapeBytea" match="name">
+      <propagate from="0" to="-1"/>
+    </function>
+  </module>
+
+  <module name="Poco/Data/Session.h" standard="POCO">
+    <description url="https://pocoproject.org/docs/Poco.Data.html">POCO Data</description>
+    <class name="Poco.Data.Statement.Result"/>
+
+    <class name="Poco.Data.Statement">
+      <constructor name="Statement" signature="Statement(Poco.Data.Session)"></constructor>
+      <method name="execute" signature="execute()" match="name"><return type="size_t"/></method>
+      <method name="executeAsync" signature="executeAsync()" match="name"><return type="Poco.Data.Statement.Result"/></method>
+      <method name="operator_&lt;&lt;" signature="optor_&lt;&lt;(const string&amp; sql)">
+        <tags>operator, binary, op:&lt;&lt;</tags>
+        <return type="Poco.Data.Statement"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="operator_," signature="optor_,(Manipulator manip)">
+        <tags>operator, binary, op:,</tags>
+        <return type="Poco.Data.Statement&amp;"/>
+      </method>
+    </class>
+
+    <class name="Poco.Data.Row">
+      <method name="get" signature="get(size_t col)">
+        <return type="Poco.Dynamic.Var"/>
+        <source kind="database_input" resource="database" argpos="-1"/>
+      </method>
+      <method name="operator_[]" signature="operator_[](string&amp; name)">
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="values" signature="values()">
+        <return type="vector" elementType="Poco.Dynamic.Var"/>
+        <source kind="database_input" resource="database" argpos="-1"/>
+      </method>
+      <method name="valuesToString" signature="valuesToString()">
+        <return type="string&amp;"/>
+        <source kind="database_input" resource="database" argpos="-1"/>
+      </method>
+    </class>
+    <class name="Poco.Data.Column">
+      <method name="data" signature="data()">
+        <return type="Poco.Dynamic.Var"/>
+        <source kind="database_input" resource="database" argpos="-1"/>
+      </method>
+    </class>
+    <class name="Poco.Data.Keywords">
+
+    </class>
+
+    <class name="Poco.Data.RecordSet">
+      <constructor name="RecordSet" signature="RecordSet(Poco.Data.Statement&amp; stmt)">
+      </constructor>
+      <constructor name="RecordSet_2" signature="RecordSet(Poco.Data.Session&amp; session, const string&amp; sql)">
+        <sink kind="sql_injection" argpos="1" resource="database"/>
+      </constructor>
+      <constructor name="RecordSet_3" signature="RecordSet(Poco.Data.Session&amp; session, const string&amp; sql, RowFormatter&amp; rowFmt)">
+        <sink kind="sql_injection" argpos="1" resource="database"/>
+      </constructor>
+      <method name="copy" signature="copy(ostream&amp; os)" match="name" alias="copyValues">
+        <source kind="database_input" argpos="0" resource="database"/>
+      </method>
+      <method name="operator_[]" signature="operator_[](string&amp; name)">
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="nvl" signature="nvl(string&amp; name, const T&amp; defval)" match="name">
+        <return type="Poco.Dynamic.Var"/>
+        <source kind="database_input" resource="database" argpos="-1"/>
+      </method>
+      <method name="row" signature="row(size_t pos)">
+        <return type="Poco.Data.Row"/>
+      </method>
+      <method name="column" signature="column(size_t pos)">
+        <return type="Poco.Data.Row"/>
+      </method>
+      <method name="value" signature="value(size_t col, size_t row)" match="name">
+        <return type="Poco.Dynamic.Var"/>
+        <source kind="database_input" resource="database" argpos="-1"/>
+      </method>
+    </class>
+
+    <class name="Poco.Data.Session">
+      <constructor name="Session" signature="Session(const string&amp; key, const string&amp; connStr)" match="numargs">
+        <sink kind="resource_injection" argpos="0" resource="database"/>
+        <sink kind="connection_string_injection" argpos="1" resource="database"/>
+      </constructor>
+      <constructor name="Session_2" signature="Session(const string&amp; key, const string&amp; connStr, size_t timeout)" match="numargs">
+        <sink kind="resource_injection" argpos="0" resource="database"/>
+        <sink kind="connection_string_injection" argpos="1" resource="database"/>
+      </constructor>
+      <constructor name="Session_3" signature="Session(const string&amp; uri)" match="numargs">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </constructor>
+      <method name="open" signature="open(const string&amp; connStr)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="operator_&lt;&lt;" signature="optor_&lt;&lt;(const string&amp; sql)">
+        <tags>operator, binary, op:&lt;&lt;</tags>
+        <return type="Poco.Data.Statement"/>
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+
+    <class name="Poco.Data.SessionFactory">
+      <method name="instance" signature="instance()" match="name"><return type="Poco.Data.SessionFactory"/></method>
+      <method name="create" signature="create(const string&amp; key, const string&amp; connStr)" match="numargs">
+        <return type="Poco.Data.Session"/>
+        <sink kind="resource_injection" argpos="0" resource="database"/>
+        <sink kind="connection_string_injection" argpos="1" resource="database"/>
+      </method>
+      <method name="create" signature="create(const string&amp; key, const string&amp; connStr, size_t timeout)" match="numargs">
+        <return type="Poco.Data.Session"/>
+        <sink kind="resource_injection" argpos="0" resource="database"/>
+        <sink kind="connection_string_injection" argpos="1" resource="database"/>
+      </method>
+      <method name="create" signature="create(const string&amp; uri)" match="numargs">
+        <return type="Poco.Data.Session"/>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+  </module>
+  
+</library>

@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.hibernate" standard="Hibernate" technology="java">
+
+  <description>Hibernate Object-Relational Mapper and third-party support libraries</description>
+
+  <module name="hibernate.orm" standard="hibernate.orm">
+    <description url="https://hibernate.org/orm/">Hibernate ORM - Object/Relational mapping</description>
+
+    <class name="net.sf.hibernate.Session" kind="interface" supertypes="java.io.Serializable" standard="hibernate2"
+           alias="org.hibernate.classic.Session">
+      <description>
+        The main runtime interface between a Java application and Hibernate.
+        This is the central API class abstracting the notion of a persistence service.
+      </description>
+
+      <method name="close" signature="close()"><tags>hibernate,close</tags><return type="java.sql.Connection"/></method>
+      <method name="connection" signature="connection()"><return type="java.sql.Connection"/></method>
+
+      <method name="createFilter" signature="createFilter(java.lang.Object, java.lang.String)">
+        <tags>hibernate</tags>
+        <return type="net.sf.hibernate.Query"/>
+        <sink argpos="1" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="createCriteria" signature="createCriteria(java.lang.Class)">
+        <tags>hibernate</tags>
+        <return type="net.sf.hibernate.Criteria"/>
+      </method>
+
+      <method name="createQuery" signature="createQuery(java.lang.String)">
+        <tags>hibernate</tags>
+        <return type="net.sf.hibernate.Query"/>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+
+      <method name="createSQLQuery" signature="createSQLQuery(java.lang.String, java.lang.String[], java.lang.Class[])">
+        <tags>hibernate</tags>
+        <return type="net.sf.hibernate.Query"/>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="createSQLQuery_2" signature="createSQLQuery(java.lang.String, java.lang.String, java.lang.Class)">
+        <tags>hibernate</tags>
+        <return type="net.sf.hibernate.Query"/>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+
+      <method name="delete" signature="delete(java.lang.String)" match="fullsignature">
+        <tags>hibernate,write</tags>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="delete" signature="delete(java.lang.Object)" match="fullsignature">
+        <tags>hibernate,write</tags>
+      </method>
+      <method name="delete_2" signature="delete(java.lang.String, java.lang.Object[], net.sf.hibernate.Type[])">
+        <tags>hibernate,write</tags>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="delete_3" signature="delete(java.lang.String, java.lang.Object, net.sf.hibernate.Type)">
+        <tags>hibernate,write</tags>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+
+      <method name="filter" signature="filter(java.lang.Object, java.lang.String)">
+        <tags>hibernate</tags>
+        <return type="java.util.Collection"/>
+        <sink argpos="1" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="filter_2" signature="filter(java.lang.Object, java.lang.String, java.lang.Object[], net.sf.hibernate.Type[])">
+        <tags>hibernate</tags>
+        <return type="java.util.Collection"/>
+        <sink argpos="1" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="filter_3" signature="filter(java.lang.Object, java.lang.String, java.lang.Object, net.sf.hibernate.Type)">
+        <tags>hibernate</tags>
+        <return type="java.util.Collection"/>
+        <sink argpos="1" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+
+      <method name="find" signature="find(java.lang.String)">
+        <tags>hibernate</tags>
+        <return type="java.util.List"/>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="find_2" signature="find(java.lang.String, java.lang.Object[], net.sf.hibernate.Type[])">
+        <tags>hibernate</tags>
+        <return type="java.util.List"/>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="find_3" signature="find(java.lang.String, java.lang.Object, net.sf.hibernate.Type)">
+        <tags>hibernate</tags>
+        <return type="java.util.List"/>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+
+      <method name="iterate" signature="iterate(java.lang.String)">
+        <tags>hibernate</tags>
+        <return type="java.util.Iterator"/>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="iterate_2" signature="iterate(java.lang.String, java.lang.Object[], net.sf.hibernate.Type[])">
+        <tags>hibernate</tags>
+        <return type="java.util.Iterator"/>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="iterate_3" signature="iterate(java.lang.String, java.lang.Object, net.sf.hibernate.Type)">
+        <tags>hibernate</tags>
+        <return type="java.util.Iterator"/>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+
+      <method name="update" signature="update(java.lang.Object,java.io.Serializable)" match="name"
+              alias="save,saveOrUpdate,saveOrUpdateCopy">
+        <tags>hibernate,write</tags>
+      </method>
+    </class>
+
+    <class name="org.hibernate.Session" kind="interface" supertypes="java.io.Serializable" standard="hibernate3">
+      <description>
+        The main runtime interface between a Java application and Hibernate.
+        This is the central API class abstracting the notion of a persistence service.
+      </description>
+      <method name="close" signature="close()"><tags>hibernate,close</tags><return type="java.sql.Connection"/></method>
+      <method name="connection" signature="connection()"><return type="java.sql.Connection"/></method>
+
+      <method name="createCriteria" signature="createCriteria(java.lang.Class)" match="name">
+        <return type="org.hibernate.Criteria"/>
+      </method>
+      <method name="createFilter" signature="createFilter(java.lang.Object, java.lang.String)">
+        <tags>hibernate</tags>
+        <return type="org.hibernate.Query"/>
+        <sink argpos="1" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="createQuery" signature="createQuery(java.lang.String)">
+        <tags>hibernate</tags>
+        <return type="org.hibernate.Query"/>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="createSQLQuery" signature="createSQLQuery(java.lang.String)">
+        <tags>hibernate</tags>
+        <return type="org.hibernate.SQLQuery"/>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+
+      <method name="delete" signature="delete(java.lang.Object)" match="fullsignature">
+        <tags>hibernate,write</tags>
+      </method>
+      <method name="delete_1" signature="delete(java.lang.String)" match="fullsignature">
+        <tags>hibernate,write</tags>
+        <sink kind="sql_injection" resource="database" argpos="0"><tags>cwe:564</tags></sink>
+      </method>
+
+      <method name="filter" signature="filter(java.lang.Object, java.lang.String)">
+        <tags>hibernate</tags>
+        <sink argpos="1" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="filter_2" signature="filter(java.lang.Object, java.lang.String, java.lang.Object[], org.hibernate.Type[])">
+        <tags>hibernate</tags>
+        <sink argpos="1" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="filter_3" signature="filter(java.lang.Object, java.lang.String, java.lang.Object, org.hibernate.Type)">
+        <tags>hibernate</tags>
+        <sink argpos="1" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+
+      <method name="find" signature="find(java.lang.String)">
+        <tags>hibernate</tags>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="find_2" signature="find(java.lang.String, java.lang.Object[], org.hibernate.Type[])">
+        <tags>hibernate</tags>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="find_3" signature="find(java.lang.String, java.lang.Object, org.hibernate.Type)">
+        <tags>hibernate</tags>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+
+      <method name="iterate" signature="iterate(java.lang.String)">
+        <tags>hibernate</tags>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="iterate_2" signature="iterate(java.lang.String, java.lang.Object[], org.hibernate.Type[])">
+        <tags>hibernate</tags>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="iterate_3" signature="iterate(java.lang.String, java.lang.Object, org.hibernate.Type)">
+        <tags>hibernate</tags>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+
+      <method name="get" signature="get(java.lang.Class)" match="name">
+        <tags>hibernate</tags>
+        <return type="java.lang.Object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+
+      <method name="getNamedQuery" signature="getNamedQuery(java.lang.String)">
+        <return type="org.hibernate.Query"/>
+        <sink kind="resource_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="getSessionFactory" signature="getSessionFactory()">
+        <return type="org.hibernate.SessionFactory"/>
+      </method>
+
+      <method name="load" signature="load(java.lang.String)" match="fullsignature">
+        <tags>hibernate</tags>
+        <return type="java.lang.Object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <sink kind="sql_injection" resource="database" argpos="0"><tags>cwe:564</tags></sink>
+      </method>
+      <method name="load_2" signature="load(java.lang.String, java.io.Serializable)" match="fullsignature">
+        <tags>hibernate</tags>
+        <return type="java.lang.Object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <sink kind="sql_injection" resource="database" argpos="0"><tags>cwe:564</tags></sink>
+      </method>
+      <method name="load_3" signature="load(java.lang.String, java.io.Serializable, org.hibernate.LockOptions)" match="fullsignature">
+        <tags>hibernate</tags>
+        <return type="java.lang.Object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <sink kind="sql_injection" resource="database" argpos="0"><tags>cwe:564</tags></sink>
+      </method>
+      <method name="load_1" signature="load(java.lang.Object)" match="fullsignature">
+        <tags>hibernate</tags>
+        <return type="java.lang.Object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="load_12" signature="load(java.lang.Object, java.io.Serializable)" match="fullsignature">
+        <tags>hibernate</tags>
+        <return type="java.lang.Object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="load_13" signature="load(java.lang.Object, java.io.Serializable, org.hibernate.LockOptions)" match="fullsignature">
+        <tags>hibernate</tags>
+        <return type="java.lang.Object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+
+      <method name="update" signature="update(java.lang.Object,java.io.Serializable)" match="name"
+              alias="merge,persist,replicate,save,saveOrUpdate,saveOrUpdateCopy">
+        <tags>hibernate,write</tags>
+      </method>
+    </class>
+
+    <class name="org.hibernate.SessionFactory" kind="interface" supertypes="java.io.Serializable,javax.naming.Referenceable" standard="hibernate3">
+      <method name="getCurrentSession" signature="getCurrentSession()" >
+        <return type="org.hibernate.Session" />
+      </method>
+      <method name="openSession" signature="openSession()" >
+        <return type="org.hibernate.Session" />
+      </method>
+      <method name="openSession" signature="openSession(java.sql.Connection)" >
+        <return type="org.hibernate.Session" />
+      </method>
+      <method name="openSession" signature="openSession(java.sql.Connection, org.hibernate.Interceptor)" >
+        <return type="org.hibernate.Session" />
+      </method>
+      <method name="openSession" signature="openSession(org.hibernate.Interceptor)" >
+        <return type="org.hibernate.Session" />
+      </method>
+      <method name="openStatelessSession" signature="openStatelessSession()" >
+        <return type="org.hibernate.StatelessSession" />
+      </method>
+      <method name="openStatelessSession" signature="openStatelessSession(java.sql.Connection)" >
+        <return type="org.hibernate.StatelessSession" />
+      </method>
+    </class>
+
+    <class name="org.hibernate.criterion.Restrictions">
+      <method name="sqlRestriction" signature="sqlRestriction(java.lang.String)" match="name">
+        <tags>hibernate</tags>
+        <return type="org.hibernate.criterion.Criterion"/>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+      <method name="other" signature="other()" match="all">
+        <return type="org.hibernate.criterion.Criterion"/>
+      </method>
+    </class>
+
+    <class name="org.hibernate.criterion.Expression">
+      <method name="sql" signature="sql(java.lang.String)" match="name">
+        <tags>hibernate, deprecated</tags>
+        <return type="org.hibernate.criterion.Criterion"/>
+        <sink argpos="0" kind="sql_injection" resource="database">
+          <tags>cwe:564</tags>
+        </sink>
+      </method>
+    </class>
+
+    <class name="org.hibernate.Query" kind="interface" supertypes="" >
+      <method name="iterate" signature="iterate()" match="name" >
+        <return type="java.util.Iterator" />
+        <source argpos="-1" kind="database_input" resource="other" />
+      </method>
+      <method name="list" signature="list()" match="name" >
+        <return type="java.util.List" />
+        <source argpos="-1" kind="database_input" resource="other" />
+      </method>
+      <method name="scroll" signature="scroll()" match="name" >
+        <return type="org.hibernate.ScrollableResults" />
+        <source argpos="-1" kind="database_input" resource="other" />
+      </method>
+    </class>
+
+    <class name="org.hibernate.SQLQuery" kind="interface" supertypes="org.hibernate.Query" />
+
+  </module>
+
+  <module name="spring.orm.hibernate" standard="spring.orm.hibernate">
+    <description url="https://docs.spring.io/autorepo/docs/spring-framework/4.2.7.RELEASE/spring-framework-reference/html/orm.html#orm-hibernate">
+      Spring support to Hibernate ORM
+    </description>
+
+    <!-- https://docs.spring.io/spring/docs/3.2.18.RELEASE -->
+    <class name="org.springframework.orm.hibernate3.support.HibernateDaoSupport">
+      <constructor name="HibernateDaoSupport" signature="HibernateDaoSupport()" />
+
+      <method name="convertHibernateAccessException" signature="convertHibernateAccessException(org.hibernate.HibernateException)" match="name">
+        <return type="org.springframework.dao.DataAccessException"/>
+      </method>
+      <method name="getHibernateTemplate" signature="getHibernateTemplate()" match="name">
+        <return type="org.springframework.orm.hibernate3.HibernateTemplate"/>
+      </method>
+      <method name="createHibernateTemplate" signature="createHibernateTemplate(org.hibernate.SessionFactory)" match="name">
+        <return type="org.springframework.orm.hibernate3.HibernateTemplate"/>
+      </method>
+      <method name="getSession" signature="getSession()" match="name">
+        <return type="org.hibernate.Session"/>
+      </method>
+      <method name="getSessionFactory" signature="getSessionFactory()" match="name">
+        <return type="org.hibernate.SessionFactory"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.orm.hibernate3.HibernateTemplate">
+      <method name="bulkUpdate" signature="bulkUpdate(java.lang.String)" match="name">
+        <tags>hibernate, hql</tags>
+        <return type="int"/>
+        <sink argpos="0" kind="sql_injection" resource="database"><tags>cwe:564</tags></sink>
+      </method>
+
+      <method name="delete" signature="delete(java.lang.String)" match="name">
+        <tags>hibernate,write</tags>
+      </method>
+      <method name="deleteAll" signature="deleteAll(java.util.Collection)" match="name">
+        <tags>hibernate,write</tags>
+      </method>
+
+      <method name="execute" signature="execute(org.springframework.orm.hibernate3.HibernateCallback)" alias="executeWithNewSession, executeWithNativeSession">
+        <tags>hibernate,write</tags>
+        <return type="java.lang.Object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="executeFind" signature="executeFind(org.springframework.orm.hibernate3.HibernateCallback)">
+        <tags>hibernate,write</tags>
+        <return type="java.util.List"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+
+      <method name="getSession" signature="getSession()">
+        <return type="org.hibernate.Session"/>
+      </method>
+
+      <method name="find" signature="	find(java.lang.String, java.lang.Object...)" match="name" alias="findByNamedParam, findByValueBean">
+        <tags>hibernate, hql</tags>
+        <return type="java.util.List"/>
+        <sink argpos="0" kind="sql_injection" resource="database"><tags>cwe:564</tags></sink>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      
+      <method name="findByNamedQuery" signature="findByNamedQuery(java.lang.String)" match="name"
+              alias="findByNamedQueryAndNamedParam, findByNamedQueryAndValueBean">
+        <tags>hibernate</tags>
+        <return type="java.util.List"/>
+        <sink argpos="0" kind="sql_injection" resource="database"><tags>cwe:564</tags></sink>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+
+      <method name="findByCriteria" signature="findByCriteria(org.hibernate.criterion.DetachedCriteria)">
+        <tags>hibernate</tags>
+        <return type="java.util.List"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+
+      <method name="findByExample" signature="findByExample(java.lang.Object)" match="name">
+        <tags>hibernate</tags>
+        <return type="java.util.List"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+
+      <method name="get" signature="get(java.lang.Class, java.io.Serializable)" match="name" alias="load">
+        <tags>hibernate</tags>
+        <return type="java.lang.Object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+
+      <method name="loadAll" signature="loadAll(java.lang.Class)">
+        <tags>hibernate</tags>
+        <return type="java.util.List"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+
+      <method name="iterate" signature="iterate(java.lang.String, java.lang.Object...)" match="name">
+        <tags>hibernate</tags>
+        <sink argpos="0" kind="sql_injection" resource="database"><tags>cwe:564</tags></sink>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+
+      <method name="update" signature="update(java.lang.Object,java.io.Serializable)" alias="save,saveOrUpdate,saveOrUpdateCopy,saveOrUpdateAll" match="name">
+        <tags>hibernate,write</tags>
+      </method>
+
+      <method name="persist" signature="persist(java.lang.Object)" alias="merge" match="name">
+        <tags>hibernate,write</tags>
+      </method>
+    </class>
+
+    <class name="org.springframework.orm.hibernate5.support.HibernateDaoSupport">
+      <constructor name="HibernateDaoSupport" signature="HibernateDaoSupport()" />
+
+      <method name="getHibernateTemplate" signature="getHibernateTemplate()" match="name">
+        <return type="org.springframework.orm.hibernate5.HibernateTemplate"/>
+      </method>
+      <method name="createHibernateTemplate" signature="createHibernateTemplate(org.hibernate.SessionFactory)">
+        <return type="org.springframework.orm.hibernate5.HibernateTemplate"/>
+      </method>
+      <method name="getSession" signature="getSession()" match="name">
+        <return type="org.hibernate.Session"/>
+      </method>
+      <method name="getSessionFactory" signature="getSessionFactory()">
+        <return type="org.hibernate.SessionFactory"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.orm.hibernate5.HibernateTemplate" supertypes="org.springframework.orm.hibernate3.HibernateTemplate">
+
+    </class>
+
+  </module>
+
+  <class name="uk.org.ponder.springutil.SpringMessageLocator">
+    <method name="getMessage" signature="getMessage(java.lang.String)" match="name" >
+      <return type="java.lang.Object" />
+      <source argpos="-1" kind="other_input" resource="other" />
+    </method>
+  </class>
+
+</library>

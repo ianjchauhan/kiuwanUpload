@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+				 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				 name="Cryptographic_Services" technology="python">
+
+	<description url="https://docs.python.org/3/library/crypto.html">Cryptographic Services (Python 3)</description>
+
+  <module name="hashlib" standard="python3">
+  	<class name="hash" >
+  		<field name="digest_size" type="bytes"/>
+  		<field name="block_size" type="bytes"/>
+  		<field name="name" type="str"/>
+
+  		<method name="update" signature="update(arg)">
+  			<return type="NoneType" />
+  		</method>
+  		<method name="digest" signature="digest()">
+  			<return type="bytes" />
+  		</method>
+  		<method name="hexdigest" signature="hexdigest()">
+  			<return type="str" />
+  		</method>
+  		<method name="copy" signature="copy()">
+  			<return type="hashlib.hash" />
+  		</method>
+  	</class>
+
+		<function name="md5" signature="md5()" match="name">
+			<tags>hash,algo:md5,salt:0</tags>
+			<return type="hashlib.hash" />
+		</function>
+		<function name="sha1" signature="sha1()" match="name">
+			<tags>hash,algo:sha1,data:0,salt:0</tags>
+  		<return type="hashlib.hash" />
+  	</function>
+		<function name="sha224" signature="sha224()" match="name">
+			<tags>hash,algo:sha224,data:0,salt:0</tags>
+			<return type="hashlib.hash" />
+		</function>
+		<function name="sha256" signature="sha256()" match="name">
+			<tags>hash,algo:sha256,data:0,salt:0</tags>
+			<return type="hashlib.hash" />
+		</function>
+		<function name="sha384" signature="sha384()" match="name">
+			<tags>hash,algo:sha384,data:0,salt:0</tags>
+			<return type="hashlib.hash" />
+			<neutralization argpos="0" kind="hash" resource="crypto" />
+		</function>
+		<function name="sha512" signature="sha512()" match="name">
+			<tags>hash,algo:sha512,data:0,salt:0</tags>
+			<return type="hashlib.hash" />
+			<neutralization argpos="0" kind="hash" resource="crypto" />
+		</function>
+
+  	<function name="new" signature="new(name[, data])" >
+			<tags>hash,algo:0,data:1</tags>
+  		<return type="hashlib.hash" />
+  	</function>
+
+		<function name="pbkdf2_hmac" signature="pbkdf2_hmac(algo,password,salt,rounds,dklen=None)">
+			<tags>hash,keygen,algo:0,password:1,key:1,salt_specific_arg:2,iterations:3</tags>
+		</function>
+		<function name="scrypt" signature="scrypt(password, *, salt, n, r, p, maxmem=0, dklen=64)">
+			<tags>hash,keygen,password:0,key:0,salt_specific_arg:2</tags>
+		</function>
+		<function name="blake2b" signature="blake2b(data=b'', digest_size=64, key=b'', salt=b'', person=b'', fanout=1, depth=1, leaf_size=0, node_offset=0, node_depth=0, inner_size=0, last_node=False)">
+			<tags>hash,keygen,password:0,key:0,salt_specific_arg:3</tags>
+		</function>
+		<function name="blake2s" signature="blake2s(data=b'', digest_size=64, key=b'', salt=b'', person=b'', fanout=1, depth=1, leaf_size=0, node_offset=0, node_depth=0, inner_size=0, last_node=False)">
+			<tags>hash,keygen,password:0,key:0,salt_specific_arg:3</tags>
+		</function>
+  </module>
+
+	<module name="hmac" standard="python3">
+		<function name="new" signature="new(key, msg=None, digestmod=None)" >
+			<tags>hmac,key:0,data:1,algo:2</tags>
+			<return type="hmac.HMAC" />
+		</function>
+		<function name="compare_digest" signature="compare_digest(a, b)" >
+			<return type="bool" />
+		</function>
+		
+		<class name="HMAC" >
+			<method name="update" signature="update(msg)" >
+				<return type="NoneType" />
+			</method>
+			<method name="digest" signature="digest()" >
+				<return type="bytes" />
+			</method>
+			<method name="hexdigest" signature="hexdigest()" >
+				<return type="str" />
+			</method>
+			<method name="copy" signature="copy()" >
+				<return type="hmac.HMAC" />
+			</method>
+
+			<field name="digest_size" type="bytes" />
+			<field name="block_size" type="bytes" />
+			<field name="name" type="str" />
+		</class>
+	</module>
+
+	<module name="secrets" standard="python3">
+		<!-- Generate secure random numbers for managing secrets - https://docs.python.org/library/secrets.html -->
+		<class name="SystemRandom" supertypes="random.SystemRandom">
+			<tags>csprng</tags>
+		</class>
+		
+		<function name="choice" signature="choice(sequence)" >
+			<return type="object" />
+		</function>
+		<function name="randbelow" signature="randbelow(n)" >
+			<tags>prng</tags>
+			<return type="int" />
+		</function>
+		<function name="randbits" signature="randbits(k)" >
+			<tags>csprng, len:0, unit:bits</tags>
+			<return type="int" />
+		</function>
+
+		<function name="token_bytes" signature="token_bytes([nbytes=None])" >
+			<tags>csprng, len:0, unit:bytes</tags>
+			<return type="bytes" />
+		</function>
+		<function name="token_hex" signature="token_hex([nbytes=None])" >
+			<return type="str" />
+		</function>
+		<function name="token_urlsafe" signature="token_urlsafe([nbytes=None])" >
+			<return type="str" />
+		</function>
+
+		<function name="compare_digest" signature="compare_digest(a, b)" >
+			<return type="bool" />
+		</function>
+	</module>
+
+</library>

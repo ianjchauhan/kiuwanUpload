@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.constructors" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.SIZE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.SIZE.CODE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds />
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <internal-name id="OPT.ABAP.SIZE.CONSTRUCTORS" />
+        <java-class>com.als.abap.metrics.ConstructorsAbapMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.SIZE.CONSTRUCTORS" />
+        <java-class>com.als.cpp.metrics.ConstructorsCppMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.SIZE.CONSTRUCTORS" />
+        <java-class>com.optimyth.csharp.metrics.ConstructorsCsharpMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.SIZE.CONSTRUCTORS" />
+        <java-class>com.als.java.metrics.ConstructorsJavaMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.SIZE.CONSTRUCTORS" />
+        <java-class>com.optimyth.vbnet.metrics.ConstructorsVBnetMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+    <code-examples>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <code-example name="metricCodeExampleAbap" result-value="1">
+<![CDATA[
+CLASS holiday_model IMPLEMENTATION.
+
+METHOD constructor.                " 1
+
+  FIELD-SYMBOLS: <holiday> LIKE LINE OF me->holidays_taken.
+
+  APPEND INITIAL LINE TO me->holidays_taken ASSIGNING <holiday>.
+  <holiday>-start   = '20040102'.
+  <holiday>-end     = '20040109'.
+  <holiday>-days    = 6.
+  <holiday>-comment = 'Extended Christmas'.
+
+  APPEND INITIAL LINE TO me->holidays_taken ASSIGNING <holiday>.
+  <holiday>-days    = 19.
+  <holiday>-comment = 'Available Holiday'.
+
+  me->holiday_available = 19.
+
+ENDMETHOD.
+
+ENDCLASS.
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <code-example name="metricCodeExampleCpp" result-value="2">
+<![CDATA[
+MyClassName::MyClassName(int x, int y)           // 1
+{
+  doSomething(x, y);
+}
+
+MyClassName::MyClassName(MyClassObject obj)      // 2
+{
+  doSomething(obj);
+}
+
+MyClassName::~MyClassName(){}
+
+MyClassName::method(){
+  doSomething();
+  // ...
+}
+]]>
+      </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="metricCodeExampleCsharp" result-value="1">
+<![CDATA[
+public class AEstructuras
+{
+    public AEstructuras() {        // 1
+      doSomething();
+    }
+
+    public static void ObtenerDatosAsunto(string aAsunto)
+    {
+      // ...
+    }
+}
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="metricCodeExampleJava" result-value="2">
+<![CDATA[
+public class MyClass {
+
+  public MyClass(){                   // 1
+    initialize();
+  }
+
+  protected MyClass(AnObject obj){    // 2
+    initialize(obj);
+  }
+
+  public void method(){
+    doSomething();
+  }
+}
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="metricCodeExampleVbNet" result-value="1">
+<![CDATA[
+Class ExampleClass
+
+  Public Sub method()
+     doSomething()
+  End Sub
+
+  Function method2() As Boolean
+     Dim predicate As New NodePredicate()
+  End Function
+
+  Public MustOverride Sub absMethod()
+
+  Sub New()                            ' 1
+    initialize()
+  End Sub
+
+End Class
+]]>
+        </code-example>
+      </language-parser>
+
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+
+      <name><![CDATA[Constructores]]></name>
+      
+      <description>
+<![CDATA[
+Número de constructores. Un constructor es un elemento que implementa las acciones necesarias para inicializar una instancia de una clase.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Número de constructores implementados en Abap.
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Número de constructores implementados, pertenecientes a cualquier ámbito, en C++.
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Número de constructores implementados, pertenecientes a cualquier ámbito, en C#.
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Número de constructores implementados, pertenecientes a cualquier ámbito, en Java.
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Número de constructores implementados, pertenecientes a cualquier ámbito, en VB.net.
+        ]]></implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+
+      <name><![CDATA[Constructors]]></name>
+      
+      <description>
+<![CDATA[
+Number of constructors. A constructor is a member that implements the actions required to initialize an instance of a class.
+]]>
+     </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Number of implemented constructors per Abap file.
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Number of implemented constructors, with any scope, per C++ file.
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Number of implemented constructors, with any scope, per C# file.
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Number of implemented constructors, with any scope, per Java file.
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Number of implemented constructors, with any scope, per VB.net file.
+        ]]></implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

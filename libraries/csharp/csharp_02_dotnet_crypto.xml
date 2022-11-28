@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="System.Security.Cryptography" standard="dotnet.crypto" technology="csharp">
+  <description url="https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography">.NET Cryptography API</description>
+  
+  <class name="System.Security.Cryptography.RandomNumberGenerator" supertypes="System.IDisposable">
+    <tags>disposable</tags>
+    <method name="Create" signature="Create()" instance="false">
+      <tags>random, crypto</tags>
+      <return type="System.Security.Cryptography.RandomNumberGenerator"/>
+    </method>
+    <method name="Create_2" signature="Create(string)" instance="false">
+      <tags>random, crypto, algo:0</tags>
+      <return type="System.Security.Cryptography.RandomNumberGenerator"/>
+    </method>
+    <method name="GetBytes" signature="GetBytes(byte[], int, int)" match="name" alias="GetNonZeroBytes">
+      <tags>random, data:0</tags>
+    </method>
+  </class>
+
+  <class name="System.Security.Cryptography.RNGCryptoServiceProvider" supertypes="System.Security.Cryptography.RandomNumberGenerator"/>
+
+  <class name="System.Security.Cryptography.CryptoStreamMode" kind="enum">
+    <field name="Read"/>
+    <field name="Write"/>
+  </class>
+
+  <class name="System.Security.Cryptography.CryptoStream" supertypes="System.IO.Stream, System.IDisposable">
+    <tags>stream_leak,disposable</tags>
+    <constructor name="CryptoStream" signature="CryptoStream(System.IO.Stream, System.Security.Cryptography.ICryptoTransform, System.Security.Cryptography.CryptoStreamMode)">
+      <tags>encrypt,decrypt,data:0</tags>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </constructor>
+    <method name="Clear" signature="Clear()"/>
+  </class>
+
+  <class name="System.Security.Cryptography.ICryptoTransform" kind="interface">
+    <field name="CanReuseTransform" type="bool"/>
+    <field name="CanTransformMultipleBlocks" type="bool"/>
+    <field name="InputBlockSize" type="int"/>
+    <field name="OutputBlockSize" type="int"/>
+    <method name="TransformBlock" signature="TransformBlock(byte[],int,int,byte[],int)">
+      <return type="int"/>
+    </method>
+    <method name="TransformFinalBlock" signature="TransformFinalBlock(byte[],int,int)">
+      <return type="byte[]"/>
+    </method>
+  </class>
+
+  <class name="System.Security.Cryptography.SymmetricAlgorithm" kind="abstract_class">
+    <tags>symmetric,disposable</tags>
+    <field name="BlockSize" type="int"/>
+    <field name="FeedbackSize" type="int"/>
+    <field name="IV" type="byte[]"/>
+    <field name="Key" type="byte[]">
+      <sink argpos="-1" kind="hardcoded_key" resource="crypto"/>
+    </field>
+    <field name="KeySize" type="int"/>
+    <field name="LegalBlockSizes" type="System.Security.Cryptography.KeySizes[]"/>
+    <field name="LegalKeySizes" type="System.Security.Cryptography.KeySizes[]"/>
+    <field name="Mode" type="System.Security.Cryptography.CipherMode"/><!-- Default is CBC, thanks godness! -->
+    <field name="Padding" type="System.Security.Cryptography.PaddingMode"/><!-- Default is PKCS7, reasonable -->
+
+    <method name="Create" signature="Create()" instance="false">
+      <return type="System.Security.Cryptography.SymmetricAlgorithm"/><!-- RijndaelManaged -->
+    </method>
+    <method name="Create" signature="Create(string)" instance="false">
+      <tags>algo:0</tags>
+      <return type="System.Security.Cryptography.SymmetricAlgorithm"/>
+    </method>
+    <method name="CreateDecryptor" signature="CreateDecryptor()">
+      <return type="System.Security.Cryptography.ICryptoTransform"/>
+    </method>
+    <method name="CreateDecryptor_2" signature="CreateDecryptor(byte[],byte[])">
+      <tags>key:0,iv:1</tags>
+      <return type="System.Security.Cryptography.ICryptoTransform"/>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+    </method>
+    <method name="CreateEncryptor" signature="CreateEncryptor()">
+      <return type="System.Security.Cryptography.ICryptoTransform"/>
+    </method>
+    <method name="CreateEncryptor_2" signature="CreateEncryptor(byte[],byte[])">
+      <tags>key:0,iv:1</tags>
+      <return type="System.Security.Cryptography.ICryptoTransform"/>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+    </method>
+    <method name="Clear" signature="Clear()"/>
+  </class>
+
+  <class name="System.Security.Cryptography.CipherMode" kind="enum"/>
+  <class name="System.Security.Cryptography.PaddingMode" kind="enum"/>
+
+  <class name="System.Security.Cryptography.Aes" supertypes="System.Security.Cryptography.SymmetricAlgorithm"/>
+  <class name="System.Security.Cryptography.AesCng" supertypes="System.Security.Cryptography.Aes"/>
+  <class name="System.Security.Cryptography.AesCryptoServiceProvider" supertypes="System.Security.Cryptography.Aes"/>
+  <class name="System.Security.Cryptography.AesManaged" supertypes="System.Security.Cryptography.Aes"/>
+  <class name="System.Security.Cryptography.DES" supertypes="System.Security.Cryptography.SymmetricAlgorithm"/>
+  <class name="System.Security.Cryptography.DESCryptoServiceProvider" supertypes="System.Security.Cryptography.DES"/>
+  <class name="System.Security.Cryptography.RC2" supertypes="System.Security.Cryptography.SymmetricAlgorithm"/>
+  <class name="System.Security.Cryptography.RC2CryptoServiceProvider" supertypes="System.Security.Cryptography.RC2"/>
+  <class name="System.Security.Cryptography.Rijndael" supertypes="System.Security.Cryptography.SymmetricAlgorithm"/>
+  <class name="System.Security.Cryptography.RijndaelManaged" supertypes="System.Security.Cryptography.Rijndael"/>
+  <class name="System.Security.Cryptography.TripleDES" supertypes="System.Security.Cryptography.SymmetricAlgorithm"/>
+  <class name="System.Security.Cryptography.TripleDESCng" supertypes="System.Security.Cryptography.TripleDES"/>
+  <class name="System.Security.Cryptography.TripleDESCryptoServiceProvider" supertypes="System.Security.Cryptography.TripleDES"/>
+
+  <class name="System.Security.Cryptography.AsymmetricAlgorithm" kind="abstract_class">
+    <tags>asymetric,disposable</tags>
+    <field name="KeyExchangeAlgorithm" type="string"/>
+    <field name="KeySize" type="int"/>
+    <field name="LegalKeySizes" type="System.Security.Cryptography.KeySizes[]"/>
+    <field name="SignatureAlgorithm" type="string"/>
+    <method name="Create" signature="Create()" instance="false">
+      <return type="System.Security.Cryptography.AsymmetricAlgorithm"/>
+    </method>
+    <method name="Create_2" signature="Create(string)" instance="false">
+      <tags>algo:0</tags>
+      <return type="System.Security.Cryptography.AsymmetricAlgorithm"/>
+    </method>
+    <method name="FromXmlString" signature="FromXmlString(string)"/>
+    <method name="ToXmlString" signature="ToXmlString(bool)">
+      <return type="string"/>
+    </method>
+  </class>
+
+  <class name="System.Security.Cryptography.DSA" supertypes="System.Security.Cryptography.AsymmetricAlgorithm">
+    <tags>disposable</tags>
+    <method name="CreateSignature" signature="CreateSignature(byte[])">
+      <tags>sign</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="SignData" signature="SignData(byte[],System.Security.Cryptography.HashAlgorithmName)">
+      <tags>sign</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="SignData" signature="SignData(byte[],int,int,System.Security.Cryptography.HashAlgorithmName)">
+      <tags>sign</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="SignData" signature="SignData(System.IO.Stream,System.Security.Cryptography.HashAlgorithmName)">
+      <tags>sign</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="VerifyData" signature="VerifyData(byte[],byte[],System.Security.Cryptography.HashAlgorithmName)">
+      <tags>verify</tags>
+      <return type="bool"/>
+    </method>
+    <method name="VerifyData" signature="VerifyData(byte[],int,int,byte[],System.Security.Cryptography.HashAlgorithmName)">
+      <tags>verify</tags>
+      <return type="bool"/>
+    </method>
+    <method name="VerifyData" signature="VerifyData(System.IO.Stream,byte[],System.Security.Cryptography.HashAlgorithmName)">
+      <tags>verify</tags>
+      <return type="bool"/>
+    </method>
+    <method name="VerifySignature" signature="VerifySignature(byte[],byte[])">
+      <tags>verify</tags>
+      <return type="bool"/>
+    </method>
+  </class>
+  <class name="System.Security.Cryptography.DSACng" supertypes="System.Security.Cryptography.DSA"/>
+  <class name="System.Security.Cryptography.DSACryptoServiceProvider" supertypes="System.Security.Cryptography.DSA"/>
+
+  <class name="System.Security.Cryptography.ECDiffieHellman" supertypes="System.Security.Cryptography.AsymmetricAlgorithm"/>
+  <class name="System.Security.Cryptography.ECDiffieHellmanCng" supertypes="System.Security.Cryptography.ECDiffieHellman"/>
+
+  <class name="System.Security.Cryptography.ECDsa" supertypes="System.Security.Cryptography.AsymmetricAlgorithm">
+    <tags>disposable</tags>
+    <method name="CreateSignature" signature="CreateSignature(byte[])">
+      <tags>sign</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="SignData" signature="SignData(byte[],System.Security.Cryptography.HashAlgorithmName)">
+      <tags>sign</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="SignData" signature="SignData(byte[],int,int,System.Security.Cryptography.HashAlgorithmName)">
+      <tags>sign</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="SignData" signature="SignData(System.IO.Stream,System.Security.Cryptography.HashAlgorithmName)">
+      <tags>sign</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="VerifyData" signature="VerifyData(byte[],byte[],System.Security.Cryptography.HashAlgorithmName)">
+      <tags>verify</tags>
+      <return type="bool"/>
+    </method>
+    <method name="VerifyData" signature="VerifyData(byte[],int,int,byte[],System.Security.Cryptography.HashAlgorithmName)">
+      <tags>verify</tags>
+      <return type="bool"/>
+    </method>
+    <method name="VerifyData" signature="VerifyData(System.IO.Stream,byte[],System.Security.Cryptography.HashAlgorithmName)">
+      <tags>verify</tags>
+      <return type="bool"/>
+    </method>
+    <method name="VerifySignature" signature="VerifySignature(byte[],byte[])">
+      <tags>verify</tags>
+      <return type="bool"/>
+    </method>
+  </class>
+  <class name="System.Security.Cryptography.ECDsaCng" supertypes="System.Security.Cryptography.ECDsa"/>
+
+  <class name="System.Security.Cryptography.RSA" supertypes="System.Security.Cryptography.AsymmetricAlgorithm">
+    <method name="Create" signature="Create()" match="name">
+      <return type="System.Security.Cryptography.RSA"/>
+    </method>
+    <method name="Decrypt" signature="Decrypt(byte[],System.Security.Cryptography.RSAEncryptionPadding)">
+      <tags>decryption,asymmetric</tags>
+      <return type="byte[]"/>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </method>
+    <method name="Encrypt" signature="Encrypt(byte[],System.Security.Cryptography.RSAEncryptionPadding)">
+      <tags>encrypt,asymmetric</tags>
+      <return type="byte[]"/>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </method>
+    <method name="SignData" signature="SignData(byte[],System.Security.Cryptography.HashAlgorithmName,System.Security.Cryptography.RSASignaturePadding)">
+      <tags>sign</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="SignData" signature="SignData(byte[],int,int,System.Security.Cryptography.HashAlgorithmName,System.Security.Cryptography.RSASignaturePadding)">
+      <tags>sign</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="SignHash" signature="SignHash(byte[],System.Security.Cryptography.HashAlgorithmName,System.Security.Cryptography.RSASignaturePadding)">
+      <tags>sign</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="VerifyData" signature="VerifyData(byte[],byte[],System.Security.Cryptography.HashAlgorithmName,System.Security.Cryptography.RSASignaturePadding)">
+      <tags>verify</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="VerifyData" signature="VerifyData(byte[],int,int,byte[],System.Security.Cryptography.HashAlgorithmName,System.Security.Cryptography.RSASignaturePadding)">
+      <tags>verify</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="VerifyHash" signature="VerifyHash(byte[],byte[],System.Security.Cryptography.HashAlgorithmName,System.Security.Cryptography.RSASignaturePadding)">
+      <tags>verify</tags>
+      <return type="bool"/>
+    </method>
+  </class>
+
+  <class name="System.Security.Cryptography.RSACng" supertypes="System.Security.Cryptography.RSA"/>
+
+  <class name="System.Security.Cryptography.RSACryptoServiceProvider" supertypes="System.Security.Cryptography.RSA">
+    <method name="Create" signature="Create()" match="name">
+      <return type="System.Security.Cryptography.RSACryptoServiceProvider"/>
+    </method>
+    <method name="Decrypt" signature="Decrypt(byte[],bool)">
+      <tags>decryption,asymmetric</tags>
+      <return type="byte[]"/>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </method>
+    <method name="Encrypt" signature="Encrypt(byte[],bool)">
+      <tags>encrypt,asymmetric</tags>
+      <return type="byte[]"/>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </method>
+    <method name="SignData" signature="SignData(byte[],object)">
+      <tags>sign</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="SignHash" signature="SignHash(byte[],string)">
+      <tags>sign</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="VerifyHash" signature="VerifyHash(byte[],string,byte[])">
+      <tags>verify</tags>
+      <return type="bool"/>
+    </method>
+  </class>
+
+  <class name="System.Security.Cryptography.CngKey">
+    <method name="Export" signature="Export(System.Security.Cryptography.CngKeyBlobFormat)">
+      <return type="byte[]"/>
+      <source argpos="-1" kind="crypto_key" resource="crypto"/>
+    </method>
+    <method name="Create" signature="Create()" match="name" instance="false">
+      <return type="System.Security.Cryptography.CngKey"/>
+    </method>
+    <method name="Open" signature="Open()" match="name" instance="false">
+      <return type="System.Security.Cryptography.CngKey"/>
+    </method>
+    <method name="Import" signature="Import(byte[],System.Security.Cryptography.CngKeyBlobFormat)" match="name" instance="false">
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+    </method>
+  </class>
+
+  <class name="System.Security.Cryptography.HashAlgorithm" kind="abstract_class" supertypes="System.Security.Cryptography.ICryptoTransform">
+    <field name="Hash" type="byte[]"><tags>hash</tags></field>
+    <method name="Create" signature="Create()" instance="false">
+      <tags>hash,algo:SHA1</tags>
+      <return type="System.Security.Cryptography.HashAlgorithm"/>
+    </method>
+    <method name="Create" signature="Create(string)" instance="false">
+      <tags>hash,algo:0</tags>
+      <return type="System.Security.Cryptography.HashAlgorithm"/>
+      <sink argpos="0" kind="weak_hash_algorithm"/>
+    </method>
+    <method name="ComputeHash" signature="ComputeHash(string)">
+      <tags>hash,data:0</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="ComputeHash" signature="ComputeHash(byte[],int,int)">
+      <tags>hash,data:0</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="ComputeHash" signature="ComputeHash(System.IO.Stream)">
+      <tags>hash,data:0</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="TransformBlock" signature="TransformBlock(byte[],int,int,byte[],int)">
+      <tags>hash,data:0</tags>
+      <return type="int"/>
+    </method>
+    <method name="TransformFinalBlock" signature="TransformFinalBlock(byte[],int,int)">
+      <tags>hash,data:0</tags>
+      <return type="byte[]"/>
+    </method>
+  </class>
+
+  <class name="System.Security.Cryptography.MD5" kind="abstract_class" supertypes="System.Security.Cryptography.HashAlgorithm"/>
+  <class name="System.Security.Cryptography.MD5Cng" supertypes="System.Security.Cryptography.MD5"/>
+  <class name="System.Security.Cryptography.MD5CryptoServiceProvider" supertypes="System.Security.Cryptography.MD5"/>
+  <class name="System.Security.Cryptography.RIPEMD160" kind="abstract_class" supertypes="System.Security.Cryptography.HashAlgorithm"/>
+  <class name="System.Security.Cryptography.RIPEMD160Managed" supertypes="System.Security.Cryptography.RIPEMD160"/>
+  <class name="System.Security.Cryptography.SHA1" kind="abstract_class" supertypes="System.Security.Cryptography.HashAlgorithm"/>
+  <class name="System.Security.Cryptography.SHA1CryptoServiceProvider" supertypes="System.Security.Cryptography.SHA1"/>
+  <class name="System.Security.Cryptography.SHA1Cng" supertypes="System.Security.Cryptography.SHA1"/>
+  <class name="System.Security.Cryptography.SHA1Managed" supertypes="System.Security.Cryptography.SHA1"/>
+  <class name="System.Security.Cryptography.SHA256" kind="abstract_class" supertypes="System.Security.Cryptography.HashAlgorithm"/>
+  <class name="System.Security.Cryptography.SHA256CryptoServiceProvider" supertypes="System.Security.Cryptography.SHA256"/>
+  <class name="System.Security.Cryptography.SHA256Cng" supertypes="System.Security.Cryptography.SHA256"/>
+  <class name="System.Security.Cryptography.SHA256Managed" supertypes="System.Security.Cryptography.SHA256"/>
+  <class name="System.Security.Cryptography.SHA384" kind="abstract_class" supertypes="System.Security.Cryptography.HashAlgorithm"/>
+  <class name="System.Security.Cryptography.SHA384CryptoServiceProvider" supertypes="System.Security.Cryptography.SHA384"/>
+  <class name="System.Security.Cryptography.SHA384Cng" supertypes="System.Security.Cryptography.SHA384"/>
+  <class name="System.Security.Cryptography.SHA384Managed" supertypes="System.Security.Cryptography.SHA384"/>
+  <class name="System.Security.Cryptography.SHA512" kind="abstract_class" supertypes="System.Security.Cryptography.HashAlgorithm"/>
+  <class name="System.Security.Cryptography.SHA512CryptoServiceProvider" supertypes="System.Security.Cryptography.SHA512"/>
+  <class name="System.Security.Cryptography.SHA512Cng" supertypes="System.Security.Cryptography.SHA512"/>
+  <class name="System.Security.Cryptography.SHA512Managed" supertypes="System.Security.Cryptography.SHA512"/>
+
+  <class name="System.Security.Cryptography.RSAEncryptionPadding">
+    <field name="Mode" type="System.Security.Cryptography.RSAEncryptionPaddingMode"/>
+    <field name="OaepHashAlgorithm" type="System.Security.Cryptography.HashAlgorithmName"/>
+    <field name="OaepSHA1" type="System.Security.Cryptography.RSAEncryptionPadding" instance="false"/>
+    <field name="OaepSHA256" type="System.Security.Cryptography.RSAEncryptionPadding" instance="false"/>
+    <field name="OaepSHA384" type="System.Security.Cryptography.RSAEncryptionPadding" instance="false"/>
+    <field name="OaepSHA512" type="System.Security.Cryptography.RSAEncryptionPadding" instance="false"/>
+    <field name="Pkcs1" type="System.Security.Cryptography.RSAEncryptionPadding" instance="false"/>
+  </class>
+
+  <class name="System.Security.Cryptography.RSAEncryptionPaddingMode" kind="enum">
+    <field name="Oaep" type="int"/>
+    <field name="Pkcs1" type="int"/>
+  </class>
+
+  <class name="System.Security.Cryptography.RSASignaturePadding">
+    <field name="Mode" type="System.Security.Cryptography.RSASignaturePadding"/>
+    <field name="Pkcs1" type="System.Security.Cryptography.RSASignaturePadding" instance="false"/>
+    <field name="Pss" type="System.Security.Cryptography.RSASignaturePadding" instance="false"/>
+  </class>
+
+  <class name="System.Security.Cryptography.RSASignaturePaddingMode">
+    <field name="Pkcs1" type="int"/>
+    <field name="Pss" type="int"/>
+  </class>
+
+  <class name="System.Security.Cryptography.KeyedHashAlgorithm" kind="abstract_class" supertypes="System.Security.Cryptography.HashAlgorithm">
+    <tags>hmac</tags>
+    <field name="Key" type="byte[]">
+      <sink argpos="-1" kind="hardcoded_key" resource="crypto"/>
+    </field>
+  </class>
+
+  <class name="System.Security.Cryptography.HMAC" kind="abstract_class" supertypes="System.Security.Cryptography.KeyedHashAlgorithm">
+    <tags>hmac</tags>
+    <constructor name="HMAC" signature="HMAC(byte[])" match="name">
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+    </constructor>
+  </class>
+
+  <class name="System.Security.Cryptography.HMACMD5" supertypes="System.Security.Cryptography.HMAC"/>
+  <class name="System.Security.Cryptography.HMACRIPEMD160" supertypes="System.Security.Cryptography.HMAC"/>
+  <class name="System.Security.Cryptography.HMACSHA1" supertypes="System.Security.Cryptography.HMAC"/>
+  <class name="System.Security.Cryptography.HMACSHA256" supertypes="System.Security.Cryptography.HMAC"/>
+  <class name="System.Security.Cryptography.HMACSHA384" supertypes="System.Security.Cryptography.HMAC"/>
+  <class name="System.Security.Cryptography.HMACSHA512" supertypes="System.Security.Cryptography.HMAC"/>
+
+  <class name="System.Security.Cryptography.MACTripleDES" supertypes="System.Security.Cryptography.KeyedHashAlgorithm">
+    <constructor name="MACTripleDES" signature="MACTripleDES(byte[])">
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+    </constructor>
+    <constructor name="MACTripleDES" signature="MACTripleDES(string,byte[])">
+      <sink argpos="1" kind="hardcoded_key" resource="crypto"/>
+    </constructor>
+  </class>
+
+  <class name="System.Security.Cryptography.DeriveBytes" kind="abstract_class">
+    <method name="GetBytes" signature="GetBytes(int)">
+      <source argpos="-1" kind="crypto_key" resource="crypto"/>
+    </method>
+  </class>
+
+  <class name="System.Security.Cryptography.PasswordDerivedBytes" supertypes="System.Security.Cryptography.DeriveBytes">
+    <description>PBKDF1 (PKCS#5)</description>
+    <constructor name="PasswordDerivedBytes" signature="PasswordDerivedBytes(string,byte[],string,int)" match="name">
+      <tags>iterations:3</tags>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+      <sink argpos="1" kind="hardcoded_salt" resource="crypto"/>
+      <sink argpos="2" kind="weak_hash_algorithm" resource="crypto"/>
+    </constructor>
+    <field name="HashName" type="string"><sink argpos="0" kind="weak_hash_algorithm"/></field>
+    <field name="IterationCount" type="int"><tags>iterations</tags></field>
+    <field name="Salt" type="byte[]"><sink argpos="0" kind="hardcoded_salt" resource="crypto"/></field>
+    <method name="CryptDeriveKey" signature="CryptDeriveKey(string,string,int,byte[])">
+      <tags>algo:0,keylen:2,iv:3</tags>
+      <source argpos="-1" kind="crypto_key" resource="crypto"/>
+      <sink argpos="1" kind="weak_hash_algorithm"/>
+    </method>
+  </class>
+
+  <class name="System.Security.Cryptography.Rfc2898DeriveBytes" supertypes="System.Security.Cryptography.DeriveBytes">
+    <description>PBKDF2 (PKCS#5 v2, RFC-2898, based on HMACSHA1)</description>
+    <constructor name="Rfc2898DeriveBytes" signature="Rfc2898DeriveBytes(string,byte[],int)" match="name">
+      <tags>iterations:2</tags>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+      <sink argpos="1" kind="hardcoded_salt" resource="crypto"/>
+    </constructor>
+    <field name="IterationCount" type="int"><tags>iterations</tags></field>
+    <field name="Salt" type="byte[]"><sink argpos="0" kind="hardcoded_salt" resource="crypto"/></field>
+    <method name="CryptDeriveKey" signature="CryptDeriveKey(string,string,int,byte[])">
+      <tags>algo:0,keylen:2,iv:3</tags>
+      <source argpos="-1" kind="crypto_key" resource="crypto"/>
+      <sink argpos="1" kind="weak_hash_algorithm"/>
+    </method>
+  </class>
+
+  <class name="System.Security.Cryptography.HashAlgorithmName" kind="struct">
+    <field name="MD5" type="System.Security.Cryptography.HashAlgorithmName" instance="false"/>
+    <field name="SHA1" type="System.Security.Cryptography.HashAlgorithmName" instance="false"/>
+    <field name="SHA256" type="System.Security.Cryptography.HashAlgorithmName" instance="false"/>
+    <field name="SHA384" type="System.Security.Cryptography.HashAlgorithmName" instance="false"/>
+    <field name="SHA512" type="System.Security.Cryptography.HashAlgorithmName" instance="false"/>
+    <field name="Name" type="string"/>
+  </class>
+  
+  <class name="System.Security.Cryptography.CngProvider">
+    <field name="MicrosoftSmartCardKeyStorageProvider" type="System.Security.Cryptography.CngProvider" instance="false"/>
+    <field name="MicrosoftSoftwareKeyStorageProvider" type="System.Security.Cryptography.CngProvider" instance="false"/>
+    <field name="Provider" type="string"/>
+  </class>
+
+  <!-- CLR security (https://clrsecurity.codeplex.com/), package Security.Cryptography -->
+
+  <class name="Security.Cryptography.AuthenticatedSymmetricAlgorithm" kind="abstract_class" supertypes="System.Security.Cryptography.SymmetricAlgorithm" standard="CLR.Security">
+    <field name="AuthenticatedData" type="byte[]"/>
+    <field name="Tag" type="byte[]"/>
+    <field name="TagSize" type="int"/>
+    <field name="LegalTagSizes" type="System.Security.Cryptography.KeySizes[]"/>
+    <method name="Create" signature="Create(string)">
+      <return type="Security.Cryptography.AuthenticatedSymmetricAlgorithm"/>
+    </method>
+    <method name="CreateAuthenticatedEncryptor" signature="CreateAuthenticatedEncryptor(byte[],byte[],byte[])" match="name">
+      <return type="Security.Cryptography.IAuthenticatedCryptoTransform"/>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+    </method>
+    <method name="CreateDecryptor" signature="CreateDecryptor(byte[],byte[],byte[],byte[])">
+      <return type="System.Security.Cryptography.ICryptoTransform"/>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+    </method>
+  </class>
+
+  <class name="Security.Cryptography.AesCng" supertypes="System.Security.Cryptography.Aes" standard="CLR.Security"/>
+  <class name="Security.Cryptography.AuthenticatedAes" kind="abstract_class" supertypes="Security.Cryptography.AuthenticatedSymmetricAlgorithm" standard="CLR.Security"/>
+  <class name="Security.Cryptography.AuthenticatedAesCng" standard="Security.Cryptography.AuthenticatedAes">
+    <constructor name="AuthenticatedAesCng" signature="AuthenticatedAesCng(System.Security.Cryptography.CngProvider)"/>
+    <field name="ChainingSupported" type="bool"/>
+    <field name="ChainingMode" type="Security.Cryptography.CngChainingMode"/>
+  </class>
+  
+  <class name="Security.Cryptography.ICryptoTransform2" kind="interface" supertypes="System.Security.Cryptography.ICryptoTransform" standard="CLR.Security">
+    <field name="CanChainBlocks" type="bool"/>
+  </class>
+  <class name="Security.Cryptography.IAuthenticatedCryptoTransform" kind="interface" standard="CLR.Security">
+    <field name="GetTag" type="byte[]"/>
+  </class>
+  <class name="Security.Cryptography.CngChainingMode" standard="CLR.Security">
+    <field name="ChainingMode" type="string"/>
+    <field name="Cbc" type="Security.Cryptography.CngChainingMode" instance="false"/>
+    <field name="Ccm" type="Security.Cryptography.CngChainingMode" instance="false"/>
+    <field name="Cfb" type="Security.Cryptography.CngChainingMode" instance="false"/>
+    <field name="Ecb" type="Security.Cryptography.CngChainingMode" instance="false"/>
+    <field name="Gcm" type="Security.Cryptography.CngChainingMode" instance="false"/>
+  </class>
+
+  <!-- MachineKey ... -->
+  <class name="System.Web.Security.MachineKey">
+    <method name="Encode" signature="Encode(byte[],System.Web.Security.MachineKeyProtection)">
+      <tags>symmetric,encrypt,hmac,sign,data:0</tags>
+      <return type="string"/>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </method>
+    <method name="Decode" signature="Decode(string,System.Web.Security.MachineKeyProtection)">
+      <tags>symmetric,decrypt,hmac,verify,data:0</tags>
+      <return type="byte[]"/>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </method>
+    <method name="Protect" signature="Protect(byte[],string[])" match="name">
+      <tags>symmetric,encrypt,hmac,sign,data:0</tags>
+      <return type="byte[]"/>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </method>
+    <method name="Unprotect" signature="Unprotect(byte[],string[])" match="name">
+      <tags>symmetric,decrypt,hmac,verify,data:0</tags>
+      <return type="byte[]"/>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </method>
+  </class>
+  
+  <class name="System.Security.Cryptography.ProtectedMemory">
+    <method name="Protect" signature="Protect(byte[], System.Security.Cryptography.MemoryProtectionScope)">
+      <tags>symmetric,encrypt,data:0</tags>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </method>
+    <method name="Unprotect" signature="Unprotect(byte[], System.Security.Cryptography.MemoryProtectionScope)">
+      <tags>symmetric,encrypt,data:0</tags>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </method>
+  </class>
+
+  <class name="System.Security.Cryptography.ProtectedData">
+    <method name="Protect" signature="Protect(byte[], byte[], System.Security.Cryptography.DataProtectionScope)">
+      <tags>symmetric,encrypt,data:0</tags>
+      <return type="byte[]"/>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </method>
+    <method name="Unprotect" signature="Unprotect(byte[], byte[], System.Security.Cryptography.DataProtectionScope)">
+      <tags>symmetric,encrypt,data:0</tags>
+      <return type="byte[]"/>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </method>
+  </class>
+  
+</library>

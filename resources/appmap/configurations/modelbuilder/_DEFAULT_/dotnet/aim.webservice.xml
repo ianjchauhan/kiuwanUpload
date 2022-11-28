@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for language</description>
+  <import resource="../common/aim.common.xml"/>
+  <import resource="../dotnet/aim.dotnet.xml"/>
+  <import resource="../dotnet/aim.aspnet.xml"/>
+
+  <!-- Rules -->
+  <bean id="aim.dotnet.webservice.abstract.rule" class="com.optimyth.apm.builder.rules.dotnet.webservice.AbstractDotNetWebserviceRule" abstract="true">
+    <property name="webserviceRegistry" ref="aim.dotnet.webserviceRegistry" />
+    <property name="active" value="${aim.dotnet.webservice.rule.active}"/>
+    <property name="application" value="${aim.dotnet.software}"/>
+  </bean>
+  
+  <bean id="aim.dotnet.webservice.rule" class="com.optimyth.apm.builder.rules.dotnet.webservice.DotNetWebserviceRule" parent="aim.dotnet.webservice.abstract.rule">
+    <description>Rule for discovering .Net (WCF and ASMX) webservices.</description>
+    <property name="createWebServiceMethods" value="${aim.dotnet.webservice.createWebServiceMethods}" />
+    <property name="linkWithContracts" value="${aim.dotnet.webservice.linkWithContracts}" />
+  </bean>
+
+  <bean id="aim.dotnet.webservice.config.rule" class="com.optimyth.apm.builder.rules.dotnet.webservice.DotNetWebserviceConfigRule" parent="aim.dotnet.webservice.abstract.rule">
+  </bean>
+  
+  <bean id="aim.dotnet.webservice.attribute.rule" class="com.optimyth.apm.builder.rules.dotnet.webservice.DotNetWebserviceAttributeRule" parent="aim.dotnet.webservice.abstract.rule">
+    <property name="filter" ref="aim.dotnet.filter"/>
+  </bean>
+  
+  <bean id="aim.dotnet.webservice.aspnet.rule" class="com.optimyth.apm.builder.rules.dotnet.webservice.DotNetWebserviceAspNetRule" parent="aim.dotnet.webservice.abstract.rule">
+    <description></description>
+    <property name="aspnetParser" ref="aim.aspnet.parser" />
+    <property name="filter" ref="aim.dotnet.webservice.aspnet.filter"/>
+  </bean>
+
+  <!--  Registry -->
+  <bean id="aim.dotnet.webserviceRegistry" class="com.optimyth.apm.builder.rules.dotnet.webservice.DotNetWebserviceRegistry"/>
+  
+  <!-- Filters -->
+  <bean id="aim.dotnet.webservice.aspnet.filter" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.dotnet.webservice.aspnet.filter.pattern}"/>
+  </bean>
+
+</beans>

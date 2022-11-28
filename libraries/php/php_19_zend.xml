@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="zend" technology="php">
+
+  <description url="https://docs.zendframework.com/">Zend web framework</description>
+  
+  <class name="Zend_Http_Client">
+    <constructor name="Zend_Http_Client" signature="Zend_Http_Client">
+      <tags>url:0</tags>
+      <sink kind="ssrf" argpos="0"/>
+    </constructor>
+  </class>
+  
+  <class name="Zend_Mail">
+    <method name="setFrom" signature="setFrom">
+      <sink kind="mail_command_injection" argpos="0"/>
+    </method>
+    <method name="addTo" signature="addTo">
+      <sink kind="mail_command_injection" argpos="0,1"/>
+    </method>
+    <method name="addBcc" signature="addBcc">
+      <sink kind="mail_command_injection" argpos="0,1"/>
+    </method>
+    <method name="addCc" signature="addCc">
+      <sink kind="mail_command_injection" argpos="0,1,2"/>
+    </method>
+    <method name="addHeader" signature="addHeader">
+      <sink kind="mail_command_injection" argpos="0,1,2"/>
+      <sink kind="mail_header_manipulation" argpos="0,1,2" resource="network"/>
+    </method>
+    <method name="setReplyTo" signature="setReplyTo">
+      <sink kind="mail_command_injection" argpos="0,1"/>
+    </method>
+    <method name="setSubject" signature="setSubject">
+      <sink kind="mail_command_injection" argpos="0"/>
+    </method>
+  </class>
+</library>  

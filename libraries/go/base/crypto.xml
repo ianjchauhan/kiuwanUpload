@@ -1,0 +1,926 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="crypto">
+
+  <!-- crypto and hash packages -->
+
+  <module name="crypto">
+    <description url="https://pkg.go.dev/crypto" >Go cryptography</description>
+
+    <member name="MD4" type="go.int"><tags>algo:md4</tags></member>
+    <member name="MD5" type="go.int"><tags>algo:md5</tags></member>
+    <member name="SHA1" type="go.int"><tags>algo:sha1</tags></member>
+    <member name="SHA224" type="go.int"><tags>algo:sha224</tags></member>
+    <member name="SHA256" type="go.int"><tags>algo:sha256</tags></member>
+    <member name="SHA384" type="go.int"><tags>algo:sha384</tags></member>
+    <member name="SHA512" type="go.int"><tags>algo:sha512</tags></member>
+    <member name="MD5SHA1" type="go.int"><tags>algo:sha1</tags></member>
+    <member name="RIPEMD160" type="go.int"><tags>algo:ripemd160</tags></member>
+    <member name="SHA3_224" type="go.int"><tags>algo:sha3_224</tags></member>
+    <member name="SHA3_256" type="go.int"><tags>algo:sha3_256</tags></member>
+    <member name="SHA3_384" type="go.int"><tags>algo:sha3_384</tags></member>
+    <member name="SHA3_512" type="go.int"><tags>algo:sha3_512</tags></member>
+    <member name="SHA512_224" type="go.int"><tags>algo:sha512_224</tags></member>
+    <member name="SHA512_256" type="go.int"><tags>algo:sha512_256</tags></member>
+    <member name="BLAKE2s_256" type="go.int"><tags>algo:blake2s_256</tags></member>
+    <member name="BLAKE2b_256" type="go.int"><tags>algo:blake2s_256</tags></member>
+    <member name="BLAKE2b_384" type="go.int"><tags>algo:blake2b_384</tags></member>
+    <member name="BLAKE2b_512" type="go.int"><tags>algo:blake2b_512</tags></member>
+
+    <class name="crypto.Decrypter">
+      <method name="Public" signature="Public()">
+        <return type="crypto.PublicKey" />
+      </method>
+      <method name="Decrypt" signature="Decrypt(io.Reader, go.slice, opt.DecryperOpts">
+        <return type="go.slice,go.error"/>
+        <neutralization argpos="-1" kind="decryption" resource="crypto" />
+      </method>
+    </class>
+    <class name="crypto.DecrypterOpts"/>
+
+    <class name="crypto.PublicKey" kind="interface"/>
+    <class name="crypto.PrivateKey" kind="interface"/>
+
+    <class name="crypto.Signer" >
+      <method name="Public" signature="Public()">
+        <return type="crypto.PublicKey" />
+      </method>
+      <method name="Sign" signature="Sign(io.Reader, go.slice, crypto.SignerOpts)">
+        <return type="go.slice,go.error"/>
+      </method>
+    </class>
+    <class name="crypto.SignerOpts" >
+      <method name="HashFunc" signature="HashFunc()">
+        <return type="crypto.Hash" />
+      </method>
+    </class>
+
+    <module name="crypto.cipher">
+      <description url="https://pkg.go.dev/crypto/cipher">Implements standard block cipher modes</description>
+
+      <class name="crypto.cipher.Block" >
+        <method name="BlockSize" signature="BlockSize()" >
+          <return type="go.int"/>
+        </method>
+        <method name="Encrypt" signature="Encrypt(go.slice, go.slice)">
+          <tags>encrypt,data:1</tags>
+          <neutralization argpos="1" kind="encryption" resource="crypto"/>
+        </method>
+        <method name="Decrypt" signature="Decrypt(go.slice, go.slice)">
+          <tags>decrypt, data:1</tags>
+          <neutralization argpos="1" kind="decryption" resource="crypto"/>
+        </method>
+      </class>
+
+      <class name="crypto.cipher.BlockMode">
+        <method name="BlockSize" signature="BlockSize()" >
+          <return type="go.int"/>
+        </method>
+        <method name="CryptBlocks" signature="CryptBlocks(go.slice, go.slice)"></method>
+      </class>
+
+      <class name="crypto.cipher.AEAD" kind="interface">
+        <method name="NonceSize" signature="NonceSize()"><return type="go.int"/></method>
+        <method name="Overhead" signature="Overhead()"><return type="go.int"/></method>
+        <method name="Seal" signature="Seal(go.slice, go.slice, go.slice, go.slice)">
+          <tags>encrypt, ciphertext:0, nonce:1, data:2, ad:3</tags>
+          <return type="go.slice"/>
+          <neutralization argpos="-1, 0" kind="encryption" resource="crypto"/>
+        </method>
+        <method name="Open" signature="Open(go.slice, go.slice, go.slice, go.slice)">
+          <tags>decrypt, data:0, nonce:1, ciphertext:2, ad:3</tags>
+          <return type="go.slice, go.error"/>
+          <neutralization argpos="-1, 0" kind="decryption" resource="crypto"/>
+        </method>
+      </class>
+
+      <function name="crypto.cipher.NewCBCDecrypter" signature="crypto.cipher.NewCBCDecrypter(crypto.cipher.Block, go.slice)">
+        <tags>decrypt, iv:1, mode:cbc</tags>
+        <return type="crypto.cipher.BlockMode"/>
+      </function>
+      <function name="crypto.cipher.NewCBCEncrypter" signature="crypto.cipher.NewCBCEncrypter(crypto.cipher.Block, go.slice)">
+        <tags>encrypt, iv:1, mode:cbc</tags>
+        <return type="crypto.cipher.BlockMode"/>
+      </function>
+
+      <class name="crypto.cipher.Stream" kind="interface">
+        <method name="XORKeyStream" signature="XORKeyStream(go.slice, go.slice)"/>
+      </class>
+
+      <function name="crypto.cipher.NewCFBDecrypter" signature="crypto.cipher.NewCFBDecrypter(crypto.cipher.Block, go.slice)">
+        <tags>decrypt, iv:1, mode:cfb</tags>
+        <return type="crypto.cipher.Stream"/>
+      </function>
+      <function name="crypto.cipher.NewCFBEncrypter" signature="crypto.cipher.NewCFBEncrypter(crypto.cipher.Block, go.slice)">
+        <tags>encrypt, iv:1, mode:cfb</tags>
+        <return type="crypto.cipher.Stream"/>
+      </function>
+      <function name="crypto.cipher.NewCTR" signature="crypto.cipher.NewCTR(crypto.cipher.Block, go.slice)">
+        <tags>encrypt, decrypt, iv:1, mode:ctr</tags>
+        <return type="crypto.cipher.Stream"/>
+      </function>
+      <function name="crypto.cipher.NewOFB" signature="crypto.cipher.NewOFB(crypto.cipher.Block, go.slice)">
+        <tags>encrypt, decrypt, iv:1, mode:ofb</tags>
+        <return type="crypto.cipher.Stream"/>
+      </function>
+
+      <class name="crypto.cipher.StreamReader" kind="struct">
+        <field name="S" type="crypto.cipher.Stream"/>
+        <field name="R" type="io.Reader"/>
+        <method name="Read" signature="Read(go.slice)">
+          <tags>decrypt</tags>
+          <return type="go.int, go.error"/>
+        </method>
+      </class>
+
+      <class name="crypto.cipher.StreamWriter" kind="struct">
+        <field name="S" type="crypto.cipher.Stream"/>
+        <field name="R" type="io.Reader"/>
+        <field name="Err" type="go.error"/>
+        <method name="Write" signature="Write(go.slice)">
+          <tags>encrypt</tags>
+          <return type="go.int, go.error"/>
+        </method>
+      </class>
+    </module>
+
+    <!-- specific ciphers -->
+
+    <module name="crypto.aes">
+      <description url="https://pkg.go.dev/crypto/aes" >Implements AES encryption</description>
+
+      <function name="crypto.aes.NewCipher" signature="crypto.aes.NewCipher(go.slice)">
+        <tags>cipher, algo:aes, key:0</tags>
+        <return type="crypto.cipher.Block,go.error" />
+      </function>
+    </module>
+
+    <module name="crypto.des">
+      <description url="https://pkg.go.dev/crypto/des" >Implements the Data Encryption Standard (DES)</description>
+
+      <function name="crypto.des.NewCipher" signature="crypto.des.NewCipher(go.slice)">
+        <tags>cipher, algo:des,key:0</tags>
+        <return type="crypto.cipher.Block,go.error" />
+      </function>
+
+      <function name="crypto.des.NewTripleDESCipher" signature="crypto.des.NewTripleDESCipher(go.slice)">
+        <tags>cipher, algo:3des,key:0</tags>
+        <return type="crypto.Cipher.Block,go.error" />
+      </function>
+    </module>
+
+    <module name="crypto.dsa">
+      <description url="https://pkg.go.dev/crypto/dsa">Implements the Digital Signature Algorithm</description>
+
+      <member name="L1024N160" type="crypto.dsa.ParameterSizes"><tags>exprValue:1024</tags></member>
+      <member name="L2048N224" type="crypto.dsa.ParameterSizes"><tags>exprValue:2048</tags></member>
+      <member name="L2048N256" type="crypto.dsa.ParameterSizes"><tags>exprValue:2048</tags></member>
+      <member name="L3072N256" type="crypto.dsa.ParameterSizes"><tags>exprValue:3072</tags></member>
+
+      <class name="crypto.dsa.PrivateKey" supertypes="crypto.PrivateKey" />
+      <class name="crypto.dsa.PublicKey" supertypes="crypto.PublicKey"/>
+
+      <class name="crypto.dsa.Parameters" kind="struct">
+        <field name="P" alias="Q, G" type="math.big.Int"/>
+      </class>
+
+      <class name="crypto.dsa.ParameterSizes" supertypes="go.int"/>
+
+      <function name="crypto.dsa.GenerateKey" signature="crypto.dsa.GenerateKey(crypto.dsa.PrivateKey, io.Reader)">
+        <return type="go.error" />
+      </function>
+
+      <function name="crypto.dsa.GenerateParameters" signature="crypto.dsa.GenerateParameters(crypto.dsa.Parameters, io.Reader, crypto.dsa.ParameterSizes)">
+        <tags>algo:dsa,keylen:2</tags>
+        <return type="go.error"/>
+      </function>
+
+      <function name="crypto.dsa.Sign" signature="crypto.dsa.Sign(io.Reader, crypto.dsa.PrivateKey, go.slice)">
+        <return type="math.big.Int,math.big.Int,go.error"/>
+      </function>
+
+      <function name="crypto.dsa.Verify" signature="crypto.dsa.Verify(crypto.dsa.PublicKey, go.slice, math.big.Int, math.big.Int,)">
+        <return type="go.bool"/>
+      </function>
+    </module>
+
+    <module name="crypto.ecdsa">
+      <description url="https://pkg.go.dev/crypto/ecdsa">Elliptic Curve DSA</description>
+
+      <class name="crypto.ecdsa.PrivateKey" supertypes="crypto.PrivateKey, crypto.Signer">
+      </class>
+      <class name="crypto.ecdsa.PublicKey" supertypes="crypto.PublicKey" />
+      <class name="crypto.ecdsa.Parameters" />
+      <class name="crypto.ecdsa.ParameterSizes" />
+
+      <function name="crypto.ecdsa.GenerateKey" signature="crypto.ecdsa.GenerateKey(crypto.elliptic.Curve, io.Reader)">
+        <tags>algo:ec,keylen:0</tags>
+        <return type="crypto.ecdsa.PrivateKey,go.error" />
+      </function>
+
+      <function name="crypto.ecdsa.Sign" signature="crypto.ecdsa.Sign(io.Reader, crypto.ecdsa.PrivateKey, go.slice)">
+        <return type="math.big.Int,math.big.Int,go.error"/>
+      </function>
+
+      <function name="crypto.ecdsa.Verify" signature="crypto.ecdsa.Verify(crypto.ecdsa.PublicKey, go.slice, math.big.Int, math.big.Int,)">
+        <return type="go.bool"/>
+      </function>
+    </module>
+
+    <module name="crypto.ed25519">
+      <description url="https://pkg.go.dev/crypto/ed25519">Ed25519 signature algorithm</description>
+
+      <class name="crypto.ed25519.PrivateKey" supertypes="crypto.PrivateKey, crypto.Signer">
+        <method name="Seed" signature="Seed()">
+          <return type="go.slice"/>
+        </method>
+      </class>
+
+      <class name="crypto.ed25519.PublicKey" supertypes="crypto.PublicKey" />
+      <class name="crypto.ed25519.Parameters" />
+      <class name="crypto.ed25519.ParameterSizes" />
+
+      <function name="crypto.ed25519.GenerateKey" signature="crypto.ed25519.GenerateKey(io.Reader)">
+        <return type="crypto.ed25519.PublicKey,crypto.ed25519.PivateKey,go.error" />
+      </function>
+
+      <function name="crypto.ed25519.Sign" signature="crypto.ed25519.Sign(crypto.ed25519.PrivateKey, go.slice)">
+        <tags>sign, data:1, signature:-1</tags>
+        <return type="go.slice,go.error"/>
+      </function>
+
+      <function name="crypto.ed25519.Verify" signature="crypto.ed25519.Verify(crypto.ed25519.PublicKey, go.slice, go.slice)">
+        <tags>verify, data:1, signature:2</tags>
+        <return type="go.bool"/>
+      </function>
+
+      <function name="crypto.ed25519.NewKeyFromSeed" signature="crypto.ed25519.NewKeyFromSeed(go.slice)">
+        <tags>keygen, seed:0</tags>
+        <return type="crypto.ed25519.PrivateKey"/>
+      </function>
+    </module>
+
+    <module name="crypto.elliptic">
+      <description url="https://pkg.go.dev/crypto/elliptic">Implements several standard elliptic curves over prime fields</description>
+
+      <function name="crypto.elliptic.P224" signature="crypto.elliptic.P224()" >
+        <tags>exprValue:224</tags>
+        <return type="crypto.elliptic.Curve" />
+      </function>
+      <function name="crypto.elliptic.P256" signature="crypto.elliptic.P256()" >
+        <tags>exprValue:256</tags>
+        <return type="crypto.elliptic.Curve" />
+      </function>
+      <function name="crypto.elliptic.P384" signature="crypto.elliptic.P384()" >
+        <tags>exprValue:384</tags>
+        <return type="crypto.elliptic.Curve" />
+      </function>
+      <function name="crypto.elliptic.P521" signature="crypto.elliptic.P521()" >
+        <tags>exprValue:521</tags>
+        <return type="crypto.elliptic.Curve" />
+      </function>
+
+      <function name="crypto.elliptic.GenerateKey(crypto.elliptic.Curve, io.Reader)">
+        <tags>genkey, rand:1</tags>
+        <return type="go.slice, math.big.Int, math.big.Int, go.error"/>
+      </function>
+
+      <function name="crypto.elliptic.Marshall" signature="crypto.elliptic.Marshall(crypto.elliptic.Curve, math.big.Int, math.big.Int)">
+        <return type="go.slice"/>
+      </function>
+      <function name="crypto.elliptic.Unmarshall" signature="crypto.elliptic.Unmarshall(crypto.elliptic.Curve, go.slice)">
+        <return type="math.big.Int, math.big.Int"/>
+      </function>
+    </module>
+
+    <module name="crypto.hmac">
+      <description url="https://pkg.go.dev/crypto/hmac" >Implements the Keyed-Hash Message Authentication Code (HMAC)</description>
+
+      <function name="crypto.hmac.New" signature="crypto.hmac.New(go.func, go.slice)">
+        <tags>hmac, algo:0, key:1</tags>
+        <return type="hash.Hash"/>
+      </function>
+
+      <function name="crypto.hmac.Equal" signature="crypto.hmac.Equal(go.slice, go.slice)">
+        <return type="go.bool"/>
+      </function>
+    </module>
+
+    <module name="crypto.md5">
+      <description url="https://pkg.go.dev/crypto/md5" >Implements the MD5 hash algorithm</description>
+
+      <function name="crypto.md5.New" signature="crypto.md5.New()">
+        <tags>hash, algo:md5</tags>
+        <return type="hash.Hash"/>
+      </function>
+
+      <function name="crypto.md5.Sum" signature="crypto.md5.Sum(go.slice)">
+        <tags>hash, algo:md5, data:0</tags>
+        <return type="go.slice"/>
+        <neutralization argpos="-1" kind="hash" resource="crypto"/>
+      </function>
+    </module>
+
+    <module name="crypto.rand">
+      <description url="https://pkg.go.dev/crypto/rand" >Implements a cryptographically secure random number generator</description>
+
+      <function name="crypto.rand.Int" signature="crypto.rand.Int(io.Reader, math.big.Int)">
+        <return type="math.big.Int,go.error"/>
+      </function>
+
+      <function name="crypto.rand.Prime" signature="crypto.rand.Prime(io.Reader, go.int)">
+        <return type="math.big.Int,go.error"/>
+      </function>
+
+      <function name="crypto.rand.Read" signature="crypto.rand.Read(go.slice)">
+        <return type="go.int,go.error"/>
+      </function>
+    </module>
+
+    <module name="crypto.rc4">
+      <description url="https://pkg.go.dev/crypto/rc4">Implements RC4 encryption</description>
+
+      <class name="crypto.rc4.Cipher">
+        <method name="Reset" signature="Reset()" />
+        <method name="XORKeyStream" signature="XORKeyStream(go.slice, go.slice)">
+          <tags>encrypt, decrypt, cipherText:0, data:1</tags>
+        </method>
+      </class>
+
+      <function name="crypto.rc4.NewCipher" signature="crypto.rc4.NewCipher(go.slice)">
+        <tags>cipher, algo:rc4, key:0</tags>
+        <return type="crypto.rc4.Cipher,go.error"/>
+      </function>
+
+      <class name="crypto.rc4.KeySizeError" supertypes="go.int">
+        <method name="Error" signature="Error()">
+          <return type="go.string"/>
+        </method>
+      </class>
+    </module>
+
+    <module name="crypto.rsa">
+      <description url="https://pkg.go.dev/crypto/rsa">Implements RSA encryption</description>
+
+      <class name="crypto.rsa.PrivateKey" supertypes="crypto.PrivateKey, crypto.Signer, crypto.Decrypter">
+        <method name="Precompute" signature="Precompute()"/>
+        <method name="Validate" signature="Validate()">
+          <return type="go.error"/>
+        </method>
+      </class>
+      <class name="crypto.rsa.PublicKey" supertypes="crypto.PublicKey">
+        <method name="Size" signature="Size()">
+          <return type="go.int" />
+        </method>
+      </class>
+      <class name="crypto.rsa.PSSOptions" supertypes="crypto.SignerOpts"/>
+
+      <function name="crypto.rsa.DecryptOAEP" signature="crypto.rsa.DecryptOAEP(hash.Hash, io.Reader, crypto.rsa.PrivateKey, go.slice, go.slice)">
+        <tags>decrypt, algo:rsa, mode:OAEP, hash:0, rand:1, key:2, cipherText:3, data:-1</tags>
+        <return type="go.slice,go.error" />
+        <neutralization argpos="-1" kind="decryption" resource="crypto"/>
+      </function>
+
+      <function name="crypto.rsa.DecryptPKCS1v15" signature="crypt.rsa.DecryptPKCS1v15(io.Reader, crypto.rsa.PrivateKey, go.slice)">
+        <tags>decrypt, algo:rsa, mode:PKCS1, rand:0, key:1, cipherText:2, data:-1</tags>
+        <return type="go.slice,go.error"/>
+        <neutralization argpos="-1" kind="decryption" resource="crypto"/>
+      </function>
+
+      <function name="crypto.rsa.DecryptPKCS1v15SessionKey" signature="crypto.rsa.DecryptPKCS1v15SessionKey(io.Reader, crypto.rsa.PrivateKey, go.slice, go.slice)">
+        <tags>key_exchange, algo:rsa, mode:PKCS1, rand:0, privkey:1, cipherText:2, key:3, data:3</tags>
+        <return type="go.error"/>
+      </function>
+
+      <function name="crypto.rsa.EncryptOAEP" signature="crypto.rsa.EncryptOAEP(hash.Hash, io.Reader, crypto.rsa.PublicKey, go.slice, go.slice)">
+        <tags>encrypt, algo:rsa, mode:OAEP, hash:0, rand:1, key:2, data:3, cipherText:-1</tags>
+        <return type="go.slice,go.error" />
+        <neutralization argpos="-1" kind="encryption" resource="crypto"/>
+      </function>
+
+      <function name="crypto.rsa.EncryptPKCS1v15" signature="crypto.rsa.EncryptPKCS1v15(io.Reader, crypto.rsa.PublicKey, go.slice)">
+        <tags>encrypt, algo:rsa, mode:PKCS1, rand:0, key:1, data:2, cipherText:-1</tags>
+        <return type="go.slice,go.error" />
+        <neutralization argpos="-1" kind="encryption" resource="crypto"/>
+      </function>
+
+      <function name="crypto.rsa.SignPKCS1v15" signature="crypto.rsa.SignPKCS1v15(io.Reader, crypto.rsa.PrivateKey, crypto.Hash, go.slice)">
+        <tags>sign, algo:rsa, mode:PKCS1, rand:0, key:1, data:2, signature:-1</tags>
+        <return type="go.slice,go.error"/>
+      </function>
+
+      <function name="crypto.rsa.SignPSS" signature="crypto.rsa.SignPSS(io.Reader, crypto.rsa.PrivateKey, crypto.Hash, go.slice, crypto.rsa.PSSOptions)" >
+        <tags>sign, algo:rsa, mode:PKCS1, rand:0, key:1, hash:2, data:3, signature:-1</tags>
+        <return type="go.slice,go.error"/>
+      </function>
+
+      <function name="crypto.rsa.VerifyPKCS1v15" signature="crypto.rsa.VerifyPKCS1v15(crypto.rsa.PublicKey, crypto.Hash, go.slice, go.slice)">
+        <tags>sign, algo:rsa, mode:PKCS1, key:0, hash:1, data:2, signature:3</tags>
+        <return type="go.error"/>
+      </function>
+
+      <function name="crypto.rsa.VerifyPSS" signature="crypto.rsa.VerifyPSS(crypto.rsa.PublicKey, crypto.Hash, go.slice, go.slice, crypto.rsa.PSSOptions)">
+        <tags>sign, algo:rsa, mode:PSS, key:0, hash:1, data:2, signature:3</tags>
+        <return type="go.error" />
+      </function>
+
+      <function name="crypto.rsa.GenerateKey" signature="crypto.rsa.GenerateKey(io.Reader, go.int)">
+        <tags>keygen, algo:rsa, rand:0, keylen:1</tags>
+        <return type="crypto.rsa.PrivateKey,go.error"/>
+      </function>
+
+      <function name="crypto.rsa.GenerateMultiPrimeKey" signature="crypto.rsa.GenerateMultiPrimeKey(io.Reader, go.int, go.int)">
+        <tags>keygen, algo:rsa, rand:0, keylen:2</tags>
+        <return type="crypto.rsa.PrivateKey,go.error"/>
+      </function>
+    </module>
+
+    <module name="crypto.sha1">
+      <description url="https://pkg.go.dev/crypto/sha1">Implements the SHA-1 hash algorithm</description>
+
+      <function name="crypto.sha1.New" signature="crypto.sha1.New()">
+        <tags>hash, algo:sha1</tags>
+        <return type="hash.Hash" />
+      </function>
+
+      <function name="crypto.sha1.Sum" signature="crypto.sha1.Sum(go.slice)">
+        <tags>hash, algo:sha1, data:0</tags>
+        <return type="go.slice"/>
+        <neutralization argpos="-1" kind="hash" resource="crypto"/>
+      </function>
+    </module>
+
+    <module name="crypto.sha256">
+      <description url="https://pkg.go.dev/crypto/sha256">Implements the SHA224 and SHA256 hash algorithms</description>
+
+      <function name="crypto.sha256.New" signature="crypto.sha256.New()"
+                alias="crypto.sha256.New224">
+        <tags>hash, algo:sha256</tags>
+        <return type="hash.Hash" />
+      </function>
+
+      <function name="crypto.sha256.Sum256" signature="crypto.sha256.Sum256(go.slice)"
+                alias="crypto.sha256.Sum224">
+        <tags>hash, algo:sha256, data:0</tags>
+        <return type="go.slice"/>
+        <neutralization argpos="-1" kind="hash" resource="crypto"/>
+      </function>
+    </module>
+
+    <module name="crypto.sha512">
+      <description url="https://pkg.go.dev/crypto/sha512">Implements the SHA-384, SHA-512, SHA-512/224, and SHA-512/256 hash algorithms</description>
+
+      <function name="crypto.sha512.New" signature="crypto.sha512.New()"
+                alias="crypto.sha512.New384, crypto.sha512.New512_224, crypto.sha512.New512_256">
+        <tags>hash, algo:sha512</tags>
+        <return type="hash.Hash"/>
+      </function>
+
+      <function name="crypto.sha512.Sum512" signature="crypto.sha512.Sum512(go.slice)"
+                alias="crypto.sha512.Sum384, crypto.sha512.Sum512_224, crypto.sha512.Sum512_256">
+        <tags>hash, algo:sha512, data:0</tags>
+        <return type="go.slice"/>
+        <neutralization argpos="-1" kind="hash" resource="crypto"/>
+      </function>
+    </module>
+
+    <module name="crypto.tls">
+      <description url="https://pkg.go.dev/crypto/tls">TLS implementation for Go</description>
+
+      <class name="crypto.tls.Config" kind="struct">
+        <field name="Rand" type="io.Reader"/>
+        <field name="Time" type="go.func"/>
+        <field name="Certificates" type="go.slice" elementType="crypto.tls.Certificate"/>
+        <field name="NameToCertificate" type="go.map"/>
+        <field name="GetCertificate" type="go.func"/>
+        <field name="GetClientCertificate" type="go.func"/>
+        <field name="GetConfigForClient" type="go.func"/>
+        <field name="VerifyPeerCertificate" type="go.func"/>
+        <field name="RootCAs" type="crypto.x509.CertPool"/>
+        <field name="NextProtos" type="go.slice" elementType="go.string"/>
+        <field name="ServerName" type="go.string"/>
+        <field name="ClientAuth" type="crypto.tls.ClientAuthType"/>
+        <field name="ClientCAs" type="crypto.x509.CertPool"/>
+        <field name="InsecureSkipVerify" type="go.bool"/>
+        <field name="CipherSuites" type="go.slice" elementType="go.uint16"/>
+        <field name="PreferServerCipherSuites" type="go.bool"/>
+        <field name="SessionTicketsDisabled" type="go.bool"/>
+        <field name="SessionTicketKey" type="go.slice"/>
+        <field name="ClientSessionCache" type="crypto.tls.ClientSessionCache"/>
+        <field name="MinVersion" type="go.uint16"/>
+        <field name="MaxVersion" type="go.uint16"/>
+        <field name="DynamicRecordSizingDisabled" type="go.bool"/>
+        <field name="Renegotiation" type="go.int"/>
+        <field name="KeyLogWriter" type="io.Writer"/>
+      </class>
+
+      <class name="crypto.tls.Conn" supertypes="net.Conn"/>
+
+      <class name="crypto.tls.Certificate" >
+        <field name="Certificate" type="go.slice"/>
+        <field name="PrivateKey" type="crypto.PrivateKey"/>
+        <field name="OCSPStaple" type="go.slice"/>
+        <field name="SignedCertificateTimestamps" type="go.slice"/>
+        <field name="Leaf" type="crypto.x509.Certificate"/>
+      </class>
+
+      <function name="crypto.tls.LoadX509KeyPair" signature="crypto.tls.LoadX509KeyPair(go.string, go.string)">
+        <return type="crypto.tls.Certificate, go.error"/>
+      </function>
+
+      <function name="crypto.tls.X509KeyPair" signature="crypto.tls.X509KeyPair(go.slice, go.slice)">
+        <return type="crypto.tls.Certificate, go.error"/>
+      </function>
+
+      <function name="crypto.tls.Client" signature="crypto.tls.Client(net.Conn, crypto.tls.Config)">
+        <tags>tlsConfig:1</tags>
+        <return type="crypto.tls.Conn"/>
+      </function>
+
+      <function name="crypto.tls.Dial" signature="crypto.tls.Dial(go.string, go.string, crypto.tls.Config)">
+        <tags>proto:0, netaddr:1, tlsConfig:2</tags>
+        <return type="crypto.tls.Conn, go.error"/>
+        <sink argpos="0" kind="resource_injection" resource="network" />
+        <sink argpos="1" kind="ssrf" resource="network" />
+      </function>
+
+      <function name="crypto.tls.DialWithDialer" signature="crypto.tls.DialWithDialer(net.Dialer, go.string, go.string, crypto.tls.Config)">
+        <tags>proto:1, netaddr:2, tlsConfig:3</tags>
+        <return type="crypto.tls.Conn, go.error"/>
+        <sink argpos="1" kind="resource_injection" resource="network" />
+        <sink argpos="2" kind="ssrf" resource="network" />
+      </function>
+
+      <function name="crypto.tls.Server" signature="crypto.tls.Server(net.Conn, crypto.tls.Config)">
+        <tags>tlsConfig:1</tags>
+        <return type="crypto.tls.Conn"/>
+      </function>
+
+      <function name="crypto.tls.Listen" signature="crypto.tls.Listen(go.string, go.string, crypto.tls.Config)">
+        <tags>tlsConfig:2</tags>
+        <return type="net.Listener,go.error" />
+        <sink argpos="0,1" kind="resource_injection" resource="network" />
+      </function>
+
+      <function name="crypto.tls.NewListener" signature="crypto.tls.NewListener(net.Listener, crypto.tls.Config)">
+        <tags>tlsConfig:1</tags>
+        <return type="net.Listener"/>
+      </function>
+    </module>
+
+    <!-- Additional crypto packages -->
+
+    <module name="golang.org.x.crypto.argon2">
+      <description url="https://godoc.org/golang.org/x/crypto/argon2">Key derivation function Argon2 / Argon2i</description>
+      <function name="golang.org.x.crypto.argon2.IDKey"
+                signature="golang.org.x.crypto.argon2.IDKey(go.slice, go.slice, go.uint32, go.uint32, go.uint8, go.uint32)"
+                alias="golang.org.x.crypto.argon2.Key">
+        <tags>key_derivation, algo:argon2, password:0, salt:1, keylen:5</tags>
+        <return type="go.slice"/>
+        <sink kind="hardcoded_password" resource="crypto" argpos="0"/>
+        <sink kind="hardcoded_salt" resource="crypto" argpos="1"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.bcrypt">
+      <description url="https://godoc.org/golang.org/x/crypto/bcrypt">bcrypt adaptative hashing</description>
+      <function name="golang.org.x.crypto.bcrypt.CompareHashAndPassword" signature="golang.org.x.crypto.bcrypt.CompareHashAndPassword(go.slice, go.slice)" >
+        <tags>password:1</tags>
+        <return type="go.error" />
+        <!--neutralization argpos="1" kind="string" /-->
+      </function>
+      <function name="golang.org.x.crypto.bcrypt.GenerateFromPassword" signature="golang.org.x.crypto.bcrypt.GenerateFromPassword(go.slice, go.int)" >
+        <tags>key_derivation, algo:bcrypt, password:0, cost:1</tags>
+        <return type="go.slice,go.error" />
+        <sink kind="hardcoded_password" resource="crypto" argpos="0"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.blowfish">
+      <description url="https://pkg.go.dev/golang.org/x/crypto/blowfish">Bruce Schneier's Blowfish encryption algorithm - legacy cipher, unsafe.</description>
+      <class name="golang.org.x.crypto.blowfish.Cipher" supertypes="crypto.cipher.Block"/>
+
+      <function name="golang.org.x.crypto.blowfish.NewCipher" alias="golang.org.x.crypto.blowfish.NewCipher(go.slice)">
+        <tags>cipher, algo:blowfish, key:0</tags>
+        <return type="golang.org.x.crypto.blowfish.Cipher"/>
+      </function>
+      <function name="golang.org.x.crypto.blowfish.NewSaltedCipher" alias="golang.org.x.crypto.blowfish.NewSaltedCipher(go.slice, go.slice)">
+        <tags>cipher, algo:blowfish, key:0</tags>
+        <return type="golang.org.x.crypto.blowfish.Cipher"/>
+        <sink kind="hardcoded_salt" resource="crypto" argpos="1"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.cast5">
+      <description url="https://pkg.go.dev/golang.org/x/crypto/cast5">CAST5 encryption algorithm - legacy cipher, unsafe.</description>
+      <class name="golang.org.x.crypto.cast5.Cipher" supertypes="crypto.cipher.Block"/>
+
+      <function name="golang.org.x.crypto.cast5.NewCipher" alias="golang.org.x.crypto.cast5.NewCipher(go.slice)">
+        <tags>cipher, algo:cast5, key:0</tags>
+        <return type="golang.org.x.crypto.cast5.Cipher"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.chacha20">
+      <description url="https://godoc.org/golang.org/x/crypto/chacha20">ChaCha20 and XChaCha20 encryption algorithms as specified in RFC 8439</description>
+      <function name="golang.org.x.crypto.chacha20.NewUnauthenticatedCipher" signature="golang.org.x.crypto.chacha20.NewUnauthenticatedCipher(go.slice, go.slice)">
+        <tags>cipher, algo:chacha20, key:0, nonce:1</tags>
+        <return type="crypto.cipher.Stream"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.chacha20poly1305">
+      <description url="https://godoc.org/golang.org/x/crypto/chacha20poly1305">ChaCha20-Poly1305 AEAD encryption algorithms as specified in RFC 8439</description>
+      <function name="golang.org.x.crypto.chacha20poly1305.New" signature="golang.org.x.crypto.chacha20poly1305.New(go.slice)"
+                alias="golang.org.x.crypto.chacha20poly1305.NewX">
+        <tags>cipher, algo:chacha20, key:0</tags>
+        <return type="crypto.cipher.AEAD, go.error"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.hkdf">
+      <description url="https://pkg.go.dev/golang.org/x/crypto/hkdf">
+        HMAC-based Extract-and-Expand Key Derivation Function (HKDF) as defined in RFC 5869.
+        HKDF is a cryptographic key derivation function (KDF) with the goal of expanding limited input keying material
+        into one or more cryptographically strong secret keys.
+      </description>
+      <function name="golang.org.x.crypto.hkdf.New" signature="golang.org.x.crypto.hkdf.New(go.func, go.slice, go.slice, go.slice)">
+        <tags>key_derivation, algo:0, password:1, salt:2</tags>
+        <return type="io.Reader"/>
+        <sink kind="hardcoded_password" resource="crypto" argpos="1"/>
+        <sink kind="hardcoded_salt" resource="crypto" argpos="2"/>
+      </function>
+      <function name="golang.org.x.crypto.hkdf.Extract" signature="golang.org.x.crypto.hkdf.Extract(go.func, go.slice, go.slice)">
+        <tags>key_derivation, algo:0, password:1, salt:2</tags>
+        <return type="go.slice"/>
+        <sink kind="hardcoded_password" resource="crypto" argpos="1"/>
+        <sink kind="hardcoded_salt" resource="crypto" argpos="2"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.md4">
+      <description url="https://pkg.go.dev/golang.org/x/crypto/md4">MD4 hash algorithm as defined in RFC 1320 - legacy, broken!</description>
+      <function name="golang.org.x.crypto.md4.New" signature="golang.org.x.crypto.md4.New">
+        <tags>hash, algo:md4</tags>
+        <return type="hash.Hash"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.nacl.auth">
+      <description url="https://pkg.go.dev/golang.org/x/crypto/nacl/auth">
+        Authenticates (integrity) a message, a sort of HMAC facility.
+        Compatible with NaCl (sodium) crypto library
+        See https://godoc.org/golang.org/x/crypto/nacl/auth
+      </description>
+      <function name="golang.org.x.crypto.nacl.auth.Sum" signature="golang.org.x.crypto.nacl.auth.Sum(go.slice, go.slice)">
+        <tags>hmac, algo:sha512, data:0, key:1, mac:-1</tags>
+        <return type="go.slice"/>
+      </function>
+      <function name="golang.org.x.crypto.nacl.auth.Verify" signature="golang.org.x.crypto.nacl.auth.Verify(go.slice, go.slice, go.slice)">
+        <tags>hmac, algo:sha512, mac:0, data:1, key:2</tags>
+        <return type="go.bool"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.nacl.secretbox">
+      <description url="https://godoc.org/golang.org/x/crypto/nacl/secretbox">
+        Encrypts and authenticates small messages, using XSalsa20 + Poly1305.
+        Compatible with NaCl (sodium) crypto library
+      </description>
+      <function name="golang.org.x.crypto.nacl.secretbox.Seal" signature="golang.org.x.crypto.nacl.secretbox.Seal(go.slice, go.slice, go.slice, go.slice)">
+        <tags>encrypt, algo:salsa20, ciphertext:-1, data:1, nonce:2, key:3</tags>
+        <return type="go.slice"/>
+        <neutralization argpos="-1, 0" kind="encryption" resource="crypto"/>
+      </function>
+      <function name="golang.org.x.crypto.nacl.secretbox.Open" signature="golang.org.x.crypto.nacl.secretbox.Open(go.slice, go.slice, go.slice, go.slice)">
+        <tags>decrypt, algo:salsa20, data:-1, ciphertext:1, nonce:2, key:3</tags>
+        <return type="go.slice, go.bool"/>
+        <neutralization argpos="-1, 0" kind="decryption" resource="crypto"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.pbkdf2">
+      <description url="https://godoc.org/golang.org/x/crypto/pbkdf2">Key derivation PBKDF2 as defined in RFC 2898 / PKCS#5</description>
+      <function name="golang.org.x.crypto.pbkdf2.Key" signature="golang.org.x.crypto.pbkdf2.Key(go.slice, go.slice, go.int, go.int, go.func)">
+        <tags>key_derivation, algo:4, password:0, salt:1, iterations:2, keylen:3</tags>
+        <sink kind="hardcoded_password" resource="crypto" argpos="0"/>
+        <sink kind="hardcoded_salt" resource="crypto" argpos="1"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.ripemd160">
+      <description url="https://pkg.go.dev/golang.org/x/crypto/ripemd160">RIPEMD-160 hash algorithm - legacy</description>
+      <function name="golang.org.x.crypto.ripemd160.New" signature="golang.org.x.crypto.ripemd160.New">
+        <tags>hash, algo:ripemd160</tags>
+        <return type="hash.Hash"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.salsa20">
+      <description url="https://godoc.org/golang.org/x/crypto/salsa20">Salsa20 stream cipher</description>
+      <function name="golang.org.x.crypto.salsa20.XORKeyStream" signature="golang.org.x.crypto.salsa20.XORKeyStream(go.slice, go.slice, go.slice, go.slice)">
+        <tags>cipher, encrypt, decrypt, algo:salsa20, nonce:2, key:3</tags>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.scrypt">
+      <description url="https://godoc.org/golang.org/x/crypto/scrypt">scrypt key derivation function</description>
+      <function name="golang.org.x.crypto.scrypt.Key" signature="golang.org.x.crypto.scrypt.Key(go.slice, go.slice, go.int, go.int, go.int, go.int)">
+        <tags>key_derivation, password:0, salt:1, keylen:5</tags>
+        <return type="go.slice,go.error"/>
+        <sink kind="hardcoded_password" resource="crypto" argpos="0"/>
+        <sink kind="hardcoded_salt" resource="crypto" argpos="1"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.sha3">
+      <description url="https://godoc.org/golang.org/x/crypto/sha3">
+        SHA-3 fixed-output-length hash functions and the SHAKE variable-output-length hash functions defined by FIPS-202.
+        Sponge hash + Keccak permutation
+      </description>
+      <function name="golang.org.x.crypto.sha3.New224" signature="golang.org.x.crypto.sha3.New224()">
+        <tags>hash, algo:sha3-224</tags>
+        <return type="crypto.hash.Hash"/>
+      </function>
+      <function name="golang.org.x.crypto.sha3.Sum224" signature="golang.org.x.crypto.sha3.Sum224(go.slice)">
+        <tags>hash, algo:sha3-224, data:0</tags>
+        <return type="go.slice"/>
+        <neutralization argpos="-1" kind="hash" resource="crypto"/>
+      </function>
+      <function name="golang.org.x.crypto.sha3.New256" signature="golang.org.x.crypto.sha3.New256()"
+                alias="golang.org.x.crypto.sha3.NewLegacyKeccak256">
+        <tags>hash, algo:sha3-256</tags>
+        <return type="crypto.hash.Hash"/>
+      </function>
+      <function name="golang.org.x.crypto.sha3.Sum256" signature="golang.org.x.crypto.sha3.Sum256(go.slice)">
+        <tags>hash, algo:sha3-256, data:0</tags>
+        <return type="go.slice"/>
+        <neutralization argpos="-1" kind="hash" resource="crypto"/>
+      </function>
+      <function name="golang.org.x.crypto.sha3.New384" signature="golang.org.x.crypto.sha3.New384()">
+        <tags>hash, algo:sha3-384</tags>
+        <return type="crypto.hash.Hash"/>
+      </function>
+      <function name="golang.org.x.crypto.sha3.Sum384" signature="golang.org.x.crypto.sha3.Sum384(go.slice)">
+        <tags>hash, algo:sha3-384, data:0</tags>
+        <return type="go.slice"/>
+        <neutralization argpos="-1" kind="hash" resource="crypto"/>
+      </function>
+      <function name="golang.org.x.crypto.sha3.New512" signature="golang.org.x.crypto.sha3.New512()"
+                alias="golang.org.x.crypto.sha3.NewLegacyKeccak512">
+        <tags>hash, algo:sha3-512</tags>
+        <return type="crypto.hash.Hash"/>
+      </function>
+      <function name="golang.org.x.crypto.sha3.Sum512" signature="golang.org.x.crypto.sha3.Sum512(go.slice)">
+        <tags>hash, algo:sha3-512, data:0</tags>
+        <return type="go.slice"/>
+        <neutralization argpos="-1" kind="hash" resource="crypto"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.tea">
+      <description url="https://godoc.org/golang.org/x/crypto/tea">TEA cipher - legacy, broken!</description>
+      <function name="golang.org.x.crypto.tea.NewCipher"
+                signature="golang.org.x.crypto.tea.NewCipher(go.slice)"
+                alias="golang.org.x.crypto.tea.NewCipherWithRounds">
+        <tags>cipher, algo:tea, key:0</tags>
+        <return type="crypto.cipher.Block, go.error"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.twofish">
+      <description url="https://godoc.org/golang.org/x/crypto/twofish">Bruce Schneier's Twofish encryption algorithm - legacy cipher</description>
+      <class name="golang.org.x.crypto.twofish.Cipher" supertypes="crypto.cipher.Block"/>
+
+      <function name="golang.org.x.crypto.twofish.NewCipher" alias="golang.org.x.crypto.twofish.NewCipher(go.slice)">
+        <tags>cipher, algo:twofish, key:0</tags>
+        <return type="golang.org.x.crypto.twofish.Cipher"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.xtea">
+      <description url="https://godoc.org/golang.org/x/crypto/xtea">XTEA cipher - legacy, broken!</description>
+      <function name="golang.org.x.crypto.xtea.NewCipher" signature="golang.org.x.crypto.xtea.NewCipher(go.slice)">
+        <tags>cipher, algo:xtea, key:0</tags>
+        <return type="crypto.cipher.Block, go.error"/>
+      </function>
+    </module>
+
+    <module name="golang.org.x.crypto.xts">
+      <description url="https://godoc.org/golang.org/x/crypto/xts">
+        XTS cipher mode, specified in  IEEE P1619/D16, typically used for disk encryption.
+      </description>
+
+      <class name="golang.org.x.crypto.xts.Cipher" kind="struct">
+        <method name="Encrypt" signature="Encrypt(go.slice, go.slice, go.uint64)">
+          <tags>encrypt,data:1</tags>
+          <neutralization argpos="1" kind="encryption" resource="crypto"/>
+        </method>
+        <method name="Decrypt" signature="Decrypt(go.slice, go.slice, go.uint64)">
+          <tags>decrypt, data:1</tags>
+          <neutralization argpos="1" kind="decryption" resource="crypto"/>
+        </method>
+      </class>
+
+      <function name="golang.org.x.crypto.xts.NewCipher" signature="golang.org.x.crypto.xts.NewCipher(go.func, go.slice)">
+        <tags>cipher, mode:xts, algo:0, key:1</tags>
+        <return type="golang.org.x.crypto.xts.Cipher"/>
+      </function>
+
+    </module>
+  </module>
+
+  <module name="hash">
+    <description url="https://pkg.go.dev/hash">Interfaces for hash functions</description>
+
+    <class name="hash.Hash" kind="interface" supertypes="io.Writer">
+      <method name="Sum" signature="Sum(go.slice)">
+        <return type="go.slice" />
+      </method>
+      <method name="Reset" signature="Reset()"/>
+      <method name="Size" signature="Size()">
+        <return type="go.int" />
+      </method>
+      <method name="BlockSize" signature="BlockSize()">
+        <return type="go.int" />
+      </method>
+    </class>
+
+    <class name="hash.Hash32" supertypes="hash.Hash">
+      <method name="Sum32" signature="Sum32()">
+        <return type="go.uint32" />
+        <neutralization argpos="-1" kind="hash" resource="crypto"/>
+      </method>
+    </class>
+
+    <class name="hash.Hash64" supertypes="hash.Hash">
+      <method name="Sum64" signature="Sum64()">
+        <return type="go.uint64" />
+        <neutralization argpos="-1" kind="hash" resource="crypto"/>
+      </method>
+    </class>
+
+    <!-- subpackages -->
+    <function name="hash.adler32.New" signature="hash.adler32.New()">
+      <tags>hash,algo:adler32</tags>
+      <return type="hash.Hash32"/>
+    </function>
+    <function name="hash.adler32.Checksum" signature="hash.adler32.Checksum(go.slice)">
+      <tags>hash,algo:adler32</tags>
+      <return type="go.uint32"/>
+      <neutralization argpos="-1" kind="hash" resource="crypto"/>
+    </function>
+
+    <function name="hash.crc32.New" signature="hash.crc32.New(go.slice)">
+      <tags>hash,algo:crc32</tags>
+      <return type="hash.Hash32"/>
+    </function>
+    <function name="hash.crc32.NewIEEE" signature="hash.crc32.NewIEEE()">
+      <tags>hash,algo:crc32</tags>
+      <return type="hash.Hash32"/>
+    </function>
+    <function name="hash.crc32.Checksum" signature="hash.crc32.Checksum(go.slice,go.slice)">
+      <tags>hash,algo:crc32</tags>
+      <return type="go.uint32"/>
+      <neutralization argpos="-1" kind="hash" resource="crypto"/>
+    </function>
+    <function name="hash.crc32.ChecksumIEEE" signature="hash.crc32.ChecksumIEEE(go.slice)">
+      <tags>hash,algo:crc32</tags>
+      <return type="go.uint32"/>
+      <neutralization argpos="-1" kind="hash" resource="crypto"/>
+    </function>
+    <function name="hash.crc32.Update" signature="hash.crc32.Update(go.uint32, go.slice, go.slice)">
+      <tags>hash,algo:crc32</tags>
+      <return type="go.uint32"/>
+      <neutralization argpos="-1" kind="hash" resource="crypto"/>
+    </function>
+
+    <function name="hash.crc64.New" signature="hash.crc64.New(go.slice)">
+      <tags>hash,algo:crc64</tags>
+      <return type="hash.Hash64"/>
+    </function>
+    <function name="hash.crc64.Checksum" signature="hash.crc64.Checksum(go.slice, go.slice)">
+      <tags>hash,algo:crc32</tags>
+      <return type="go.uint64"/>
+      <neutralization argpos="-1" kind="hash" resource="crypto"/>
+    </function>
+    <function name="hash.crc64.Update" signature="hash.crc64.Update(go.uint64, go.slice, go.slice)">
+      <tags>hash,algo:crc32</tags>
+      <return type="go.uint64"/>
+      <neutralization argpos="-1" kind="hash" resource="crypto"/>
+    </function>
+
+    <function name="hash.fnv.New128" signature="hash.fnv.New128()" alias="hash.fnv.New32, hash.fnv.New64">
+      <tags>hash, algo:fnv1</tags>
+      <return type="hash.Hash"/>
+    </function>
+    <function name="hash.fnv.New128a" signature="hash.fnv.New128a()" alias="hash.fnv.New32a, hash.fnv.New64a">
+      <tags>hash, algo:fnv1a</tags>
+      <return type="hash.Hash"/>
+    </function>
+
+  </module>
+
+
+
+</library>

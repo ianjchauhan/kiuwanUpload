@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/http" standard="nodejs">
+
+  <module name="nodejs/http" standard="http">
+    <description url="https://nodejs.org/api/http.html">http module, support for HTTP protocol</description>
+    <class name="nodejs/http.Server" supertypes="nodejs/net.Server">
+      <tags>hasEvents</tags>
+
+      <function name="listen">
+        <tags>server.listen</tags>
+        <return type="nodejs/http.Server"/>
+        <sink kind="configuration_setting_injection" argpos="0,1"/>
+      </function>
+
+      <function name="on:request">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/http.IncomingMessage, nodejs/http.ServerResponse)" callback="true"/>
+        </parameters>
+        <return type="nodejs/http.Server"/>
+      </function>
+      <function name="on:checkContinue">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/http.IncomingMessage, nodejs/http.ServerResponse)" callback="true"/>
+        </parameters>
+        <return type="nodejs/http.Server"/>
+      </function>
+      <function name="on:checkExpectation">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/http.ClientRequest, nodejs/http.ServerResponse)" callback="true"/>
+        </parameters>
+        <return type="nodejs/http.Server"/>
+      </function>
+      <function name="on:clientError">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error, nodejs/net.Socket)" callback="true"/>
+        </parameters>
+        <return type="nodejs/http.Server"/>
+      </function>
+      <function name="on:connect">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/http.IncomingMessage, nodejs/net.Socket, nodejs/Buffer)" callback="true"/>
+        </parameters>
+        <return type="nodejs/http.Server"/>
+      </function>
+      <function name="on:connection">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/net.Socket)" callback="true"/>
+        </parameters>
+        <return type="nodejs/http.Server"/>
+      </function>
+    </class>
+
+    <class name="nodejs/http.ClientRequest" supertypes="nodejs/stream.Writable">
+      <tags>hasEvents</tags>
+      <function name="on:connect">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/http.IncomingMesssage,nodejs/net.Socket,Buffer)" callback="true" last="true"/>
+        </parameters>
+      </function>
+      <function name="on:response">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/http.IncomingMesssage)" callback="true" last="true"/>
+        </parameters>
+      </function>
+      <function name="on:upgrade">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/http.IncomingMesssage,nodejs/net.Socket,Buffer)" callback="true" last="true"/>
+        </parameters>
+      </function>
+      <function name="setTimeout">
+        <return type="nodejs/http.ClientRequest"/>
+      </function>
+      <function name="end" alias="write">
+        <parameters>
+          <param type="String"></param>
+          <param type="function()" last="true"/>
+        </parameters>
+        <return type="nodejs/http.ClientRequest"/>
+      </function>
+    </class>
+
+    <class name="nodejs/http.ServerResponse" supertypes="nodejs/stream.Writable">
+      <!-- created internally by an HTTP server. passed as the second parameter to the 'request' event. -->
+      <function name="addTrailers">
+        <tags>header:0</tags>
+        <sink kind="header_manipulation" argpos="0" resource="web"/>
+        <sink kind="open_redirect" resource="web"><arg pos="0" field="Location"/></sink>
+      </function>
+      <function name="end">
+        <sink kind="xss" argpos="0" resource="web"/>
+      </function>
+      <function name="setHeader">
+        <tags>header.name:0, header.value:1</tags>
+        <sink kind="header_manipulation" argpos="0,1" resource="web"/>
+        <sink kind="open_redirect" resource="web" argpos="1"><checker id="express.isLocationHeader"/></sink>
+      </function>
+      <function name="write">
+        <sink kind="xss" argpos="0" resource="web"/>
+      </function>
+      <function name="writeHead">
+        <tags>header:1</tags>
+        <sink kind="header_manipulation" argpos="1,2" resource="web"/>
+        <sink kind="open_redirect" resource="web"><arg pos="last" field="Location"/></sink>
+      </function>
+    </class>
+
+    <class name="nodejs/http.IncomingMessage" supertypes="nodejs/stream.Readable">
+      <field name="headers" type="Object">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="httpVersion" type="String"/>
+      <field name="method" type="String"/>
+      <field name="rawHeaders" type="Array">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="rawTrailers" type="Array">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="socket" type="nodejs/net.Socket"/>
+      <field name="statusCode" type="Number"/>
+      <field name="statusMessage" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="trailers" type="Object">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="url" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <function name="setTimeout">
+        <parameters>
+          <param type="Number"/>
+          <param type="function()"/>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/http">
+      <field name="globalAgent" type="nodejs/http.Agent"/>
+
+      <function name="createServer">
+        <tags>server.new</tags>
+        <parameters>
+          <param type="function(nodejs/http.IncomingMessage, nodejs/http.ServerResponse)" callback="true"/>
+        </parameters>
+        <return type="nodejs/http.Server"/>
+      </function>
+
+      <function name="request" alias="get">
+        <parameters>
+          <param type="Object"/><!-- This is typically a conf object, could be a string for get -->
+          <param type="function(nodejs/http.IncomingMessage)" callback="true"/>
+        </parameters>
+        <return type="nodejs/http.ClientRequest"/>
+        <sink kind="insecure_transport" resource="web">
+          <arg pos="0"/>
+          <arg pos="0" field="protocol"/>
+        </sink>
+        <sink kind="resource_injection" resource="web">
+          <arg pos="0"/>
+          <arg pos="0" field="path"/>
+        </sink>
+        <sink kind="ssrf" resource="network">
+          <arg pos="0"/>
+          <arg pos="0" field="protocol,host,hostname,port,socketPath"/>
+        </sink>
+        <sink kind="sensitive_data" resource="web">
+          <arg pos="0" field="auth"/>
+        </sink>
+      </function>
+    </class>
+  </module>
+
+</library>

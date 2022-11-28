@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="Beego">
+
+  <description url="https://beego.me/">Web MVC framework</description>
+
+  <module name="github.com.astaxie.beego" >
+    <class name="github.com.astaxie.beego.Controller" kind="struct" >
+      <field name="Ctx" type="github.com.astaxie.beego.context.Context" />
+      <field name="CruSession" type="github.com.astaxie.beego.session.Store" />
+      <field name="Data" type="go.map" />
+
+      <method name="DelSession" signature="DelSession(go.interface)" >
+        <sink argpos="0" kind="resource_injection" resource="web" />
+      </method>
+      <method name="GetBool" signature="GetBool(go.string,...go.bool)" >
+        <return type="go.bool,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetFile" signature="GetFile(go.string)" >
+        <return type="mime.multipart.File,mime.multipart.FileHeader,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetFiles" signature="GetFiles()" >
+        <return type="go.slice" elementType="mime.multipart.FileHeader" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetFloat" signature="GetFloat(go.string,...go.float64)" >
+        <return type="go.float64,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetInt" signature="GetInt(go.string,...go.int)" alias="GetInt16,GetInt32,GetInt64,GetInt8,GetUInt16,GetUInt32,GetUInt64,GetUInt8">
+        <return type="go.int,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetSecureCookie" signature="GetSecureCookie(go.string,go.string)" >
+        <return type="go.string,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetSession" signature="GetSession(go.interface)" >
+        <return type="go.interface" />
+      </method>
+      <method name="GetString" signature="GetString(go.string,...go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetStrings" signature="GetStrings(go.string,...go.slice)" >
+        <return type="go.slice" elementType="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Input" signature="Input()" >
+        <return type="net.url.Values" />
+      </method>
+      <method name="Redirect" signature="Redirect(go.string,go.int)" >
+        <sink argpos="0" kind="open_redirect" resource="web" />
+        <sink kind="execution_after_redirect" argpos="0" resource="web"/>
+      </method>
+      <method name="SaveToFile" signature="SaveToFile(go.string,go.string)" >
+        <return type="go.error" />
+        <sink argpos="1" kind="path_traversal" resource="web" />
+      </method>
+      <method name="SetSecureCookie" signature="SetSecureCookie(go.string,go.string,go.string,go.string,...go.interface)" />
+    </class>
+
+    <class name="github.com.astaxie.beego.ControllerComments" kind="struct" >
+      <field name="Params" type="go.map" />
+      <field name="MethodParams" type="github.com.astaxie.beego.context.param.MethodParam" />
+    </class>
+
+    <class name="github.com.astaxie.beego.context.Context" kind="struct" >
+      <field name="Input" type="github.com.astaxie.beego.context.BeegoInput" />
+      <field name="Output" type="github.com.astaxie.beego.context.BeegoOutput" />
+      <field name="Request" type="net.http.Request" />
+      <field name="ResponseWriter" type="github.com.astaxie.beego.context.Response" />
+
+      <method name="GetCookie" signature="GetCookie(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetSecureCookie" signature="GetSecureCookie(go.string,go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Redirect" signature="Redirect(go.int,go.string)" >
+        <sink argpos="1" kind="open_redirect" resource="web" />
+        <sink kind="execution_after_redirect" argpos="1" resource="web"/>
+      </method>
+      <method name="SetCookie" signature="SetCookie(go.string,go.string,...go.interface)" >
+        <tags>cookie.create,cookie.name:0,cookie.value:1</tags>
+        <return type="go.string" />
+        <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      </method>
+      <method name="SetSecureCookie" signature="SetSecureCookie(go.string,go.string,go.string,...go.interface)" >
+        <tags>cookie.create,cookie.name:0,cookie.value:1</tags>
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="WriteString" signature="WriteString(go.string)" />
+    </class>
+    <class name="github.com.astaxie.beego.context.Response" kind="struct" supertypes="net.http.ResponseWriter" >
+      <method name="Write" signature="Write(go.slice)" >
+        <return type="go.int,go.error" />
+      </method>
+    </class>
+
+    <function name="github.com.astaxie.beego.context.NewContext" signature="github.com.astaxie.beego.context.NewContext()" >
+      <return type="github.com.astaxie.beego.context.Context" />
+    </function>
+    <function name="github.com.astaxie.beego.Run" signature="github.com.astaxie.beego.Run(...go.string)" >
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+      <sink argpos="0,1,2" kind="resource_injection" resource="network" />
+    </function>
+    <function name="github.com.astaxie.beego.Info" signature="github.com.astaxie.beego.Info(...go.interface)"
+              alias="github.com.astaxie.beego.Error,github.com.astaxie.beego.Debug,github.com.astaxie.beego.Critical,
+            github.com.astaxie.beego.Alert,github.com.astaxie.beego.Notice,github.com.astaxie.beego.Trace,
+            github.com.astaxie.beego.Warn,github.com.astaxie.beego.Warning">
+      <tags>write</tags>
+      <sink argpos="0,1,2,3,4" kind="log_forging" resource="web" />
+    </function>
+    <function name="github.com.astaxie.beego.Router" signature="github.com.astaxie.beego.Router(go.string,go.interface,...go.string)" />
+  </module>
+
+  <module name="github.com.astaxie.beego.session" >
+    <class name="github.com.astaxie.beego.session.Store" kind="interface" >
+      <method name="Get" signature="Get(go.interface)" >
+        <return type="go.interface" />
+      </method>
+      <method name="Set" signature="Set(go.string.go.interface)" >
+        <tags>write</tags>
+        <return type="go.error" />
+        <sink argpos="1" kind="trust_boundary" resource="web" />
+      </method>
+      <method name="Delete" signature="Delete(go.interface)" >
+        <tags>write</tags>
+        <return type="go.error" />
+        <sink argpos="0" kind="trust_boundary" resource="web" />
+      </method>
+    </class>
+    <class name="github.com.astaxie.beego.session.CookieSessionStore" supertypes="github.com.astaxie.beego.session.Store" />
+    <class name="github.com.astaxie.beego.session.FileSessionStore" supertypes="github.com.astaxie.beego.session.Store" />
+    <class name="github.com.astaxie.beego.session.MemSessionStore" supertypes="github.com.astaxie.beego.session.Store" />
+
+    <class name="github.com.astaxie.beego.session.Provider" kind="interface" >
+      <method name="SessionRead" signature="SessionRead(go.string)" >
+        <return type="github.com.astaxie.beego.session.Store" />
+      </method>
+      <method name="SessionRegenerate" signature="SessionRegenerate(go.string,go.string)" >
+        <return type="github.com.astaxie.beego.session.Store" />
+      </method>
+    </class>
+
+    <class name="github.com.astaxie.beego.session.CookieProvider" supertypes="github.com.astaxie.beego.session.Provider" />
+    <class name="github.com.astaxie.beego.session.FileProvider" supertypes="github.com.astaxie.beego.session.Provider" />
+    <class name="github.com.astaxie.beego.session.MemProvider" supertypes="github.com.astaxie.beego.session.Provider" />
+
+    <function name="github.com.astaxie.beego.session.GetProvider " signature="github.com.astaxie.beego.session.GetProvider(go.string)" >
+      <return type="github.com.astaxie.beego.session.Provider" />
+    </function>
+
+    <class name="github.com.astaxie.beego.session.Manager" >
+      <method name="GetProvider" signature="GetProvider()" >
+        <return type="github.com.astaxie.beego.session.Provider" />
+      </method>
+      <method name="SessionRead" signature="SessionRead(go.string)" >
+        <return type="github.com.astaxie.beego.session.Store" />
+      </method>
+      <method name="SessionRegenerate" signature="SessionRegenerate(go.string,go.string)" >
+        <return type="github.com.astaxie.beego.session.Store" />
+      </method>
+      <method name="SessionStart" signature="SessionStart(net.http.ResponseWriter,net.http.Request)" >
+        <return type="github.com.astaxie.beego.session.Store" />
+      </method>
+    </class>
+
+    <function name="github.com.astaxie.beego.session.NewManager " signature="github.com.astaxie.beego.session.NewManager(go.string)" >
+      <return type="github.com.astaxie.beego.session.Manager" />
+    </function>
+    <globalObject name="github.com.astaxie.beego.BConfig" type="github.com.astaxie.beego.Config" />
+    <class name="github.com.astaxie.beego.Config" >
+      <field name="WebConfig" type="github.com.astaxie.beego.WebConfig" />
+    </class>
+    <class name="github.com.astaxie.beego.WebConfig" >
+      <field name="EnableXSRF" type="go.bool" />
+    </class>
+  </module>
+</library>

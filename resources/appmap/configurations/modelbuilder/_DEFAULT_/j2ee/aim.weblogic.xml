@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for j2ee language.</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="../j2ee/aim.java.xml"/>
+  <import resource="../database/aim.plsql.xml"/>
+  
+  <import resource="classpath:resources/qaking-tech-java.xml"/>
+
+  <!--
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="j2ee/aim.weblogic.properties"/>
+    <property name="properties">
+      <props></props>
+    </property>
+  </bean>
+  -->
+
+  <!-- Rules -->
+  <bean id="aim.j2ee.weblogic.javacontrol.rule" parent="aim.j2ee.rule.javaSource" class="com.optimyth.apm.builder.rules.j2ee.weblogic.JavaControlsRule">
+    <description>WebLogic JavaControls rule. Extends java source rule.</description>
+    <property name="active" value="${aim.j2ee.weblogic.javacontrol.rule.active}"/>
+    <property name="filter" ref="aim.j2ee.weblogic.javacontrol.filter"/>
+    <property name="javaLanguageSupport" ref="ls_java"/>
+    <property name="processors"><list>
+      <ref bean="aim.j2ee.weblogic.javacontrol.ejbProcessor"/>
+      <ref bean="aim.j2ee.weblogic.javacontrol.sqlProcessor"/>
+      <ref bean="aim.j2ee.weblogic.javacontrol.webServiceProcessor"/>
+      <!-- TODO add further processors for other JavaControl annotations -->
+    </list></property>
+  </bean>
+
+  <bean id="aim.j2ee.weblogic.javacontrol.sqlProcessor" class="com.optimyth.apm.builder.rules.j2ee.weblogic.SqlStatementProcessor">
+    <description>Process WebLogic JavaControls @js:sql annotations</description>
+    <property name="active" value="${aim.j2ee.weblogic.javacontrol.sqlProcessor.active}"/>
+    <property name="sqlProcessor" ref="aim.j2ee.weblogic.sql.processor"/>
+    <property name="sqlLanguageSupport" ref="ls_plsql"/>
+  </bean>
+
+  <bean id="aim.j2ee.weblogic.sql.processor" class="com.optimyth.apm.builder.rules.sql.BasicPlSqlProcessor">
+    <property name="addSqlToModel" value="${aim.j2ee.weblogic.sql.addSqlToModel}"/>
+    <property name="parseSqlColumns" value="${aim.j2ee.weblogic.sql.parseSqlColumns}"/>
+    <property name="sqlParser" ref="ls_plsql_parser" />
+    <property name="sqlCallback" ref="aim.j2ee.weblogic.sql.callback"/>
+  </bean>
+
+  <bean id="aim.j2ee.weblogic.sql.callback" class="com.optimyth.apm.builder.rules.sql.BasicPlSqlCallback">
+    <property name="dbType" value="${aim.j2ee.weblogic.sql.dbsystem}"/>
+    <property name="dbInstance" value="${aim.j2ee.weblogic.sql.dbname}"/>
+    <property name="ignoreCase" value="${aim.j2ee.weblogic.sql.ignoreCase}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+  
+  <bean id="aim.j2ee.weblogic.javacontrol.webServiceProcessor" class="com.optimyth.apm.builder.rules.j2ee.weblogic.WebServiceProcessor">
+    <description>Process WebLogic JavaControls @js:location annotations</description>
+    <property name="active" value="${aim.j2ee.weblogic.javacontrol.webServiceProcessor.active}"/>
+    <property name="classCallback" ref="aim.j2ee.rule.java.callback"/>
+    <property name="createUnresolvedWebServices" value="${aim.j2ee.weblogic.javacontrol.acceptUnresolved}"/>
+  </bean>
+
+  <bean id="aim.j2ee.weblogic.javacontrol.ejbProcessor" class="com.optimyth.apm.builder.rules.j2ee.weblogic.EjbProcessor">
+    <description>Process WebLogic JavaControls @js:ejb annotations</description>
+    <property name="active" value="${aim.j2ee.weblogic.javacontrol.ejbProcessor.active}"/>
+    <property name="createUnresolvedEjbs" value="${aim.j2ee.weblogic.javacontrol.acceptUnresolved}"/>
+  </bean>
+
+  <!-- Filters -->
+  
+  <bean id="aim.j2ee.weblogic.javacontrol.filter" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.j2ee.weblogic.javacontrol.filter}"/>
+  </bean>
+
+</beans>

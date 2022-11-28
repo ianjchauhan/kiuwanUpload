@@ -1,0 +1,161 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech="j2ee" subtech="java" descriptor="j2ee/aim.java.xml" label="Clases Java">
+  <description>
+    Éste modulo permite la extracción de clases y metodos en forma de componentes, resolviendo
+    las dependencias de java: llamadas a métodos, instanciación de objetos, herencia, referencias
+    a tipos y a variables.
+    <br />
+    Se pueden procesar tanto código fuente como clases binarias (ficheros .java y .class)
+    y permite registrar ámbos como entidades de modelo.<br/>
+    Para activar el registro de métodos (que es fuertemente desaconsejado, si se quiere tener un tamaño de modelo más manejable)
+    se debe activar la propiedad <i>SelectorMetodos</i>.
+  </description>
+
+  <properties>
+    <property id="aim.j2ee.rule.java.software" type="string">
+      <name>NombreAplicación</name>
+      <description>
+        Nombre de la aplicación por defecto: <b>notar</b> que este valor se usará como último recurso,
+        ya que existe un mecanismo de resolución de nombres.
+      </description>
+    </property>
+
+    <property id="aim.j2ee.rule.java.resolveCalls" type="bool">
+      <name>ResolverLlamadas</name>
+      <description>Añadir al modelo las llamadas entre clases</description>
+    </property>
+
+    <property id="aim.j2ee.rule.java.resolveFieldReferences" type="bool">
+      <name>ResolverCampos</name>
+      <description>Añadir al modelo las referencias a campos de otras clases</description>
+    </property>
+
+    <property id="aim.j2ee.rule.java.resolveInheritance" type="bool">
+      <name>ResolverHerencia</name>
+      <description>Añadir al modelo las herencias entre clases (extends de una clase padre, inherits de una interfaz)</description>
+    </property>
+
+    <property id="aim.j2ee.rule.java.resolveInstantiations" type="bool">
+      <name>ResolverInstanciaciones</name>
+      <description>Añadir al modelo las instanciaciones de clases (operador <code><b>new</b></code>)</description>
+    </property>
+
+    <property id="aim.j2ee.rule.java.resolveTypeReferences" type="bool">
+      <name>ResolverReferencias</name>
+      <description>Añadir al modelo las referencias directas a otras clases: casts, signatura de metodos, declaracion de campos o variables</description>
+    </property>
+
+    <property id="aim.j2ee.rule.java.addCodeToRelations" type="bool">
+      <name>CodigoEnRelaciones</name>
+      <description>Si <code>true</code>, se añadirá como propieda de una relación el codigo que expresa esa misma relación</description>
+    </property>
+
+    <property id="aim.j2ee.rule.java.resolveArtifacts" type="bool">
+      <name>ResolverArtefactos</name>
+      <description>Si <code>true</code>, se añadirá una propiedad a las entidades que representa las rutas de ficheros donde ésta se encuentra (<i>"artefactos"</i>) </description>
+    </property>
+
+    <property id="aim.j2ee.java.resolver" type="enum">
+      <name>PoliticaCreación</name>
+      <description>
+        Expresa como gestionar una referencia a una clase que todavia no está en el modelo: <i>existing</i> permite resolver esas
+        referencias una vez completado el modelo, insertando unicamente aquellas cuya entidad destino existe en el codigo analizado.
+        <i>matching</i> por otra parte crea la clase destino siempre que su nombre se ajuste a un patron definido en la propiedad <i>PatronPaquetes</i>.<br/>
+        Es facil de entender que matching será más rapido en ejecución, pero tiene el limite de tener que especificar en fase de configuracion
+        los paquetes java que queremos en el modelo.
+      </description>
+      <possible>
+        <enumval name="existing">Solo se crean relaciones salientes hacia clases que existen en el código analizado</enumval>
+        <enumval name="matching">Se crean las clases (y las relaciones hacia ellas) cuando sus sus paquetes se ajustan al patrón <i>PatronPaquetes</i></enumval>
+      </possible>
+    </property>
+
+    <property id="aim.j2ee.java.matching.packagePatterns" type="list" subtype="regexp">
+      <name>PatronPaquetes</name>
+      <description>Cuando se especifíca <code>PoliticaCreación=existing</code>, se utiliza éste patron para filtrar los paquetes que han de ser añadidos al modelo.</description>
+    </property>
+
+    <property id="aim.j2ee.java.resolveMethodsFilter" type="enum">
+      <name>SelectorClasesDetalle</name>
+      <description>
+        Tendrá que especificarse si se desea dar de alta entidades <i>operation</i> para modelar llamadas entre métodos.
+        Cuando esté vacío, se modelaran las dependencias java con granularidad de clase.
+      </description>
+      <possible>
+        <enumval name="">Si no se especifica estrategia, se modelan las dependencias con granularidad de clase. Los métodos no se registran.</enumval>
+        <enumval name="patterns">Se utilizará la lista de patrones especificada en la propiedad <i>FiltroClasesDetalle</i></enumval>
+      </possible>
+    </property>
+
+    <property id="aim.j2ee.java.resolveMethodsFilter.patterns" type="list" subtype="regexp">
+      <name>FiltroClasesDetalle</name>
+      <description>
+        Lista de expresiones regulares que se aplicarán a los nombres de clases completos (fully qualified names). Cuando el filtro aplique, las clases
+        que corresponden se registrarán con granularidad de metodo. De esta manera se puede conseguir tener granularidad de metodo para ciertos componentes
+        del sistema que sean más criticos. Si está <b>vacío</b>, no se darán de alta métodos.<br/>
+        <span class="propval">.*</span> significa que los metodos se crearán para todas las clases analizadas.
+      </description>
+    </property>
+
+    <property id="aim.j2ee.java.methodsPredicate" type="enum">
+      <name>SelectorMetodos</name>
+      <description>
+        Si especificado, indica un filtro sobre los metodos a dar de alta. Este nivel de filtrado dá ulterior flexibilidad a la hora de decidir
+        qué métodos añadir al modelo.
+        Si <b>no se especifica</b>, los métodos con dependencias para las clases que se ajustan a <code>SelectorClasesDetalle</code> se añaden al modelo.
+      </description>
+      <possible>
+        <enumval name="nonPrivateMethods">Cualquier metodo con 'scope' mayor que 'private' será añadido al modelo.</enumval>
+        <enumval name="excludeGetterSetter">Todos los metodos (excluyendo getters y setters), seran añadidos al modelo.</enumval>
+        <enumval name="patterns">Se añadirán al modelo los métodos cuya signatura encaje con el patrón especificado en <i>FiltroMetodos</i>.</enumval>
+      </possible>
+    </property>
+
+    <property id="aim.j2ee.java.methodsPredicate.patterns" type="list" subtype="regexp" separator="|">
+      <name>FiltroMetodos</name>
+      <description>
+        Lista de expresiones regulares que se aplicarán a las signaturas de los metodos cuando <i>SelectorMetodos</i>=patterns.
+        Las signaturas están en la siguiente forma: <code>metodo(tipoArg1,...,tipoArgN)</code>, donde cada tipoArg tiene que
+        ser un nombre cualificado (paquete.Clase).
+      </description>
+    </property>
+
+    <property id="aim.j2ee.rule.javaSource.active" type="bool">
+      <name>AnalisisFuente</name>
+      <description>Activa el análisis del código fuente (ficheros .java)</description>
+    </property>
+
+    <property id="aim.j2ee.filter.javaSource" type="list" subtype="antPattern">
+      <name>FiltroAnalisisFuente</name>
+      <description>Filtro (patrones ant) para filtrar los <b>ficheros</b> .java a analizar</description>
+    </property>
+
+    <property id="aim.j2ee.rule.javaBytecode.active" type="bool">
+      <name>AnalisisBytecode</name>
+      <description>Análisis del código binario de bytecode (ficheros .class)</description>
+    </property>
+
+    <property id="aim.j2ee.filter.javaBytecode" type="list" subtype="antPattern">
+      <name>FiltroAnalisisBytecode</name>
+      <description>Filtro (patrones ant) para filtrar los <b>ficheros</b> .class a analizar</description>
+    </property>
+  </properties>
+
+  <createdEntities>
+    <values>class,operation</values>
+    <description>
+      Este módulo crea clases y eventualmente métodos. El uso de métodos está altamente desaconsejado, a menos
+      de utilizar buenos filtros, para mantener manejable el tamaño del modelo final.<br/>
+      <b>IMPORTANTE</b>: cada método se representa con una entidad de tipo <code>operation</code>.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>inherits,calls,uses,instantiates,references</values>
+    <description>
+      Las dependencias resueltas son: herencia, llamadas a métodos, uso de variables, creación de objetos, referencias de tipo.
+      Las relaciones entre metodos solo se resolverán para aquellas clases que se ajusten a la política indicada en: <i>SelectorClasesDetalle</i>
+    </description>
+  </createdRelations>
+
+</block>

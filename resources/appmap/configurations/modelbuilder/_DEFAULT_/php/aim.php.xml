@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for php language</description>
+  <import resource="classpath:resources/qaking-tech-php.xml"/>
+  <import resource="classpath:resources/qaking-tech-sql.xml"/>
+  <import resource="classpath:resources/qaking-tech-plsql.xml"/>
+  <import resource="classpath:resources/qaking-tech-transactsql.xml"/>
+
+  <bean id="aim.php.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">  <!-- apparently, testing use only -->
+    <description>php parser</description>
+    <property name="filter" ref="aim.php.filter"/>
+    <property name="languageSupport" ref="ls_php"/>
+  </bean>
+
+  <!-- Rules -->
+  <bean id="aim.php.rule" class="com.optimyth.apm.builder.rules.php.PhpBuilderRule">
+    <description>php rule</description>
+    <property name="active" value="${aim.php.rule.active}"/>
+    <property name="callback" ref="aim.php.callback"/>
+    <property name="filter" ref="aim.php.filter"/>
+    <property name="resolver" ref="aim.php.resolver"/>
+
+    <property name="registerMethods" value="${aim.php.registerMethods}"/>
+    <property name="methodPredicate" ref="aim.php.methodPredicate" />
+    <property name="registerFunctions" value="${aim.php.registerFunctions}"/>
+    <property name="resolveInheritance" value="${aim.php.resolveInheritance}"/>
+    <property name="resolveCalls" value="${aim.php.resolveCalls}"/>
+    <property name="resolveInstantiations" value="${aim.php.resolveInstantiations}"/>
+    <property name="resolveFieldReferences" value="${aim.php.resolveFieldReferences}"/>
+
+    <property name="resolveSQL" value="${aim.php.resolveSQL}"/>
+    <property name="sqlListener" ref="aim.php.listener.sql"/>
+    <property name="fallbackSqlListener" ref="aim.php.sql.listener.fallback"/>
+  </bean>
+
+  <!-- Callback -->
+  <bean id="aim.php.callback" class="com.optimyth.apm.builder.rules.php.BasicPhpCallback">
+    <property name="application" value="${aim.php.software}"/>
+    <property name="addCodeToRelations" value="${aim.php.addCodeToRelations}"/>
+    <property name="resolveArtifacts" value="${aim.php.resolveArtifacts}"/>
+    <property name="language" value="php"/>
+  </bean>
+
+  <!-- resolvers -->
+
+  <bean id="aim.php.resolver.abstract" abstract="true">
+    <property name="callback" ref="aim.php.callback"/>
+    <property name="classnameFilter">
+      <bean factory-method="getClassFilter" class="com.optimyth.apm.builder.rules.php.PhpAPI"/>
+    </property>
+  </bean>
+
+  <bean id="aim.php.resolver.matching" parent="aim.php.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.MatchingPkgClassDepsResolver">
+    <property name="predicate"><bean class="com.optimyth.apm.builder.rules.common.PatternsPredicate">
+      <property name="partialMatch" value="true"/>
+      <property name="regexpPatterns" value="${aim.php.matching.patterns}"/>
+    </bean></property>
+    <property name="typePackageResolution" value="${aim.php.type.package.resolver}"/>
+    <property name="customPackage" value="${aim.php.custom.package}"/>    
+  </bean>
+
+  <bean id="aim.php.resolver.existing" parent="aim.php.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.ExistingClassDepsResolver">
+    <property name="cache"><bean class="com.optimyth.apm.builder.rules.oo.ExistingComponentCache">
+      <constructor-arg value="aim.php.existing.cache"/>
+      <constructor-arg value="512"/>
+    </bean></property>
+    <property name="cacheNon"><bean class="com.optimyth.apm.builder.rules.oo.NonExistingComponentCache">
+      <constructor-arg value="512"/>
+    </bean></property>
+    <property name="typePackageResolution" value="${aim.php.type.package.resolver}"/>
+    <property name="customPackage" value="${aim.php.custom.package}"/>
+  </bean>
+  
+  <bean id="aim.php.resolver.composite" parent="aim.php.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.CompositeClassDepsResolver">
+    <property name="resolvers">
+      <list>
+        <ref bean="aim.php.resolver.matching" />
+        <ref bean="aim.php.resolver.existing" />
+      </list>
+    </property>
+  </bean>
+
+  <bean id="aim.php.resolver" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="key" value="${aim.php.resolver}"/>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.oo.ClassDepsResolver"/>
+    <property name="defaultValue" ref="aim.php.resolver.existing"/>
+    <property name="map"><map>
+      <entry key="matching" value-ref="aim.php.resolver.composite"/>
+    </map></property>
+  </bean>
+    
+  <!-- SQL processors (listeners) -->
+
+  <bean id="aim.php.sql.listener.fallback" class="com.optimyth.apm.builder.rules.php.FallbackSqlListener">
+    <property name="callback" ref="aim.php.callback.sql"/>
+    <property name="createSqlComponents" value="${aim.php.createSqlComponents}" />
+  </bean>
+  
+  <!-- To support old and new properties configuration -->
+  <bean name="aim.php.sqltype.supportConfig" class="com.optimyth.apm.builder.rules.common.FirstNonNullPropertyFactoryBean">
+    <property name="objectType" value="java.lang.String"/>
+    <property name="values">
+      <list>
+        <bean class="java.lang.String"><constructor-arg value="${aim.php.sqltype}"/></bean>
+        <bean class="java.lang.String"><constructor-arg value="${aim.php.dbtype}"/></bean>
+      </list>
+    </property>
+  </bean>   
+  
+  <bean id="aim.php.listener.sql" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>
+      Which listener to use for processing SQL code. Process 
+        + aim.php.dbtype (old config - deprecated)
+        + aim.php.sqltype (new config)
+    </description>
+    <property name="key" ref="aim.php.sqltype.supportConfig"/>  <!-- To support old and new properties configuration -->
+    <property name="objectType" value="com.optimyth.apm.builder.rules.j2ee.jdbc.JdbcSqlListener"/>
+    <property name="defaultValue" ref="aim.php.listener.sql92"/>
+    <property name="map"><map>
+      <entry key="sql92"       value-ref="aim.php.listener.sql92"/>  <!-- deprecated value, kept for retro-compatibility -->
+      <entry key="oracle"      value-ref="aim.php.listener.oracle"/> <!-- deprecated value, kept for retro-compatibility -->
+      <entry key="ansisql"     value-ref="aim.php.listener.sql92"/>
+      <entry key="plsql"       value-ref="aim.php.listener.oracle"/>
+      <entry key="transactsql" value-ref="aim.php.listener.transactsql"/>   
+      <entry key="multi"       value-ref="aim.php.listener.multi"/>
+    </map></property>
+  </bean>    
+
+  <bean id="aim.php.listener.sql92" class="com.optimyth.apm.builder.rules.php.PhpSqlListener">
+    <property name="callback" ref="aim.php.callback.sql"/>
+    <property name="sqlLanguageSupport" ref="ls_sql"/>
+    <property name="createSqlComponents" value="${aim.php.createSqlComponents}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+
+  <bean id="aim.php.listener.oracle" parent="aim.php.listener.sql92" class="com.optimyth.apm.builder.rules.php.PhpPlsqlListener">
+    <property name="sqlLanguageSupport" ref="ls_plsql"/>
+  </bean>
+  
+  <bean id="aim.php.listener.transactsql" parent="aim.php.listener.sql92" class="com.optimyth.apm.builder.rules.php.PhpTransactsqlListener">
+    <property name="sqlLanguageSupport" ref="ls_transactsql"/>
+  </bean>
+  
+  <bean id="aim.php.listener.multi" class="com.optimyth.apm.builder.rules.common.CompositeSqlListener">
+    <property name="callback" ref="aim.php.callback.sql"/>
+    <property name="createSqlComponents" value="${aim.php.createSqlComponents}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>  
+    <property name="sqlListeners"><list>
+      <ref bean="aim.php.listener.sql92"/>
+      <ref bean="aim.php.listener.oracle"/>
+      <ref bean="aim.php.listener.transactsql"/>
+    </list></property>
+  </bean>  
+  
+  <!-- Database Callback -->
+  <bean id="aim.php.callback.sql" class="com.optimyth.apm.builder.rules.php.PhpDatabaseCallback">
+    <property name="application" value="${aim.common.software}"/>
+    <property name="dbType" value="${aim.php.dbsystem}"/>
+    <property name="dbName" value="${aim.php.dbname}"/>
+    <property name="addCodeToRelations" value="${aim.common.addCodeToRelations}"/>
+    <property name="ignoreCase" value="${aim.php.ignoreSQLCase}"/>
+  </bean> 
+
+  <!-- Filters -->
+  <bean id="aim.php.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.php.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.php.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.php.filter.pattern"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.php.filter.default" parent="ls_php_matcher"/>
+
+  <bean id="aim.php.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.php.filter.pattern}"/>
+  </bean>
+
+  <util:constant id="aim.php.methodPredicate.NonPrivateMagicGetterSetter" static-field="com.optimyth.apm.builder.rules.php.PhpMethodPredicates.NonPrivateMagicGetterSetter"/>
+  <util:constant id="aim.php.methodPredicate.NonPrivateMagic" static-field="com.optimyth.apm.builder.rules.php.PhpMethodPredicates.NonPrivateMagic"/>
+  <util:constant id="aim.php.methodPredicate.Any" static-field="com.optimyth.apm.builder.rules.php.PhpMethodPredicates.Any"/>
+
+  <bean id="aim.php.methodPredicate" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.php.methodPredicate.NonPrivateMagicGetterSetter" />
+    <property name="objectType" value="com.google.common.base.Predicate"/>
+    <property name="key" value="${aim.php.methodPredicate}"/>
+    <property name="map"><map>
+      <entry key="nonPrivateMagicGetterSetter" value-ref="aim.php.methodPredicate.NonPrivateMagicGetterSetter"/>
+      <entry key="nonPrivateMagic" value-ref="aim.php.methodPredicate.NonPrivateMagic"/>
+      <entry key="any" value-ref="aim.php.methodPredicate.Any"/>
+    </map></property>
+  </bean>
+
+</beans>

@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.rfc" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.LOWER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.NAMESPACE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.TYPE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="40.00" meaning="good" />
+        <threshold from="40.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <internal-name id="OPT.ABAP.COMPLEXITY.RFC" />
+        <java-class>com.als.abap.metrics.RfcMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.COUPLING.RFC" />
+        <java-class>com.als.cpp.metrics.RfcCppMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.COUPLING.RFC" />
+        <java-class>com.optimyth.csharp.metrics.RfcCsharpMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.COUPLING.RFC" />
+        <java-class>com.als.java.metrics.RfcJavaMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <internal-name id="OPT.PHP.COUPLING.RFC" />
+        <java-class>com.optimyth.qaking.php.metrics.RfcMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.COUPLING.RFC" />
+        <java-class>com.optimyth.vbnet.metrics.RfcVBnetMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+     <!-- Code examples for each language parser -->
+    <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <code-example name="metricCodeExampleAbap" result-value="4">
+<![CDATA[
+*---------------------------------------------------------------------*
+* CLASS LCL_DYNAMIC_PROGRAM IMPLEMENTATION
+*---------------------------------------------------------------------*
+CLASS LCL_DYNAMIC_PROGRAM IMPLEMENTATION.
+ METHOD CONSTRUCTOR.
+  DATA: L_VERSION(6) TYPE N.
+  PROGNAME = I_PROGNAME.
+  CALL METHOD ADDCODE( PART1 = 'REPORT'           "RPG 1
+  PART2 = PROGNAME
+  PART3 = C_PERIOD ).
+  CALL METHOD ADDCODE(' ').                       "RPG 2
+  CALL METHOD ADDTEXT( ID = 'T'                   "RPG 3
+  ENTRY = I_TITLE ).
+  CALL METHOD ADDTEXT( ID = 'R'                   "RPG 4
+  ENTRY = I_TITLE ).
+  SELECT SINGLE * FROM TRDIR INTO X_TRDIR
+   WHERE NAME = PROGNAME.
+  IF SY-SUBRC <> 0.
+   CLEAR X_TRDIR.
+   X_TRDIR-NAME = PROGNAME.
+   X_TRDIR-VARCL = C_TRUE.
+   X_TRDIR-SUBC = '1'.
+   X_TRDIR-CNAM = SY-UNAME.
+   X_TRDIR-CDAT = SY-DATUM.
+   X_TRDIR-UNAM = SY-UNAME.
+   X_TRDIR-UDAT = SY-DATUM.
+   X_TRDIR-VERN = '000001'.
+   X_TRDIR-RMAND = SY-MANDT.
+   X_TRDIR-RLOAD = SY-LANGU.
+   X_TRDIR-FIXPT = C_TRUE.
+   X_TRDIR-SDATE = SY-DATUM.
+   X_TRDIR-STIME = SY-UZEIT.
+   X_TRDIR-IDATE = SY-DATUM.
+   X_TRDIR-ITIME = SY-UZEIT.
+   X_TRDIR-LDBNAME = SPACE.
+   X_TRDIR-UCCHECK = C_TRUE.
+  ELSE.
+   X_TRDIR-UNAM = SY-UNAME.
+   X_TRDIR-UDAT = SY-DATUM.
+   L_VERSION = X_TRDIR-VERN.
+   ADD 1 TO L_VERSION.
+   X_TRDIR-VERN = L_VERSION.
+  ENDIF.
+ ENDMETHOD. "CONSTRUCTOR
+ENDCLASS. "LCL_DYNAMIC_PROGRAM IMPLEMENTATION
+
+]]>
+        </code-example>
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <code-example name="metricCodeExampleCpp" result-value="2">
+<![CDATA[
+
+#include "SimpleData.h"
+#include "InfoData.h"
+
+namespace nsp {
+	class ActivityData : public SimpleData {
+	
+	  public:
+      InfoData cpp_condition;
+      InfoData java_condition;
+	
+		QString ActivityData::get_precond(DrawingLanguage ln) const {
+		  switch (ln) {
+		  case CppView:
+		    return cpp_condition.first;
+		  case JavaView:
+		  	ln.ds();
+		    return java_condition.first;
+		  default:
+		    return ln.ds();
+		  }
+		}
+	}
+}
+
+
+]]>
+        </code-example>
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="metricCodeExampleCsharp" result-value="7">
+<![CDATA[
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Collections;
+using System.Web.UI.WebControls;
+
+namespace Deepcode.Flux.Core.Services.Assistant
+{
+	public class ControlUtil
+	{
+		public static int[] GetListSelectedInts(ListItemCollection list)
+		{
+			ArrayList al = new ArrayList();
+			foreach (ListItem item in list)
+			{
+				if (item.Selected)
+				{
+					try
+					{
+						int val = Int32.Parse(item.Value);
+						if (!al.Contains(val)) al.Add(val);
+					}
+					catch { }
+				}
+			}
+			return al.ToArray(typeof(int)) as int[];
+		}
+
+		public static void SetSelectedCSV(ListItemCollection list, string CSVValues)
+		{
+			string [] v = CSVValues.Split(',');
+			if( v == null ) return;
+			if( v.Length < 1 ) return;
+
+			ArrayList csv = new ArrayList( v );
+			foreach (ListItem i in list)
+				if( csv.Contains( i.Value )) i.Selected = true;
+		}
+	}
+}
+
+
+]]>
+        </code-example>
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="metricCodeExampleJava" result-value="7">
+<![CDATA[
+package paq.opt.rfc;
+
+import paq.opt.op.CommandData;
+import paq.opt.op.CommandData2;
+
+public class RfcClass{
+
+  String field = "hello";
+  CommandData commandData;
+  CommandData2 commandData2;
+  String tipoAbucar;
+
+  public RfcClass(String dataSource)   {
+    String var = "";
+    System.out.println("Literal1");
+    doSomething(dataSource);
+  }
+
+  public String method(){
+  	if (commandData != null && commandData.getFiltros() == null) {
+       tipoAbuscar = "AGE";
+       commandData.value = commandData2.value;
+	} else if (commandData.getFiltros() == null && commandData.getPrioridadTramitador() != null){
+	  tipoAbuscar = "CT";
+	} else {
+	  tipoAbuscar = "ALL";
+	}
+	for (int i=0, n=commandData.getNumFiltros(); i<n; i++){
+	  tipoAbuscar = tipoAbuscar + "\n";
+	}
+	return "b_" + tipoAbuscar;
+  }
+
+}
+]]>
+        </code-example>
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <code-example name="metricCodeExamplePhp" result-value="4">
+<![CDATA[
+
+<?php
+
+abstract class RfcMetric
+{
+	
+    public function runJob(CboMetric2 $var , FanInClass3 $result, FanOutClass $out)
+    {
+    	
+        $var->runJob(this,$result);
+        
+        $out->getVal(this);
+
+        if ($result !== NULL) {
+            $this->processChildResult($test, $result, $stdout, $stderr);
+        } else {
+            return array('stdout' => $stdout, 'stderr' => $stderr);
+        }
+    }
+}
+
+
+
+]]>
+        </code-example>
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="metricCodeExampleVbnet" result-value="5"><![CDATA[
+
+Namespace Pac.P.Paquete1
+
+	Class MyClassOne 
+
+		Private Const PREDICATE_NODE As New NodePredicate()
+
+		 Public Sub Method1()
+			 Dim mc2 As New MyClassTwo();
+			 Dim mc3 As New OtherType();
+			 mc2.doSomething();
+			 mc3.function();
+			 doSomething();
+		 End Sub
+
+		 Public Function method2() As Integer
+				doSomething()
+		 End Function
+
+	End Class
+
+End Namespace
+        ]]></code-example>
+      </language-parser>
+      
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Respuesta de una clase]]></name>
+      
+      <description>
+<![CDATA[
+Esta métrica (RFC) mide el número de métodos distintos que pueden ser ejecutados cuando un objeto de una clase recibe un mensaje (cuando un método de dicho objeto es invocado).
+
+Puesto que RFC incluye específicamente métodos llamados desde fuera de la clase, también es una medida de comunicación potencial entre dicha clase y otras.
+
+Un RFC elevado suele significar más fallos. Clases con RFC alto son más complejas y difíciles de entender, de probar y de depurar.
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Contabiliza el número de llamadas por clase.
+]]>
+        </implementation-description>
+        
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Número de métodos de una clase más el número de métodos de otras clases que son invocados por métodos de la clase.
+]]>
+        </implementation-description>
+        
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Número de métodos de una clase más el número de métodos de otras clases que son invocados por métodos de la clase.
+]]>
+        </implementation-description>
+        
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Número de métodos de una clase más el número de métodos de otras clases que son invocados por métodos de la clase.
+]]>
+        </implementation-description>
+        
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+Número de métodos de una clase más el número de métodos de otras clases que son invocados por métodos de la clase.
+]]>
+        </implementation-description>
+        
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Número de métodos de una clase más el número de métodos de otras clases que son invocados por métodos de la clase.
+]]>
+		</implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Response for a class]]></name>
+      
+      <description>
+<![CDATA[
+The metric measures the number of different methods that can be executed when an object of that class receives a message (when a method is invoked for that object).
+
+Since RFC specifically includes methods called from outside the class, it is also a measure of the potential communication between the class and other classes.
+
+A large RFC has been found to indicate more faults. Classes with a high RFC are more complex and harder to understand. Testing and debugging is complicated.
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Counts the number of calls per class.
+]]>
+        </implementation-description>
+        
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Number of methods of a class plus the number of methods of other classes that are invoked by methods of the class.
+]]>
+        </implementation-description>
+        
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Number of methods of a class plus the number of methods of other classes that are invoked by methods of the class.
+]]>
+        </implementation-description>
+        
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Number of methods of a class plus the number of methods of other classes that are invoked by methods of the class.
+]]>
+        </implementation-description>
+        
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+Number of methods of a class plus the number of methods of other classes that are invoked by methods of the class.
+]]>
+        </implementation-description>
+        
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Number of methods of a class plus the number of methods of other classes that are invoked by methods of the class.
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

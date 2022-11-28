@@ -1,0 +1,551 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="swift" name="no_sql" standard="swift">
+
+  <module name="YapDatabase" >
+    <description url="https://github.com/yapstudios/YapDatabase">Extensible database for iOS and Mac</description>
+
+    <class name="YapDatabase">
+      <constructor name="YapDatabase" signature="YapDatabase(path: String)" >
+        <parameters>
+          <param type="String" name="path" />
+        </parameters>
+      </constructor>
+      <constructor name="YapDatabase" signature="YapDatabase(path: String, options: YapDatabaseOptions)" >
+        <parameters>
+          <param type="String" name="path" />
+          <param type="YapDatabase.YapDatabaseOptions" name="options" />
+        </parameters>
+      </constructor>
+      <method name="newConnection" signature="newConnection()" >
+        <return type="YapDatabase.YapDatabaseConnection" />
+      </method>
+    </class>
+
+    <class name="YapDatabaseOptions">
+      <constructor name="YapDatabaseOptions" signature="YapDatabaseOptions()" />
+    </class>
+
+    <class name="YapDatabaseConnection">
+      <method name="readWriteWithBlock" signature="" />
+    </class>
+
+    <class name="YapDatabaseReadWriteTransaction">
+      <method name="objectForKey" signature="objectForKey(String, String : inCollection)" >
+        <parameters>
+          <param type="String" />
+          <param type="String" name="inCollection" />
+        </parameters>
+        <source argpos="-1" kind="database_input" />
+      </method>
+      <method name="setObject" signature="setObject(String, String: forKey,String : inCollection)" >
+        <parameters>
+          <param type="String" />
+          <param type="String" name="forKey" />
+          <param type="String" name="inCollection" />
+        </parameters>
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+    </class>
+
+    <class name="YapDatabaseReadTransaction ">
+      <method name="objectForKey" signature="objectForKey(String, String : inCollection)" >
+        <source argpos="-1" kind="database_input" />
+      </method>
+    </class>
+
+    <class name="YapDatabaseWriteTransaction ">
+      <method name="setObject" signature="setObject(String, String: forKey,String : inCollection)" >
+        <parameters>
+          <param type="String" />
+          <param type="String" name="forKey" />
+          <param type="String" name="inCollection" />
+        </parameters>
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+    </class>
+  </module>
+
+  <module name="CouchbaseLiteSwift" >
+    <description url="https://docs.couchbase.com/couchbase-lite/2.1/index.html">CouchBase lite</description>
+
+    <class name="Database">
+      <constructor name="Database" signature="Database(String: name)" >
+        <parameters>
+          <param type="String" name="name" />
+        </parameters>
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </constructor>
+      <method name="saveDocument" signature="saveDocument(MutableDocument)" >
+        <parameters>
+          <param type="CouchbaseLiteSwift.MutableDocument" />
+        </parameters>
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="document" signature="document(String: withID)" >
+        <parameters>
+          <param type="String" name="WithID" />
+        </parameters>
+        <return type="CouchbaseLiteSwift.MutableDocument" />
+        <source argpos="-1" kind="database_input" />
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+    </class>
+
+    <class name="QueryBuilder">
+      <method name="select" signature="select()" >
+        <return type="CouchbaseLiteSwift.QueryBuilder" />
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="from" signature="from()" >
+        <return type="CouchbaseLiteSwift.QueryBuilder" />
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="execute" signature="execute()" >
+        <return type="CouchbaseLiteSwift.QueryBuilder" />
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="where" signature="where()" >
+        <return type="CouchbaseLiteSwift.QueryBuilder" />
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="as" signature="as()" >
+        <return type="CouchbaseLiteSwift.QueryBuilder" />
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="limit" signature="limit()" >
+        <return type="CouchbaseLiteSwift.QueryBuilder" />
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+    </class>
+  </module>
+
+  <module name="CouchbaseLite" >
+    <description url="https://docs.couchbase.com/couchbase-lite/current/objc.html">CouchBase lite for ObjC</description>
+
+    <class name="CBLManager">
+      <method name="sharedInstance" signature="sharedInstance()" >
+        <return type="CouchbaseLiteSwift.CBLManager" />
+      </method>
+      <method name="databaseNamed" signature="databaseNamed(String)" >
+        <return type="CouchbaseLiteSwift.CBLDatabase" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="existingDatabaseNamed" signature="existingDatabaseNamed(String)" >
+        <return type="CouchbaseLiteSwift.CBLDatabase" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+    </class>
+
+    <class name="CBLDatabase">
+      <method name="createDocument" signature="createDocument()" >
+        <return type="CBLDocument" />
+      </method>
+      <method name="documentWithID" signature="documentWithID(String)" >
+        <return type="CBLDocument" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="existingDocumentWithID" signature="existingDocumentWithID(String)" >
+        <return type="CBLDocument" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="objectForKeyedSubscript" signature="objectForKeyedSubscript()" >
+        <return type="CBLDocument" />
+      </method>
+      <method name="createAllDocumentsQuery" signature="createAllDocumentsQuery()" >
+        <return type="CBLQuery" />
+      </method>
+      <method name="slowQueryWithMap" signature="slowQueryWithMap()" >
+        <return type="CBLQuery" />
+      </method>
+    </class>
+
+    <class name="CBLQuery">
+      <method name="run" signature="run()" >
+        <return type="CouchbaseLiteSwift.CBLQueryEnumerator" />
+      </method>
+    </class>
+
+    <class name="CBLQueryEnumerator">
+      <method name="nextRow" signature="nextRow()" >
+        <return type="CouchbaseLiteSwift.CBLQueryRow" />
+      </method>
+      <method name="rowAtIndex" signature="rowAtIndex(int)" >
+        <return type="CouchbaseLiteSwift.CBLQueryRow" />
+      </method>
+    </class>
+
+    <class name="CBLQueryRow" >
+      <field name="document" type="CouchbaseLiteSwift.CBLDocument" />
+    </class>
+
+    <class name="CBLDocument">
+      <method name="putProperties" signature="putProperties(dict)" >
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="documentWithId" signature="documentWithId(String)" >
+        <source argpos="-1" kind="database_input" />
+      </method>
+      <method name="propertyForKey" signature="propertyForKey(String)">
+        <source argpos="-1" kind="database_input" />
+      </method>
+      <method name="objectForKeyedSubscript" signature="objectForKeyedSubscript(String)">
+        <source argpos="-1" kind="database_input" />
+      </method>
+    </class>
+  </module>
+
+  <module name="MongoSwift" >
+    <description url="https://mongodb.github.io/mongo-swift-driver/MongoSwift/index.html">Aynchronous API and a BSON library</description>
+
+    <class name="MongoClient">
+      <constructor name="MongoClient" signature="MongoClient(String: connectionString)" >
+        <sink paramNames="connectionString" kind="resource_injection" resource="database" />
+        <sink paramNames="connectionString" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="db" signature="db(String)" >
+        <parameters>
+          <param type="String" />
+        </parameters>
+        <return type="MongoSwift.MongoDatabase" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="db" signature="db(String, DatabaseOptions: options)" >
+        <parameters>
+          <param type="String" />
+          <param type="MongoSwift.DatabaseOptions" name="options" />
+        </parameters>
+        <return type="MongoSwift.MongoDatabase" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+    </class>
+
+    <class name="MongoDatabase">
+      <method name="collection" signature="createCollection(String, CollectionOptions: options)" >
+        <parameters>
+          <param type="String"/>
+          <param type="CollectionOptions" name="options" />
+        </parameters>
+        <return type="MongoSwift.MongoCollection" />
+      </method>
+      <method name="collection" signature="createCollection(String, withType: T.Type, CollectionOptions: options)" >
+        <parameters>
+          <param type="String"/>
+          <param type="T.Type" name="withType"/>
+          <param type="CollectionOptions" name="options" />
+        </parameters>
+        <return type="MongoSwift.MongoCollection" />
+      </method>
+      <method name="createCollection" signature="createCollection(String, CollectionOptions: options)" >
+        <parameters>
+          <param type="String"/>
+          <param type="CollectionOptions" name="options" />
+        </parameters>
+        <return type="MongoSwift.MongoCollection" />
+      </method>
+      <method name="createCollection" signature="createCollection(String, withType: T.Type, CollectionOptions: options)" >
+        <parameters>
+          <param type="String"/>
+          <param type="T.Type" name="withType"/>
+          <param type="CollectionOptions" name="options" />
+        </parameters>
+        <return type="MongoSwift.MongoCollection" />
+      </method>
+      <method name="runCommand" signature="runCommand(Document, options: RunCommandOptions)" >
+        <parameters>
+          <param type="Document"/>
+          <param type="RunCommandOptions" name="options" />
+        </parameters>
+        <return type="MongoSwift.Document" />
+        <sink argpos="-1" kind="nosql_injection" resource="database"/>
+        <sink argpos="-1" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+    </class>
+
+    <class name="MongoCollection">
+      <method name="findOneAndDelete" signature="findOneAndDelete(Document, options: FindOneAndDeleteOptions)" >
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="findOneAndReplace" signature="findOneAndReplace(Document, options: FindOneAndReplaceOptions)" >
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="findOneAndUpdate" signature="findOneAndUpdate(Document, options: FindOneAndUpdateOptions)" >
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="deleteOne" signature="deleteOne(Document, options: DeleteOptions)" >
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="deleteMany" signature="deleteMany(Document, options: DeleteOptions)" >
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database"/>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="insertOne" signature="insertOne(CollectionType, options: InsertOneOptions" >
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="insertMany" signature="insertMany(array, options: InsertManyOptions) " >
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="replaceOne" signature="replaceOne(filter: Document, replacement: CollectionType, options: ReplaceOptions" >
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="updateOne" signature="updateOne(filter: Document, update: Document, options: UpdateOptions" >
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="updateMany" signature="updateMany(filter: Document, update: Document, options: UpdateOptions)" >
+        <sink argpos="0" kind="nosql_injection" resource="database"/>
+        <sink argpos="0" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="distinct" signature="distinct(key,filter)" match="name">
+        <return type="list" elementType="str"/>
+        <sink argpos="1" kind="nosql_injection" resource="database"/>
+        <sink argpos="1" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+    </class>
+  </module>
+
+  <module name="SwiftRedis" >
+    <description url="https://github.com/ZewoGraveyard/Redis">Redis client for Swift</description>
+
+    <class name="Redis">
+      <method name="connect" signature="connect(host:String, port: int)" >
+        <parameters>
+          <param type="String" name="host" />
+          <param type="int" name="port" />
+        </parameters>
+        <sink paramNames="port" kind="resource_injection" resource="database" />
+        <sink paramNames="host" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="auth" signature="auth(String, callback: Object)" >
+        <tags>password:0</tags>
+        <parameters>
+          <param type="String" />
+          <param type="Object" name="callback" />
+        </parameters>
+      </method>
+      <method name="select" signature="select(int, callback: Object)" >
+        <parameters>
+          <param type="int" />
+          <param type="Object" name="callback" />
+        </parameters>
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="ping" signature="ping(String, callback: Object)" >
+        <parameters>
+          <param type="String" />
+          <param type="Object" name="callback" />
+        </parameters>
+        <sink argpos="0" kind="connection_string_injection" resource="database" />
+      </method>
+      <method name="echo" signature="echo(String, callback: Object)" >
+        <parameters>
+          <param type="String" />
+          <param type="Object" name="callback" />
+        </parameters>
+        <sink argpos="0" kind="connection_string_injection" resource="database" />
+      </method>
+      <method name="info" signature="info(callback: Object)" >
+        <parameters>
+          <param type="Object" name="callback" />
+        </parameters>
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="flushdb" signature="flushdb(callback: Object)" >
+        <parameters>
+          <param type="Object" name="callback" />
+        </parameters>
+        <sink argpos="-2" kind="resource_injection" resource="database" />
+      </method>
+
+      <method name="get" signature="get(String)" >
+        <parameters>
+          <param type="String" />
+        </parameters>
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="getbit" signature="getbit(String, offset: Int, callback: Object)" >
+        <parameters>
+          <param type="String" />
+          <param type="Int" name="offset" />
+          <param type="Object" name="callback" />
+        </parameters>
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="getrange" signature="getrange(String, start: Int, end: Int, callback: RedisString)" >
+        <parameters>
+          <param type="String" />
+          <param type="Int" name="start" />
+          <param type="Int" name="end" />
+          <param type="RedisString" name="callback" />
+        </parameters>
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="getset" signature="getset(String, value: String, callback: RedisString)" >
+        <parameters>
+          <param type="String" />
+          <param type="String" name="value" />
+          <param type="RedisString" name="callback" />
+        </parameters>
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="mget" signature="mget(String, callback: RedisString)" >
+        <parameters>
+          <param type="String" />
+          <param type="RedisString" name="callback" />
+        </parameters>
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+
+      <method name="set" signature="set(String, value: Object)" >
+        <parameters>
+          <param type="String" />
+          <param type="Object" name="value" />
+        </parameters>
+        <sink paramNames="value" kind="nosql_injection" resource="database" />
+        <sink paramNames="value" kind="sensitive_nosql" resource="database" >
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="setbit" signature="setbit(String, offset: Int, value: Bool, callback: Object)" >
+        <parameters>
+          <param type="String" />
+          <param type="Int" name="offset" />
+          <param type="Bool" name="value" />
+          <param type="Object" name="callback" />
+        </parameters>
+        <sink paramNames="value" kind="nosql_injection" resource="database" />
+        <sink paramNames="value" kind="sensitive_nosql" resource="database" >
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="setrange" signature="setrange(String, offset: Int, value: String, callback: Object)" >
+        <parameters>
+          <param type="String" />
+          <param type="Int" name="offset" />
+          <param type="String" name="value" />
+          <param type="Object" name="callback" />
+        </parameters>
+        <sink paramNames="value" kind="nosql_injection" resource="database" />
+        <sink paramNames="value" kind="sensitive_nosql" resource="database" >
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="mset" signature="mset(tuple, callback: Object)" >
+        <parameters>
+          <param type="tuple" elementType="String"/>
+          <param type="Object" name="callback" />
+        </parameters>
+        <sink argpos="0" kind="nosql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_nosql" resource="database" >
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="msetArrayOfKeyValues" signature="msetArrayOfKeyValues(array, callback: Object)" >
+        <parameters>
+          <param type="array" elementType="tuple"/>
+          <param type="Object" name="callback" />
+        </parameters>
+        <sink argpos="0" kind="nosql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_nosql" resource="database" >
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="rename" signature="rename(String, newKey: String, callback: object)" >
+        <parameters>
+          <param type="String" />
+          <param type="String" elementType="newKey"/>
+          <param type="Object" name="callback" />
+        </parameters>
+        <sink argpos="0" kind="nosql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_nosql" resource="database" >
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="issueCommand" signature="issueCommand(String, callback: RedisResponse)" alias="issueCommandInArray, ">
+        <parameters>
+          <param type="String" />
+          <param type="RedisResponse" name="value" />
+        </parameters>
+        <sink paramNames="callback" kind="nosql_injection" resource="database" />
+        <sink paramNames="callback" kind="sensitive_nosql" resource="database" >
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+    </class>
+
+  </module>
+
+</library>

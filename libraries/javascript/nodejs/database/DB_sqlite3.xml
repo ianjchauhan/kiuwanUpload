@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/TP_sqlite3" standard="nodejs">
+
+  <module name="nodejs/sqlite3" standard="database/node-sqlite3">
+    <description url="https://github.com/mapbox/node-sqlite3">SQLite3 driver for Node.js</description>
+    <class name="nodejs/sqlite3">
+      <function name="verbose">
+        <return type="nodejs/sqlite3"/>
+      </function>
+      <function name="Database">
+        <parameters>
+          <param type="String">
+            <sink kind="resource_injection" argpos="0" resource="database"/>
+          </param>
+          <param type="function(Error)" last="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/sqlite3.Database"/>
+      </function>
+    </class>
+
+    <class name="nodejs/sqlite3.Database">
+      <function name="configure">
+        <return type="nodejs/sqlite3.Database"/>
+      </function>
+
+      <function name="run" alias="exec">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error)" last="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/sqlite3.Database"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </function>
+
+      <function name="get" alias="all,each">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,Object)" last="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/sqlite3.Database"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </function>
+
+      <function name="prepare">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error)" last="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/sqlite3.Statement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </function>
+    </class>
+
+    <class name="nodejs/sqlite3.Statement">
+      <function name="bind">
+        <parameters>
+          <param type="function(Error)" last="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/sqlite3.Statement"/>
+        <neutralization argpos="0,1,2,3,4,5,6,7,8,9" kind="sql_injection" resource="database"/>
+      </function>
+      <function name="reset"/>
+      <function name="finalize"/>
+
+      <function name="run" alias="exec">
+        <parameters>
+          <param type="function(Error)" last="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/sqlite3.Statement"/>
+      </function>
+
+      <function name="get" alias="all,each">
+        <parameters>
+          <param type="function(Error,Object)" last="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/sqlite3.Statement"/>
+      </function>
+    </class>
+  </module>
+</library>

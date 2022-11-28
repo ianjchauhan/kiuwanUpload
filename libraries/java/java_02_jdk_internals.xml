@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.jdk.internals" standard="java.jdk.internals" technology="java">
+  <description>JDK internals</description>
+
+  <module name="sun.misc">
+    <class name="sun.misc.Unsafe">
+      <description>See http://mishadoff.com/blog/java-magic-part-4-sun-dot-misc-dot-unsafe/</description>
+      <tags>dangerous, deprecated</tags>
+
+      <!-- reflection methods and direct access to fields in heap objects -->
+      <method name="allocateInstance" signature="allocateInstance(java.lang.Class)">
+        <return type="java.lang.Object"/>
+        <sink kind="unsafe_reflection" argpos="0"/>
+      </method>
+      <method name="shouldBeInitialized" signature="shouldBeInitialized()"><return type="boolean"/></method>
+      <method name="ensureClassInitialized" signature="ensureClassInitialized(java.lang.Class">
+        <description><![CDATA[Replacement: java.lang.invoke.MethodHandles.Lookup::ensureInitialized]]></description>
+      </method>
+      <method name="defineClass" signature="defineClass(java.lang.String, byte[], int, int, java.lang.ClassLoader, java.security.ProtectionDomain)">
+        <return type="java.lang.Class"/>
+        <sink argpos="0" kind="unsafe_reflection" resource="other"/>
+        <sink argpos="0,1" kind="code_injection" resource="environment"/>
+      </method>
+      <method name="defineAnonymousClass" signature="defineAnonymousClass(java.lang.Class, byte[], java.lang.Object[])">
+        <return type="java.lang.Class"/>
+        <sink argpos="1" kind="code_injection" resource="environment"/>
+      </method>
+
+      <method name="putInt" signature="putInt(java.lang.Object, long, int)" match="numargs"
+              alias="putObject, putBoolean, putByte, putShort, putLong, putFloat, putDouble,
+                     putIntVolatile, putObjectVolatile, putBooleanVolatile, putByteVolatile, putShortVolatile, putLongVolatile, putFloatVolatile, putDoubleVolatile,
+                     putOrderedObject, putOrderedInt, putOrderedLong">
+        <tags>setter, data:0, offset:1, value:2</tags>
+        <sink kind="unsafe_reflection" argpos="0"/>
+        <sink kind="buffer_overflow" argpos="1"/>
+      </method>
+      <method name="getInt" signature="getInt(java.lang.Object, long)" match="numargs"
+              alias="getObject, getBoolean, getByte, getShort, getLong, getFloat, getDouble,
+                     getIntVolatile, getObjectVolatile, getBooleanVolatile, getByteVolatile, getShortVolatile, getLongVolatile, getFloatVolatile, getDoubleVolatile">
+        <tags>getter, data:0, offset:1, value:-1</tags>
+      </method>
+      <method name="objectFieldOffset" signature="objectFieldOffset(java.lang.reflect.Field)"
+              alias="staticFieldOffset, fieldOffset">
+        <return type="long"/>
+      </method>
+      <method name="staticFieldBase" signature="staticFieldBase(java.lang.reflect.Field)">
+        <return type="java.lang.Object"/>
+      </method>
+
+      <method name="addressSize" signature="addressSize()"><return type="int"/></method>
+      <method name="pageSize" signature="pageSize()"><return type="int"/></method>
+      <method name="arrayBaseOffset" signature="arrayBaseOffset(java.lang.Class)"><return type="int"/></method>
+      <method name="arrayIndexScale" signature="arrayIndexScale(java.lang.Class)"><return type="int"/></method>
+
+      <!-- C heap management -->
+      <method name="allocateMemory" signature="allocateMemory(long)">
+        <tags>memory allocation, off-heap, memsize:0</tags>
+        <return type="long"/>
+        <source kind="memory_allocation" argpos="-1" resource="memory"/>
+      </method>
+      <method name="reallocateMemory" signature="reallocateMemory(long, long)">
+        <tags>memory reallocation, off-heap, pointer:0, memsize:1</tags>
+        <return type="long"/>
+        <source kind="memory_allocation" argpos="-1" resource="memory"/>
+      </method>
+      <method name="setMemory" signature="setMemory(java.lang.Object, long, long, byte)" match="numargs">
+        <tags>setter, data:0, offset:1, memsize:2, value:3</tags>
+        <propagate from="3" to="0"/>
+      </method>
+      <method name="setMemory" signature="setMemory(long, long, byte)" match="numargs">
+        <tags>memory set, off-heap, pointer:0, size:1, value:2</tags>
+        <propagate from="2" to="0"/>
+      </method>
+      <method name="copyMemory" signature="copyMemory(java.lang.Object, long, java.lang.Object, long, long)" match="numargs">
+        <tags>memory copy, overlap-unsafe, size-check, src:0, offset-src: 1, dest:2, offset-dest: 3, size:4</tags>
+        <propagate from="0" to="2"/>
+      </method>
+      <method name="copyMemory" signature="copyMemory(long, long, long)" match="numargs">
+        <tags>memory copy, overlap-unsafe, size-check, src:0, dest:1, size:2</tags>
+        <propagate from="0" to="1"/>
+      </method>
+      <method name="getAddress" signature="getAddress(long)"><return type="long"/></method>
+      <method name="putInt" signature="putInt(long, int)" match="numargs"
+              alias="putObject, putBoolean, putByte, putShort, putLong, putFloat, putDouble">
+        <tags>memory set, off-heap, dest:0, value:1</tags>
+        <!--sink kind="buffer_overflow" argpos="0"/-->
+      </method>
+      <method name="freeMemory" signature="freeMemory(long)">
+        <tags>memory deallocation, off-heap, pointer:0</tags>
+      </method>
+      
+      <!-- CAS & locking -->
+      <method name="compareAndSwapObject" signature="compareAndSwapObject(java.lang.Object, long, java.lang.Object, java.lang.Object)" match="numargs"
+              alias="compareAndSwapInt, compareAndSwapLong">
+        <return type="boolean"/>
+        <propagate to="0" from="3"/>
+      </method>
+
+      <!-- exception handling -->
+      <method name="throwException" signature="throwException(java.lang.Throwable"/>
+
+      <!-- thread synchronization -->
+      <method name="monitorEnter" signature="monitorEnter(java.lang.Object)"></method>
+      <method name="tryMonitorEnter" signature="tryMonitorEnter(java.lang.Object)"><return type="boolean"/></method>
+      <method name="monitorExit" signature="monitorExit(java.lang.Object)"></method>
+
+      <!-- thread handling -->
+      <method name="park" signature="park(boolean, long)">
+        <tags>thread-interrupt</tags>
+      </method>
+      <method name="unpark" signature="unpark(java.lang.Object)">
+        <tags>thread-resume</tags>
+      </method>
+
+    </class>
+    <class name="sun.misc.Cleaner"></class>
+  </module>
+
+  <module name="sun.nio.ch">
+    <class name="sun.nio.ch.DirectBuffer" kind="interface">
+      <method name="address" signature="address()"><return type="long"/></method>
+      <method name="attachment" signature="attachment()"><return type="long"/></method>
+      <method name="cleaner" signature="cleaner()"><return type="sun.misc.Cleaner"/></method>
+    </class>
+  </module>
+
+</library>  

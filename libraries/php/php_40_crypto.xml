@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         name="php_crypto" technology="php">
+  <description url="https://www.php.net/manual/es/refs.crypto.php">PHP Cryptography APIs</description>
+
+  <module name="CSPRNG">
+    <description url="https://www.php.net/manual/en/book.csprng.php">CSPRNG - Cryptographically-secure pseudo-random generator</description>
+
+    <function name="random_bytes" signature="random_bytes(int $length)">
+      <tags>csprng</tags>
+      <return type="string"/>
+    </function>
+    <function name="random_int" signature="random_int(int $min, int $max)">
+      <tags>csprng</tags>
+      <return type="int"/>
+    </function>
+  </module>
+
+  <module name="Hash">
+    <description url="https://www.php.net/manual/en/book.hash.php">Hash - Message Digest Framework</description>
+
+    <function name="hash" signature="hash(string $algo, string $data, bool $raw_output = FALSE)">
+      <tags>hash,algo:0,data:1</tags>
+      <return type="string"/>
+      <!-- algorithms: md2, md4, md5, sha1, sha224...sha512, ripemd128...ripemd320 -->
+      <sink kind="weak_hash_algorithm" resource="crypto" argpos="0"/>
+      <neutralization argpos="1" kind="string" resource="crypto"/>
+    </function>
+    <function name="hash_hmac" signature="hash_hmac(string $algo, string $data, string $key, bool $raw_output)">
+      <tags>hmac,algo:0,data:1,key:2</tags>
+      <return type="string"/>
+      <sink kind="weak_hash_algorithm" resource="crypto" argpos="0"/>
+      <sink kind="hardcoded_key" resource="crypto" argpos="2"/>
+    </function>
+    <function name="hash_file" signature="hash_file(string $algo, string $filename, bool $raw_output)">
+      <tags>hash,algo:0,data:1</tags>
+      <return type="string"/>
+      <sink kind="weak_hash_algorithm" resource="crypto" argpos="0"/>
+      <sink kind="path_traversal" resource="filesystem" argpos="1"/>
+    </function>
+    <function name="hash_hmac_file" signature="hash_hmac_file(string $algo, string $filename, string $key, bool $raw_output = FALSE)">
+      <tags>hmac,algo:0,data:1,key:2</tags>
+      <sink kind="weak_hash_algorithm" resource="crypto" argpos="0"/>
+      <sink kind="path_traversal" resource="filesystem" argpos="1"/>
+      <sink kind="hardcoded_key" resource="crypto" argpos="2"/>
+    </function>
+    <function name="hash_init" signature="hash_init(string $algo, int $options = 0, string $key = NULL)">
+      <tags>hash,hmac,algo:0,key:2</tags>
+      <return type="resource"/>
+      <sink kind="weak_hash_algorithm" resource="crypto" argpos="0"/>
+      <sink kind="hardcoded_key" resource="crypto" argpos="2"/>
+    </function>
+    <function name="hash_update_file" signature="hash_update_file(resource $context, string $filename, resource $scontext = NULL)">
+      <tags>hash,data:1</tags>
+      <return type="bool"/>
+      <sink kind="path_traversal" resource="filesystem" argpos="1"/>
+    </function>
+    <function name="hash_update" signature="hash_update(resource $context, string $data)">
+      <tags>hash,data:1</tags>
+      <return type="bool"/>
+    </function>
+    <function name="hash_update_stream" signature="hash_update_stream(resource $context, resource $handle, int $length = -1)">
+      <tags>hash, data:1</tags>
+      <return type="int"/>
+    </function>
+    <function name="hash_final" signature="hash_final(resource $context, bool $raw_output = FALSE)">
+      <tags>hash</tags>
+      <return type="string"/>
+      <neutralization argpos="-1" kind="string" resource="crypto"/>
+    </function>
+
+    <function name="hash_pbkdf2" signature="hash_pbkdf2(string $algo, string $password, string $salt, int $iterations, int $length = 0, bool $raw_output = FALSE)">
+      <!--
+      PBKDF2 (in PKCS#5 v2), password-based key derivation function that transforms a password (low-entropy material)
+      into crypto-strong key material. Iterations should be large (for "key stretching"), with at least 64 bits of salt.
+      Bcrypt is better as of today; Argon2 is probably the future against ASICs and GPUs powerful brute-force attacks.
+      -->
+      <tags>key_derivation,algo:0,data:1,salt:2,iterations:3</tags>
+      <return type="string"/>
+      <sink kind="weak_hash_algorithm" resource="crypto" argpos="0"/>
+      <sink kind="hardcoded_password" resource="crypto" argpos="1"/>
+      <sink kind="hardcoded_salt" resource="crypto" argpos="2"/>
+    </function>
+    <function name="hash_hkdf" signature="hash_hkdf(string $algo, string $ikm, int $length = 0, string $info = '', string $salt = '')">
+      <!--
+      HKDF (RFC 5869), key derivation function that transforms long (but weak) key material
+      into smaller by crypto-strong key material.
+      Safe for generating multiple keys (encryption + MAC) from same source.
+      Also useful for improving potentially-biased PRNGs
+      -->
+      <tags>key_derivation,algo:0,data:1,salt:4</tags>
+      <return type="string"/>
+      <sink kind="weak_hash_algorithm" resource="crypto" argpos="0"/>
+      <sink kind="hardcoded_salt" resource="crypto" argpos="4"/>
+    </function>
+    <function name="hash_equals" signature="hash_equals(string $known_str, string $user_str)">
+      <return type="bool"/>
+    </function>
+
+    <function name="md5" signature="md5(string $str, bool $raw_output = FALSE)">
+      <tags>hash, algo:md5</tags>
+      <return type="string"/>
+      <!-- could deter injection payloads, for example in path_traversal and SQL-i -->
+      <neutralization kind="string" argpos="0" resource="crypto"/>
+    </function>
+    <function name="sha1" signature="sha1(string $str, bool $raw_output = FALSE)">
+      <tags>hash, algo:sha1</tags>
+      <return type="string"/>
+      <!-- could deter injection payloads, for example in path_traversal and SQL-i -->
+      <neutralization kind="string" argpos="0" resource="crypto"/>
+    </function>
+  </module>
+
+  <module name="password.hashing">
+    <description url="https://www.php.net/manual/en/book.password.php">Password Hashing</description>
+
+    <function name="password_hash" signature="password_hash(string $password, int $algo, array $options = NULL)">
+      <tags>password_hashing, password:0, algo:1, salt:2</tags>
+      <return type="string"/>
+      <sink kind="hardcoded_password" argpos="0"/>
+      <sink kind="hardcoded_salt" argpos="2"/>
+    </function>
+    <function name="password_needs_rehash" signature="password_needs_rehash(string $hash, int $algo, array $options = NULL)">
+      <return type="bool"/>
+    </function>
+    <function name="password_verify" signature="password_verify(string $password, string $hash)">
+      <tags>password_hashing, password:0, data:1</tags>
+      <return type="bool"/>
+      <sink kind="hardcoded_password" resource="crypto" argpos="0"/>
+    </function>
+    <function name="crypt" signature="crypt(string $str, string $salt = NULL)">
+      <!-- This is NOT encryption !!! but a porting of the Unix crypt() function (hash using DES) -->
+      <tags>hash,data:0,algo:1,salt:1</tags>
+      <return type="string"/>
+      <neutralization kind="string" argpos="0" resource="crypto"/>
+      <!-- crypt() without salt is weak -->
+      <sink kind="hardcoded_salt" argpos="1"/>
+      <neutralization kind="sensitive_data" resource="crypto" argpos="0"/>
+      <sink kind="weak_hash_algorithm" resource="crypto" argpos="0"/>
+      <sink kind="weak_crypto_algorithm" resource="crypto" argpos="0"/>
+      <propagate from="0" to="-2" />
+    </function>
+  </module>
+
+  <module name="mcrypt">
+    <description url="https://www.php.net/manual/en/book.mcrypt.php">libmycrypt PHP wrapper</description>
+
+    <!-- Note: libmycrypt was abandoned since 2007 -->
+    <function name="mcrypt_cbc" alias="mcrypt_cfb,mcrypt_ecb,mcrypt_ofb" signature="mcrypt_cbc(string $cipher, string $key, string data, int $mode, string $iv)">
+      <tags>encrypt,decrypt,deprecated:5.5.0,algo:0,key:1,data:2,iv:4,return:-1</tags>
+      <return type="string"/>
+      <sink kind="weak_crypto_algorithm" resource="crypto" argpos="0"/>
+      <sink kind="hardcoded_key" resource="crypto" argpos="1"/>
+      <!-- neutralization argpos="2" kind="string" resource="crypto"/--><!-- add a checker for $mode = MCRYPT_ENCRYPT-->
+    </function>
+    <function name="mcrypt_create_iv" signature="mcrypt_create_iv(int $size, int $source = MCRYPT_DEV_URANDOM)">
+      <tags>ivgen,deprecated:7.1.0,iv:-1</tags>
+      <return type="string"/>
+    </function>
+    <function name="mcrypt_get_iv_size" signature="mcrypt_get_iv_size(string $cipher, string $mode)">
+      <tags>deprecated:7.1.0,algo:0,mode:1</tags>
+      <return type="int"/>
+    </function>
+    <function name="mcrypt_module_open" signature="mcrypt_module_open(string $algorithm, string $algodir, string $mode, string $modedir)">
+      <tags>deprecated:7.1.0,algo:0,mode:2</tags>
+      <return type="resource"/>
+      <sink kind="weak_crypto_algorithm" resource="crypto" argpos="0"/>
+      <sink kind="weak_crypto_mode" resource="crypto" argpos="2"/>
+    </function>
+    <function name="mcrypt_encrypt" signature="mcrypt_encrypt(string $cipher, string $key, string $data, string $mode, string $iv)">
+      <tags>deprecated:7.1.0,encrypt,algo:0,key:1,data:2,mode:3,iv:4</tags>
+      <return type="string"/>
+      <sink kind="weak_crypto_algorithm" resource="crypto" argpos="0"/>
+      <neutralization argpos="2" kind="string" resource="crypto"/>
+      <sink kind="hardcoded_key" resource="crypto" argpos="1"/>
+      <sink kind="weak_crypto_mode" resource="crypto" argpos="3"/>
+    </function>
+    <function name="mcrypt_decrypt" signature="mcrypt_decrypt(string $cipher, string $key, string $data, string $mode, string $iv)">
+      <tags>deprecated:7.1.0,decrypt,algo:0,key:1,data:2,mode:3,iv:4,return:-1</tags>
+      <return type="string"/>
+      <sink kind="weak_crypto_algorithm" resource="crypto" argpos="0"/>
+      <sink kind="hardcoded_key" resource="crypto" argpos="1"/>
+      <sink kind="weak_crypto_mode" resource="crypto" argpos="3"/>
+    </function>
+    <function name="mcrypt_generic_init" signature="mcrypt_generic_init(resource $td, string $key, string $iv)">
+      <tags>deprecated:7.1.0,key:1,iv:2,check_retcode</tags>
+      <return type="int"/>
+      <sink kind="hardcoded_key" resource="crypto" argpos="1"/>
+    </function>
+    <function name="mcrypt_generic" alias="mdecrypt_generic" signature="mcrypt_generic(resource $td, string $data)">
+      <tags>deprecated:7.1.0,data:1</tags>
+      <return type="string"/>
+    </function>
+  </module>
+
+  <module name="mhash">
+    <description url="https://www.php.net/manual/en/book.mhash.php">Interface to the mhash library</description>
+
+    <!-- Replaced by latest Hash extension -->
+    <function name="mhash" signature="mhash(int $hash, string $data, string $key = NULL)">
+      <tags>hash,hmac,algo:0,data:1,key:2</tags>
+      <return type="string"/>
+      <sink kind="weak_hash_algorithm" resource="crypto" argpos="0"/>
+      <neutralization argpos="1" kind="string" resource="crypto"/>
+      <sink kind="hardcoded_key" resource="crypto" argpos="2"/>
+    </function>
+    <function name="mhash_keygen_s2k" signature="mhash_keygen_s2k(int $hash, string $password, string $salt, int $bytes)">
+      <tags>key_derivation,algo:0,data:1,salt:2</tags>
+      <return type="string"/>
+      <!-- This SHOULD NOT be used for generating crypto keys or for password storage -->
+      <sink kind="weak_hash_algorithm" resource="crypto" argpos="0"/>
+      <sink kind="hardcoded_salt" resource="crypto" argpos="2"/>
+    </function>
+  </module>
+
+  <module name="openssl">
+    <description url="https://www.php.net/manual/en/book.openssl.php">Interface to the OpenSSL library</description>
+
+    <function name="openssl_encrypt" signature="openssl_encrypt(string $data, string $method, string $key, int options, string $iv, string &amp;$tag, string $aad, int $tag_length)">
+      <tags>encrypt,decrypt,data:0,algo:1,mode:1,key:2,iv:4,return:-1</tags>
+      <return type="string"/>
+      <sink kind="weak_crypto_algorithm" resource="crypto" argpos="1"/>
+      <sink kind="weak_crypto_mode" resource="crypto" argpos="1"/>
+      <sink kind="hardcoded_key" resource="crypto" argpos="2"/>
+    </function>
+    <function name="openssl_decrypt" signature="openssl_decrypt(string $data, string $method, string $key, int options, string $iv, string $tag, string $aad)">
+      <tags>encrypt,decrypt,data:0,algo:1,mode:1,key:2,iv:4,return:-1</tags>
+      <return type="string"/>
+      <sink kind="weak_crypto_algorithm" resource="crypto" argpos="1"/>
+      <sink kind="weak_crypto_mode" resource="crypto" argpos="1"/>
+      <sink kind="hardcoded_key" resource="crypto" argpos="2"/>
+    </function>
+    <function name="openssl_db_compute_key" signature="openssl_db_compute_key(string $pub_key, resource $dh_key)">
+      <tags>key_derivation,diffie_hellman,key.pub:0,key.priv:1</tags>
+      <return type="string"/>
+    </function>
+    <function name="openssl_digest" signature="openssl_digest(string $data, string $method, bool $raw_output = FALSE)">
+      <tags>hash,data:0,algo:1</tags>
+      <return type="string"/>
+      <neutralization argpos="0" kind="string" resource="crypto"/>
+      <sink kind="weak_hash_algorithm" resource="crypto" argpos="1"/>
+    </function>
+    <function name="openssl_get_privatekey" alias="openssl_pkey_get_private" signature="openssl_get_privatekey(mixed $key, string $passphrase)">
+      <return type="resource"/>
+      <sink kind="hardcoded_password" resource="crypto" argpos="1"/>
+    </function>
+    <function name="openssl_get_publickey" alias="openssl_pkey_get_public" signature="openssl_get_publickey(mixed $certificate)">
+      <tags>cert:0</tags>
+      <return type="resource"/>
+    </function>
+    <function name="openssl_open" signature="openssl_open(string $sealed_data, string &amp;$open_data, string $env_key, mized $priv_key, string $method = 'RC4', string iv = NULL)">
+      <tags>decrypt,data:0,return:1,key:2</tags>
+      <return type="bool"/>
+      <sink kind="hardcoded_key" resource="crypto" argpos="2"/>
+    </function>
+    <function name="openssl_pbkdf2" signature="openssl_pbkdf2(string $password, string $salt, int $key_length, int $iterations, string $digest_algorithm = 'sha1')">
+      <tags>key_derivation,data:0,salt:1,iterations:3,algo:4</tags>
+      <return type="string"/>
+      <sink kind="hardcoded_password" resource="crypto" argpos="0"/>
+      <sink kind="hardcoded_salt" resource="crypto" argpos="1"/>
+      <sink kind="weak_hash_algorithm" resource="crypto" argpos="4"/>
+    </function>
+    <function name="openssl_pkcs12_export_to_file" signature="openssl_pkcs12_export_to_file(mixed $x509, string $filename, mixed $priv_key, string $pass, array $args = NULL)">
+      <tags>key_management</tags>
+      <return type="bool"/>
+      <sink kind="path_traversal" resource="filesystem" argpos="1"/>
+      <sink kind="hardcoded_password" resource="crypto" argpos="3"/>
+    </function>
+    <function name="openssl_pkcs12_export" signature="openssl_pkcs12_export(mixed $x509, string &amp;$out, mixed $priv_key, string $pass, array $args = NULL)">
+      <tags>key_management</tags>
+      <return type="bool"/>
+      <sink kind="hardcoded_password" resource="crypto" argpos="3"/>
+    </function>
+    <function name="openssl_pkcs12_read" signature="openssl_pkcs12_read(string $pkcs12, array &amp;$certs, string $pass)">
+      <tags>key_management</tags>
+      <return type="bool"/>
+      <propagate from="0" to="1"/>
+      <sink kind="hardcoded_password" resource="crypto" argpos="2"/>
+    </function>
+    <function name="openssl_pkcs7_encrypt" signature="openssl_pkcs7_decrypt(string $infile, string $outfile, mixed $recipcerts, array $headers, int $flags = 0, int $cipherid = OPENSSL_CIPHER_RC2_40)">
+      <tags>encrypt,data:0,return:1,cert:2,algo:5</tags>
+      <return type="bool"/>
+      <sink kind="path_traversal" resource="filesystem" argpos="0,1"/>
+      <sink kind="weak_crypto_algorithm" resource="crypto" argpos="5"/>
+    </function>
+    <function name="openssl_pkcs7_decrypt" signature="openssl_pkcs7_decrypt(string $infile, string $outfile, mixed $recipcert, mixed $recipkey = NULL)">
+      <tags>encrypt,data:0,return:1,cert:2</tags>
+      <return type="bool"/>
+      <sink kind="path_traversal" resource="filesystem" argpos="0,1"/>
+    </function>
+    <function name="openssl_pkcs7_sign">
+      <tags>sign,data:0,return:1,cert:2,privkey:3</tags>
+      <return type="bool"/>
+      <sink kind="path_traversal" resource="filesystem" argpos="0,1"/>
+    </function>
+    <function name="openssl_pkcs7_verify">
+      <tags>sign_verify,data:0,cert:2,privkey:3</tags>
+      <return type="mixed"/>
+      <sink kind="path_traversal" resource="filesystem" argpos="0,2,4,5"/>
+    </function>
+    <function name="openssl_pkey_export_to_file">
+      <tags>key_management,key:0</tags>
+      <return type="bool"/>
+      <sink kind="path_traversal" resource="filesystem" argpos="1"/>
+      <sink kind="hardcoded_password" argpos="2" resource="crypto"/>
+    </function>
+    <function name="openssl_pkey_export">
+      <tags>key_management,key:0,return:1</tags>
+      <return type="bool"/>
+      <sink kind="hardcoded_password" argpos="2" resource="crypto"/>
+    </function>
+    <function name="openssl_pkey_new" signature="openssl_pkey_new(array $configargs)">
+      <tags>config:0</tags>
+      <return type="resource"/>
+    </function>
+    <function name="openssl_private_decrypt" signature="openssl_private_decrypt(string $data, string &amp;$decrypted, mixed $key, int $padding = OPENSSL_PKCS1_PADDING)">
+      <tags>decrypt,data:0,return:1,privkey:2,padding:3</tags>
+      <return type="bool"/>
+      <sink kind="weak_padding" argpos="3"/>
+    </function>
+    <function name="openssl_private_encrypt" signature="openssl_private_encrypt(string $data, string &amp;$encrypted, mixed $key, int $padding = OPENSSL_PKCS1_PADDING)">
+      <!-- This is similar to a "raw" signature; PSS padding should be used, but current openssl API does not allow it... -->
+      <tags>sign,data:0,return:1,privkey:2,padding:3</tags>
+      <return type="bool"/>
+      <sink kind="weak_padding" argpos="3"/>
+    </function>
+    <function name="openssl_public_decrypt" signature="openssl_public_decrypt(string $data, string &amp;$decrypted, mixed $key, int $padding = OPENSSL_PKCS1_PADDING)">
+      <!-- This is similar to a "raw" signature verification -->
+      <tags>sign_verify,data:0,return:1,pubkey:2,padding:3</tags>
+      <return type="bool"/>
+      <sink kind="weak_padding" argpos="3"/>
+    </function>
+    <function name="openssl_public_encrypt" signature="openssl_public_encrypt(string $data, string &amp;$encrypted, mixed $key, int $padding = OPENSSL_PKCS1_PADDING)">
+      <!-- Padding should be OPENSSL_PKCS1_OAEP_PADDING to avoid chosen-ciphertext attacks -->
+      <tags>encrypt,data:0,return:1,pubkey:2,padding:3</tags>
+      <return type="bool"/>
+      <sink kind="weak_padding" argpos="3"/>
+    </function>
+    <function name="openssl_random_pseudo_bytes" signature="openssl_random_pseudo_bytes(int $length, bool &amp;$crypto_string)">
+      <tags>csprng</tags>
+      <return type="string"/>
+    </function>
+    <function name="openssl_seal" signature="openssl_seal(string $data, string &amp;$sealed_data, string $env_key, mized $priv_key, string $method = 'RC4', string iv = NULL)">
+      <tags>encrypt,data:0,return:1,algo:4,mode:4,iv:5</tags>
+      <return type="string"/>
+      <propagate from="0" to="1"/>
+      <neutralization argpos="0" kind="string" resource="crypto"/>
+      <sink kind="weak_crypto_algorithm" resource="crypto" argpos="4"/>
+      <sink kind="weak_crypto_mode" resource="crypto" argpos="4"/>
+    </function>
+    <function name="openssl_sign" signature="openssl_sign(string $data, string &amp;$signature, mixed $priv_key_id, mixed $signature_alg = OPENSSL_ALGO_SHA1)">
+      <tags>sign,data:0,signature:1,privkey:2,algo:3</tags>
+      <sink kind="hardcoded_key" resource="crypto" argpos="2"/>
+      <sink kind="weak_hash_algorithm" resource="crypto" argpos="3"/>
+    </function>
+    <function name="openssl_verify" signature="openssl_sign(string $data, string $signature, mixed $priv_key_id, mixed $signature_alg = OPENSSL_ALGO_SHA1)">
+      <tags>sign_verify,data:0,signature:1,pubkey:2,algo:3</tags>
+      <return type="int"/>
+      <sink kind="weak_hash_algorithm" resource="crypto" argpos="3"/>
+    </function>
+    <!-- Not all functions documented: openssl_x509_*, open_spki_* not needed for now -->
+  </module>
+
+  <module name="libsodium">
+    <description url="https://www.php.net/manual/en/book.sodium.php">Interface to the libsodium library</description>
+    <!-- Old signatures used \Sodium\ namespace -->
+    <!-- Current signatures use sodium_ prefix -->
+    <function name="\Sodium\randombytes_buf" alias="\Sodium\randombytes_uniform, \Sodium\randombytes_random16">
+      <tags>csprng</tags>
+    </function>
+
+    <function name="sodium_crypto_aead_aes256gcm_encrypt" signature="sodium_crypto_aead_aes256gcm_encrypt(string $msg, string $ad, string $nonce, string $key)"
+              alias="sodium_crypto_aead_chacha20poly1305_encrypt, sodium_crypto_aead_chacha20poly1305_ietf_encrypt, sodium_crypto_aead_xchacha20poly1305_ietf_encrypt">
+      <tags>encrypt,data:0,nonce:2,key:3</tags>
+      <return type="string"/>
+      <sink argpos="3" kind="hardcoded_key" resource="crypto"/>
+    </function>
+    <function name="sodium_crypto_aead_aes256gcm_decrypt" signature="sodium_crypto_aead_aes256gcm_decrypt(string $ciphertext, string $ad, string $nonce, string $key)"
+              alias="sodium_crypto_aead_chacha20poly1305_decrypt, sodium_crypto_aead_chacha20poly1305_ietf_decrypt, sodium_crypto_aead_xchacha20poly1305_ietf_decrypt">
+      <tags>decrypt,data:0,nonce:2,key:3,return:-1</tags>
+      <return type="string"/>
+      <sink argpos="3" kind="hardcoded_key" resource="crypto"/>
+    </function>
+    <function name="sodium_crypto_auth_keygen" signature="sodium_crypto_auth_keygen()" alias="sodium_crypto_aead_aes256gcm_keygen, \Sodium\crypto_auth_keygen">
+      <tags>csprng, key_derivation, key:-1</tags>
+      <return type="string"/>
+    </function>
+    <function name="sodium_crypto_auth" signature="sodium_crypto_auth(string $msg, string $key)" alias="\Sodium\crypto_auth">
+      <tags>hmac,data:0,key:1,mac:-1</tags>
+      <return type="string"/>
+      <sink argpos="2" kind="hardcoded_key" resource="crypto"/>
+    </function>
+    <function name="crypto_auth_verify" signature="crypto_auth_verify(string $mac, string $msg, string $key)" alias="\Sodium\crypto_auth_verify">
+      <tags>hmac, mac:0, data:1, key:2</tags>
+      <return type="bool"/>
+      <sink kind="hardcoded_key" resource="crypto" argpos="2"/>
+    </function>
+    <function name="sodium_crypto_secretbox" signature="sodium_crypto_secretbox(string $string, string $nonce, string $key)" alias="\Sodium\crypto_secretbox">
+      <tags>encrypt, data:0, nonce:1, key:2, return:-1</tags>
+      <return type="string"/>
+      <sink argpos="2" kind="hardcoded_key" resource="crypto"/>
+    </function>
+    <function name="sodium_crypto_secretbox_open" signature="sodium_crypto_secretbox_open(string $ciphertext, string $nonce, string $key)" alias="\Sodium\crypto_secretbox_open">
+      <tags>decrypt, data:0, nonce:1, key:2, return:-1</tags>
+      <return type="string"/>
+      <sink argpos="2" kind="hardcoded_key" resource="crypto"/>
+    </function>
+
+    <function name="sodium_crypto_pwhash_str" signature="sodium_crypto_pwhash_str(string $password, int $opslimit, int $memlimit)"
+              alias="sodium_crypto_pwhash_scryptsalsa208sha256_str, \Sodium\crypto_pwhash_str">
+      <tags>password_hashing, password:0, iterations:1</tags>
+      <return type="string"/>
+      <sink argpos="0" kind="hardcoded_password" resource="crypto"/>
+    </function>
+    <function name="sodium_crypto_pwhash_str_verify" signature="sodium_crypto_pwhash_str_verify($hashed, $password)"
+              alias="sodium_crypto_pwhash_scryptsalsa208sha256_str_verify, \Sodium\crypto_pwhash_str_verify">
+      <tags>password_hashing, data:0, password:1</tags>
+      <return type="bool"/>
+      <sink argpos="1" kind="hardcoded_password" resource="crypto"/>
+    </function>
+    <function name="sodium_crypto_pwhash" signature="sodium_crypto_pwhash(int $length, string $password, string $salt, int $opslimit, int $memlimit, int $algo)"
+              alias="sodium_crypto_pwhash_scryptsalsa208sha256">
+      <tags>password_hashing, password:1, salt:2, iterations:3, algo:5</tags>
+      <return type="string"/>
+      <sink argpos="0" kind="hardcoded_password" resource="crypto"/>
+      <sink argpos="2" kind="hardcoded_salt" resource="crypto"/>
+    </function>
+    
+    <function name="sodium_crypto_box_keypair" signature="sodium_crypto_box_keypair()" alias="\Sodium\crypto_box_keypair">
+      <tags>key_derivation, keypair, key:-1</tags>
+      <return type="string"/>
+    </function>
+    <function name="sodium_crypto_box" signature="sodium_crypto_box(string $message, string $nonce, string $keypair)" alias="\Sodium\crypto_box">
+      <tags>encrypt, data:0, nonce:1, key:2, return:-1</tags>
+      <return type="string"/>
+    </function>
+    <function name="sodium_crypto_box_open" signature="sodium_crypto_box_open(string $ciphertext, string $nonce, string $keypair)" alias="\Sodium\crypto_box_open">
+      <tags>decrypt, data:0, nonce:1, key:2, return:-1</tags>
+      <return type="string"/>
+    </function>
+    <function name="sodium_crypto_box_seal" signature="sodium_box_seal(string $message, string $pubkey)" alias="\Sodium\crypto_box_seal">
+      <tags>encrypt, data:0, key:1, return:-1</tags>
+      <return type="string"/>
+    </function>
+    <function name="sodium_crypto_box_seal_open" signature="sodium_box_seal_open(string $ciphertext, string $keypair)" alias="\Sodium\crypto_box_seal_open">
+      <tags>decrypt, data:0, key:1, return:-1</tags>
+      <return type="string"/>
+    </function>
+  </module>
+
+</library>

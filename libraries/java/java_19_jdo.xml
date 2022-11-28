@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library  xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          name="java.jdo" standard="JDO" technology="java">
+
+  <description url="http://db.apache.org/jdo/api31/apidocs/index.html">Java Data Objects</description>
+
+  <class name="javax.jdo.JDOHelper">
+    <method name="getPersistenceManagerFactory" signature="getPersistenceManagerFactory()" match="name">
+      <return type="javax.jdo.PersistenceManagerFactory"/>
+    </method>
+    <method name="getPersistenceManager" signature="getPersistenceManager(java.lang.Object)">
+      <return type="javax.jdo.PersistenceManager"/>
+    </method>
+  </class>
+
+  <class name="javax.jdo.PersistenceManagerFactory" kind="interface">
+    <method name="getPersistenceManager" signature="getPersistenceManager()" match="name">
+      <return type="javax.jdo.PersistenceManager"/>
+    </method>
+  </class>
+
+  <class name="javax.jdo.PersistenceManager" kind="interface">
+    <method name="newQuery" signature="newQuery(java.lang.String)" match="fullsignature">
+      <return type="java.jdo.Query"/>
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </method>
+    <method name="newQuery_1" signature="newQuery(java.lang.String,java.lang.String)" match="fullsignature">
+      <return type="java.jdo.Query"/>
+      <sink argpos="1" kind="sql_injection" resource="database"/>
+    </method>
+    <method name="newQuery_2" signature="newQuery(java.lang.Class,java.lang.String)" match="fullsignature">
+      <return type="java.jdo.Query"/>
+      <sink argpos="1" kind="sql_injection" resource="database"/>
+    </method>
+    <method name="newQuery_3" signature="newQuery(javax.jdo.Extent,java.lang.String)" match="fullsignature">
+      <return type="java.jdo.Query"/>
+      <sink argpos="1" kind="sql_injection" resource="database"/>
+    </method>
+    <method name="newQuery_4" signature="newQuery(java.lang.Class,java.util.Collection,java.lang.String)" match="fullsignature">
+      <return type="java.jdo.Query"/>
+      <sink argpos="2" kind="sql_injection" resource="database"/>
+    </method>
+    <method name="newNamedQuery" signature="newNamedQuery(java.lang.Class,java.lang.String)" match="fullsignature">
+      <return type="java.jdo.Query"/>
+      <!-- if untrusted input could choose the name of the named query to execute, this is considered SQLi -->
+      <sink argpos="1" kind="sql_injection" resource="database"/>
+    </method>
+  </class>
+
+  <class name="javax.jdo.Query" kind="interface">
+    <method name="setFilter" signature="setFilter(java.lang.String)">
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </method>
+    <method name="setGrouping" signature="setGrouping(java.lang.String)">
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </method>
+  </class>
+
+</library>  

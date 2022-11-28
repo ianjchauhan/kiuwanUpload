@@ -1,0 +1,531 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.xml" standard="Xml_Libraries" technology="java">
+
+  <!--
+  XML processing libs: dom4j, jdom, jaxb, jaxen, Saxon, Apache Xalan, Apache Santuario, jaxen.
+  Common vulns: xml_injection, xxe_injection,
+
+  XXE is an old beast: G. Steuck. 2002 - https://www.securityfocus.com/archive/1/297714/2002-10-27/2002-11-02/0
+
+  Resources:
+  - https://vsecurity.com//download/papers/XMLDTDEntityAttacks.pdf
+  - https://media.blackhat.com/eu-13/briefings/Osipov/bh-eu-13-XML-data-osipov-slides.pdf
+  - https://www.usenix.org/system/files/conference/woot16/woot16-paper-spath.pdf
+  - https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html
+  - https://wiki.sei.cmu.edu/confluence/display/java/IDS17-J.+Prevent+XML+External+Entity+Attacks
+  -->
+
+  <module name="org.dom4j" standard="dom4j">
+    <description url="https://dom4j.github.io/">XML framework for Java</description>
+
+    <!-- DOM4J - https://dom4j.github.io/javadoc/1.6.1/ -->
+    <class name="org.dom4j.io.SAXReader">
+      <method name="read" signature="read(java.lang.String)" match="name">
+        <return type="org.dom4j.Document"/>
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="org.dom4j.NodeFilter" kind="interface">
+      <method name="matches" signature="matches(org.dom4j.Node)"><return type="boolean"/></method>
+    </class>
+
+    <class name="org.dom4j.Node" kind="interface">
+      <method name="createXPath" signature="createXPath(java.lang.String)">
+        <return type="org.dom4j.XPath"/>
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+
+      <method name="getDocument" signature="getDocument()"><return type="org.dom4j.Document"/></method>
+      <method name="getParent" signature="getParent()"><return type="org.dom4j.Element"/></method>
+      <method name="getPath" signature="getPath()" match="name" alias="getUniquePath"><return type="java.lang.String"/></method>
+
+      <method name="getText" signature="getText()" alias="getStringValue">
+        <return type="java.lang.String"/>
+      </method>
+
+      <method name="matches" signature="matches(java.lang.String)">
+        <return type="boolean"/>
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+
+      <method name="selectNodes" signature="selectNodes(java.lang.String)" match="name">
+        <return type="java.util.List" elementType="org.dom4j.Node"/>
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+
+      <method name="selectObject" signature="selectObject(java.lang.String)">
+        <return type="java.lang.Object"/>
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+
+      <method name="selectSingleNode" signature="selectSingleNode(java.lang.String)">
+        <return type="org.dom4j.Node"/>
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+
+      <method name="valueOf" signature="valueOf(java.lang.String)">
+        <return type="java.lang.String"/>
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+    </class>
+
+    <class name="org.dom4j.Element" kind="interface" supertypes="org.dom4j.Node">
+      <method name="elementText" signature="elementText(java.lang.String)" match="name" alias="elementTextTrim">
+        <return type="java.lang.String"/>
+        <!-- LR - Wow! This needs at least a checker to ensure that the input to parser comes from a file, not an easy data-flow problem -->
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+    </class>
+
+    <class name="org.dom4j.DocumentType" kind="interface" supertypes="org.dom4j.Node"></class>
+    
+    <class name="org.dom4j.Document" kind="interface" supertypes="org.dom4j.Node">
+      <method name="addDocType" signature="addDocType(java.lang.String, java.lang.String, java.lang.String)">
+        <sink kind="xml_injection" argpos="0,1,2"/>
+      </method>
+      <method name="getDocType" signature="getDocType()"><return type="org.dom4j.DocumentType"/></method>
+      <method name="setDocType" signature="setDocType(org.dom4j.DocumentType)"></method>
+      <method name="getEntityResolver" signature="getEntityResolver()"><return type="org.xml.sax.EntityResolver"/></method>
+      <method name="setEntityResolver" signature="setEntityResolver(org.xml.sax.EntityResolver)"></method>
+      <method name="getRootElement" signature="getRootElement()"><return type="org.dom4j.Element"/></method>
+      <method name="setRootElement" signature="setRootElement(org.dom4j.Element)"></method>
+    </class>
+
+    <class name="org.dom4j.XPath" kind="interface" supertypes="org.dom4j.NodeFilter">
+      <method name="booleanValueOf" signature="booleanValueOf(java.lang.Object)"><return type="boolean"/></method>
+      <method name="numberValueOf" signature="numberValueOf(java.lang.Object)"><return type="java.lang.Number"/></method>
+      <method name="valueOf" signature="valueOf(java.lang.Object)"><return type="java.lang.String"/></method>
+      <method name="evaluate" signature="evaluate(java.lang.Object)"><return type="java.lang.Object"/></method>
+      <method name="selectNodes" signature="selectNodes(java.lang.Object)"><return type="java.util.List" elementType="org.dom4j.Node"/></method>
+      <method name="selectSingleNode" signature="selectSingleNode(java.lang.Object)"><return type="org.dom4j.Node"/></method>
+    </class>
+    
+    <class name="org.dom4j.xpath.DefaultXPath" supertypes="org.dom4j.XPath, org.dom4j.NodeFilter, java.io.Serializable">
+      <constructor name="DefaultXPath" signature="DefaultXPath(java.lang.String)">
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </constructor>
+    </class>
+
+  </module>
+
+  <module name="org.jaxen" standard="jaxen">
+    <description url="https://github.com/jaxen-xpath/jaxen">XPath engine for Java</description>
+
+    <class name="org.jaxen.Navigator" kind="interface"></class>
+
+    <class name="org.jaxen.XPath" kind="interface">
+      <method name="evaluate" signature="evaluate(java.lang.Object)" alias="selectSingleNode"><return type="java.lang.Object"/></method>
+
+      <method name="stringValueOf" signature="stringValueOf(java.lang.Object)"><return type="java.lang.String"/></method>
+      <method name="booleanValueOf" signature="booleanValueOf(java.lang.Object)"><return type="boolean"/></method>
+      <method name="numberValueOf" signature="numberValueOf(java.lang.Object)"><return type="java.lang.Number"/></method>
+      <method name="valueOf" signature="valueOf(java.lang.Object)"><return type="java.lang.String"/></method>
+      <method name="selectNodes" signature="selectNodes(java.lang.Object)"><return type="java.util.List"/></method>
+      <method name="selectSingleNode" signature="selectSingleNode(java.lang.Object))"><return type="java.lang.Object"/></method>
+      <method name="getNavigator" signature="getNavigator()"><return type="org.jaxen.Navigator"/></method>
+    </class>
+
+    <class name="org.jaxen.BaseXPath" supertypes="org.jaxen.XPath, java.io.Serializable">
+      <constructor name="BaseXPath" signature="BaseXPath(java.lang.String)">
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </constructor>
+      <constructor name="BaseXPath_2" signature="BaseXPath(java.lang.String, org.jaxen.Navigator)">
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </constructor>
+    </class>
+
+    <class name="org.jaxen.dom.DOMXPath" supertypes="org.jaxen.BaseXPath">
+      <constructor name="DOMXPath" signature="DOMXPath(java.lang.String)">
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </constructor>
+    </class>
+    <class name="org.jaxen.dom4j.DOM4jXPath" supertypes="org.jaxen.BaseXPath">
+      <constructor name="DOM4jXPath" signature="DOM4jXPath(java.lang.String)">
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </constructor>
+    </class>
+    <class name="org.jaxen.javabean.JavaBeanXPath" supertypes="org.jaxen.BaseXPath">
+      <constructor name="JavaBeanXPath" signature="JavaBeanXPath(java.lang.String)">
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </constructor>
+    </class>
+    <class name="org.jaxen.jdom.JDOMXPath" supertypes="org.jaxen.BaseXPath">
+      <constructor name="JDOMXPath" signature="JDOMXPath(java.lang.String)">
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </constructor>
+    </class>
+    <class name="org.jaxen.jdom.XOMXPath" supertypes="org.jaxen.BaseXPath">
+      <constructor name="XOMXPath" signature="XOMXPath(java.lang.String)">
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </constructor>
+    </class>
+    <class name="org.jaxen.saxpath.XPathReader" supertypes="org.jaxen.saxpath.SAXPathEventSource">
+      <method name="parse" signature="parse(java.lang.String)">
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="org.jdom" standard="JDOM">
+    <description url="https://github.com/hunterhacker/jdom/wiki/JDOM-2.0">XML framework for Java</description>
+
+    <!-- JDOM 1 - http://www.jdom.org/docs/apidocs.1.1/ -->
+    <class name="org.jdom.input.SAXBuilder" standard="jdom">
+      <method name="build" signature="build(java.io.InputStream)" match="name">
+        <return type="org.jdom.Document"/>
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="org.jdom.Element" kind="interface" standard="jdom">
+      <method name="getChild" signature="getChild(java.lang.String)" match="name">
+        <return type="org.jdom.Element"/>
+      </method>
+      <method name="getChildText" signature="getChildText(java.lang.String)" match="name" alias="getChildTextNormalize,getChildTextTrim">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="getText" signature="getText(java.lang.String)" match="name" alias="getTextNormalize,getTextTrim">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+    </class>
+    
+    <class name="org.jdom.xpath.XPath" supertypes="java.io.Serializable">
+      <method name="newInstance" signature="newInstance(java.lang.String)" instance="false">
+        <return type="@self"/>
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+
+      <method name="getXPath" signature="getXPath()"><return type="java.lang.String"/></method>
+      <method name="numberValueOf" signature="numberValueOf(java.lang.Object)"><return type="java.lang.Number"/></method>
+      <method name="valueOf" signature="valueOf(java.lang.Object)"><return type="java.lang.String"/></method>
+      <method name="selectNodes" signature="selectNodes(java.lang.Object)"><return type="java.util.List"/></method>
+      <method name="selectSingleNode" signature="selectSingleNode(java.lang.Object)"><return type="java.lang.Object"/></method>
+    </class>
+
+    <!-- JDOM 2 - http://www.jdom.org/docs/apidocs/ -->
+    <class name="org.jdom2.input.SAXBuilder" standard="jdom2">
+      <method name="build" signature="build(java.io.InputStream)" match="name">
+        <return type="org.jdom2.Document"/>
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="org.jdom2.Element" kind="interface" standard="jdom2" >
+      <method name="getChild" signature="getChild(java.lang.String)" match="name">
+        <return type="org.jdom2.Element"/>
+      </method>
+      <method name="getChildText" signature="getChildText(java.lang.String)" match="name" alias="getChildTextNormalize,getChildTextTrim">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="getText" signature="getText(java.lang.String)" match="name" alias="getTextNormalize,getTextTrim">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+    </class>
+
+    <class name="org.jdom2.xpath.XPathExpression" kind="interface">
+      <method name="evaluate" signature="evaluate(java.lang.Object)"><return type="java.util.List"/></method>
+      <method name="evaluateFirst" signature="evaluateFirst(java.lang.Object)"><return type="java.lang.Object"/></method>
+      <method name="getExpression" signature="getExpression()"><return type="java.lang.String"/></method>
+    </class>
+    
+    <class name="org.jdom2.xpath.XPath" supertypes="java.io.Serializable">
+      <method name="newInstance" signature="newInstance(java.lang.String)" instance="false">
+        <return type="@self"/>
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+
+      <method name="getXPath" signature="getXPath()"><return type="java.lang.String"/></method>
+      <method name="numberValueOf" signature="numberValueOf(java.lang.Object)"><return type="java.lang.Number"/></method>
+      <method name="valueOf" signature="valueOf(java.lang.Object)"><return type="java.lang.String"/></method>
+      <method name="selectNodes" signature="selectNodes(java.lang.Object)"><return type="java.util.List"/></method>
+      <method name="selectSingleNode" signature="selectSingleNode(java.lang.Object)"><return type="java.lang.Object"/></method>
+    </class>
+
+    <class name="org.jdom2.xpath.XPathBuilder">
+      <constructor name="XPathBuilder" signature="XPathBuilder(java.lang.String, org.jdom2.filter.Filter)">
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </constructor>
+      <method name="compileWith" signature="compileWith(org.jdom2.xpath.XPathFactory)">
+        <return type="org.jdom2.xpath.XPathExpression"/>
+      </method>
+      <method name="getExpression" signature="getExpression()"><return type="java.lang.String"/></method>
+    </class>
+
+    <class name="org.jdom2.xpath.XPathFactory">
+      <method name="instance" signature="instance()" instance="false"><return type="@self"/></method>
+      <method name="newInstance" signature="newInstance()" instance="false"><return type="@self"/></method>
+
+      <method name="compile" signature="compile(java.lang.String)" match="name">
+        <return type="org.jdom2.xpath.XPathExpression"/>
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+    </class>
+    
+    <class name="org.jdom2.xpath.jaxen.JDOMXPath" supertypes="org.jdom2.xpath.XPath">
+      <constructor name="JDOMXPath" signature="JDOMXPath(java.lang.String)">
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </constructor>
+    </class>
+    
+    <class name="org.jdom2.xpath.jaxen.JaxenXPathFactory" supertypes="org.jdom2.xpath.XPathFactory"></class>
+  </module>
+
+  <module name="javax.xml.bind" standard="JAXB">
+    <description url="https://www.oracle.com/technical-resources/articles/javase/jaxb.html">
+      JAXB - Java Architecture for XML Binding
+    </description>
+
+    <class name="javax.xml.bind.JAXB">
+      <method name="unmarshall" signature="unmarshal(java.lang.String,java.lang.Class)" match="numargs">
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+    </class>
+    <class name="javax.xml.bind.JAXBContext">
+      <method name="newInstance" signature="newInstance()" match="name">
+        <return type="javax.xml.bind.JAXBContext"/>
+      </method>
+      <method name="createUnmarshaller" signature="createUnmarshaller()" match="name">
+        <return type="javax.xml.bind.Unmarshaller"/>
+      </method>
+    </class>
+    <class name="javax.xml.bind.Unmarshaller">
+      <method name="unmarshall" signature="unmarshal(java.io.InputStream)" match="name">
+        <return type="java.lang.Object"/>
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="com.thoughtworks.xstream" standard="xstream">
+    <description url="http://x-stream.github.io/">XStream - XML serialization library</description>
+
+    <class name="com.thoughtworks.xstream.XStream">
+      <method name="fromXML" signature="fromXML(java.lang.String)" match="name">
+        <return type="java.lang.Object"/>
+        <sink argpos="0" kind="code_injection_deserialization" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="net.sf.saxon" standard="Saxon">
+    <description url="http://www.saxonica.com/html/documentation/about/whatis.html">Saxon - XSLT, XPath and XQuery processor</description>
+
+    <!-- Saxon - http://www.saxonica.com/html/documentation/javadoc/index.html -->
+    <class name="net.sf.saxon.s9api.Processor">
+      <method name="newDocumentBuilder" signature="newDocumentBuilder()">
+        <return type="net.sf.saxon.s9api.DocumentBuilder"/>
+      </method>
+      <method name="newSerializer" signature="newSerializer()">
+        <return type="net.sf.saxon.s9api.Serializer"/>
+      </method>
+      <method name="newSerializer_2" signature="newSerializer(java.io.File)" match="numargs">
+        <return type="net.sf.saxon.s9api.Serializer"/>
+      </method>
+      <method name="newXPathCompiler" signature="newXPathCompiler()">
+        <return type="net.sf.saxon.s9api.XPathCompiler"/>
+      </method>
+      <method name="newQueryCompiler" signature="newQueryCompiler()">
+        <return type="net.sf.saxon.s9api.XQueryCompiler"/>
+      </method>
+      <method name="newXsltCompiler" signature="newXsltCompiler()">
+        <return type="net.sf.saxon.s9api.XsltCompiler"/>
+      </method>
+      <method name="setConfigurationProperty" signature="setConfigurationProperty(java.lang.String, java.lang.Object)">
+        <tags>xml.config</tags>
+      </method>
+    </class>
+
+    <class name="net.sf.saxon.s9api.XPathCompiler">
+      <method name="compile" signature="compile(java.lang.String)" alias="compilePattern">
+        <return type="net.sf.saxon.s9api.XPathExecutable"/>
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+      <method name="evaluate" signature="evaluate(java.lang.String, net.sf.saxon.s9api.XdmItem)">
+        <return type="net.sf.saxon.s9api.XdmValue"/>
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+      <method name="evaluateSingle" signature="evaluateSingle(java.lang.String, net.sf.saxon.s9api.XdmItem)">
+        <return type="net.sf.saxon.s9api.XdmItem"/>
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+      <method name="getProcessor" signature="getProcessor()"><return type="net.sf.saxon.s9api.Processor"/></method>
+    </class>
+    
+    <class name="net.sf.saxon.s9api.XPathExecutable">
+      <method name="load" signature="load()">
+        <return type="net.sf.saxon.s9api.XPathSelector"/>
+      </method>
+    </class>
+
+    <class name="net.sf.saxon.s9api.streams.XdmStream" supertypes="java.util.stream.Stream"/>
+
+    <class name="net.sf.saxon.s9api.XPathSelector" supertypes="java.lang.Iterable">
+      <method name="evaluate" signature="evaluate()"><return type="net.sf.saxon.s9api.XdmValue"/></method>
+      <method name="evaluateSingle" signature="evaluateSingle()"><return type="net.sf.saxon.s9api.XdmItem"/></method>
+      <method name="stream" signature="stream()"><return type="net.sf.saxon.s9api.streams.XdmStream"/></method>
+    </class>
+
+    <class name="net.sf.saxon.s9api.XQueryCompiler">
+      <method name="compile" signature="compile(java.lang.String)" match="numargs">
+        <return type="net.sf.saxon.s9api.XQueryExecutable"/>
+        <!-- No XQuery-injection rule (XQuery is much less used nowadays than XPath), use XPath injection as approximation -->
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+      <method name="compileLibrary" signature="compileLibrary(java.lang.String)" match="numargs">
+        <sink kind="xpath_injection" argpos="0" resource="other"/>
+      </method>
+      <method name="getProcessor" signature="getProcessor()"><return type="net.sf.saxon.s9api.Processor"/></method>
+    </class>
+    
+    <class name="net.sf.saxon.s9api.XQueryExecutable">
+      <method name="load" signature="load()">
+        <return type="net.sf.saxon.s9api.XQueryEvaluator"/>
+      </method>
+    </class>
+    
+    <class name="net.sf.saxon.s9api.XQueryEvaluator" supertypes="java.lang.Iterable">
+      <method name="evaluate" signature="evaluate()"><return type="net.sf.saxon.s9api.XdmValue"/></method>
+      <method name="evaluateSingle" signature="evaluateSingle()"><return type="net.sf.saxon.s9api.XdmItem"/></method>
+      <method name="stream" signature="stream()"><return type="net.sf.saxon.s9api.streams.XdmStream"/></method>
+      <method name="run" signature="run()"/>
+      <method name="run_2" signature="run(net.sf.saxon.s9api.Destination)"><propagate from="-2" to="0"/></method>
+      <method name="setSource" signature="setSource(net.sf.saxon.s9api.Source)"><propagate from="0" to="-2"/></method>
+    </class>
+
+    <class name="net.sf.saxon.s9api.XsltCompiler">
+      <method name="compile" signature="compile(javax.xml.transform.Source)" alias="compilePackage,compilePackages" match="name">
+        <return type="net.sf.saxon.s9api.XsltExecutable"/>
+        <sink argpos="0" kind="xslt_injection" resource="other"/>
+      </method>
+      <method name="loadExecutablePackage" signature="loadExecutablePackage(java.net.URI)" alias="loadLibraryPackage">
+        <return type="net.sf.saxon.s9api.XsltExecutable"/>
+        <sink argpos="0" kind="xslt_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="net.sf.saxon.s9api.XsltExecutable">
+      <method name="load" signature="load()">
+        <return type="net.sf.saxon.s9api.XsltTransformer"/>
+      </method>
+    </class>
+
+    <class name="net.sf.saxon.s9api.XsltTransformer">
+      <method name="setSource" signature="setSource(javax.xml.transform.Source)">
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+    </class>
+
+    <!-- Support for JAXP and other "standard" APIs -->
+    <class name="net.sf.saxon.xpath.XPathFactoryImpl" supertypes="javax.xml.xpath.XPathFactory"
+           alias="com.saxonica.config.EnterpriseXPathFactory, com.saxonica.config.ProfessionalXPathFactory"/>
+
+    <class name="net.sf.saxon.xpath.XPathEvaluator" supertypes="javax.xml.xpath.XPath"></class>
+  </module>
+
+  <module name="org.xmlpull" standard="XMLPull_API">
+    <description url="http://www.xmlpull.org/v1/doc/api/index.html">XML Pull parser API</description>
+
+    <class name="org.xmlpull.v1.XmlPullParser" kind="interface">
+      <method name="getAttributeCount" signature="getAttributeCount()"></method>
+      <method name="getAtributeName" signature="getAtributeName(int)" alias="getAttributeNamespace, getAttributePrefix, getAttributeValue">
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getAttributeValue" signature="getAttributeValue(java.lang.String, java.lang.String)">
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getName" signature="getName()" alias="getNamespace()">
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getText" signature="getText()" alias="readText">
+        <return type="java.lang.String"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="next" signature="next()" alias="nextToken"><return type="int"/></method>
+      <method name="getFeature" signature="getFeature(java.lang.String)" alias="getProperty"><return type="java.lang.String"/></method>
+      <method name="setFeature" signature="setFeature(java.lang.String, java.lang.String)" alias="setProperty">
+        <tags>xml.config</tags>
+      </method>
+      <method name="setInput" signature="setInput(java.io.Reader)">
+        <propagate from="0" to="-2"/>
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="org.xmlpull.v1.XmlPullParserFactory" kind="abstract_class">
+      <method name="newInstance" signature="newInstance()" instance="false"><return type="@self"/></method>
+      <method name="newInstance_2" signature="newInstance(java.lang.Class)" instance="false"><return type="@self"/></method>
+      <method name="newInstance_3" signature="newInstance(java.lang.Class, java.lang.String)" instance="false"><return type="@self"/></method>
+      <method name="newPullParser" signature="newPullParser()"><return type="org.xmlpull.v1.XmlPullParser"/></method>
+      <method name="getFeature" signature="getFeature(java.lang.String)"><return type="java.lang.String"/></method>
+      <method name="setFeature" signature="setFeature(java.lang.String, java.lang.String)">
+        <tags>xml.config</tags>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="org.kxml2" standard="kXml2">
+    <description url="http://kxml.sourceforge.net/kxml2/javadoc/">Simple, pull based XML parser</description>
+
+    <class name="org.kxml2.io.KXmlParser" supertypes="org.xmlpull.v1.XmlPullParser">
+      <method name="setInput" signature="setInput(java.io.InputStream, java.lang.String)">
+        <propagate from="0" to="-2"/>
+        <sink argpos="0" kind="xml_injection" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="apache.xalan" standard="Apache_Xalan">
+    <description url="http://xalan.apache.org/xalan-j/index.html">XSLT processor for Java</description>
+
+    <class name="org.apache.xpath.XPathAPI">
+      <method name="eval" signature="eval(org.w3c.dom.Node,java.lang.String)" match="name" instance="false"
+              alias="selectNodeIterator,selectNodeList,selectSingleNode">
+        <sink argpos="1" kind="xpath_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="com.sun.org.apache.xpath.internal.XPathAPI" supertypes="org.apache.xpath.XPathAPI"/>
+
+    <class name="org.apache.xpath.XPath">
+      <constructor name="XPath" signature="XPath(java.lang.String)" match="name">
+        <sink argpos="0" kind="xpath_injection" resource="other"/>
+      </constructor>
+    </class>
+
+    <class name="org.apache.xpath.jaxp.XPathFactoryImpl" supertypes="javax.xml.xpath.XPathFactory"/>
+    <class name="org.apache.xpath.jaxp.XPathImpl" supertypes="javax.xml.xpath.XPath"/>
+
+    <class name="org.apache.xalan.templates.Stylesheet"></class>
+    <class name="org.apache.xalan.xsltc.trax.TransformerFactoryImpl" supertypes="javax.xml.transform.sax.SAXTransformerFactory"/>
+    <class name="org.apache.xalan.xsltc.trax.XSLTCSource" supertypes="javax.xml.transform.Source">
+      <constructor name="XSLTCSource" signature="XSLTCSource(javax.xml.transform.Source)"></constructor>
+    </class>
+  </module>
+
+  <module name="apache.santuario" standard="Apache_Santuario">
+    <description url="https://santuario.apache.org/javaindex.html">XML Security for Java</description>
+
+    <class name="org.apache.xml.security.utils.XPathAPI" kind="interface">
+      <method name="evaluate" signature="evaluate()" match="name" alias="selectNodeList">
+        <sink argpos="2" kind="xpath_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="org.apache.xml.security.utils.JDKXPathAPI" supertypes="org.apache.xml.security.utils.XPathAPI"/>
+    <class name="org.apache.xml.security.utils.XalanXPathAPI" supertypes="org.apache.xml.security.utils.XPathAPI"/>
+    
+  </module>
+
+</library>

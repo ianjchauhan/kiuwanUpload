@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="oracleforms-convert" default="run" basedir=".">
+  <description>
+    Script for exporting Oracle Forms files (.fmb, .mmb, .olb) to XML for processing.
+  </description>
+
+  <property environment="env"/>
+  <property name="AGENT_HOME" value=".."/>
+
+  <path id="oracle.forms.classpath">
+    <pathelement path="${DEVSUITE}/bin"/>
+    <fileset dir="${DEVSUITE}">
+      <include name="forms/java/frmxmltools.jar"/>
+      <include name="forms/java/frmjdapi.jar"/>
+      <include name="LIB/xmlparserv2.jar"/>
+      <include name="LIB/xschema.jar"/>
+    </fileset>
+    <fileset dir="${AGENT_HOME}/lib.engine">
+      <include name="alsUtils.jar"/>
+      <include name="analyzer.jar"/>
+    </fileset>
+  </path>
+
+  <macrodef name="convertForms" description="Convert Oracle Forms binary files to XML">
+    <attribute name="file"/>
+    <sequential>
+      <exec executable="cmd" osfamily="windows">
+        <arg value="/c"/>
+        <arg value="${DEVSUITE}/bin/frmf2xml.bat"/>
+        <arg value="USE_PROPERTY_IDS=NO"/>
+        <arg value="OVERWRITE=YES"/>
+        <arg value="DUMP=OVERRIDEN"/>
+        <arg value="@{file}"/>
+      </exec>
+      <exec executable="${DEVSUITE}/bin/frmf2xml.sh" osfamily="unix">
+        <arg value="USE_PROPERTY_IDS=NO"/>
+        <arg value="OVERWRITE=YES"/>
+        <arg value="DUMP=OVERRIDEN"/>
+        <arg value="@{file}"/>
+      </exec>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="convertLibrary" description="Convert Oracle Forms library files (.pll) to text">
+    <attribute name="file"/>
+    <sequential>
+      <exec executable="rwconverter" dir="${DEVSUITE}/bin">
+        <arg value="BATCH=YES"/>
+        <arg value="SOURCE=@{file}"/>
+        <arg value="DTYPE=PLDFILE"/>
+        <arg value="STYPE=PLLFILE"/>
+      </exec>
+    </sequential>
+  </macrodef>
+
+  <taskdef name="if" classname="com.optimyth.ant.IfTask" classpathref="oracle.forms.classpath"/>
+  <taskdef name="for" classname="com.optimyth.ant.ForTask" classpathref="oracle.forms.classpath"/>
+
+  <target name="run" description="Converts Oracle Forms files (.fmb, .mmb and .olb) to XML format">
+    <if>
+      <not><and>
+        <isset property="DEVSUITE"/>
+        <available file="${DEVSUITE}"/>
+      </and></not>
+      <then>
+        <antcall target="help"/>
+        <fail>DEVSUITE property not specified.</fail>
+      </then>
+    </if>
+    <if>
+      <not><isset property="path"/></not>
+      <then>
+        <antcall target="help"/>
+        <fail>path property not specified.</fail>
+      </then>
+    </if>
+    <for param="file">
+      <path>
+        <fileset dir="${path}" includes="**/*.fmb,**/*.mmb,**/*.olb" caseSensitive="false"/>
+      </path>
+      <sequential>
+        <convertForms file="@{file}"/>
+      </sequential>
+    </for>
+    <for param="file">
+      <path>
+        <fileset dir="${path}" includes="**/*.pll" caseSensitive="false"/>
+      </path>
+      <sequential>
+        <convertLibrary file="@{file}"/>
+      </sequential>
+    </for>
+  </target>
+
+  <target name="help">
+    <echo>
+Converts Oracle Forms files (.fmb, .mmb and .olb) to XML format.
+
+Usage:
+ant -f oracleforms_convert.xml -DDEVSUITE=DEVSUITE_DIR -Dpath=DIR
+
+where DEVSUITE_DIR is the Oracle Dev Suite directory and
+      DIR is the directory with Oracle Forms files.
+
+Converted files (.xml or .pld) will be placed in the same source firectory.
+    </echo>
+  </target>
+
+</project>

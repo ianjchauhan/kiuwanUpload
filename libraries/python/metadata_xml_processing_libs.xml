@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="xml_processing_libs" technology="python">
+
+  <description>XML processing libraries</description>
+
+  <module name="lxml">
+    <description url="https://lxml.de/">lxml - XML toolkit over libxml2 and libxslt</description>
+    <module name="etree" >
+      <function name="parse" signature="parse(source, parser=None, base_url=None)" >
+        <tags>mandatory_checks:parser(1)</tags>
+        <return type="lxml.etree.ElementTree" />
+        <sink argpos="0" kind="xml_entity_injection" resource="other" />
+        <propagate from="0" to="-2" />
+      </function>
+      <function name="parseid" signature="parseid(source, parser=None)" >
+        <tags>mandatory_checks:parser(1)</tags>
+        <return type="tuple" />
+        <sink argpos="0" kind="xml_entity_injection" resource="other" />
+      </function>
+      <function name="iterparse" signature="iterparse(source, events=None, parser=None)" >
+        <tags>mandatory_checks:parser</tags>
+        <return type="lxml.etree.ElementTree" />
+        <sink argpos="0" kind="xml_entity_injection" resource="other" />
+      </function>
+      <function name="fromstring" signature="fromstring(text, parser=None, base_url=None)" >
+        <tags>mandatory_checks:parser(1)</tags>
+        <return type="lxml.etree._Element" />
+        <sink argpos="0" kind="xml_entity_injection" resource="other" />
+      </function>
+      <function name="fromstringlist" signature="fromstringlist(strings, parser=None)" >
+        <tags>mandatory_checks:parser(1)</tags>
+        <return type="lxml.etree._Element" />
+        <sink argpos="0" kind="xml_entity_injection" resource="other" />
+      </function>
+      <function name="write" signature="write(path)" >
+        <return type="NoneType" />
+        <sink argpos="0" kind="hardcoded_absolute_path" resource="web" />
+      </function>
+      <function name="dump" signature="dump(element)" >
+        <return type="str" />
+      </function>
+      <function name="tostring" signature="tostring(element, encoding, method)" >
+        <return type="str" />
+      </function>
+      <function name="tostringlist" signature="tostringlist(element, encoding, method)" >
+        <return type="str" />
+      </function>
+      <function name="set_default_parser" signature="set_default_parser(parser=None)" >
+        <tags>mandatory_checks:parser(0)</tags>
+        <return type="NoneType" />
+        <propagate from="0" to="-2" />
+      </function>
+      <function name="get_default_parser" signature="get_default_parser()" >
+        <return type="lxml.etree._FeedParser" />
+        <propagate from="-2" to="-1" />
+      </function>
+      <function name="XML" signature="XML(text, parser=None, base_url=None))" >
+        <tags>mandatory_checks:parser(1)</tags>
+        <return type="lxml.etree.ElementTree" />
+        <sink argpos="0" kind="xml_entity_injection" resource="other" />
+        <propagate from="0" to="-2" />
+      </function>
+      <function name="XMLDTDID" signature="XMLDTDID(text, parser=None, base_url=None)" >
+        <tags>mandatory_checks:parser(1)</tags>
+        <return type="lxml.etree.ElementTree" />
+        <sink argpos="0" kind="xml_entity_injection" resource="other" />
+        <propagate from="0" to="-2" />
+      </function>
+      <function name="XMLID" signature="XMLID(text, parser=None, base_url=None)" >
+        <tags>mandatory_checks:parser(1)</tags>
+        <return type="lxml.etree.ElementTree" />
+        <sink argpos="0" kind="xml_entity_injection" resource="other" />
+        <propagate from="0" to="-2" />
+      </function>
+
+      <class name="_Element" >
+        <field name="tag" type="str" />
+        <field name="attrib" type="dict" />
+        <field name="child" type="iter" />
+        <field name="text" type="str" />
+
+        <method name="iter" signature="iter(filter)" >
+          <return type="iter" />
+        </method>
+        <method name="append" signature="append(subelement)" >
+          <return type="NoneType" />
+          <sink argpos="0" kind="xml_injection" resource="other" />
+        </method>
+        <method name="extend" signature="extend(subelements)" >
+          <return type="NoneType" />
+          <sink argpos="0" kind="xml_injection" resource="other" />
+        </method>
+        <method name="findall" signature="findall()" >
+          <return type="list" />
+          <sink argpos="0" kind="xpath_injection" resource="other" />
+        </method>
+        <method name="find" signature="find()" >
+          <return type="lxml.etree._Element" />
+          <sink argpos="0" kind="xpath_injection" resource="other" />
+        </method>
+        <method name="findtext" signature="findtext()" >
+          <return type="lxml.etree._Element" />
+          <sink argpos="0" kind="xpath_injection" resource="other" />
+        </method>
+        <method name="xpath" signature="xpath(expression)" >
+          <return type="list" />
+          <sink argpos="0" kind="xpath_injection" resource="other" />
+        </method>
+      </class>
+      <class name="ElementTree" >
+        <method name="getroot" signature="getroot()" >
+          <return type="lxml.etree.Element" />
+        </method>
+        <method name="findall" signature="findall()" >
+          <return type="list" />
+          <sink argpos="0" kind="xpath_injection" resource="other" />
+        </method>
+        <method name="find" signature="find()" >
+          <return type="lxml.etree._Element" />
+          <sink argpos="0" kind="xpath_injection" resource="other" />
+        </method>
+        <method name="findtext" signature="findtext()" >
+          <return type="lxml.etree._Element" />
+          <sink argpos="0" kind="xpath_injection" resource="other" />
+        </method>
+        <method name="parse" signature="parse(self, source, parser=None, base_url=None)" >
+          <tags>mandatory_checks:parser(2)</tags>
+          <return type="lxml.etree.ElementTree" />
+          <sink argpos="1" kind="xml_entity_injection" resource="other" />
+        </method>
+        <method name="write" signature="write(path)" >
+          <return type="NoneType" />
+          <sink argpos="0" kind="hardcoded_absolute_path" resource="web" />
+        </method>
+        <method name="xpath" signature="xpath(expression)" >
+          <return type="list" />
+          <sink argpos="0" kind="xpath_injection" resource="other" />
+        </method>
+        <method name="xinclude" signature="xinclude(self)" >
+          <return type="NoneType" />
+          <sink argpos="-2" kind="xml_entity_injection" resource="other" />
+        </method>
+      </class>
+
+      <class name="XSLT" >
+        <constructor name="XSLT" signature="XSLT(element)" />
+      </class>
+
+      <class name="XMLParser" supertypes="lxml.etree._FeedParser">
+        <constructor name="XMLParser" signature="XMLParser(self, encoding=None, attribute_defaults=False, dtd_validation=False, load_dtd=False, no_network=True, ns_clean=False, recover=False, schema: XMLSchema =None, remove_blank_text=False, resolve_entities=True, remove_comments=False, remove_pis=False, strip_cdata=True, collect_ids=True, target=None, compact=True)" >
+          <tags>mandatory_checks:resolve_entities=False</tags>
+          <!--tags>checks:dtd_validation=True.load_dtd=True.no_network=False.huge_tree=True.schema</tags-->
+          <source argpos="-1" kind="xml_entity_injection" resource="other" />
+        </constructor>
+      </class>
+
+      <class name="_FeedParser" />
+      
+      <class name="_Validator" >
+        <method name="validate" signature="validate(self, etree)" >
+          <sink argpos="1" kind="xml_entity_injection" resource="other" />
+        </method>
+        <method name="assert_" signature="assert_(self, etree)" >
+          <sink argpos="1" kind="xml_entity_injection" resource="other" />
+        </method>
+        <method name="assertValid" signature="assertValid(self, etree)" >
+          <sink argpos="1" kind="xml_entity_injection" resource="other" />
+        </method>
+      </class>
+
+      <class name="XMLSchema" supertypes="lxml.etree._Validator" />
+      <class name="DTD" supertypes="lxml.etree._Validator" />
+    </module>
+  </module>
+
+  <module name="defusedxml">
+    <description url="https://pypi.org/project/defusedxml/">defusedxml - XML protection for Python stdlib modules</description>
+    <module name="etree" >
+      <module name="ElementTree" >
+        <function name="parse" signature="parse(path)" >
+          <tags>checks:forbid_entities=False.forbid_external=False</tags>
+          <return type="defusedxml.etree.ElementTree.ElementTree" />
+          <sink argpos="0" kind="xml_entity_injection" resource="other" />
+          <sink argpos="0" kind="hardcoded_absolute_path" resource="web" />
+        </function>
+        <function name="iterparse" signature="iterparse(source, events=None, parser=None)" >
+          <tags>checks:forbid_entities=False.forbid_external=False.parser</tags>
+          <return type="defusedxml.etree.ElementTree.ElementTree" />
+          <sink argpos="0" kind="xml_entity_injection" resource="other" />
+        </function>
+        <function name="fromstring" signature="fromstring(string)" >
+          <tags>checks:forbid_entities=False.forbid_external=False</tags>
+          <return type="defusedxml.etree.ElementTree.Element" />
+          <sink argpos="0" kind="xml_entity_injection" resource="other" />
+        </function>
+        <function name="fromstringlist" signature="fromstringlist(sequence, parser=None)" >
+          <tags>checks:forbid_entities=False.forbid_external=False.parser</tags>
+          <return type="defusedxml.etree.ElementTree.Element" />
+          <sink argpos="0" kind="xml_entity_injection" resource="other" />
+        </function>
+        <function name="XML" signature="XML(text, parser=None)" >
+          <tags>checks:forbid_entities=False.forbid_external=False.parser</tags>
+          <return type="defusedxml.etree.ElementTree.Element" />
+          <sink argpos="0" kind="xml_entity_injection" resource="other" />
+        </function>
+        <function name="XMLID" signature="XMLID(text, parser=None)" >
+          <tags>checks:forbid_entities=False.forbid_external=False.parser</tags>
+          <return type="defusedxml.etree.ElementTree.Element" />
+          <sink argpos="0" kind="xml_entity_injection" resource="other" />
+        </function>
+        <function name="write" signature="write(path)" >
+          <return type="NoneType" />
+          <sink argpos="0" kind="hardcoded_absolute_path" resource="web" />
+        </function>
+        <function name="dump" signature="dump(element)" >
+          <return type="str" />
+        </function>
+        <function name="tostring" signature="tostring(element, encoding, method)" >
+          <return type="str" />
+        </function>
+        <function name="tostringlist" signature="tostringlist(element, encoding, method)" >
+          <return type="str" />
+        </function>
+
+        <class name="Element" >
+          <field name="tag" type="str" />
+          <field name="attrib" type="dict" />
+          <field name="child" type="iter" />
+          <field name="text" type="str" />
+
+          <method name="iter" signature="iter(filter)" >
+            <return type="iter" />
+          </method>
+          <method name="append" signature="append(subelement)" >
+            <return type="NoneType" />
+            <sink argpos="0" kind="xml_injection" resource="other" />
+          </method>
+          <method name="extend" signature="extend(subelements)" >
+            <return type="NoneType" />
+            <sink argpos="0" kind="xml_injection" resource="other" />
+          </method>
+          <method name="findall" signature="findall()" >
+            <return type="list" />
+            <sink argpos="0" kind="xpath_injection" resource="other" />
+          </method>
+          <method name="find" signature="find()" >
+            <return type="defusedxml.etree.ElementTree.Element" />
+            <sink argpos="0" kind="xpath_injection" resource="other" />
+          </method>
+          <method name="findtext" signature="findtext()" >
+            <return type="defusedxml.etree.ElementTree.Element" />
+            <sink argpos="0" kind="xpath_injection" resource="other" />
+          </method>
+          <method name="xpath" signature="xpath(expression)" >
+            <return type="list" />
+            <sink argpos="0" kind="xpath_injection" resource="other" />
+          </method>
+        </class>
+
+        <class name="SubElement" supertypes="defusedxml.etree.ElementTree.Element" />
+
+        <class name="ElementTree" >
+          <method name="getroot" signature="getroot()" >
+            <return type="defusedxml.etree.ElementTree.Element" />
+          </method>
+          <method name="findall" signature="findall()" >
+            <return type="list" />
+            <sink argpos="0" kind="xpath_injection" resource="other" />
+          </method>
+          <method name="find" signature="find()" >
+            <return type="defusedxml.etree.ElementTree.Element" />
+            <sink argpos="0" kind="xpath_injection" resource="other" />
+          </method>
+          <method name="findtext" signature="findtext()" >
+            <return type="defusedxml.etree.ElementTree.Element" />
+            <sink argpos="0" kind="xpath_injection" resource="other" />
+          </method>
+          <method name="parse" signature="parse(path)" >
+            <tags>checks:forbid_entities=False.forbid_external=False</tags>
+            <return type="defusedxml.etree.ElementTree.ElementTree" />
+            <sink argpos="0" kind="xml_entity_injection" resource="other" />
+            <sink argpos="0" kind="hardcoded_absolute_path" resource="web" />
+          </method>
+          <method name="write" signature="write(path)" >
+            <return type="NoneType" />
+            <sink argpos="0" kind="hardcoded_absolute_path" resource="web" />
+          </method>
+          <method name="xpath" signature="xpath(expression)" >
+            <return type="list" />
+            <sink argpos="0" kind="xpath_injection" resource="other" />
+          </method>
+        </class>
+      </module>
+    </module>
+
+    <module name="dom" >
+      <function name="registerDOMImplementation" signature="registerDOMImplementation(name, factory)" >
+        <return type="defusedxml.dom.DOMImplementation" />
+      </function>
+      <function name="getDOMImplementation" signature="getDOMImplementation([name[, features]])" >
+        <return type="defusedxml.dom.DOMImplementation" />
+      </function>
+
+      <class name="DOMImplementation" >
+        <method name="hasFeature" signature="hasFeature(feature, version)" >
+          <return type="bool" />
+        </method>
+        <method name="createDocument" signature="createDocument(namespaceUri, qualifiedName, doctype)" >
+          <return type="Document" />
+        </method>
+        <method name="createDocumentType" signature="createDocumentType(qualifiedName, publicId, systemId)" >
+          <return type="DocumentType" />
+        </method>
+      </class>
+
+      <class name="Node" />
+      <class name="NodeList" />
+      <class name="DocumentType" supertypes="defusedxml.dom.Node" />
+      <class name="Document" supertypes="defusedxml.dom.Node" />
+      <class name="Element" supertypes="defusedxml.dom.Node" />
+      <class name="Attr" supertypes="defusedxml.dom.Node" />
+      <class name="Comment" supertypes="defusedxml.dom.Node" />
+
+      <module name="minidom" >
+        <function name="parse" signature="parse(filename_or_file[, parser[, bufsize]])" >
+          <return type="defusedxml.dom.Document" />
+        </function>
+        <function name="parseString" signature="parseString(string[, parser])" >
+          <return type="defusedxml.dom.Document" />
+        </function>
+      </module>
+      <module name="pulldom" >
+        <function name="parse" signature="parse(stream_or_string[, parser[, bufsize]])" >
+          <return type="defusedxml.dom.Document" />
+        </function>
+        <function name="parseString" signature="parseString(string[, parser])" >
+          <return type="defusedxml.dom.Document" />
+        </function>
+      </module>
+    </module>
+
+    <module name="sax" >
+      <function name="parse" signature="(filename_or_stream, handler[, error_handler])" >
+        <return type="NoneType" />
+      </function>
+      <function name="parseString" signature="parseString(string, handler[, error_handler])" >
+        <return type="NoneType" />
+      </function>
+
+      <module name="handler" />
+    </module>
+  </module>
+</library>

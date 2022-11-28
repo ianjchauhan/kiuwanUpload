@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.akka" standard="Akka" technology="java">
+
+  <!-- Java API here. In Scala language, the Scala API metadata for Akka is documented -->
+
+  <description url="https://akka.io/">Actor model toolkit for Java and Scala</description>
+
+  <module name="akka.actor.typed.javadsl" standard="akka.actor">
+    <!-- akka.actor.typed.javadsl -->
+  </module>
+
+  <module name="akka.stream" standard="akka.stream">
+    <description url="https://doc.akka.io/docs/akka/current/stream/index.html">Akka Streams</description>
+
+    <class name="akka.stream.Source"></class>
+  </module>
+
+  <module name="akka.http">
+    <!-- akka.http.javadsl -->
+    <description url="https://doc.akka.io/docs/akka-http/current/">Akka HTTP</description>
+    
+    <class name="akka.http.javadsl.ConnectHttp" kind="abstract_class">
+      <method name="toHost" signature="toHost()" instance="false">
+        <tags>transport:http</tags>
+        <return type="@self"/>
+        <sink kind="resource_injection" argpos="0,1" resource="web"/>
+        <sink kind="server_insecure_transport" resource="web" argpos="-1"/>
+      </method>
+
+    </class>
+
+    <class name="akka.http.javadsl.ConnectWithHttps" kind="abstract_class" supertypes="akka.http.javadsl.ConnectHttp">
+      <method name="withDefaultHttpsContext" signature="withDefaultHttpsContext()"><return type="@self"/></method>
+      <method name="withCustomHttpsContext" signature="withCustomHttpsContext(akka.http.javadsl.HttpsConnectionContext)">
+        <return type="@self"/>
+      </method>
+    </class>
+
+    <class name="akka.http.javadsl.ConnectionContext" kind="abstract_class">
+      <method name="http2" signature="http2()"><return type="akka.http.javadsl.UseHttp2"/></method>
+      <method name="https" signature="https(javax.net.ssl.SSLContext)" match="name" instance="false">
+        <tags>transport:https</tags>
+        <return type="akka.http.javadsl.HttpsConnectionContext"/>
+      </method>
+      <method name="noEncryption" signature="noEncryption()">
+        <tags>transport:http</tags>
+        <return type="akka.http.javadsl.HttpConnectionContext"/>
+        <sink kind="server_insecure_transport" resource="web" argpos="-1"/>
+      </method>
+      <method name="withHttp2" signature="withHttp2(akka.http.javadsl.UseHttp2)">
+        <return type="@self"/>
+      </method>
+      <method name="sslConfig" signature="sslConfig()"><return type="com.typesafe.sslconfig.akka.AkkaSSLConfig"/></method>
+    </class>
+
+    <class name="akka.http.javadsl.HttpConnectionContext" kind="abstract_class" supertypes="akka.http.javadsl.ConnectionContext"></class>
+    <class name="akka.http.javadsl.HttpsConnectionContext" kind="abstract_class" supertypes="akka.http.javadsl.ConnectionContext">
+      <method name="getClientAuth" signature="getClientAuth"><return type="java.util.Optional" elementType="akka.stream.TLSClientAuth"/></method>
+      <method name="getEnabledCipherSuites" signature="getEnabledCipherSuites()"><return type="java.util.Optional" elementType="java.util.Collection"/></method>
+      <method name="getEnabledProtocols" signature="getEnabledProtocols()"><return type="java.util.Optional" elementType="java.util.Collection"/></method>
+      <method name="getSslContext" signature="getSslContext()"><return type="javax.net.ssl.SSLContext"/></method>
+      <method name="getSslParameters" signature="getSslParameters()"><return type="java.util.Optional" elementType="javax.net.ssl.SSLParameters"/></method>
+    </class>
+    
+    <class name="akka.http.javadsl.Http">
+      <constructor name="Http" signature="Http(akka.actor.ExtendedActorSystem)"></constructor>
+      <method name="get" signature="get(akka.actor.ActorSystem)" instance="false"><return type="@self"/></method>
+      <method name="createExtension" signature="createExtension(akka.actor.ExtendedActorSystem)" instance="false"><return type="@self"/></method>
+      <method name="serverLayer" signature="serverLayer()" match="name">
+        <return type="akka.stream.javadsl.BidiFlow"/>
+      </method>
+      <method name="bind" signature="bind(akka.http.javadsl.ConnectHttp, akka.http.javadsl.settings.ServerSettings)" match="name">
+        <return type="akka.stream.javadsl.Source"/>
+      </method>
+      <method name="bindAndHandle" signature="bindAndHandle(akka.stream.javadsl.Flow, akka.http.javadsl.ConnectHttp)" match="name">
+        <return type="java.util.concurrent.CompletionStage"/>
+      </method>
+    </class>
+
+    <class name="akka.http.javadsl.model.HttpHeader">
+      <method name="name" signature="name()"><return type="java.lang.String"/></method>
+      <method name="value" signature="value()"><return type="java.lang.String"/></method>
+      <method name="parse" signature="parse(java.lang.String,java.lang.String)" instance="false"><return type="@self"/></method>
+    </class>
+
+    <class name="akka.http.javadsl.model.HttpMessage" kind="interface">
+      <method name="discardEntityBytes" signature="discardEntityBytes(akka.stream.Materializer)"></method>
+      <method name="entity" signature="entity()"><return type="akka.http.javadsl.model.ResponseEntity"/></method>
+      <method name="getHeader" signature="getHeader(java.lang.String)"><return type="java.util.Optional" elementType="akka.http.javadsl.model.HttpHeader"/></method>
+      <method name="getHeaders" signature="getHeaders()" match="name"><return type="java.lang.Iterable" elementType="akka.http.javadsl.model.HttpHeader"/></method>
+    </class>
+
+    <class name="akka.http.javadsl.model.headers.HttpCredentials" kind="abstract_class">
+      <method name="create" signature="create(java.lang.String, java.lang.String, java,.util.Map)" instance="false" match="name">
+        <tags>password:1</tags>
+        <return type="@self"/>
+        <sink kind="hardcoded_credentials" argpos="1" resource="web"/>
+      </method>
+      <method name="createBasicHttpCredentials" signature="createBasicHttpCredentials(java.lang.String, java.lang.String)" instance="false">
+        <tags>username:0, password:1</tags>
+        <return type="@self"/>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="web"/>
+      </method>
+      <method name="createOAuth2BearerToken" signature="createOAuth2BearerToken(java.lang.String)" instance="false">
+        <tags>password:0</tags>
+        <return type="@self"/>
+        <sink kind="hardcoded_credentials" argpos="0" resource="web"/>
+      </method>
+    </class>
+
+    <class name="akka.http.javadsl.model.HttpMessage.MessageTransformations" kind="interface">
+      <method name="addCredentials" signature="addCredentials(akka.http.javadsl.model.headers.HttpCredentials)"><return type="@self"/></method>
+      <method name="addHeader" signature="addHeader(akka.http.javadsl.model.HttpHeader)"><return type="@self"/></method>
+      <method name="addHeaders" signature="addHeader(java.lang.Iterable)" alias="withHeaders"><return type="@self"/></method>
+      <method name="removeHeader" signature="removeHeader(java.lang.String)"><return type="@self"/></method>
+      <method name="withEntity" signature="withEntity(byte[])"><return type="@self"/></method>
+      <method name="withEntity" signature="withEntity(akka.http.javadsl.model.ContentType, byte[])"><return type="@self"/></method>
+    </class>
+
+    <class name="akka.http.javadsl.model.HttpEntity" kind="interface">
+      <method name="discardBytes" signature="discardBytes(akka.stream.Materializer)"></method>
+      <method name="getContentType" signature="getContentType()"><return type="akka.http.javadsl.model.ContentType"/></method>
+      <method name="getDataBytes" signature="getDataBytes()">
+        <return type="akka.stream.javadsl.Source"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+      <method name="withContentType" signature="withContentType(akka.http.javadsl.model.ContentType)"><return type="@self"/></method>
+      <method name="withoutSizeLimit" signature="withoutSizeLimit()"><return type="@self"/></method>
+      <method name="withSizeLimit" signature="withSizeLimit(long)"><return type="@self"/></method>
+    </class>
+
+    <class name="akka.http.javadsl.model.ResponseEntity" kind="interface" supertypes="akka.http.javadsl.model.HttpEntity"></class>
+
+    <class name="akka.http.javadsl.model.HttpRequest" kind="abstract_class"
+           supertypes="akka.http.javadsl.model.HttpMessage, akka.http.javadsl.model.HttpMessage.MessageTransformations">
+      <method name="create" signature="create(java.lang.String)" instance="false" alias="CONNECT, DELETE. GET, HEAD, OPTIONS, PATCH, POST, PUT, TRACE">
+        <return type="@self"/>
+        <sink kind="insecure_transport" argpos="0" resource="web"/>
+        <sink kind="ssrf" resource="web" argpos="0"/>
+        <sink kind="http_parameter_pollution" argpos="0" resource="web"/>
+      </method>
+      <method name="create_2" signature="create()" instance="false"><return type="@self"/></method>
+      <method name="getUri" signature="getUri()"><return type="akka.http.javadsl.model.Uri"/></method>
+      <method name="withMethod" signature="withMethod(akka.http.javadsl.model.HttpMethod)"><return type="@self"/></method>
+      <method name="withUri" signature="withMethod(java.lang.String)">
+        <return type="@self"/>
+        <sink kind="insecure_transport" argpos="0" resource="web"/>
+        <sink kind="ssrf" resource="web" argpos="0"/>
+        <sink kind="http_parameter_pollution" argpos="0" resource="web"/>
+      </method>
+    </class>
+
+    <class name="akka.http.javadsl.model.HttpResponse" kind="abstract_class"
+           supertypes="akka.http.javadsl.model.HttpMessage, akka.http.javadsl.model.HttpMessage.MessageTransformations">
+      <method name="entity" signature="entity()">
+        <return type="akka.http.javadsl.model.ResponseEntity"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+    </class>
+
+  </module>
+
+</library>

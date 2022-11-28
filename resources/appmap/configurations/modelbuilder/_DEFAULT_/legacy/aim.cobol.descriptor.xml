@@ -1,0 +1,348 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='legacy' subtech='cobol' descriptor='legacy/aim.cobol.xml' label='Process Cobol programs'>
+  <description>
+    Process Cobol programs and resolves dependencies found in Cobol code: called programs (including CICS LINK or XCTL), included copybooks,
+    used SQL tables, used datafiles and DSP (a.k.a. screen formatting records).
+    <br/>
+    <b>Target resolution</b>: In Cobol, many entity references (program calls, included COPYs, etc.) are simple names.
+    The module offers a resolution strategy to infer the location in source code of the target entity (e.g. which
+    is the real target program or job/script invoked, or which is the artifact for an included COPY),
+    based on a base directory, a set of patterns relative to such base directory matching the directories
+    where code files for target entities may be found, and a set of extensions that target code files must match.
+    <br/>
+    Technology for target entity is searched in the following order: cobol, scripting/job languages (like JCL or CL), and RPG.
+    When target code resource cannot be resolved, and <code>acceptUnresolved=true</code>, a program with unknown (?)
+    language is created.
+    <br/>
+    <b>Database processing</b>: Embedded SQL code (in EXEC SQL statements) is processed if <code>parseSqlDependencies=true</code>.
+    Referenced database elements (tables or views) are resolved by a global database object resolver, if any.
+    As a fallback when not resolved, database entities are created under the container (system+database, or database+schema)
+    given by <code>dbsystem</code> and <code>dbname</code> properties.
+  </description>
+
+  <properties>
+    <property id='aim.cobol.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>If true, enables processing of Cobol programs.</description>
+    </property>
+
+    <property id='aim.cobol.rule.variables.active' type='bool'>
+      <name>variables.active</name>
+      <example>false</example>
+      <description>If true, enables processing vars of Cobol programs.</description>
+    </property>
+
+    <property id='aim.cobol.ims.rule.active'>
+      <name>ims.active</name>
+      <description>If true, enables processing of IMS dependencies in Cobol programs</description>
+    </property>
+
+    <property id='aim.cobol.filter' type='enum'>
+      <name>filterType</name>
+      <example>default</example>
+      <description>Filtering strategy for selecting Cobol files to process.</description>
+      <possible>
+        <enumval name="default">Use default extensions configured for cobol technology.</enumval>
+        <enumval name="pattern">Use patterns in the <code>pattern</code> property for selecting which files should be processed.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.cobol.filter.pattern' type='list' subtype='antPattern'>
+      <name>pattern</name>
+      <example>**/*.cob,**/*.cbl,**/*.cobol,**/*.cpy</example>
+      <description>When <code>filterType=pattern</code>, ANT pattern(s) to use for matching Cobol sources.</description>
+    </property>
+
+    <property id='aim.cobol.rule.software' type='string'>
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>
+        Containing software for program entities discovered by cobol rule. Used as fallback if no global resolver
+        or global resolver cannot find a containing software for the target entity.
+      </description>
+    </property>
+
+    <property id='aim.cobol.rule.dbsystem' type='string'>
+      <name>dbsystem</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>
+        The database type (e.g. DB2, Oracle...) or database name for container of referenced tables.
+        Used as fallback if no global database object resolver, or the resolver cannot find the target entity.
+      </description>
+    </property>
+
+    <property id='aim.cobol.rule.dbname' type='string'>
+      <name>dbname</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>
+        The database name or database schema for container of referenced tables.
+        Used as fallback if no global database object resolver, or the resolver cannot find the target entity.
+      </description>
+    </property>
+
+    <property id='aim.cobol.rule.ignoreCase' type='bool'>
+      <name>ignoreCase</name>
+      <example>${aim.common.ignoreCase}</example>
+      <description>
+        If true, case is ignored in entity names found in cobol programs
+        (called programs, copys, datafiles, db tables...)
+      </description>
+    </property>
+
+    <property id='aim.cobol.rule.parseFileDependencies' type='bool'>
+      <name>parseFileDependencies</name>
+      <example>true</example>
+      <description>If set to true, usages of physical files will be resolved.</description>
+    </property>
+
+    <property id='aim.cobol.rule.parseSqlDependencies' type='bool'>
+      <name>parseSqlDependencies</name>
+      <example>true</example>
+      <description>If set to true, Cobol - SQL dependencies will be extracted from EXEC SQL statements.</description>
+    </property>
+
+    <property id='aim.cobol.rule.parseSqlColumns' type='bool'>
+      <name>parseSqlColumns</name>
+      <example>true</example>
+      <description>
+        If set to true, SQL queries and their relationships with used tables are inserted into the model as explicit entities.
+        Ignored if <code>parseSqlDependencies=false</code>.
+      </description>
+    </property>
+
+    <property id='aim.cobol.rule.addSqlToModel' type='bool'>
+      <name>addSqlToModel</name>
+      <example>${aim.common.addCodeToRelations}</example>
+      <description>
+        If set to true, SQL code is added as property into the queries.
+        Ignored if <code>parseSqlColumns=false</code>.
+      </description>
+    </property>
+
+    <property id="aim.cobol.sql.processor.resolver.type" type="enum">
+      <name>sql.processor.resolver.type</name>
+      <example>multi</example>
+      <description>SqlProcessor and Parser to use for embedded SQL processing. Possible values are: sql92, plsql, multi.</description>
+      <possible>
+        <enumval name="sql92">Use SQL-92 parser (default)</enumval>
+        <enumval name="plsql">Use PL/SQL parser (e.g. for Pro*Cobol)</enumval>
+        <enumval name="multi">Try both SQL-92 and PL/SQL parsers</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.cobol.rule.parseCicsDependencies' type='bool'>
+      <name>parseCicsDependencies</name>
+      <example>true</example>
+      <description>
+        If set to true, EXEC CICS blocks will be parsed and cobol-related dependencies resolved
+        (basically LINK/XCTL command).
+      </description>
+    </property>
+
+    <property id='aim.cobol.rule.copysToIgnore' type='string'>
+      <name>copysToIgnore</name>
+      <example>^$</example>
+      <description>
+        Regular expression with the COPY pattern to ignore (if not specified, all COPYs will be considered).
+        Useful for excluding dependencies with infrastructure COPYs.
+      </description>
+    </property>
+
+    <property id='aim.cobol.rule.callsToIgnore' type='string'>
+      <name>callsToIgnore</name>
+      <example>^$</example>
+      <description>
+        Regular expression with the program pattern to ignore when resolving calls (if not specified, all calls will be considered).
+      </description>
+    </property>
+
+    <property id='aim.cobol.resolver.progcalls.registerUnresolvedCalls' type='bool'>
+      <name>registerUnresolvedCalls</name>
+      <example>${aim.common.acceptUnresolved}</example>
+      <description>
+        If true, calls to programs that cannot be found are registered (without language / artifact properties).
+        If false, such calls are ignored.
+      </description>
+    </property>
+
+    <property id='aim.cobol.resolver.cobol.basedir' type='string'>
+      <name>cobolBasedir</name>
+      <example>${aim.common.srcdir}</example>
+      <description>Base directory where called Cobol programs will be searched.</description>
+    </property>
+
+    <property id='aim.cobol.resolver.cobol.patterns' type='list' subtype='antPattern'>
+      <name>cobolPatterns</name>
+      <example>**</example>
+      <description>Ant pattern(s) that match directories, relative to <code>cobolBasedir</code>, where called Cobol programs will be searched.</description>
+    </property>
+
+    <property id='aim.cobol.resolver.cobol.extensions' type='string'>
+      <name>cobolExtensions</name>
+      <example>cob,cbl,cobol</example>
+      <description>Extensions to consider for Cobol program resolution.</description>
+    </property>
+
+    <property id='aim.cobol.resolver.copy.type' type='string'>
+      <name>resolver.type</name>
+      <example>inmodel</example>
+      <description>File resolver to be use during copy resolution, it can be: inmodel, singledir, multipattern.</description>
+      <possible>
+        <enumval name="inmodel">All the analyzed artifacts (files) are stored in the model.</enumval>
+        <enumval name="singledir">Resolve file for program name, using a single basedir (possibly traversing the directory subtree, if property aim.cobol.resolver.copy.recurseDirs set to true).</enumval>
+        <enumval name="multipattern">This resolver uses a sequence of ANT patterns (aim.cobol.resolver.copy.patterns) to fetch directories where the files of interest may live from basedir.</enumval>
+        <enumval name="datatablepatterns">This resolver uses two sequences of ANT patterns (aim.cobol.resolver.data.copy.patterns and aim.cobol.resolver.table.copy.patterns) to fetch 
+                directories where the files of interest may live from basedir. If the sentence is of type EXEC SQL INCLUDE COPY this resolver uses first the patterns
+                specified in aim.cobol.resolver.table.copy.patterns, in other case uses aim.cobol.resolver.data.copy.patterns as first patterns.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.cobol.resolver.copy.basedir' type='string'>
+      <name>copyBasedir</name>
+      <example>${aim.common.srcdir}</example>
+      <description>Base directory where included Cobol copybooks (COPYs) will be searched.</description>
+    </property>
+
+    <property id='aim.cobol.resolver.copy.recurseDirs' type='bool'>
+      <name>recurseDirs</name>
+      <example>false</example>
+      <description>Whether recurse subdirectories when using "singledir" file resolver.</description>
+    </property>
+
+    <property id='aim.cobol.resolver.copy.patterns' type='string'>
+      <name>copyPatterns</name>
+      <example>libs/*</example>
+      <description>Ant pattern(s) that match directories, relative to <code>copyBasedir</code>, where included copybooks will be searched.</description>
+    </property>
+    
+    <property id='aim.cobol.resolver.data.copy.patterns' type='string'>
+      <name>copyPatterns</name>
+      <example>libs/*</example>
+      <description>Ant pattern(s) that match directories, relative to aim.cobol.resolver.copy.basedir, where included copybooks will be searched. Used first for not SQL EXEC INCLUDE statements.</description>
+    </property>
+    
+    <property id='aim.cobol.resolver.table.copy.patterns' type='string'>
+      <name>copyPatterns</name>
+      <example>libs/*</example>
+      <description>Ant pattern(s) that match directories, relative to aim.cobol.resolver.copy.basedir, where included copybooks will be searched. Used first for SQL EXEC INCLUDE statements.</description>
+    </property>
+
+    <property id='aim.cobol.resolver.copy.extensions' type='string'>
+      <name>copyExtensions</name>
+      <example>cpy</example>
+      <description>Extensions to consider for COPY resolution.</description>
+    </property>
+
+    <property id='aim.cobol.resolver.copy.unresolved.useCallerSoftware' type='bool'>
+      <name>useCallerSoftware</name>
+      <example>false</example>
+      <description> Wether to put copys in caller software or not (default)</description>
+    </property>
+
+    <property id='aim.cobol.resolver.progcalls.job' type='string'>
+      <name>jobResolution</name>
+      <example>none</example>
+      <description>Resolution for calls to JOBs. Specify the job/scripting language to consider.</description>
+      <possible>
+        <enumval name="none">Do not consider any job language.</enumval>
+        <enumval name="jcl">Consider potential calls to JCL jobs.</enumval>
+        <enumval name="cl400">Consider potential calls to OS/400 CL scripts.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.cobol.resolver.job.basedir' type='string'>
+      <name>jobBasedir</name>
+      <example>${aim.common.srcdir}</example>
+      <description>Base directory where jobs/scripts code will be searched.</description>
+    </property>
+
+    <property id='aim.cobol.resolver.job.patterns' type='list' subtype='antPattern'>
+      <name>jobPatterns</name>
+      <example>**</example>
+      <description>Ant pattern(s) that match directories, relative to <code>jobBasedir</code>, where target jobs/scripts will be searched.</description>
+    </property>
+
+    <property id='aim.cobol.resolver.job.extensions' type='list' subtype='string'>
+      <name>jobExtensions</name>
+      <example>jcl</example>
+      <description>Extensions to consider for job/script resolution.</description>
+    </property>
+
+    <property id='aim.cobol.resolver.progcalls.rpg' type='bool'>
+      <name>rpgActive</name>
+      <example>false</example>
+      <description>
+        Enable resolution for calls to RPG from Cobol programs (e.g. from Cobol ILE code).
+        If there are potential calls to RPG programs in Cobol code, set this to true.
+      </description>
+    </property>
+
+    <property id='aim.cobol.resolver.rpg.basedir' type='string'>
+      <name>rpgBasedir</name>
+      <example>${aim.common.srcdir}</example>
+      <description>Base directory where called RPG programs will be searched.</description>
+    </property>
+
+    <property id='aim.cobol.resolver.rpg.patterns' type='list' subtype='antPattern'>
+      <name>rpgPatterns</name>
+      <example>**</example>
+      <description>Ant pattern(s) that match directories, relative to <code>rpgBasedir</code>, where target programs will be searched.</description>
+    </property>
+
+    <property id='aim.cobol.resolver.rpg.extensions' type='string'>
+      <name>rpgExtensions</name>
+      <example>rpg</example>
+      <description>Extensions to consider for target RPG program resolution.</description>
+    </property>
+
+    <property id='aim.ims.dbsystem' type="string">
+      <name>ims.dbsystem</name>
+      <example>IMSDB</example>
+      <description>Type for IMS databases to create</description>
+    </property>
+
+    <property id='aim.ims.psbPatterns' type="list" subtype="antPattern">
+      <name>ims.psbPatterns</name>
+      <example>**/psblib/*.psb</example>
+      <description>List of ANT patterns for matching PSB descriptor files. Empty means no PSB processing.</description>
+    </property>
+
+    <property id='aim.cobol.ims.rule.identifierFunctionMap' type="list" subtype="string">
+      <name>ims.identifierFunctionMap</name>
+      <example>GU-FUNC=GU,GN-FUNC=GN,GHU-FUNC=GHU,GHN-FUNC=GHN,ISRT-FUNC=ISRT,DLET-FUNC=DLET,REPL-FUNC=REPL,CHKP-FUNC=CHKP,XRST-FUNC=XRST,ROLB-FUNC=ROLB,ROLS-FUNC=ROLS</example>
+      <description>list of DATAENTRY=IMSFUNCTION to use when value for variables for DLI function in IMS calls cannot be resolved</description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>program,resource(dds,dsp,datafile),table,view</values>
+    <description>
+      Models Cobol programs / copybooks, and called programs / scripts / jobs, as <i>program</i>.
+      Referenced items (datafiles, DDS and DSP in OS/400) are modeled as <i>resource</i>.
+      Referenced database entities (tables / views) are modeled as well.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      program-calls->program,
+      program-includes->program(copy),
+      program-uses->resource,
+      program-select|insert|update|delete->table|view
+    </values>
+    <description>
+      Creates calls relation with called programs (Cobol, job/scripting, RPG), includes relation with included COPYs
+      (either in COPY or EXEC SQL INCLUDE statements), uses relation with target resources (datafiles, DDS o DSP).
+      <br/>
+      Note: Relation for "dynamic" program calls (where a variable instead of a literal is used as called program name) have
+      the role set to <i>dynamic</i>.
+      <br/>
+      Additionally, program and table/view relations (named after the SQL operation performed in EXEC SQL) are created.
+    </description>
+  </createdRelations>
+
+  <importantConfigurations activation="aim.cobol.rule.active" />
+
+</block>

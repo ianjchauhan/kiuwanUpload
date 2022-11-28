@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="sjcl" standard="sjcl">
+
+  <description url="https://bitwiseshiftleft.github.io/sjcl/">Stanford JavaScript Crypto Library</description>
+
+  <module name="sjcl" >
+    <globalObject name="sjcl" type="sjcl"></globalObject>
+    <class name="nodejs/sjcl" supertypes="sjcl"/><!-- alias for Node.js sjcl module -->
+
+    <class name="sjcl"><!-- ns -->
+      <field name="bitArray" type="sjcl.bitArray"/>
+      <field name="bn" type="sjcl.bn"/>
+      <field name="cipher" type="sjcl.cipher"/>
+      <field name="codec" type="sjcl.codec"/>
+      <field name="ecc" type="sjcl.ecc"/>
+      <field name="exception" type="sjcl.exception"/>
+      <field name="hash" type="sjcl.hash"/>
+      <field name="json" type="sjcl.json"/>
+      <field name="misc" type="sjcl.misc"/>
+      <field name="random" type="sjcl.prng"/>
+
+      <function name="encrypt">
+        <tags>cipher,encrypt,key:0,data:1,algo:2</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="String"/>
+          <param type="sjcl.json.encrypt.__context"/>
+          <param type="sjcl.json.encrypt.__context"/>
+        </parameters>
+        <return type="String"/>
+      </function>
+      <function name="decrypt">
+        <tags>cipher,decrypt,key:0,data:1,algo:2</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="String"/>
+          <param type="sjcl.json.encrypt.__context"/>
+          <param type="sjcl.json.encrypt.__context"/>
+        </parameters>
+        <return type="String"/>
+      </function>
+
+      <function name="prng">
+        <tags>prng,entropyLevel:0</tags>
+        <return type="sjcl.prng"/>
+      </function>
+    </class>
+
+    <class name="sjcl.hash"><!-- ns -->
+      <field name="sha1" type="sjcl.hash.sha1">
+        <tags>hash,algo:sha1</tags>
+      </field>
+      <field name="sha256" type="sjcl.hash.sha256">
+        <tags>hash,algo:sha256</tags>
+      </field>
+      <function name="sha1">
+        <tags>hash,algo:sha1</tags>
+        <return type="sjcl.hash.sha1"/>
+      </function>
+      <function name="sha256">
+        <tags>hash,algo:sha256</tags>
+        <return type="sjcl.hash.sha256"/>
+      </function>
+    </class>
+
+    <class name="sjcl.hash._base">
+      <function name="reset"/>
+      <function name="update"><return type="sjcl.hash._base"/></function>
+      <function name="finalize"><return type="sjcl.bitArray"/></function>
+    </class>
+    <class name="sjcl.hash.sha1" supertypes="sjcl.hash._base"/>
+    <class name="sjcl.hash.sha256" supertypes="sjcl.hash._base"/>
+
+    <class name="sjcl.cipher"><!-- ns -->
+      <function name="aes">
+        <tags>key:0</tags>
+        <parameters><param type="Array"/></parameters>
+        <return type="sjcl.cipher.aes"/>
+      </function>
+    </class>
+
+    <class name="sjcl.cipher._base">
+      <function name="encrypt">
+        <tags>encrypt,data:0</tags><return type="sjcl.bitArray"/>
+      </function>
+      <function name="decrypt">
+        <tags>decrypt,data:0</tags><return type="sjcl.bitArray"/>
+      </function>
+    </class>
+    <class name="sjcl.cipher.aes" supertypes="sjcl.cipher._base"/>
+
+
+    <!-- symmetric encryption in SJCL is done here -->
+    <class name="sjcl.mode"><!-- ns -->
+      <field name="ccm" type="sjcl.mode.ccm"><tags>mode:ccm</tags></field>
+      <field name="gcm" type="sjcl.mode.gcm"><tags>mode:ccm</tags></field>
+      <field name="ocb2" type="sjcl.mode.ocb2"><tags>mode:ocb2</tags></field>
+    </class>
+
+    <class name="sjcl.mode._base">
+      <function name="encrypt">
+        <tags>encrypt,data:1,iv:2,tag:3</tags>
+        <parameters>
+          <param type="sjcl.cipher._base"/><!-- Block cipher to use -->
+          <param type="String"/>
+          <param type="sjcl.bitArray"/>
+          <param type="sjcl.bitArray"/>
+          <param type="Number"/>
+        </parameters>
+        <return type="sjcl.bitArray"/>
+      </function>
+      <function name="decrypt">
+        <tags>decrypt,data:1,iv:2,tag:3</tags>
+      </function>
+    </class>
+    <class name="sjcl.mode.ccm" supertypes="sjcl.mode._base"/>
+    <class name="sjcl.mode.gcm" supertypes="sjcl.mode._base"/>
+    <class name="sjcl.mode.ocb2" supertypes="sjcl.mode._base"/>
+
+    <class name="sjcl.json">
+      <function name="encrypt">
+        <tags>encrypt,key:0,data:1,algo:2</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="String"/>
+          <param type="sjcl.json.encrypt.__context"/>
+          <param type="sjcl.json.encrypt.__context" set="true"/>
+        </parameters>
+        <return type="String"/>
+      </function>
+      <function name="decrypt">
+        <tags>decrypt,key:0,data:1,algo:2</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="String"/>
+          <param type="sjcl.json.encrypt.__context"/>
+          <param type="sjcl.json.encrypt.__context" set="true"/>
+        </parameters>
+        <return type="String"/>
+      </function>
+      <function name="encode"><return type="String"/></function>
+      <function name="decode"><return type="Object"/></function>
+    </class>
+
+    <class name="sjcl.json.encrypt.__context">
+      <field name="v"/>
+      <field name="iter"><tags>iterations</tags></field>
+      <field name="ks"><tags>keylen</tags></field>
+      <field name="ts"><tags>tagsize</tags></field>
+      <field name="mode"><tags>mode</tags></field>
+      <field name="cipher" type="String"><tags>algo</tags></field>
+      <field name="adata" type="sjcl.bitArray"><tags>tag</tags></field>
+      <field name="iv" type="sjcl.bitArray"><tags>iv</tags></field>
+      <field name="salt" type="sjcl.bitArray"><tags>salt</tags></field>
+      <field name="key" type="sjcl.bitArray"><tags>key</tags></field>
+    </class>
+
+    <class name="sjcl.misc"><!-- ns -->
+      <function name="hmac">
+        <tags>key:0</tags>
+        <parameters>
+          <param type="sjcl.bitArray"/>
+          <param type="sjcl.hash._base"/>
+        </parameters>
+        <return type="sjcl.misc.hmac"/>
+      </function>
+      <function name="pbkdf2">
+        <tags>keygen,key:0,password:0,salt:1,iterations:2,keylen:3,algo:4,pass_hash_gen:0,pass_hash_check:0</tags>
+        <return type="sjcl.bitArray"/>
+      </function>
+      <function name="cachedPbkdf2">
+        <tags>keygen,key:0,password:0,pass_hash_gen:0,pass_hash_check:0</tags>
+      </function>
+    </class>
+
+    <class name="sjcl.misc.hmac" supertypes="sjcl.hash._base">
+      <function name="encrypt" alias="mac">
+        <tags>hmac,data:0</tags>
+        <parameters><param type="sjcl.bitArray"/></parameters>
+      </function>
+    </class>
+
+    <class name="sjcl.bitArray" supertypes="Array" />
+
+    <class name="sjcl.prng">
+      <function name="randomWords">
+        <tags>prng</tags>
+        <return type="Array"/>
+      </function>
+      <function name="addEntropy">
+        <tags>entropy:0</tags>
+      </function>
+    </class>
+  </module>
+
+</library>

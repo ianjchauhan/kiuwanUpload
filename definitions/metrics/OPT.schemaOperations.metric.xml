@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.schemaOperations" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.SIZE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.SIZE.DATABASE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.SQL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds />
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <internal-name id="OPT.PLSQL.SIZE.STATEMENTS" />
+        <java-class>com.als.plsql.metrics.StatementsCountPlsqlMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.SQL">
+        <internal-name id="OPT.SQL.SIZE.STATEMENTS" />
+        <java-class>com.optimyth.sql.metrics.AstSqlSizeRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+        <internal-name id="OPT.TRANSACTSQL.SIZE.STATEMETS" />
+        <java-class>com.optimyth.qaking.tsql.metrics.StatementsCountMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+    <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <code-example name="metricCodeExamplePlsql" result-value="2">
+<![CDATA[
+CREATE OR REPLACE PROCEDURE update_employee_salary(
+      p_factor IN NUMBER
+    ) AS
+      v_employee_count INTEGER;
+    BEGIN
+        UPDATE employee                                             --SCHEMA 1
+        SET salary = salary * p_factor;
+        COMMIT;
+    EXCEPTION
+     WHEN OTHERS THEN
+       ROLLBACK;
+   END update_employee_salary;
+CREATE OR REPLACE PROCEDURE delete_employee_salary(
+      p_factor IN NUMBER
+    ) AS
+      v_employee_count INTEGER;
+    BEGIN
+        DELETE FROM employee                                        --SCHEMA 2
+      WHERE       first_name = 'junk';
+        COMMIT;
+    EXCEPTION
+     WHEN OTHERS THEN
+       ROLLBACK;
+   END update_employee_salary;
+   /
+]]>
+        </code-example>
+      </language-parser>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.SQL">
+        <code-example name="metricCodeExampleSql" result-value="2">
+<![CDATA[
+CREATE TABLE customer               --SCHEMA 1
+(First_Name char(50),
+Last_Name char(50),
+Address char(50) default 'Unknown',
+City char(50) default 'Mumbai',
+Country char(25),
+Birth_Date date);
+CREATE INDEX IDX_CUSTOMER_LAST_NAME --SCHEMA 2
+on CUSTOMER (Last_Name);
+ALTER TABLE ORDERS 
+ADD FOREIGN KEY (customer_sid) REFERENCES CUSTOMER(SID);
+]]>
+        </code-example>
+      </language-parser>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+        <code-example name="metricCodeExampleTransactsql" result-value="2">
+<![CDATA[
+/****** Object:  StoredProcedure [dbo].[PR_IMSG_COTA_USUARIO_CARTEIRA]    Script Date: 08/13/2012 11:48:49 ******/
+SET ANSI_NULLS OFF
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+CREATE PROCEDURE [dbo].[PR_IMSG_COTA_USUARIO_CARTEIRA]    --SCHEMA 1
+@p_ID_CADASTRO AS BIGINT = 0 OUTPUT,
+@p_ID_PARAMETRO AS INT = NULL,
+@p_CD_USUARIO AS VARCHAR(15) = NULL,
+@p_CD_USUARIO_ALTERACAO AS VARCHAR(15) = NULL,
+@p_DT_INCLUSAO AS DATETIME = NULL,  /*NO CUENTA*/
+@p_DT_EXCLUSAO AS DATETIME = NULL,
+@p_IC_NOVA AS BIT = 0
+AS
+BEGIN
+DECLARE 
+    @v_ID_PARAMETRO AS INT,
+    @v_CD_USUARIO AS VARCHAR(15),
+    @v_CD_USUARIO_ALTERACAO AS VARCHAR(15),
+    @v_DT_INCLUSAO AS DATETIME,
+    @v_DT_EXCLUSAO AS DATETIME,
+    @v_IC_NOVA AS BIT
+    /*otro
+    comentario*/    SET @v_ID_PARAMETRO = @p_ID_PARAMETRO
+    SET @v_CD_USUARIO = @p_CD_USUARIO
+    SET @v_CD_USUARIO_ALTERACAO = @p_CD_USUARIO_ALTERACAO
+    SET @v_DT_INCLUSAO = @p_DT_INCLUSAO
+    SET @v_DT_EXCLUSAO = @p_DT_EXCLUSAO
+    SET @v_IC_NOVA = @p_IC_NOVA
+
+END
+CREATE PROCEDURE [dbo].[PR_IMSG_COTA_USUARIO_CARTEIRA]   --SCHEMA 2
+@p_ID_CADASTRO AS BIGINT = 0 OUTPUT,
+@p_ID_PARAMETRO AS INT = NULL,
+@p_CD_USUARIO AS VARCHAR(15) = NULL,
+@p_CD_USUARIO_ALTERACAO AS VARCHAR(15) = NULL,
+@p_DT_INCLUSAO AS DATETIME = NULL,
+@p_DT_EXCLUSAO AS DATETIME = NULL,
+@p_IC_NOVA AS BIT = 0
+AS
+BEGIN
+DECLARE 
+    @v_ID_PARAMETRO AS INT,
+    @v_CD_USUARIO AS VARCHAR(15),
+    @v_CD_USUARIO_ALTERACAO AS VARCHAR(15),
+    @v_DT_INCLUSAO AS DATETIME,
+    @v_DT_EXCLUSAO AS DATETIME,
+    @v_IC_NOVA AS BIT
+    
+    SET @v_ID_PARAMETRO = @p_ID_PARAMETRO
+    SET @v_CD_USUARIO = @p_CD_USUARIO
+    SET @v_CD_USUARIO_ALTERACAO = @p_CD_USUARIO_ALTERACAO
+    SET @v_DT_INCLUSAO = @p_DT_INCLUSAO
+    SET @v_DT_EXCLUSAO = @p_DT_EXCLUSAO
+    SET @v_IC_NOVA = @p_IC_NOVA
+
+    IF (@p_ID_CADASTRO <> 0)
+    BEGIN
+    
+        UPDATE TBPL_MSG_COTA_USUARIO_CARTEIRA SET CD_USUARIO_ALTERACAO = @v_CD_USUARIO_ALTERACAO, DT_EXCLUSAO = @v_DT_EXCLUSAO 
+        WHERE ID_CADASTRO = @p_ID_CADASTRO
+    
+    END
+    ELSE
+    BEGIN
+    
+        DELETE FROM TBPL_MSG_COTA_USUARIO_CARTEIRA 
+    
+        SET @p_ID_CADASTRO = @@IDENTITY
+    
+    END 
+END
+GO
+
+]]>
+        </code-example>
+      </language-parser>
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+
+      <name><![CDATA[Operaciones SQL DDL]]></name>
+      
+      <description>
+<![CDATA[
+Cuenta el número de operaciones SQL DDL (Data Definition Language), sentencias de lenguaje de definición de datos (e.g. create, alter, drop).
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Cuenta el número de sentencias de lenguaje de definición de datos (e.g. create, alter, drop). Los nodos del AST que se tienen en cuenta son:
+K_Create, K_Alter, DropStatement.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.SQL">
+<![CDATA[
+Cuenta el número de sentencias de lenguaje de definición de datos (e.g. create, alter, drop). Los nodos del AST que se tienen en cuenta son:
+declare_procedure, temporary_table_declaration, sequence_definition, schema_definition, database_definition, table_definition, view_definition, domain_definition, index_definition, alter_table_statement, drop_table_statement, drop_view_statement, drop_index_statement, drop_sequence_statement, procedure.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+<![CDATA[
+Cuenta el número de sentencias de lenguaje de definición de datos (e.g. create, alter, drop). Los nodos del AST que se tienen en cuenta son:
+CreateAssemblyStatement, CreateTypeStatement, CreateProcedureStatement, CreateFunctionStatement, CreateTableStatement, CreateViewStatement, CreateTriggerStatement, AlterAssemblyStatement, AlterProcedureStatement, AlterFunctionStatement, AlterTableStatement, AlterTriggerStatement, DropStatement, DropIndexStatement, DropTriggerStatement.
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+
+      <name><![CDATA[SQL DDL operations]]></name>
+      
+      <description>
+<![CDATA[
+Counts the total number of SQL DDL (Data Definition Language) statements (e.g. create, alter, drop).
+]]>
+     </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Counts the total number of SQL DDL statements (e.g. create, alter, drop). AST nodes taken into account are:
+K_Create, K_Alter, DropStatement.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.SQL">
+<![CDATA[
+Counts the total number of SQL DDL statements (e.g. create, alter, drop). AST nodes taken into account are:
+declare_procedure, temporary_table_declaration, sequence_definition, schema_definition, database_definition, table_definition, view_definition, domain_definition, index_definition, alter_table_statement, drop_table_statement, drop_view_statement, drop_index_statement, drop_sequence_statement, procedure.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+<![CDATA[
+Counts the total number of SQL DDL statements (e.g. create, alter, drop). AST nodes taken into account are:
+CreateAssemblyStatement, CreateTypeStatement, CreateProcedureStatement, CreateFunctionStatement, CreateTableStatement, CreateViewStatement, CreateTriggerStatement, AlterAssemblyStatement, AlterProcedureStatement, AlterFunctionStatement, AlterTableStatement, AlterTriggerStatement, DropStatement, DropIndexStatement, DropTriggerStatement.
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

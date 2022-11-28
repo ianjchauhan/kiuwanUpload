@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+
+<block tech='database' subtech='database' descriptor='database/aim.database.xml' label='Process XML database descriptors'>
+  <description>Models database components from XML schema descriptors extracted by the product schema extraction (
+    <code>schemaExtract</code>) script. 
+    <br></br> Note on containers: some database systems support schemas over database instances (e.g. Oracle), while others support database instances. In both cases, two container entities are created: a software (for the database instance in the former case, or for database type for the latter) that contains one or more components (type databaseInstance) for the database instance in the former case and for the schema in the latter case.
+  </description>
+  <properties>
+    <property id='aim.database.rule.default.active' type='bool'>
+      <name>defaultActive</name>
+      <example>false</example>
+      <description>Activates the default analysis rule for any database or database schema exported.</description>
+    </property>
+    <property id='aim.database.rule.oracle.active' type='bool'>
+      <name>oracleActive</name>
+      <example>false</example>
+      <description>Activates the analysis rule for database schema(s) exported from Oracle. This rule creates additional Oracle-specific entities (
+        <code>sequence, package, stored procedure/function, synonym, trigger, dblink)</code>)
+      </description>
+    </property>
+    <property id='aim.database.schemaDir' type='string'>
+      <name>schemaDir</name>
+      <example>${CHECKING_DATA}/plugindata/schema${project}</example>
+      <description>Comma-separated locations of schema descriptor files (normal and extended).</description>
+    </property>
+    <property id='aim.database.schemaPattern' type='string'>
+      <name>schemaPattern</name>
+      <example>*.xml</example>
+      <description>Comma-separated list of Ant-like patterns for schema files in schema directory.</description>
+    </property>
+    <property id='aim.database.extendedSchemaPattern' type='string'>
+      <name>extendedSchemaPattern</name>
+      <example>*.ext.xml</example>
+      <description>Comma-separated list of Ant-like patterns for Oracle (extended) schema files in schema directory.</description>
+    </property>
+    <property id='aim.database.dbtype' type='enum'>
+      <name>dbtype</name>
+      <example>oracle</example>
+      <description>Database type to analyze. Relevant for selecting the SQL syntax to use.</description>
+      <possible>
+        <enumval name='default'>Process SQL using ANSI SQL-92 syntax.</enumval>
+        <enumval name='oracle'>Process SQL using Oracle SQL syntax.</enumval>
+      </possible>
+    </property>
+    <property id='aim.database.dbsystem' type='string'>
+      <name>dbsystem</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>The database system name (or database instance name, for schema-oriented databases). Used as fallback, when the proper name cannot be resolved.</description>
+    </property>
+    <property id='aim.database.dbname' type='string'>
+      <name>dbname</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>The database instance name (or schema name, for schema-oriented databases). Used as fallback, when the proper name cannot be resolved.</description>
+    </property>
+    <property id='aim.database.ignoreCase' type='bool'>
+      <name>ignoreCase</name>
+      <example>${aim.common.ignoreCase}</example>
+      <description>When true, case is ignored in names for database elements.</description>
+    </property>
+  </properties>
+  <createdEntities>
+    <values>database,databaseInstance,table,view,sequence,synonym,index,primaryKey,dblink,other(package),storedProcedure(procedure|function),userType</values>
+    <description>For non schema-oriented databases, generates a software (database) for the database system, and a component (databaseInstance) for the database instance. For schema-oriented databases, generates a software (database) for the database instance, and a component (databaseInstance) for the schema. 
+      <br></br> On the databaseInstance container the rest of database entities are added: tables, views, primary keys and indexes. 
+      <br></br> For Oracle, other entities (
+      <code>synonym, sequence, trigger, package, stored procedure / function, db-link</code>) are contained on the proper schema (databaseInstance). Note: An Oracle package is modeled as 
+      <code>other</code> with plsqlType=package. 
+      <br></br> The 
+      <code>sqlType</code> property contains the type of the database entity. For Oracle-specific entities, the 
+      <code>plsqlType</code> property contains the type.
+    </description>
+  </createdEntities>
+  <createdRelations>
+    <values>database-contains-&gt;databaseInstance,databaseInstance-contains-&gt;*,view-select-&gt;table,table-contains-&gt;primaryKey,table-contains-&gt;index,table-foreignKey-&gt;table|synonym,table-uses-&gt;trigger,*-*-&gt;synonym,synonym-alias-&gt;*,other(package)-contains-&gt;storedProcedure(procedure|function)|userType</values>
+    <description>The module resolves dependencies found in database items, without processing database code (see database/plsql or database/transactsql for the modules that analyze database code). 
+      <ul> 
+        <li>view-select-&gt;table</li>  
+        <li>table-contains-&gt;primaryKey</li>  
+        <li>table-contains-&gt;index</li>  
+        <li>table-foreignKey-&gt;table</li> 
+      </ul> For Oracle, the following additional dependencies are resolved: 
+      <ul> 
+        <li>table-uses-&gt;trigger</li>  
+        <li>other(package)-contains-&gt;storedProcedure(procedure|function)|userType</li>  
+        <li>synonym-alias-&gt;*</li>  
+        <li>dblink-references-&gt;databaseInstance(schema)</li> 
+      </ul> with dblink containing the target tables that could not be resolved in the target schema, and synonyms taking the right-hand side of relations that use the synonym.
+    </description>
+  </createdRelations>
+  <importantConfigurations>
+    <alternative>
+      <value>aim.database.rule.default.active=true</value>
+      <value>aim.database.schemaDir=${aim.common.srcdir}</value>
+    </alternative>
+    <alternative>
+      <value>aim.database.rule.oracle.active=true</value>
+      <value>aim.database.schemaDir=${aim.common.srcdir}</value>
+    </alternative>
+    <results>
+      <variation id='6067d6a8'>
+        <rel>database,contains,databaseInstance</rel>
+        <rel>databaseInstance,contains,table</rel>
+        <rel>table,contains,index</rel>
+        <rel>table,contains,primaryKey</rel>
+      </variation>
+      <variation id='45632a33'>
+        <rel>database,contains,databaseInstance</rel>
+        <rel>databaseInstance,contains,dblink</rel>
+        <rel>databaseInstance,contains,other</rel>
+        <rel>databaseInstance,contains,sequence</rel>
+        <rel>databaseInstance,contains,storedProcedure</rel>
+        <rel>databaseInstance,contains,synonym</rel>
+        <rel>databaseInstance,contains,table</rel>
+        <rel>databaseInstance,contains,trigger</rel>
+        <rel>databaseInstance,contains,userType</rel>
+        <rel>dblink,references,databaseInstance</rel>
+        <rel>other,contains,storedProcedure</rel>
+        <rel>table,contains,index</rel>
+        <rel>table,contains,primaryKey</rel>
+      </variation>
+    </results>
+  </importantConfigurations>
+</block>

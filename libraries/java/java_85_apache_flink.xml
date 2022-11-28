@@ -1,0 +1,514 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="apache.flink" standard="Apache_Flink" technology="java">
+  <description url="https://flink.apache.org/">Streaming library ("Stateful Computations over Data Streams")</description>
+
+  <!--https://ci.apache.org/projects/flink/flink-docs-master/api/java/overview-summary.html -->
+
+  <module name="flink.streaming" >
+    <class name="org.apache.flink.streaming.api.datastream.DataStream" supertypes="rg.apache.flink.streaming.api.datastream.SingleOutputStreamOperator" />
+    <class name="org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator" supertypes="org.apache.flink.streaming.api.datastream.DataStream" />
+    <class name="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" >
+      <method name="createLocalEnvironment" signature="createLocalEnvironment()" match="name" >
+        <return type="org.apache.flink.streaming.api.environment.LocalStreamEnvironment" />
+      </method>
+      <method name="createLocalEnvironmentWithWebUI" signature="createLocalEnvironmentWithWebUI()" match="name" >
+        <return type="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" />
+      </method>
+      <method name="createRemoteEnvironment" signature="createRemoteEnvironment()" match="name" >
+        <return type="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" />
+      </method>
+      <method name="enableCheckpointing" signature="enableCheckpointing" match="name" >
+        <return type="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" />
+      </method>
+      <method name="execute" signature="execute()" >
+        <return type="org.apache.flink.api.common.JobExecutionResult" />
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+      <method name="executeAsync" signature="executeAsync()" >
+        <return type="org.apache.flink.core.execution.JobClient" />
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+      <method name="getExecutionEnvironment" signature="getExecutionEnvironment()" >
+        <return type="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" />
+      </method>
+      <method name="setBufferTimeout" signature="setBufferTimeout()" match="name" >
+        <return type="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setMaxParallelism" signature="setMaxParallelism()" match="name" >
+        <return type="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setParallelism" signature="setParallelism()" match="name" >
+        <return type="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setStateBackend" signature="setStateBackend()" match="name" >
+        <return type="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="readTextFile" signature="readTextFile(java.lang.String)" match="name" >
+        <return type="org.apache.flink.streaming.api.datastream.DataStreamSource" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="registerCachedFile" signature="registerCachedFile(java.lang.String)" match="name" >
+        <return type="org.apache.flink.streaming.api.datastream.DataStreamSource" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="socketTextStream" signature="socketTextStream(java.lang.String,int)" match="name" >
+        <return type="org.apache.flink.streaming.api.datastream.DataStreamSource" />
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="filesystem" />
+      </method>
+    </class>
+    <class name="org.apache.flink.streaming.api.environment.LocalStreamEnvironment" supertypes="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" />
+    <class name="org.apache.flink.streaming.api.environment.DummyStreamExecutionEnvironment" supertypes="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" />
+    <class name="org.apache.flink.streaming.api.environment.ScalaShellStreamEnvironment" supertypes="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" />
+    <class name="org.apache.flink.streaming.api.environment.StreamContextEnvironment" supertypes="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" />
+    <class name="org.apache.flink.streaming.api.environment.StreamPlanEnvironment" supertypes="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" />
+    <class name="org.apache.flink.streaming.api.environment.TestStreamEnvironment" supertypes="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" />
+    <class name="org.apache.flink.streaming.api.environment.RemoteStreamEnvironment" supertypes="org.apache.flink.streaming.api.environment.StreamExecutionEnvironment" >
+      <constructor name="RemoteStreamEnvironment" signature="RemoteStreamEnvironment(org.apache.flink.core.execution.PipelineExecutorServiceLoader,java.lang.String,int,org.apache.flink.configuration.Configuration)" match="fullsignature" >
+        <sink kind="ssrf" argpos="1" resource="network" />
+        <sink kind="insecure_transport" argpos="1" resource="web" />
+        <sink kind="resource_injection" argpos="2" resource="network" />
+      </constructor>
+      <constructor name="RemoteStreamEnvironment" signature="RemoteStreamEnvironment(java.lang.String,int,org.apache.flink.configuration.Configuration,...java.lang.String)" match="fullsignature" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </constructor>
+      <constructor name="RemoteStreamEnvironment" signature="RemoteStreamEnvironment(java.lang.String,int,org.apache.flink.configuration.Configuration,java.lang.String[])" match="fullsignature" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </constructor>
+      <constructor name="RemoteStreamEnvironment" signature="RemoteStreamEnvironment(java.lang.String,int,org.apache.flink.configuration.Configuration,java.lang.String[],java.net.URL[])" match="fullsignature" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </constructor>
+      <constructor name="RemoteStreamEnvironment" signature="RemoteStreamEnvironment(java.lang.String,int,org.apache.flink.configuration.Configuration,java.lang.String[],java.net.URL[],org.apache.flink.runtime.jobgraph.SavepointRestoreSettings)" match="fullsignature" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </constructor>
+      <constructor name="RemoteStreamEnvironment" signature="RemoteStreamEnvironment(java.lang.String,int,...java.lang.String)" match="fullsignature" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </constructor>
+    </class>
+  </module>
+
+  <module name="flink.api" >
+    <class name="org.apache.flink.api.java.io.jdbc.JDBCInputFormat.JDBCInputFormatBuilder" >
+      <method name="setAutoCommit" signature="setAutoCommit(boolean)" >
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCInputFormat.JDBCInputFormatBuilder" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setDBUrl" signature="setDBUrl(java.lang.String)" >
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCInputFormat.JDBCInputFormatBuilder" />
+        <sink kind="connection_string_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setDrivername" signature="setDrivername(java.lang.String)" >
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCInputFormat.JDBCInputFormatBuilder" />
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setFetchSize" signature="setFetchSize(int)" >
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCInputFormat.JDBCInputFormatBuilder" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setParametersProvider" signature="setAutoCommit(org.apache.flink.connector.jdbc.split.JdbcParameterValuesProvider)" >
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCInputFormat.JDBCInputFormatBuilder" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)" >
+        <tags>password:0</tags>
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCInputFormat.JDBCInputFormatBuilder" />
+        <sink kind="resource_injection" argpos="0" resource="other" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setQuery" signature="setQuery(java.lang.String)" >
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCInputFormat.JDBCInputFormatBuilder" />
+        <sink kind="sql_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setResultSetConcurrency" signature="setResultSetConcurrency(int)" >
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCInputFormat.JDBCInputFormatBuilder" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setResultSetType" signature="setResultSetType(int)" >
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCInputFormat.JDBCInputFormatBuilder" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setRowTypeInfo" signature="setRowTypeInfo(org.apache.flink.api.java.typeutils.RowTypeInfo)" >
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCInputFormat.JDBCInputFormatBuilder" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setUsername" signature="setUsername(java.lang.String)" >
+        <tags>username:0</tags>
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCInputFormat.JDBCInputFormatBuilder" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="org.apache.flink.api.java.io.jdbc.JDBCOutputFormat.JDBCOutputFormatBuilder" >
+      <method name="setBatchInterval" signature="setBatchInterval(int)" >
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCOutputFormat.JDBCOutputFormatBuilder" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setDBUrl" signature="setDBUrl(java.lang.String)" >
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCOutputFormat.JDBCOutputFormatBuilder" />
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setDrivername" signature="setDrivername(java.lang.String)" >
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCOutputFormat.JDBCOutputFormatBuilder" />
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)" >
+        <tags>password:0</tags>
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCOutputFormat.JDBCOutputFormatBuilder" />
+        <sink kind="resource_injection" argpos="0" resource="other" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setQuery" signature="setQuery(java.lang.String)" >
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCOutputFormat.JDBCOutputFormatBuilder" />
+        <sink kind="sql_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setSqlTypes" signature="setSqlTypes(int[])" >
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCOutputFormat.JDBCOutputFormatBuilder" />
+        <sink kind="configuration_setting_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setUsername" signature="setUsername(java.lang.String)" >
+        <tags>username:0</tags>
+        <return type="org.apache.flink.api.java.io.jdbc.JDBCOutputFormat.JDBCOutputFormatBuilder" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="org.apache.flink.api.java.ExecutionEnvironmentFactory" >
+      <method name="createExecutionEnvironment" signature="createExecutionEnvironment()" >
+        <return type="org.apache.flink.api.java.ExecutionEnvironment" />
+      </method>
+    </class>
+    <class name="org.apache.flink.api.java.ExecutionEnvironment" >
+      <method name="createLocalEnvironment" signature="createLocalEnvironment()" match="name" >
+        <return type="org.apache.flink.api.java.LocalEnvironment" />
+      </method>
+      <method name="createLocalEnvironmentWithWebUI" signature="createLocalEnvironmentWithWebUI()" match="name" >
+        <return type="org.apache.flink.api.java.ExecutionEnvironment" />
+      </method>
+      <method name="execute" signature="execute()" >
+        <return type="org.apache.flink.api.common.JobExecutionResult" />
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+      <method name="executeAsync" signature="executeAsync()" >
+        <return type="org.apache.flink.core.execution.JobClient" />
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+      <method name="getConfig" signature="getConfig()" >
+        <return type="org.apache.flink.api.common.ExecutionConfig" />
+      </method>
+      <method name="getExecutionEnvironment" signature="getExecutionEnvironment()" >
+        <return type="org.apache.flink.api.java.ExecutionEnvironment" />
+      </method>
+      <method name="readCsvFile" signature="readCsvFile(java.lang.String)" >
+        <return type="org.apache.flink.api.java.io.CsvReader" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="readFile" signature="readFile(org.apache.flink.api.common.io.FileInputFormat,java.lang.String)" >
+        <return type="org.apache.flink.api.java.operators.DataSource" />
+        <sink kind="path_traversal" argpos="1" resource="filesystem" />
+      </method>
+      <method name="readFileOfPrimitives" signature="readFileOfPrimitives(java.lang.String,java.lang.Class)" >
+        <return type="org.apache.flink.api.java.operators.DataSource" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="readTextFile" signature="readTextFile(java.lang.String)" match="name" >
+        <return type="org.apache.flink.api.java.operators.DataSource" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="readTextFileWithValue" signature="readTextFileWithValue(java.lang.String)" match="name" >
+        <return type="org.apache.flink.api.java.operators.DataSource" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="registerCachedFile" signature="registerCachedFile(java.lang.String)" match="name" >
+        <return type="org.apache.flink.streaming.api.datastream.DataStreamSource" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+    </class>
+    <class name="org.apache.flink.api.java.LocalEnvironment" supertypes="org.apache.flink.api.java.ExecutionEnvironment" />
+    <class name="org.apache.flink.api.java.CollectionEnvironment" supertypes="org.apache.flink.api.java.ExecutionEnvironment" />
+    <class name="org.apache.flink.api.java.ScalaShellEnvironment" supertypes="org.apache.flink.api.java.ExecutionEnvironment" />
+    <class name="org.apache.flink.api.java.RemoteEnvironment" supertypes="org.apache.flink.api.java.ExecutionEnvironment" >
+      <constructor name="RemoteEnvironment" signature="RemoteEnvironment(java.lang.String,int,org.apache.flink.configuration.Configuration,java.lang.String[])" match="name" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </constructor>
+    </class>
+    <class name="org.apache.flink.api.common.ExecutionConfig" />
+    <class name="org.apache.flink.api.java.JarHelper" >
+      <method name="jarDir" signature="jarDir(java.io.File,java.io.File)" >
+        <sink kind="path_traversal" argpos="0,1" resource="filesystem" />
+      </method>
+      <method name="unjar" signature="unjar(java.io.InputStream,java.io.File)" >
+        <sink kind="path_traversal" argpos="1" resource="filesystem" />
+      </method>
+      <method name="unjarDir" signature="unjarDir(java.io.File,java.io.File)" >
+        <sink kind="path_traversal" argpos="0,1" resource="filesystem" />
+      </method>
+    </class>
+  </module>
+
+  <!-- RUNTIME -->
+  <module name="flink.runtime" >
+    <class name="org.apache.flink.runtime.rpc.RpcService" >
+      <method name="connect" signature="connect(java.lang.String,java.lang.Class)" match="name" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+      </method>
+    </class>
+    <class name="org.apache.flink.runtime.rpc.akka.AkkaRpcService" supertypes="org.apache.flink.runtime.rpc.RpcService" />
+    <class name="org.apache.flink.runtime.rpc.akka.AkkaRpcServiceUtils" >
+      <method name="createRemoteRpcService" signature="createRemoteRpcService(org.apache.flink.configuration.Configuration,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.Optional)" >
+        <return type="org.apache.flink.runtime.rpc.akka.AkkaRpcService" />
+        <sink kind="ssrf" argpos="1" resource="network" />
+        <sink kind="insecure_transport" argpos="1" resource="web" />
+        <sink kind="resource_injection" argpos="2,3,4,5" resource="network" />
+      </method>
+      <method name="getRpcUrl" signature="getRpcUrl(java.lang.String,int,java.lang.String,java.lang.String,org.apache.flink.runtime.highavailability.HighAvailabilityServicesUtils.AddressResolution,org.apache.flink.runtime.rpc.akka.AkkaRpcServiceUtils.AkkaProtocol)" match="name" >
+        <return type="java.lang.String" />
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1,2" resource="network" />
+      </method>
+      <method name="remoteServiceBuilde" signature="remoteServiceBuilde(org.apache.flink.configuration.Configuration,java.lang.String,int)" match="name" >
+        <return type="java.lang.String" />
+        <sink kind="ssrf" argpos="1" resource="network" />
+        <sink kind="insecure_transport" argpos="1" resource="web" />
+        <sink kind="resource_injection" argpos="2" resource="network" />
+      </method>
+    </class>
+
+    <class name="org.apache.flink.runtime.blob.BlobClient" >
+      <method name="uploadFile" signature="uploadFile(org.apache.flink.api.common.JobID,org.apache.flink.core.fs.Path)" />
+      <method name="uploadFiles" signature="uploadFiles(java.net.InetSocketAddress,org.apache.flink.configuration.Configuration,org.apache.flink.api.common.JobID,java.util.List)" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+      </method>
+    </class>
+  </module>
+
+  <!-- CONNECTOR -->
+  <module name="flink.connector" >
+    <class name="org.apache.flink.connector.jdbc.JdbcConnectionOptions" >
+      <constructor name="JdbcConnectionOptions" signature="JdbcConnectionOptions(java.lang.String,java.lang.String,java.lang.String,java.lang.String,)" >
+        <tags>username:2,password:3</tags>
+        <sink kind="connection_string_injection" argpos="0" resource="database" />
+        <sink kind="resource_injection" argpos="1" resource="database" />
+        <sink argpos="2,3" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+    </class>
+    <class name="org.apache.flink.connector.jdbc.JdbcConnectionOptions.JdbcConnectionOptionsBuilder" >
+      <method name="withDriverName" signature="withDriverName(java.lang.String)" >
+        <return type="org.apache.flink.connector.jdbc.JdbcConnectionOptions.JdbcConnectionOptionsBuilder" />
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="withPassword" signature="withPassword(java.lang.String)" >
+        <tags>password:0</tags>
+        <return type="org.apache.flink.connector.jdbc.JdbcConnectionOptions.JdbcConnectionOptionsBuilder" />
+        <sink kind="resource_injection" argpos="0" resource="other" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="withUsername" signature="withUsername(java.lang.String)" >
+        <tags>username:0</tags>
+        <return type="org.apache.flink.connector.jdbc.JdbcConnectionOptions.JdbcConnectionOptionsBuilder" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="withUrl" signature="withUrl(java.lang.String)" >
+        <return type="org.apache.flink.connector.jdbc.JdbcConnectionOptions.JdbcConnectionOptionsBuilder" />
+        <sink kind="connection_string_injection" argpos="0" resource="database" />
+      </method>
+      <method name="build" signature="build()" >
+        <return type="org.apache.flink.connector.jdbc.JdbcConnectionOptions" />
+      </method>
+    </class>
+    <class name="org.apache.flink.connector.jdbc.JdbcInputFormat.JdbcInputFormatBuilder" >
+      <method name="setDriverName" signature="setDriverName(java.lang.String)" >
+        <return type="org.apache.flink.connector.jdbc.JdbcInputFormat.JdbcInputFormatBuilder" />
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)" >
+        <tags>password:0</tags>
+        <return type="org.apache.flink.connector.jdbc.JdbcInputFormat.JdbcInputFormatBuilder" />
+        <sink kind="resource_injection" argpos="0" resource="other" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setUsername" signature="setUsername(java.lang.String)" >
+        <tags>username:0</tags>
+        <return type="org.apache.flink.connector.jdbc.JdbcInputFormat.JdbcInputFormatBuilder" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setDBUrl" signature="setDBUrl(java.lang.String)" >
+        <return type="org.apache.flink.connector.jdbc.JdbcInputFormat.JdbcInputFormatBuilder" />
+        <sink kind="connection_string_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setQuery" signature="setQuery(java.lang.String)" >
+        <return type="org.apache.flink.connector.jdbc.JdbcInputFormat.JdbcInputFormatBuilder" />
+        <sink kind="sql_injection" argpos="0" resource="database" />
+      </method>
+      <method name="finish" signature="finish()" >
+        <return type="org.apache.flink.connector.jdbc.JdbcInputFormat" />
+      </method>
+    </class>
+    <class name="org.apache.flink.connector.jdbc.JdbcInputFormat" supertypes="org.apache.flink.api.common.io.RichInputFormat" >
+      <method name="buildJdbcInputFormat" signature="buildJdbcInputFormat()" >
+        <return type="org.apache.flink.connector.jdbc.JdbcInputFormat.JdbcInputFormatBuilder" />
+      </method>
+      <method name="getDbConn" signature="getDbConn()" >
+        <return type="java.sql.Connection" />
+      </method>
+      <method name="getStatement" signature="getStatement()" >
+        <return type="java.sql.PreparedStatement" />
+      </method>
+    </class>
+    <class name="org.apache.flink.connector.jdbc.JdbcOutputFormat.JdbcOutputFormatBuilder" >
+      <method name="buildConnectionOptions" signature="buildConnectionOptions()" >
+        <return type="org.apache.flink.connector.jdbc.JdbcConnectionOptions" />
+      </method>
+      <method name="setDriverName" signature="setDriverName(java.lang.String)" >
+        <return type="org.apache.flink.connector.jdbc.JdbcOutputFormat.JdbcOutputFormatBuilder" />
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)" >
+        <tags>password:0</tags>
+        <return type="org.apache.flink.connector.jdbc.JdbcOutputFormat.JdbcOutputFormatBuilder" />
+        <sink kind="resource_injection" argpos="0" resource="other" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setUsername" signature="setUsername(java.lang.String)" >
+        <tags>username:0</tags>
+        <return type="org.apache.flink.connector.jdbc.JdbcOutputFormat.JdbcOutputFormatBuilder" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setDBUrl" signature="setDBUrl(java.lang.String)" >
+        <return type="org.apache.flink.connector.jdbc.JdbcOutputFormat.JdbcOutputFormatBuilder" />
+        <sink kind="connection_string_injection" argpos="0" resource="database" />
+      </method>
+      <method name="setQuery" signature="setQuery(java.lang.String)" >
+        <return type="org.apache.flink.connector.jdbc.JdbcOutputFormat.JdbcOutputFormatBuilder" />
+        <sink kind="sql_injection" argpos="0" resource="database" />
+      </method>
+      <method name="finish" signature="finish()" >
+        <return type="org.apache.flink.connector.jdbc.JdbcOutputFormat" />
+      </method>
+    </class>
+    <class name="org.apache.flink.connector.jdbc.JdbcOutputFormat" supertypes="org.apache.flink.connector.jdbc.internal.JdbcBatchingOutputFormat" >
+      <method name="buildJDBCOutputFormat" signature="buildJDBCOutputFormat()" >
+        <return type="org.apache.flink.connector.jdbc.JdbcOutputFormat.JdbcOutputFormatBuilder" />
+      </method>
+    </class>
+    <class name="org.apache.flink.table.catalog.AbstractCatalog" >
+      <constructor name="AbstractCatalog" signature="AbstractCatalog()" >
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+      </constructor>
+    </class>
+    <class name="org.apache.flink.connector.jdbc.catalog.AbstractJdbcCatalog" supertypes="org.apache.flink.table.catalog.AbstractCatalog" >
+      <constructor name="AbstractJdbcCatalog" signature="AbstractJdbcCatalog(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)" >
+        <tags>username:2,password:3</tags>
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+        <sink kind="connection_string_injection" argpos="4" resource="database" />
+        <sink argpos="2,3" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+
+      <method name="alterDatabase" signature="alterDatabase(java.lang.String,org.apache.flink.table.catalog.CatalogDatabase,boolean)" >
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="dropDatabase" signature="dropDatabase(java.lang.String,boolean,boolean)" >
+        <sink kind="resource_injection" argpos="0" resource="database" />
+      </method>
+      <method name="dropFunction" signature="dropFunction(org.apache.flink.table.catalog.ObjectPath,boolean)" >
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+      </method>
+      <method name="dropPartitions" signature="dropPartitions(org.apache.flink.table.catalog.ObjectPath,org.apache.flink.table.catalog.CatalogPartitionSpec,boolean)" >
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+      </method>
+      <method name="dropTable" signature="dropTable(org.apache.flink.table.catalog.ObjectPath,boolean)" >
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+      </method>
+      <method name="renameTable" signature="renameTable(org.apache.flink.table.catalog.ObjectPath,java.lang.String,boolean)" >
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+      </method>
+    </class>
+    <class name="org.apache.flink.connector.jdbc.catalog.PostgresCatalog" supertypes="org.apache.flink.connector.jdbc.catalog.AbstractJdbcCatalog" >
+      <constructor name="PostgresCatalog" signature="PostgresCatalog(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)" >
+        <tags>username:2,password:3</tags>
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+        <sink kind="connection_string_injection" argpos="4" resource="database" />
+        <sink argpos="2,3" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+    </class>
+    <class name="org.apache.flink.connector.jdbc.catalog.JdbcCatalog" supertypes="org.apache.flink.connector.jdbc.catalog.AbstractJdbcCatalog" >
+      <constructor name="JdbcCatalog" signature="JdbcCatalog(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)" >
+        <tags>username:2,password:3</tags>
+        <sink kind="resource_injection" argpos="0,1" resource="database" />
+        <sink kind="connection_string_injection" argpos="4" resource="database" />
+        <sink argpos="2,3" kind="hardcoded_credentials" resource="network"/>
+      </constructor>
+    </class>
+  </module>
+
+  <module name="flink.core" >
+    <class name="org.apache.flink.core.fs.Path" >
+      <constructor name="Path" signature="Path()" match="fullsignature" />
+      <constructor name="Path" signature="Path(org.apache.flink.core.fs.Path,org.apache.flink.core.fs.Path)" match="fullsignature" />
+      <constructor name="Path" signature="Path(org.apache.flink.core.fs.Path,java.lang.String)" match="fullsignature" >
+        <sink kind="path_traversal" argpos="1" resource="filesystem" />
+      </constructor>
+      <constructor name="Path" signature="Path(java.lang.String)" match="fullsignature" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </constructor>
+      <constructor name="Path" signature="Path(java.lang.String,org.apache.flink.core.fs.Path)" match="fullsignature" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </constructor>
+      <constructor name="Path" signature="Path(java.lang.String,java.lang.String)" match="fullsignature" >
+        <sink kind="path_traversal" argpos="0,1" resource="filesystem" />
+      </constructor>
+      <constructor name="Path" signature="Path(java.lang.String,java.lang.String,java.lang.String)" match="fullsignature" >
+        <sink kind="path_traversal" argpos="2" resource="filesystem" />
+      </constructor>
+      <constructor name="Path" signature="Path(java.net.URI)" match="fullsignature" >
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </constructor>
+
+      <method name="getFileSystem" signature="getFileSystem()" >
+        <return type="org.apache.flink.core.fs.FileSystem" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="getName" signature="getName()" >
+        <return type="java.lang.String" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="getParent" signature="getParent()" >
+        <return type="org.apache.flink.core.fs.Path" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="makeQualified" signature="makeQualified(org.apache.hadoop.fs.FileSystem)" >
+        <return type="org.apache.hadoop.fs.Path" />
+      </method>
+      <method name="suffix" signature="suffix(java.lang.String" >
+        <return type="org.apache.flink.core.fs.Path" />
+      </method>
+      <method name="toUri" signature="toUri()" >
+        <return type="java.net.URI" />
+        <propagate from="-2" to="-1" />
+      </method>
+    </class>
+    <class name="org.apache.flink.core.fs.FileSystem" />
+    <class name="org.apache.flink.runtime.fs.hdfs.HadoopFileSystem" supertypes="org.apache.flink.core.fs.FileSystem" />
+    <class name="org.apache.flink.core.fs.LimitedConnectionsFileSystem" supertypes="org.apache.flink.core.fs.FileSystem" />
+    <class name="org.apache.flink.core.fs.local.LocalFileSystem" supertypes="org.apache.flink.core.fs.FileSystem" />
+    <class name="org.apache.flink.core.fs.SafetyNetWrapperFileSystem" supertypes="org.apache.flink.core.fs.FileSystem" />
+  </module>
+</library>

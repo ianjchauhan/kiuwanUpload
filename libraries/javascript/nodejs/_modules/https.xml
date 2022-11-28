@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/https" standard="nodejs">
+
+  <module name="nodejs/https" standard="https">
+    <description url="https://nodejs.org/api/https.html">https module, support for HTTP protocol over TLS/SSL</description>
+
+    <class name="nodejs/https.Server" supertypes="nodejs/http.Server">
+      <function name="listen">
+        <tags>server.listen,ssl</tags>
+        <return type="nodejs/https.Server"/>
+        <sink kind="configuration_setting_injection" argpos="0,1"/>
+      </function>
+    </class>
+
+    <class name="nodejs/https" supertypes="nodejs/http">
+      <function name="createServer">
+        <tags>server.new,ssl</tags>
+        <parameters>
+          <!-- options is required; requestListener is optional -->
+          <param type="Object"/>
+          <param type="function(nodejs/http.IncomingMessage, nodejs/http.ServerResponse))"/>
+        </parameters>
+        <return type="nodejs/https.Server"/>
+
+        <sink kind="hardcoded_key" resource="network">
+          <arg pos="0" field="pfx,key,cert,dhparam,ca,crl"/>
+        </sink>
+        <sink kind="sensitive_data" resource="crypto">
+          <arg pos="0" field="passphrase"/>
+        </sink>
+      </function>
+
+      <function name="request" alias="get">
+        <tags>ssl</tags>
+        <parameters>
+          <param type="Object"/><!-- This is typically a conf object, could be a string for get -->
+          <param type="function(nodejs/http.IncomingMessage)" callback="true"/>
+        </parameters>
+        <return type="nodejs/http.ClientRequest"/>
+
+        <sink kind="hardcoded_key" resource="crypto">
+          <arg pos="0" field="pfx,key,cert,dhparam,ca,crl"/>
+        </sink>
+        <sink kind="sensitive_data" resource="crypto">
+          <arg pos="0" field="passphrase"/>
+        </sink>
+        <sink kind="resource_injection" resource="web">
+          <arg pos="0"/>
+          <arg pos="0" field="path"/>
+        </sink>
+        <sink kind="ssrf" resource="network">
+          <arg pos="0"/>
+          <arg pos="0" field="protocol,host,hostname,port,socketPath"/>
+        </sink>
+        <sink kind="sensitive_data" resource="web">
+          <arg pos="0" field="auth"/>
+        </sink>
+
+      </function>
+    </class>
+  </module>
+
+</library>

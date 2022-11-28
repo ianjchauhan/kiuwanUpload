@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library.database
+  xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  technology="plsql" name="plsql_ora_owa" standard="PL/SQL_OWA">
+
+  <description url="https://docs.oracle.com/database/121/ARPLS/toc.htm">Oracle Web Application (OWA) Packages</description>
+
+  <package name="owa_cookie">
+    <type name="vc_arr" kind="collection" elementType="varchar2"/>
+    <type name="cookie" kind="record">
+      <field name="name" type="varchar2"/>
+      <field name="vals" type="owa_cookie.vc_arr"/>
+      <field name="num_vals" type="integer"/>
+    </type>
+
+    <function name="get" signature="get(name varchar2)">
+      <return type="owa_cookie.cookie"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </function>
+    <procedure name="get_all" signature="get_all(names out vc_arr, vals out vc_arr, num_vals out integer)">
+      <source argpos="0,1" kind="user_input" resource="web"/>
+    </procedure>
+    <procedure name="remove" signature="remove(name varchar2, val varchar2, path varchar2)"></procedure>
+    <procedure name="send" signature="send(name varchar2, value varchar2, expires date, path varchar2, domain varchar2, secure varchar2)">
+      <sink argpos="0,1,3,4" kind="header_manipulation" resource="web"/>
+    </procedure>
+  </package>
+
+  <package name="owa_util">
+    <function name="bind_variables" signature="bind_variables(theQuery varchar2, bv1Name varchar2, bv1Value varchar2)">
+      <return type="integer"/>
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </function>
+    <procedure name="calendarprint" signature="calendarprint(p_query varchar2, p_mf_only varchar2)">
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </procedure>
+    <procedure name="cellsprint" signature="cellsprint(p_theQuery varchar2, p_max_rows number, p_format_numbers varchar2)">
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </procedure>
+    <function name="get_cgi_env" signature="get_cgi_env(param_name varchar2)">
+      <return type="varchar2"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </function>
+    <procedure name="redirect_url" signature="redirect_url(curl varchar2, bclose_header boolean)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </procedure>
+    <procedure name="listprint" signature="listprint(p_theQuery varchar2, p_cname varchar2, p_nsize number, p_multiple boolean)">
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </procedure>
+    <function name="tableprint" signature="tableprint(ctable varchar2)">
+      <return type="boolean"/>
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </function>
+  </package>
+
+</library.database>

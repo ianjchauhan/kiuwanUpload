@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for JCL language.</description>
+
+  <import resource="../common/aim.common.xml"/>
+
+  <import resource="classpath:resources/qaking-tech-jcl.xml"/>
+  <import resource="classpath:resources/qaking-tech-sql.xml"/>
+
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="legacy/aim.jcl.properties"/>
+  </bean-->
+
+  <bean id="aim.jcl.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>JCL parser</description>
+    <property name="filter" ref="aim.jcl.filter"/>
+    <property name="languageSupport" ref="ls_jcl"/>
+  </bean>
+
+  <!-- Rules -->
+  <bean id="aim.jcl.rule" class="com.optimyth.apm.builder.rules.jcl.JclRule">
+    <description>JCL rule</description>
+    <property name="active" value="${aim.jcl.rule.active}"/>
+
+    <property name="visitorType" value="${aim.jcl.visitor}" />
+    <property name="callback" ref="aim.jcl.callback.default" />
+    <property name="filter" ref="aim.jcl.filter"/>
+    <property name="resolveSqlStatements" value="${aim.jcl.resolveSqlStatements}" />
+    <property name="utilityResolver" ref="aim.jcl.resolver.utility"/>
+    <property name="db2Resolver" ref="aim.jcl.resolver.db2" />
+  </bean>
+
+  <!-- Callbacks -->
+  <bean id="aim.jcl.callback.default" class="com.optimyth.apm.builder.rules.jcl.DefaultJclJobCallback">
+    <property name="inlineProcedureResolver" ref="aim.jcl.resolver.calls.inline.procedures"/>
+    <property name="calledResolver" ref="aim.jcl.resolver.calls"/>
+    <property name="scriptApplication" value="${aim.jcl.software.batch}"/>
+    <property name="backendApplication" value="${aim.jcl.software.backend}"/>
+    <property name="scriptContainerType" ref="aim.common.softwareType.application"/>
+    <property name="backendContainerType" ref="aim.common.softwareType.application"/>
+    <property name="resolveArtifacts" value="${aim.common.resolveArtifacts}"/>
+    <property name="ignoreCase" value="${aim.jcl.ignoreCase}"/>
+    <property name="acceptUnresolved"  value="${aim.common.acceptUnresolved}"/>
+    <property name="saveStepInformation" value="${aim.jcl.saveStepInformation}"/>
+    <property name="instreamProcedures" value="${aim.jcl.instream}" />
+    <property name="registerUtilities" value="${aim.jcl.registerUtilities}"/>
+  </bean>
+
+  <!-- Filters -->
+  <bean id="aim.jcl.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.jcl.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.jcl.filter}"/>
+    <property name="map">
+      <map>
+        <entry key="pattern" value-ref="aim.jcl.filter.pattern"/>
+      </map>
+    </property>
+  </bean>
+
+  <bean id="aim.jcl.filter.default" parent="ls_jcl_matcher"/>
+
+  <bean id="aim.jcl.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.jcl.filter.pattern}"/>
+  </bean>
+
+  <!-- Caller resolvers -->
+  <bean id="aim.jcl.resolver.calls" class="com.optimyth.apm.builder.rules.common.callresolution.CompositeCalledResolver">
+    <description>Resolver for program calls</description>
+    <property name="resolvers">
+      <list>
+        <ref bean="aim.jcl.resolver.calls.file"/>
+        <ref bean="aim.jcl.resolver.calls.cobol"/>
+        <ref bean="aim.jcl.resolver.progcalls.fallback"/>
+      </list>
+    </property>
+  </bean>
+
+  <bean id="aim.jcl.resolver.calls.inline.procedures" parent="aim.common.resolver.base"
+        class="com.optimyth.apm.builder.rules.jcl.InlineProcedureResolver">
+    <description>Resolver for calls to inline procedures </description>
+    <property name="instreamProcedures" value="${aim.jcl.instream}" />
+  </bean>
+
+  <bean id="aim.jcl.resolver.calls.file" parent="aim.common.resolver.base">
+    <description>Resolver for calls to other Cobol programs (in same software)</description>
+    <property name="extension" value="${aim.jcl.resolver.file.extensions}"/>
+    <property name="language" value="jcl"/>
+    <property name="fileResolver">
+      <bean class="com.optimyth.apm.builder.rules.common.fileresolution.InModelFileResolver">
+      </bean>
+    </property>
+  </bean>
+
+  <bean id="aim.jcl.resolver.calls.cobol" parent="aim.common.resolver.base">
+    <description>Resolver for calls to other Cobol programs (in same software)</description>
+    <property name="extension" value="${aim.jcl.resolver.cobol.extensions}"/>
+    <property name="language" value="cobol"/>
+    <property name="fileResolver">
+      <bean class="com.optimyth.apm.builder.rules.common.fileresolution.InModelFileResolver" />
+    </property>
+  </bean>
+
+  <bean id="aim.jcl.resolver.progcalls.fallback" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>
+      Process aim.jcl.resolver.progcalls.registerUnresolvedCalls
+      to choose the right fallback resolver for program calls
+    </description>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.callresolution.CalledResolver"/>
+    <property name="key" value="${aim.jcl.resolver.progcalls.registerUnresolvedCalls}"/>
+    <property name="map">
+      <map>
+        <entry key="true" value-ref="aim.common.resolver.fallback"/>
+        <entry key="false" value-ref="aim.common.resolver.null"/>
+      </map>
+    </property>
+  </bean>
+
+  <bean id="aim.jcl.resolver.utility" class="com.optimyth.apm.builder.rules.jcl.UtilityResolver">
+    <property name="programsToIgnore" value="${aim.jcl.utilities.toIgnore}"/>
+    <property name="hostUtilities" value="${aim.jcl.utilities.host}"/>
+    <property name="db2Utilities" value="${aim.jcl.utilities.db2}"/>
+    <property name="controlMUtilities" value="${aim.jcl.utilities.controlm}"/>
+  </bean>
+
+  <bean id="aim.jcl.resolver.db2" class="com.optimyth.apm.builder.rules.jcl.Db2Resolver">
+    <description>
+      Process DB2 calls
+    </description>
+    <property name="sqlParser" ref="ls_sqldb2_parser"/>
+    <property name="addQuery" value="${aim.jcl.addQuery}"/>
+    <property name="addSqlCode" value="${aim.jcl.addSqlCode}"/>
+    <property name="dbType" value="${aim.jcl.dbsystem}"/>
+    <property name="dbInstance" value="${aim.jcl.dbname}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+
+</beans>

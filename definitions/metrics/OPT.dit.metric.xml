@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric"
+    version="1.1">
+
+  <metric id="OPT.dit" unit="" aggregation="avg" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.LOWER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.TYPE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="6.00" meaning="good" />
+        <threshold from="6.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <internal-name id="OPT.ABAP.COUPLING.DIT_NOC" />
+        <java-class>com.als.abap.metrics.DitNocMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.INHERITANCE" />
+        <java-class>com.als.java.metrics.InheritanceMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <internal-name id="OPT.OBJECTIVEC.INHERITANCE" />
+        <java-class>com.optimyth.qaking.objectivec.metrics.InheritanceMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+        <internal-name id="OPT.JS.INHERITANCE" />
+        <java-class>com.optimyth.qaking.javascript.metrics.InheritanceMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+    <code-examples />
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+      <i18n ref="OPT.LANGUAGE.SPANISH">
+        <name><![CDATA[Profundidad del árbol de herencia]]></name>
+
+        <description>
+<![CDATA[
+La profundidad del árbol de herencia (DIT por sus siglas en inglés, 'Depth of Inheritance Tree') da a cada clase una medida de los niveles de herencia desde el objeto hasta la raíz del árbol.
+
+Las clases que son hojas de los árboles tendrán valores altos. La herencia implica gran acoplamiento entre clases: si se hace un cambio en en la clase base, todos sus descendientes recibirán el cambio. Esto es un arma de doble filo, ya que hasta los cambios más mínimos pueden romper la funcionalidad de múltiples clases.
+
+Valores promedio demasiado bajos (cercanos a 1) para un paquete o proyecto pueden indicar bajo uso de herencia, y ser síntoma de programación procedural, lo cual está claramente mal.
+
+Valores promedio demasiado altos (e.g. mayores de 3 para un paquete, o mayores de 1.5 para un proyecto completo) pueden indicar demasiado acoplamiento: al intentar repartir las responsabilidades, el abuso de la herencia puede llevar a diseños acoplados que no pueden evolucionar porque un cambio en la clase base rompería las descendientes.
+
+Existen alternativas a la herencia que ayudan a reducir el acoplamiento. Por ejemplo, aplicando el patrón estrategia se podrían implementar las partes variables de un algoritmo, en vez de tener jerarquías de clases demasiado profundas con sobrecarga de métodos (e.g. con el típico patrón de plantilla de método).
+]]>
+        </description>
+        <implementation-descriptions>
+
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA"><![CDATA[
+Para la implementación de Java los interfaces se tratarán como si fueran clases. Nótese que, teniendo esto en cuenta, aunque Java no tiene herencia múltiple, la métrica se va a comportar como si éste fuera el caso. Pongamos unos ejemplos para ilustrarlo:
+
+a) Una clase C1 que no extienda de ninguna otra ni implemente ningún interfaz: DIT = 1 (todas heredan de 'Object')
+
+b) Una clase C2 que extienda de la clase C1, pero no implemente ningún interfaz: DIT = 2
+
+d) Un interfaz I1 que no extienda a ninguno: DIT = 0
+
+e) Un interfaz I2 que extienda del interfaz I1: DIT = 1
+
+c) Una clase C3 que extienda de la clase C1, e implemente un interfaz con DIT igual a 3: DIT = 4 (el camino más largo, más uno)
+          ]]></implementation-description>
+
+       <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC"><![CDATA[
+Para la implementación de ObjectiveC los protocolos se tratarán como si fueran clases. Nótese que, teniendo esto en cuenta, aunque ObjectiveC no tiene herencia múltiple, la métrica se va a comportar como si éste fuera el caso. Pongamos unos ejemplos para ilustrarlo:
+
+a) Una clase C1 que no extienda de ninguna otra ni implemente ningún protocolo: DIT = 1 (todas heredan de 'NSObject')
+
+b) Una clase C2 que extienda de la clase C1, pero no implemente ningún protocolo: DIT = 2
+
+d) Un protocolo P1 que no extienda a ninguno: DIT = 0
+
+e) Un protocolo P2 que extienda del protocolo P1: DIT = 1
+          ]]></implementation-description>
+
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT"><![CDATA[
+Para la implementación de JavaScript se considerará que una clase C1 que no extienda de ninguna otra: DIT = 1 (todas heredan de 'Object').
+          ]]></implementation-description>
+
+        </implementation-descriptions>
+        <parameters />
+      </i18n>
+
+      <i18n ref="OPT.LANGUAGE.ENGLISH">
+        <name><![CDATA[Depth of inheritance tree]]></name>
+
+        <description>
+<![CDATA[
+The depth of inheritance tree (DIT) metric provides for each class a measure of the inheritance levels from the object hierarchy top.
+
+Classes at the end of deep inheritance trees may have large values for DIT. Inheritance is a strong coupling between classes: if you make a change in a base class, all classes below in the tree receive that change. This is a two-edge sword, as even trivial changes may break functionality for a large set of classes.
+
+Very low averaged values (close to 1) for a package or project indicate low usage of inheritance and may be a sign of procedural code, which definitely is bad.
+
+High averaged values (e.g. higher than 3 for a package, higher than 1.5 for the whole project) may indicate too much coupling: when trying to factor out responsabilities, abuse of inheritance lead to coupled designs, that cannot evolve as a change in a base class may break descendant classes.
+
+Typically, frameworks (even application frameworks) use inheritance more frequently than pure application code. But high DIT values in application code are typically a sign of a convoluted design.
+
+Alternatives to inheritance do exist, and may reduce coupling. For example, applying the strategy pattern may implement the variable parts of an algorithm instead of deep class hierarchies with method overriding (e.g. in the typical template method pattern).
+]]>
+        </description>
+        <implementation-descriptions>
+
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA"><![CDATA[
+In Java's implementation of this metric, interfaces will be treated the same as if they were classes. Note that, with this in mind, although Java does not have multiple inheritance, the metric will behave as if it were the case. Let's see some examples that illustrate this:
+
+a) Class C1 does not extend any other, nor implements any interface: DIT = 1 (all classes inherit from 'Object')
+
+b) Class C2 extends class C1, but it does not implement any interface: DIT = 2
+
+d) Interface I1 does not extend any other: DIT = 0
+
+e) Interface I2 extends interface I1: DIT = 1
+
+c) Class C3 extends class C1, and implements an interface with value 3 of DIT: DIT = 4 (the longest path, plus one)
+          ]]></implementation-description>
+
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC"><![CDATA[
+In ObjectiveC's implementation of this metric, protocols will be treated the same as if they were classes. Note that, with this in mind, although ObjectiveC does not have multiple inheritance, the metric will behave as if it were the case. Let's see some examples that illustrate this:
+
+a) Class C1 does not extend any other, nor implements any protocol: DIT = 1 (all classes inherit from 'NSObject')
+
+b) Class C2 extends class C1, but it does not implement any protocol: DIT = 2
+
+d) Protocol P1 does not extend any other: DIT = 0
+
+e) Protocol P2 extends protocol P1: DIT = 1
+          ]]></implementation-description>
+
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT"><![CDATA[
+In JavaScript a class not extending any other class: DIT = 1 (all classes inherit from 'Object').
+          ]]></implementation-description>
+
+        </implementation-descriptions>
+        <parameters />
+      </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="ecmascript" standard="ECMAScript">
+
+  <description url="https://developer.mozilla.org/en/docs/Web/JavaScript/Language_Resources">JavaScript language APIs</description>
+
+  <typeAnnotation name="ecmascript" class="com.optimyth.qaking.js.tainting.typesystem.EcmascriptAnnotation"/>
+
+  <module name="ecmascript" >
+    <class name="Object">
+      <field name="length" type="Number"><neutralization argpos="-1" kind="*"/></field>
+    </class>
+
+    <class name="Number">
+      <!-- double precision 64-bit IEEE-754, may represent integers exactly up to 2^53-1 -->
+      <function name="isInteger" alias="isSafeInteger,isFinite,isNaN">
+        <return type="Boolean"/>
+      </function>
+      <function name="parseFloat">
+        <return type="Number"/>
+        <neutralization argpos="-1"/>
+      </function>
+      <function name="parseInt">
+        <return type="Number"/>
+        <neutralization argpos="-1"/>
+      </function>
+    </class>
+
+    <class name="Boolean"/>
+
+    <class name="Null"/>
+
+    <class name="String" supertypes="Object">
+      <description>String primitive type</description>
+      <!--
+      <function name="toString"><return type="String"/></function>
+      <function name="valueOf"><return type="String"/></function>
+      <function name="charAt"><return type="String"/></function>
+      -->
+      <function name="charCodeAt"><return type="Number"/><neutralization argpos="-1"/></function>
+      <function name="indexOf"><return type="Number"/><neutralization argpos="-1"/></function>
+      <function name="concat">
+        <parameters><param type="..."/></parameters>
+        <return type="String"/>
+        <propagate from="-2,0" to="-1"/>
+      </function>
+      <function name="match" alias="search">
+        <tags>regexp</tags>
+        <neutralization argpos="-1"/>
+        <sink kind="regex_dos" argpos="0"/>
+      </function>
+      <function name="replace">
+        <return type="String"/>
+        <neutralization argpos="0"/>
+        <propagate from="-2,1" to="-1"/>
+      </function>
+      <function name="split">
+        <return type="Array"/>
+        <propagate from="-2" to="-1"/>
+      </function>
+    </class>
+
+    <class name="Array" supertypes="Object">
+      <description>Array primitive type</description>
+    </class>
+
+    <function name="RegExp">
+      <sink kind="regex_dos" argpos="0"/>
+    </function>
+
+    <class name="RegExp" supertypes="Object">
+      <description>RegExp primitive type</description>
+      <tags>regexp</tags>
+      <function name="compile">
+        <sink kind="regex_dos" argpos="0"/>
+      </function>
+      <function name="exec">
+        <return type="Array"/>
+        <!-- could be neutralization, but if the result array is validated... -->
+        <!--neutralization argpos="0"/-->
+      </function>
+      <function name="test">
+        <return type="Boolean"/>
+        <neutralization argpos="0"/>
+      </function>
+    </class>
+
+    <class name="Math" supertypes="Object">
+      <description>Math global object</description>
+      <function name="random">
+        <sink argpos="-1" kind="insecure_random" resource="other"/>
+      </function>
+    </class>
+
+    <class name="JSON" supertypes="Object">
+      <description>JSON global type</description>
+    </class>
+
+    <class name="Function" supertypes="Object">
+      <description>Function type</description>
+    </class>
+
+    <class name="Error" supertypes="Object">
+      <description>Exception type</description>
+      <field name="name" type="String"/>
+      <field name="message" type="String"/>
+      <field name="fileName" type="String">
+        <source kind="error_details_source" resource="filesystem"/>
+      </field>
+      <field name="lineNumber" alias="columnNumber,number" type="Number"/>
+      <field name="stack" type="String">
+        <source kind="error_details_source" resource="other"/>
+      </field>
+      <function name="Error">
+        <parameters>
+          <param type="String"/>
+          <param type="String"/>
+          <param type="String"/>
+        </parameters>
+      </function>
+      <function name="toSource">
+        <return type="String"/>
+        <source argpos="-1" kind="error_details_source" resource="other"/>
+      </function>
+    </class>
+
+    <class name="EvalError" supertypes="Error"></class>
+    <class name="InternalError" supertypes="Error">
+      <field name="message" type="String">
+        <source kind="error_details_source" resource="other"/><!-- too much info -->
+      </field>
+    </class>
+    <class name="RangeError" supertypes="Error"></class>
+    <class name="ReferenceError" supertypes="Error"></class>
+    <class name="SyntaxError" supertypes="Error">
+      <field name="message" type="String">
+        <source kind="error_details_source" resource="other"/><!-- too much info -->
+      </field>
+    </class>
+    <class name="TypeError" supertypes="Error"></class>
+    <class name="URIError" supertypes="Error"></class>
+
+    <class name="global" supertypes="Object">
+      <description>Global ECMAScript object</description>
+      <field name="Math" type="Math"/>
+      <field name="JSON" type="JSON"/>
+      <field name="Number" type="Number"/>
+      <field name="Date" type="Date"/>
+      <field name="localStorage" type="Storage"/>
+      <field name="sessionStorage" type="Storage"/>
+      <!--field name="globalStorage" type="Storage[]"/-->
+
+      <function name="eval">
+        <sink argpos="0" kind="code_injection"/>
+      </function>
+      <function name="execScript" standard="ie">
+        <sink argpos="0" kind="code_injection"/>
+      </function>
+      <function name="parseInt">
+        <neutralization argpos="0"/>
+      </function>
+      <function name="parseFloat">
+        <neutralization argpos="0"/>
+      </function>
+      <function name="decodeURI"></function>
+      <function name="decodeURIComponent"></function>
+      <function name="encodeURI"></function>
+      <function name="encodeURIComponent"></function>
+      <function name="setInterval" alias="setTimeout">
+        <sink argpos="0" kind="code_injection"><checker id="ignoreCallbacks"/></sink>
+      </function>
+      <function name="Function">
+        <return type="Function"/>
+        <sink kind="code_injection">
+          <arg pos="last"/>
+        </sink>
+      </function>
+    </class>
+
+    <globalObject name="this" type="global"/>
+    <globalObject name="Math" type="Math"/>
+    <globalObject name="Number" type="Number"/>
+    <globalObject name="Date" type="Date"/>
+    <globalObject name="JSON" type="JSON"/>
+
+    <class name="Promise">
+      <function name="then">
+
+      </function>
+      <function name="catch">
+
+      </function>
+      <function name="finally">
+
+      </function>
+    </class>
+  </module>
+
+</library>

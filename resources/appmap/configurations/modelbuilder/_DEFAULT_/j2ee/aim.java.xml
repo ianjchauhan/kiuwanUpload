@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <!--
+  Configuration properties:
+
+  aim.j2ee.rule.javaSource.*:
+    resolveCalls, resolveFieldReferences, resolveInheritance, resolveInstantiations, resolveTypeReferences
+  aim.j2ee.rule.java.resolver: One of "existing" or "matching"
+  aim.j2ee.rule.java.matchingPkgClassDepsResolver.packagePatterns: comma-separated partial regexps for patterns to accept
+  aim.j2ee.rule.java.callback.addCodeToRelations
+
+  Discovery properties:
+    aim.j2ee.rule.javaSource.active
+  -->
+
+  <description>AIM rules for Java language (source / bytecode).</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-java.xml"/>
+  <import resource="classpath:resources/qaking-tech-bytecode.xml"/>
+
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="j2ee/aim.java.properties"/>
+  </bean-->
+
+  <bean id="aim.j2ee.parser.javaSource" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>Java parser (source .java)</description>
+    <property name="filter" ref="aim.j2ee.filter.javaSource"/>
+    <property name="languageSupport" ref="ls_java"/>
+  </bean>
+
+  <bean id="aim.j2ee.parser.javaBytecode" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>Java parser (bytecode .class)</description>
+    <property name="filter" ref="aim.j2ee.filter.javaBytecode"/>
+    <property name="languageSupport" ref="ls_bytecode"/>
+  </bean>
+
+  <!-- rules -->
+
+  <bean id="aim.j2ee.rule.abstractRule" abstract="true" class="com.optimyth.apm.builder.rules.oo.AbstractClassRule">
+    <property name="callback" ref="aim.j2ee.rule.java.callback"/>
+    <property name="resolveCalls" value="${aim.j2ee.rule.java.resolveCalls}"/>
+    <property name="resolveFieldReferences" value="${aim.j2ee.rule.java.resolveFieldReferences}"/>
+    <property name="resolveInheritance" value="${aim.j2ee.rule.java.resolveInheritance}"/>
+    <property name="resolveInstantiations" value="${aim.j2ee.rule.java.resolveInstantiations}"/>
+    <property name="resolveTypeReferences" value="${aim.j2ee.rule.java.resolveTypeReferences}"/>
+    <property name="resolver" ref="aim.j2ee.java.resolver"/>
+  </bean>
+
+  <bean id="aim.j2ee.rule.javaSource" parent="aim.j2ee.rule.abstractRule" class="com.optimyth.apm.builder.rules.java.JavaClassMethodRule">
+    <description>Rule for analyzing source .java files</description>
+    <property name="active" value="${aim.j2ee.rule.javaSource.active}"/>
+    <property name="filter" ref="aim.j2ee.filter.javaSource"/>
+    <property name="resolveMethodsFilter" ref="aim.j2ee.java.resolveMethodsFilter"/>
+    <property name="methodPredicate" ref="aim.j2ee.java.methodsPredicate.java"/>
+    <!--property name="sourcePatterns" value=""/-->
+  </bean>
+
+  <bean id="aim.j2ee.rule.javaBytecode" parent="aim.j2ee.rule.abstractRule" class="com.optimyth.apm.builder.rules.java.JavaClassMethodBytecodeRule">
+    <description>Rule for analyzing bytecode .class files</description>
+    <property name="active" value="${aim.j2ee.rule.javaBytecode.active}"/>
+    <property name="filter" ref="aim.j2ee.filter.javaBytecode"/>
+    <property name="resolveMethodsFilter" ref="aim.j2ee.java.resolveMethodsFilter"/>
+    <property name="methodPredicate" ref="aim.j2ee.java.methodsPredicate.bytecode"/>
+  </bean>
+
+  <!-- callbacks -->
+
+  <bean id="aim.j2ee.rule.java.callback" class="com.optimyth.apm.builder.rules.oo.BasicClassCallback">
+    <property name="language" value="java"/>
+    <property name="softwareResolver" ref="aim.global.applicationResolver"/>
+    <property name="application" value="${aim.j2ee.rule.java.software}"/><!-- fallback value -->
+    <property name="addCodeToRelations" value="${aim.j2ee.rule.java.addCodeToRelations}"/>
+    <property name="resolveArtifacts" value="${aim.j2ee.rule.java.resolveArtifacts}"/>
+  </bean>
+
+  <!-- resolvers -->
+
+  <bean id="aim.j2ee.java.resolver.abstract" abstract="true">
+    <property name="callback" ref="aim.j2ee.rule.java.callback"/>
+    <property name="classnameFilter"><util:constant static-field="com.optimyth.apm.builder.rules.common.Predicate.JDK_FILTER"/></property>
+  </bean>
+
+  <bean id="aim.j2ee.java.resolver.matching" parent="aim.j2ee.java.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.MatchingPkgClassDepsResolver">
+    <property name="predicate"><bean class="com.optimyth.apm.builder.rules.common.PatternsPredicate">
+      <property name="partialMatch" value="true"/>
+      <property name="regexpPatterns" value="${aim.j2ee.java.matching.packagePatterns}"/>
+    </bean></property>
+    <property name="typePackageResolution" value="${aim.j2ee.type.package.resolver}"/>
+    <property name="customPackage" value="${aim.j2ee.custom.package}"/>
+  </bean>
+
+  <bean id="aim.j2ee.java.resolver.existing" parent="aim.j2ee.java.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.ExistingClassDepsResolver">
+    <property name="cache"><bean class="com.optimyth.apm.builder.rules.oo.ExistingComponentCache">
+      <constructor-arg value="aim.j2ee.java.resolver.existing.cache"/>
+      <constructor-arg value="512"/>
+    </bean></property>
+    <property name="cacheNon"><bean class="com.optimyth.apm.builder.rules.oo.NonExistingComponentCache">
+      <constructor-arg value="1024"/>
+    </bean></property>
+    <property name="typePackageResolution" value="${aim.j2ee.type.package.resolver}"/>
+    <property name="customPackage" value="${aim.j2ee.custom.package}"/>
+  </bean>
+  
+  <bean id="aim.j2ee.java.resolver.composite" parent="aim.j2ee.java.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.CompositeClassDepsResolver">
+    <property name="resolvers">
+      <list>
+        <ref bean="aim.j2ee.java.resolver.matching" />
+        <ref bean="aim.j2ee.java.resolver.existing" />
+      </list>
+    </property>
+  </bean>
+
+  <bean id="aim.j2ee.java.resolver" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="key" value="${aim.j2ee.java.resolver}"/>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.oo.ClassDepsResolver"/>
+    <property name="defaultValue" ref="aim.j2ee.java.resolver.existing"/>
+    <property name="map"><map>
+      <entry key="matching" value-ref="aim.j2ee.java.resolver.composite"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.j2ee.java.resolveMethodsFilter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>This filter decides which classes will have dependencies resolved at the method level. Default: no class matched</description>
+    <property name="key" value="${aim.j2ee.java.resolveMethodsFilter}"/>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.Predicate"/>
+    <property name="defaultValue"><util:constant static-field="com.optimyth.apm.builder.rules.common.Predicate.MATCH_NONE"/></property>
+    <property name="map"><map>
+      <entry key="patterns"><bean class="com.optimyth.apm.builder.rules.common.PatternsPredicate">
+        <description>Use regexp patterns on fully qualified class name</description>
+        <property name="regexpPatterns" value="${aim.j2ee.java.resolveMethodsFilter.patterns}"/>
+      </bean></entry>
+    </map></property>
+  </bean>
+
+  <bean id="aim.j2ee.java.methodsPredicate.java" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>This filter decides which method declarations will be modeled for classes matching aim.j2ee.java.resolveMethodsFilter. Default: no method declaration will be modeled by default</description>
+    <property name="key" value="${aim.j2ee.java.methodsPredicate}"/>
+    <property name="objectType" value="com.als.core.ast.NodePredicate"/>
+    <property name="defaultValue"><null/></property>
+    <property name="map"><map>
+      <entry key="nonPrivateMethods"><bean class="com.optimyth.apm.builder.rules.java.predicates.NonPrivateMethodsPredicate"/></entry>
+      <entry key="excludeGetterSetter"><bean class="com.optimyth.apm.builder.rules.java.predicates.ExcludeGetterSetterMethodsPredicate"/></entry>
+      <entry key="patterns"><bean class="com.optimyth.apm.builder.rules.java.predicates.RegexpMethodsPredicate">
+        <property name="predicate"><bean class="com.optimyth.apm.builder.rules.common.PatternsPredicate">
+          <property name="regexpPatterns" value="${aim.j2ee.java.methodsPredicate.patterns}"/>
+          <property name="partialMatch" value="true"/>
+        </bean></property>
+      </bean></entry>
+    </map></property>
+  </bean>
+
+  <bean id="aim.j2ee.java.methodsPredicate.bytecode" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="key" value="${aim.j2ee.java.methodsPredicate}"/>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.Predicate"/>
+    <property name="defaultValue"><null/></property>
+    <property name="map"><map>
+      <entry key="nonPrivateMethods"><bean class="com.optimyth.apm.builder.rules.java.predicates.NonPrivateMethodsBytecodePredicate"/></entry>
+      <entry key="excludeGetterSetter"><bean class="com.optimyth.apm.builder.rules.java.predicates.ExcludeGetterSetterMethodsBytecodePredicate"/></entry>
+      <entry key="patterns"><bean class="com.optimyth.apm.builder.rules.java.predicates.RegexpMethodsBytecodePredicate">
+        <property name="predicate"><bean class="com.optimyth.apm.builder.rules.common.PatternsPredicate">
+          <property name="regexpPatterns" value="${aim.j2ee.java.methodsPredicate.patterns}"/>
+          <property name="partialMatch" value="true"/>
+        </bean></property>
+      </bean></entry>
+    </map></property>
+  </bean>
+
+  <!-- filters -->
+
+  <bean id="aim.j2ee.filter.javaSource" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.j2ee.filter.javaSource}"/>
+  </bean>
+
+  <bean id="aim.j2ee.filter.javaBytecode" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.j2ee.filter.javaBytecode}"/>
+  </bean>
+
+</beans>

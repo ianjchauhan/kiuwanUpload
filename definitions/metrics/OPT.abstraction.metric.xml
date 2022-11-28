@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric"
+    version="1.1">
+
+  <metric id="OPT.abstraction" unit="" aggregation="avg" aggregationScope="namespace">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.LOWER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.NAMESPACE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="14.00" meaning="good" />
+        <threshold from="14.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.ABSTRACTION" />
+        <java-class>com.als.cpp.metrics.AbstractionCppMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.ABSTRACTION" />
+        <java-class>com.optimyth.csharp.metrics.AbstractionCsharpMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.ABSTRACTION" />
+        <java-class>com.als.java.metrics.AbstractionJavaMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <internal-name id="OPT.OBJECTIVEC.ABSTRACTION" />
+        <java-class>com.optimyth.qaking.objectivec.metrics.AbstractionMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <internal-name id="OPT.PHP.ABSTRACTION" />
+        <java-class>com.optimyth.qaking.php.metrics.AbstractionMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.ABSTRACTION" />
+        <java-class>com.optimyth.vbnet.metrics.AbstractionVBnetMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+    <code-examples>
+
+    	<language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <code-example name="metricCodeExampleCpp" result-value="0.5">
+<![CDATA[
+
+namespace nsp {
+
+	class ActivityData : public SimpleData {
+
+	  public:
+      InfoData cpp_condition;
+      InfoData java_condition;
+
+		QString ActivityData::get_precond(DrawingLanguage ln) const {
+		  switch (ln) {
+		  case CppView:
+		    return cpp_condition.first;
+		  case JavaView:
+		  	ln.ds();
+		    return java_condition.first;
+		  default:
+		    return ln.ds();
+		  }
+		}
+	}
+
+
+	class Instrument {
+	public:
+	  // Pure virtual functions:
+	  virtual void play(note) const = 0;
+	  virtual char* what() const = 0;
+	  // Assume this will modify the object:
+	  virtual void adjust(int) = 0;
+	}
+}
+
+
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="metricCodeExampleCsharp" result-value="0.5">
+<![CDATA[
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Collections;
+using System.Web.UI.WebControls;
+
+namespace Deepcode.Flux.Core.Services.Assistant
+{
+	public class ControlUtil
+	{
+		public static int[] GetListSelectedInts(ListItemCollection list)
+		{
+			ArrayList al = new ArrayList();
+			foreach (ListItem item in list)
+			{
+				if (item.Selected)
+				{
+					try
+					{
+						int val = Int32.Parse(item.Value);
+						if (!al.Contains(val)) al.Add(val);
+					}
+					catch { }
+				}
+			}
+			return al.ToArray(typeof(int)) as int[];
+		}
+	}
+
+
+	public abstract class ControlUtil2
+	{
+
+		public static void SetSelectedCSV( CObject value)
+		{
+
+			ArrayList csv = value.getArrayList();
+			foreach (ListItem i in list)
+				if( csv.Contains( i.Value )) i.Selected = true;
+		}
+	}
+}
+
+
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="metricCodeExampleJava" result-value="0.5">
+<![CDATA[
+//FILE: AbstractionJavaMetricRule.java
+package paq.opt.abs;
+
+public class AbstractionJavaMetricRule{
+
+  String field = "hello";
+  CommandData commandData;
+  CommandData2 commandData2;
+  String tipoAbucar;
+
+  public AbstractionJavaMetricRule (String dataSource)   {
+    String var = "";
+    doSomething(dataSource);
+  }
+
+  public String method(){
+	for (int i=0, n=commandData.getNumFiltros(); i<n; i++){
+	  tipoAbuscar = i.toString() + tipoAbuscar;
+	}
+	return "b_" + tipoAbuscar;
+  }
+
+}
+
+
+//FILE: AbstractionJavaMetricRule3.java
+package paq.opt.abs;
+
+public abstract class AbstractionJavaMetricRule3{
+
+  public abstract String method();
+
+}
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <code-example name="metricCodeExampleObjectiveC" result-value="0.5">
+<![CDATA[
+[Protocol1.h]
+@protocol Protocol1
+
+- (NSArray *)getData;
+
+@end
+
+[BaseClass.m]
+#import "BaseClass.h"
+
+@implementation BaseClass
+
++ (NSString *)trace:(MYClass *)subject {
+  return [NSString stringWithFormat:@"Value: %s", subject.description];
+}
+
+@end
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <code-example name="metricCodeExamplePhp" result-value="0.5">
+<![CDATA[
+<?php
+
+
+interface iTemplate
+{
+    public function setVariable($name, $var);
+    public function getHtml($template);
+}
+
+
+class Template implements iTemplate
+{
+    private $vars = array();
+
+    public function setVariable($name, $var)
+    {
+        $this->vars[$name] = $var;
+    }
+
+    public function getHtml($template)
+    {
+        foreach($this->vars as $name => $value) {
+            $template = str_replace('{' . $name . '}', $value, $template);
+        }
+
+        return $template;
+    }
+}
+?>
+
+
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="metricCodeExampleVbnet" result-value="0.66"><![CDATA[
+
+
+Namespace Pac.P.Paquete1
+
+	Class MyClassOne
+
+		Private Const PREDICATE_NODE As New NodePredicate()
+
+		 Public Sub Method1()
+			 Dim mc2 As New MyClassTwo();
+			 Dim mc3 As New OtherType();
+			 mc2.doSomething();
+			 mc3.function();
+			 doSomething();
+		 End Sub
+
+		 Public Function method2() As Integer
+				doSomething()
+		 End Function
+
+	End Class
+
+	Public MustInherit Class WashingMachine
+	   Sub New()
+	      ' Code to instantiate the class goes here.
+	   End sub
+	   Public MustOverride Sub Wash
+	   Public MustOverride Sub Rinse (loadSize as Integer)
+	   Public MustOverride Function Spin (speed as Integer) as Long
+	End Class
+
+	Public Interface IAccount
+	   Sub DeductFees(Fees as IFeeSchedule)
+	   Sub PostInterest()
+	   Property Balance() As Decimal
+	End Interface
+
+
+End Namespace
+        ]]></code-example>
+      </language-parser>
+
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+      <i18n ref="OPT.LANGUAGE.SPANISH">
+        <name><![CDATA[Nivel de abstracción]]></name>
+
+        <description>
+<![CDATA[
+Es simplemente el ratio de clases abstractas frente al total de clases del subsistema. Indica, eso, el nivel de abstracción.
+]]>
+        </description>
+        <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Mide el ratio de clases abstractas frente al total de clases del subsistema.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Mide el ratio de clases abstractas e interfaces frente al total de clases del subsistema.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Mide el ratio de clases abstractas e interfaces frente al total de clases del subsistema.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+<![CDATA[
+Mide el ratio de protocolos frente al total de clases del subsistema.
+]]>
+        </implementation-description>
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+Mide el ratio de clases abstractas e interfaces frente al total de clases del subsistema.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Mide el ratio de clases abstractas e interfaces frente al total de clases del subsistema.
+]]>
+        </implementation-description>
+
+        </implementation-descriptions>
+        <parameters />
+      </i18n>
+
+      <i18n ref="OPT.LANGUAGE.ENGLISH">
+        <name><![CDATA[Abstraction level]]></name>
+
+        <description>
+<![CDATA[
+It is the ratio of abstract classes to the total class subsystem. Indicates the level of abstraction.
+]]>
+        </description>
+        <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+It measures the ratio of abstract classes to the total class subsystem.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+It measures the ratio of abstract classes and interfaces to the total class subsystem.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+It measures the ratio of abstract classes and interfaces to the total class subsystem.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+<![CDATA[
+It measures the ratio protocols to the total class subsystem.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+It measures the ratio of abstract classes and interfaces to the total class subsystem.
+]]>
+        </implementation-description>
+
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+It measures the ratio of abstract classes and interfaces to the total class subsystem.
+]]>
+        </implementation-description>
+
+        </implementation-descriptions>
+        <parameters />
+      </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

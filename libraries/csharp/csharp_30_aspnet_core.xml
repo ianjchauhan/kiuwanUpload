@@ -1,0 +1,633 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="Microsoft.AspNetCore" standard="aspnet.core" technology="csharp">
+  <description url="https://docs.microsoft.com/en-us/dotnet/api/?view=aspnetcore-3.1">ASP.NET Core framework</description>
+
+  <!-- Thanks, godess! AspNetCore at last unifies MVC and WebAPI in a single class hierarchy -->
+  <class name="Microsoft.AspNetCore.Mvc.ControllerBase" kind="abstract_class" standard="aspnet.core.mvc">
+    <tags>AspNetCore.mvc.controller</tags>
+    <field name="ControllerContext" type="Microsoft.AspNetCore.Mvc.ControllerContext"/>
+    <field name="HttpContext" type="Microsoft.AspNetCore.Http.HttpContext"/>
+    <field name="MetadataProvider" type="Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider"/>
+    <field name="ModelBinderFactory" type="Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderFactory"/>
+    <field name="ModelState" type="Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary"/>
+    <field name="ObjectValidator" type="Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IObjectModelValidator"/>
+    <field name="Request" type="Microsoft.AspNetCore.Http.HttpRequest"/>
+    <field name="Response" type="Microsoft.AspNetCore.Http.HttpResponse"/>
+    <field name="RouteData" type="Microsoft.AspNetCore.Routing.RouteData"/>
+    <field name="Url" type="Microsoft.AspNetCore.Mvc.IUrlHelper"/>
+    <field name="User" type="System.Security.Claims.ClaimsPrincipal"/>
+
+    <method name="Accepted" signature="Accepted(string,object)" match="name">
+      <tags>httpStatus:202</tags>
+      <return type="Microsoft.AspNetCore.Mvc.AcceptedResult"/>
+    </method>
+    <method name="AcceptedAtAction" signature="AcceptedAtAction(string,string,object,object)" match="name">
+      <tags>httpStatus:202</tags>
+      <return type="Microsoft.AspNetCore.Mvc.AcceptedAtActionResult"/>
+    </method>
+    <method name="AcceptedAtRoute" signature="AcceptedAtRoute(string,object,object)" match="name">
+      <tags>httpStatus:202</tags>
+      <return type="Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult"/>
+    </method>
+    <method name="BadRequest" signature="BadRequest(object)" match="name">
+      <tags>httpStatus:400</tags>
+      <return type="Microsoft.AspNetCore.Mvc.BadRequestResult"/>
+    </method>
+    <method name="Challenge" signature="Challenge(Microsoft.AspNetCore.Authentication.AuthenticationProperties,string[])" match="name">
+      <tags>httpStatus:401,httpStatus:403</tags>
+      <return type="Microsoft.AspNetCore.Mvc.ChallengeResult"/>
+    </method>
+    <method name="Content" signature="Content(string, string, System.Text.Encoding)" match="name">
+      <tags>httpStatus:200</tags>
+      <return type="Microsoft.AspNetCore.Mvc.ContentResult"/>
+    </method>
+    <method name="Created" signature="Created(string,object)">
+      <tags>httpStatus:201</tags>
+      <return type="Microsoft.AspNetCore.Mvc.CreatedResult"/>
+    </method>
+    <method name="CreatedAtAction" signature="CreatedAtAction(string,string,object,object)" match="name">
+      <tags>httpStatus:201</tags>
+      <return type="Microsoft.AspNetCore.Mvc.CreatedAtActionResult"/>
+    </method>
+    <method name="CreatedAtRoute" signature="CreatedAtRoute(string,object,object)" match="name">
+      <tags>httpStatus:201</tags>
+      <return type="Microsoft.AspNetCore.Mvc.CreatedAtRouteResult"/>
+    </method>
+    <method name="File" signature="File(string,string,string,System.DateTimeOffset)" match="name" alias="PhysicalFile">
+      <tags>httpStatus:200,httpStatus:206,httpStatus:416</tags>
+      <return type="Microsoft.AspNetCore.Mvc.VirtualFileResult"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="Forbid" signature="Forbid(Microsoft.AspNetCore.Authentication.AuthenticationProperties,string[])" match="name">
+      <tags>httpStatus:403</tags>
+      <return type="Microsoft.AspNetCore.Mvc.ForbidResult"/>
+    </method>
+    <method name="LocalRedirect" signature="LocalRedirect(string)">
+      <tags>httpStatus:302</tags>
+      <return type="Microsoft.AspNetCore.Mvc.LocalRedirectResult"/>
+      <sink argpos="0" kind="local_redirect" resource="web"/>
+    </method>
+    <method name="LocalRedirectPermanent" signature="LocalRedirectPermanent(string)">
+      <tags>httpStatus:301</tags>
+      <return type="Microsoft.AspNetCore.Mvc.LocalRedirectResult"/>
+      <sink argpos="0" kind="local_redirect" resource="web"/>
+    </method>
+    <method name="LocalRedirectPreservePermanent" signature="LocalRedirectPreservePermanent(string)">
+      <tags>httpStatus:308</tags>
+      <return type="Microsoft.AspNetCore.Mvc.LocalRedirectResult"/>
+      <sink argpos="0" kind="local_redirect" resource="web"/>
+    </method>
+    <method name="NoContent" signature="NoContent()">
+      <tags>httpStatus:204</tags>
+      <return type="Microsoft.AspNetCore.Mvc.NoContentResult"/>
+    </method>
+    <method name="NotFound" signature="NotFound(object)" match="name">
+      <tags>httpStatus:404</tags>
+      <return type="Microsoft.AspNetCore.Mvc.NotFoundObjectResult"/>
+    </method>
+    <method name="Ok" signature="Ok()">
+      <tags>httpStatus:200</tags>
+      <return type="Microsoft.AspNetCore.Mvc.OkResult"/>
+    </method>
+    <method name="Ok_2" signature="Ok(object)">
+      <tags>httpStatus:200</tags>
+      <return type="Microsoft.AspNetCore.Mvc.OkObjectResult"/>
+    </method>
+    <method name="Redirect" signature="Redirect(string)">
+      <tags>httpStatus:302</tags>
+      <return type="Microsoft.AspNetCore.Mvc.RedirectResult"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="RedirectPermanent" signature="RedirectPermanent(string)">
+      <tags>httpStatus:301</tags>
+      <return type="Microsoft.AspNetCore.Mvc.RedirectResult"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="RedirectPreservePermanent" signature="RedirectPreservePermanent(string)">
+      <tags>httpStatus:308</tags>
+      <return type="Microsoft.AspNetCore.Mvc.RedirectResult"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="RedirectToAction" signature="RedirectToAction(string,string,object,string)" match="name"
+            alias="RedirectToActionPermanent,RedirectToActionPreserve,RedirectToActionPreservePermanent">
+      <tags>httpStatus:302</tags>
+      <return type="Microsoft.AspNetCore.Mvc.RedirectToActionResult"/>
+      <sink argpos="0,1,2,3" kind="local_redirect" resource="web"/>
+    </method>
+    <method name="RedirectToPage" signature="RedirectToPage(string,string,object,string)" match="name"
+            alias="RedirectToPagePermanent,RedirectToPagePreserve,RedirectToPagePreservePermanent">
+      <tags>httpStatus:302</tags>
+      <return type="Microsoft.AspNetCore.Mvc.RedirectToPageResult"/>
+      <sink argpos="0,1,2,3" kind="local_redirect" resource="web"/>
+    </method>
+    <method name="RedirectToRoute" signature="RedirectToRoute(string,string,object,string)" match="name"
+            alias="RedirectToRoutePermanent,RedirectToRoutePreserve,RedirectToRoutePreservePermanent">
+      <tags>httpStatus:302</tags>
+      <return type="Microsoft.AspNetCore.Mvc.RedirectToRouteResult"/>
+      <sink argpos="0,1,2,3" kind="local_redirect" resource="web"/>
+    </method>
+    <method name="SignIn" signature="SignIn(System.Security.Claims.ClaimsPrincipal, Microsoft.AspNetCore.Authentication.AuthenticationProperties, string)" match="name">
+      <tags>authScheme:last</tags>
+      <return type="Microsoft.AspNetCore.Mvc.SignInResult"/>
+    </method>
+    <method name="SignOut" signature="SignIn(Microsoft.AspNetCore.Authentication.AuthenticationProperties, string[])" match="name">
+      <tags>authScheme:last</tags>
+      <return type="Microsoft.AspNetCore.Mvc.SignOutResult"/>
+    </method>
+    <method name="StatusCode" signature="StatusCode(int)">
+      <return type="Microsoft.AspNetCore.Mvc.StatusCodeResult"/>
+    </method>
+    <method name="StatusCode_2" signature="StatusCode(int,object)">
+      <return type="Microsoft.AspNetCore.Mvc.ObjectResult"/>
+    </method>
+    <method name="TryUpdateModelAsync" signature="TryUpdateModelAsync(object,System.Type,string)" match="name">
+      <return type="System.Threading.Tasks.Task" elementType="bool"/>
+    </method>
+    <method name="TryValidateModel" signature="TryValidateModel(object)" match="name">
+      <return type="bool"/>
+    </method>
+    <method name="Unauthorized" signature="Unauthorized">
+      <tags>httpStatus:401</tags>
+      <return type="Microsoft.AspNetCore.Mvc.UnauthorizedResult"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Mvc.Controller" kind="abstract_class"
+         supertypes="Microsoft.AspNetCore.Mvc.ControllerBase,Microsoft.AspNetCore.Mvc.Filters.IActionFilter, Microsoft.AspNetCore.Mvc.Filters.IAsyncActionFilter" standard="dotnet.core.mvc">
+    <tags>AspNetCore.mvc.controller,disposable</tags>
+    <field name="TempData" type="Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary"/>
+    <field name="ViewBag" type="object"/>
+    <field name="ViewData" type="Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary"/>
+
+    <method name="Json" signature="Json(object,Newtonsoft.Json.JsonSerializerSettings)" match="name">
+      <return type="Microsoft.AspNetCore.Mvc.JsonResult"/>
+      <sink argpos="0" kind="code_injection_deserialization"><tags>reason:WEAK_TYPE_CONTROL</tags><checker id="code_injection_deserialization"/></sink>
+    </method>
+    <method name="PartialView" signature="PartialView(string,object)" match="name">
+      <return type="Microsoft.AspNetCore.Mvc.PartialViewResult"/>
+    </method>
+    <method name="View" signature="View(string,object)" match="name">
+      <return type="Microsoft.AspNetCore.Mvc.ViewResult"/>
+    </method>
+    <method name="ViewComponent" signature="ViewComponent(string,object)" match="name">
+      <return type="Microsoft.AspNetCore.Mvc.ViewComponentResult"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Mvc.ControllerContext"></class>
+  <class name="Microsoft.AspNetCore.Mvc.ActionContext">
+    <field name="HttpContext" type="Microsoft.AspNetCore.Http.HttpContext"/>
+    <field name="ActionDescriptor" type="Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor"/>
+    <field name="ModelState" type="Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary"/>
+    <field name="RouteData" type="Microsoft.AspNetCore.Routing.RouteData"/>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Http.HttpContext" standard="aspnet.core.http" kind="abstract_class">
+    <field name="Authentication" type="Microsoft.AspNetCore.Http.Authentication.AuthenticationManager"/>
+    <field name="Connection" type="Microsoft.AspNetCore.Http.ConnectionInfo"/>
+    <field name="Items" type="array">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="Request" type="Microsoft.AspNetCore.Http.HttpRequest" />
+    <field name="RequestServices" type="System.IServiceProvider"/>
+    <field name="Response" type="Microsoft.AspNetCore.Http.HttpResponse"/>
+    <field name="Session" type="Microsoft.AspNetCore.Session"/>
+    <field name="User" type="System.Security.Claims.ClaimsPrincipal"/>
+    <field name="WebSockets" type="Microsoft.AspNetCore.Http.WebSocketManager"/>
+    <field name="Current" type="Microsoft.AspNetCore.Http.HttpContext" instance="false"/>
+
+    <method name="Items" signature="Items(string)">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+
+  </class>
+  
+  <class name="Microsoft.AspNetCore.Http.DefaultHttpContext" supertypes="Microsoft.AspNetCore.Http.HttpContext"/>
+
+  <class name="Microsoft.AspNetCore.Http.HttpRequest" kind="abstract_class" standard="aspnet.core.http">
+    <field name="Body" type="System.IO.Stream">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="ContentType" type="string">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="Cookies" type="Microsoft.AspNetCore.Http.IRequestCookieCollection">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="Form" type="Microsoft.AspNetCore.Http.IFormCollection">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="Headers" type="Microsoft.AspNetCore.Http.IHeaderDictionary">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="Host" type="Microsoft.AspNetCore.Http.HostString">
+      <source argpos="-1" kind="system_information" resource="web"/>
+    </field>
+    <field name="HttpContext" type="Microsoft.AspNetCore.Http.HttpContext"/>
+    <field name="IsHttps" type="bool"/>
+    <field name="Method" type="string"/>
+    <field name="Path" type="Microsoft.AspNetCore.Http.PathString" alias="PathBase"/>
+    <field name="Protocol" type="string" alias="Scheme"/>
+    <field name="Query" type="Microsoft.AspNetCore.Http.IQueryCollection"/>
+    <field name="QueryString" type="array">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+
+    <method name="Cookies" signature="Cookies(string)">
+      <return type="string"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="Form" signature="Form(string)">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="Headers" signature="Headers(string)">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="Query" signature="Query(string)">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Http.Internal.DefaultHttpRequest"
+         supertypes="Microsoft.AspNetCore.Http.HttpRequest"/>
+
+  <class name="Microsoft.AspNetCore.Http.HttpResponse" kind="abstract_class" standard="aspnet.core.http">
+    <field name="Body" type="System.IO.Stream">
+      <sink argpos="-1" kind="xss" resource="web"/>
+    </field>
+    <field name="ContentType" type="string">
+      <sink argpos="-1" kind="header_manipulation" resource="web"/>
+    </field>
+    <field name="Cookies" type="Microsoft.AspNetCore.Http.IResponseCookies"/>
+    <field name="Headers" type="Microsoft.AspNetCore.Http.IHeaderDictionary"/>
+    <field name="HttpContext" type="Microsoft.AspNetCore.Http.HttpContext"/>
+    <field name="StatusCode" type="int"/>
+
+    <method name="Redirect" signature="Redirect(string,bool)" match="name">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+      <sink argpos="0" kind="xshm" resource="web"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Http.Internal.DefaultHttpResponse"
+         supertypes="Microsoft.AspNetCore.Http.HttpResponse"/>
+  
+  <class name="Microsoft.AspNetCore.Http.IQueryCollection" kind="interface" standard="aspnet.core.http">
+    <field name="Item" type="array" elementType="Microsoft.Extensions.Primitives.StringValues">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <method name="Item" signature="Item(string)">
+      <return type="Microsoft.Extensions.Primitives.StringValues"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Http.IRequestCookieCollection" kind="interface" standard="aspnet.core.http">
+    <field name="Item" type="string">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <method name="TryGetValue" signature="TryGetValue(string, out string)">
+      <tags>retval-needs-check</tags>
+      <source argpos="1" kind="user_input" resource="web"/>
+      <propagate from="-2" to="1"/>
+    </method>
+    <method name="Item" signature="Item(string)">
+      <return type="string"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Http.IFormCollection" kind="interface" standard="aspnet.core.http">
+    <field name="Item" type="string">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="Files" type="Microsoft.AspNetCore.Http.IFormFileCollection"/>
+    <method name="TryGetValue" signature="TryGetValue(string, out string)">
+      <tags>retval-needs-check</tags>
+      <source argpos="1" kind="user_input" resource="web"/>
+      <propagate from="-2" to="1"/>
+    </method>
+    <method name="Item" signature="Item(string)">
+      <return type="System.String"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Http.IFormFileCollection" kind="interface" supertypes="System.Collections.Generic.IReadOnlyList" standard="aspnet.core.http">
+    <field name="Item" type="Microsoft.AspNetCore.Http.IFormFile">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <method name="Item" signature="Item(string)">
+      <return type="Microsoft.AspNetCore.Http.IFormFile"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="GetFile" signature="GetFile(string)">
+      <return type="Microsoft.AspNetCore.Http.IFormFile"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="GetFiles" signature="GetFiles(string)">
+      <return type="System.Collections.Generic.IReadOnlyList"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Http.IHeaderDictionary" kind="interface" standard="aspnet.core.http">
+    <field name="Item" type="Microsoft.Extensions.Primitives.StringValues">
+      <source argpos="-1" kind="user_input" resource="web"/>
+      <sink argpos="-2" kind="header_manipulation" resource="web"/>
+    </field>
+    <method name="Item" signature="Item(string)">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Http.CookieOptions">
+    <field name="Domain" type="string"><tags>cookie.domain</tags></field>
+    <field name="Expires" type="System.DateTimeOffset"><tags>cookie.persistent</tags></field>
+    <field name="HttpOnly" type="bool"><tags>cookie.httpOnly</tags></field>
+    <field name="Path" type="string"><tags>cookie.path</tags></field>
+    <field name="SameSite" type="Microsoft.AspNetCore.Http.SameSiteMode"><tags>cookie.sameSite</tags></field>
+    <field name="Secure" type="bool"><tags>cookie.secure</tags></field>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Http.IResponseCookies" kind="interface" standard="aspnet.core.http">
+    <method name="Append" signature="Append(string,string)">
+      <tags>cookie.create,cookie.name:0,cookie.value:1</tags>
+      <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="Append_2" signature="Append(string,string,Microsoft.AspNetCore.Http.CookieOptions)">
+      <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.options:2</tags>
+      <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="Delete" signature="Delete(string)" match="name"/>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Http.ISession" kind="interface" standard="aspnet.core.http">
+    <field name="Id" type="string">
+      <source argpos="-1" kind="system_information" resource="web"/>
+    </field>
+    <field name="Keys" type="array" elementType="string"/>
+    <method name="Set" signature="Set(string,object)">
+      <sink argpos="0,1" kind="trust_boundary" resource="web"/>
+    </method>
+    <method name="TryGetValue" signature="TryGetValue(string, out byte[])">
+      <tags>retval-needs-check</tags>
+      <propagate from="-2" to="1"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Session" supertypes="Microsoft.AspNetCore.Http.ISession" standard="aspnet.core.http">
+    <method name="SetString" signature="SetString(string,string)" alias="SetInt32">
+      <sink argpos="0,1" kind="trust_boundary" resource="web"/>
+    </method>
+  </class>
+  
+  <class name="Microsoft.AspNetCore.Mvc.Filters.IActionFilter">
+    <method name="OnActionExecuted" signature="OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext)"/>
+    <method name="OnActionExecuting" signature="OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContex)"/>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Mvc.Filters.IAsyncActionFilter">
+    <method name="OnActionExecutionAsync" signature="OnActionExecutionAsync(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext,Microsoft.AspNetCore.Mvc.Filters.ActionExecutionDelegate)"/>
+  </class>
+
+  <class name="Microsoft.Extensions.Primitives.StringValues" supertypes="System.Collections.IList">
+  </class>
+
+  <class name="Microsoft.AspNetCore.Http.IFormFile" kind="interface">
+    <tags>fileupload</tags>
+    <field name="ContentDisposition" type="string">
+      <tags>check.fileupload.path</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="ContentType" type="string">
+      <tags>check.fileupload.mime</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="FileName" type="string">
+      <tags>check.fileupload.path</tags>
+      <source argpos="-1" kind="user_input"/><!-- short filename, not including client path! -->
+    </field>
+    <field name="Headers" type="Microsoft.AspNetCore.Http.IHeaderDictionary">
+      <source argpos="-1" kind="user_input"/>
+    </field>
+    <field name="Length" type="long"><tags>check.fileupload.size</tags></field>
+    <field name="Name" type="string">
+      <tags>check.fileupload.path</tags>
+      <source argpos="-1" kind="user_input"/><!-- full client path -->
+    </field>
+
+    <method name="CopyTo" signature="CopyTo(System.IO.Stream)" match="name">
+      <sink argpos="-2" kind="dangerous_file_upload" resource="web"/>
+    </method>
+    <method name="CopyToAsync" signature="CopyToAsync(System.IO.Stream,System.Threading.CancellationToken)" match="name">
+      <sink argpos="-2" kind="dangerous_file_upload" resource="web"/>
+    </method>
+    <method name="OpenReadStream" signature="OpenReadStream()">
+      <tags>check.fileupload.content</tags>
+      <return type="System.IO.Stream"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+  
+  <class name="Microsoft.AspNetCore.Identity.SignInManager">
+    <method name="CheckPasswordSignInAsync" signature="CheckPasswordSignInAsync()" match="name">
+      <sink argpos="-1" kind="improper_authentication" resource="web"/>
+    </method>
+    <method name="ExternalLoginSignInAsync" signature="ExternalLoginSignInAsync()" match="name">
+      <sink argpos="-1" kind="improper_authentication" resource="web"/>
+    </method>
+    <method name="PasswordSignInAsync" signature="PasswordSignInAsync()" match="name">
+      <sink argpos="-1" kind="improper_authentication" resource="web"/>
+    </method>
+    <method name="SignInAsync" signature="SignInAsync()" match="name">
+      <sink argpos="-1" kind="improper_authentication" resource="web"/>
+    </method>
+    <method name="SignInOrTwoFactorAsync" signature="SignInOrTwoFactorAsync()" match="name">
+      <sink argpos="-1" kind="improper_authentication" resource="web"/>
+    </method>
+    <method name="TwoFactorAuthenticatorSignInAsync" signature="TwoFactorAuthenticatorSignInAsync()" match="name">
+      <sink argpos="-1" kind="improper_authentication" resource="web"/>
+    </method>
+    <method name="TwoFactorRecoveryCodeSignInAsync" signature="TwoFactorRecoveryCodeSignInAsync()" match="name">
+      <sink argpos="-1" kind="improper_authentication" resource="web"/>
+    </method>
+    <method name="TwoFactorSignInAsync" signature="TwoFactorSignInAsync()" match="name">
+      <sink argpos="-1" kind="improper_authentication" resource="web"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.AspNetCore.DataProtection.IDataProtector" kind="interface" supertypes="Microsoft.AspNetCore.DataProtection.IDataProtectionProvider">
+    <method name="ToTimeLimitedDataProtector" signature="ToTimeLimitedDataProtector()">
+      <return type="Microsoft.AspNetCore.DataProtection.ITimeLimitedDataProtector"/>
+    </method>
+    <method name="Protect" signature="Protect(byte[])" match="name">
+      <tags>encrypt,symmetric,data:0</tags>
+      <return type="byte[]"/>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </method>
+    <method name="Unprotect" signature="Unprotect(byte[])" match="name">
+      <tags>decrypt,symmetric,data:0</tags>
+      <return type="byte[]"/>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </method>
+  </class>
+  
+  <class name="Microsoft.AspNetCore.DataProtection.IPersistedDataProtector" supertypes="Microsoft.AspNetCore.DataProtection.IDataProtector"/>
+  <class name="Microsoft.AspNetCore.DataProtection.ITimeLimitedDataProtector" supertypes="Microsoft.AspNetCore.DataProtection.IDataProtector"/>
+
+  <class name="Microsoft.AspNetCore.DataProtection.IDataProtectionProvider" kind="interface">
+    <method name="CreateProtector" signature="CreateProtector(string)" match="name">
+      <return type="Microsoft.AspNetCore.DataProtection.IDataProtector"/>
+    </method>
+  </class>
+  
+  <class name="Microsoft.AspNetCore.DataProtection.EphemeralDataProtectionProvider" supertypes="Microsoft.AspNetCore.DataProtection.IDataProtectionProvider"></class>
+
+  <class name="Microsoft.AspNetCore.Mvc.IActionResult" kind="interface">
+    <tags>mvcactionresult</tags>
+    <method name="ExecuteResultAsync" signature="ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext)">
+      <return type="System.Threading.Tasks.Task"/>
+    </method>
+    <method name="ExecuteResult" signature="ExecuteResult(Microsoft.AspNetCore.Mvc.ActionContext)"/>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.ActionResult" supertypes="Microsoft.AspNetCore.Mvc.IActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.ChallengeResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.ContentResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <field name="Content" type="string"><sink argpos="-1" kind="xss" resource="web"/></field>
+    <field name="ContentType" type="string"></field>
+    <field name="StatusCode" type="int"/>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.EmptyResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.FileResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <field name="ContentType" type="string"></field>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.FileContentResult" supertypes="Microsoft.AspNetCore.Mvc.FileResult">
+    <tags>mvcactionresult</tags>
+    <constructor name="FileContentResult" signature="FileContentResult(byte[], string)">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </constructor>
+    <field name="FileContents" type="array" elementType="byte"><sink argpos="-1" kind="xss" resource="web"/></field>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.FileStreamResult" supertypes="Microsoft.AspNetCore.Mvc.FileResult">
+    <tags>mvcactionresult</tags>
+    <field name="FileStream" type="System.IO.Stream"/>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.PhysicalFileResult" supertypes="Microsoft.AspNetCore.Mvc.FileResult">
+    <tags>mvcactionresult</tags>
+    <constructor name="PhysicalFileResult" signature="PhysicalFileResult(string, string)">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </constructor>
+    <field name="FileName" type="string"><sink argpos="-1" kind="path_traversal" resource="filesystem"/></field>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.VirtualFileResult" supertypes="Microsoft.AspNetCore.Mvc.FileResult">
+    <tags>mvcactionresult</tags>
+    <constructor name="VirtualFileResult" signature="VirtualFileResult(string, string)">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </constructor>
+    <field name="FileName" type="string"><sink argpos="-1" kind="path_traversal" resource="filesystem"/></field>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.ForbidResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.JsonResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.LocalRedirectResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <constructor name="LocalRedirectResult" signature="LocalRedirectResult(string)" match="name">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </constructor>
+    <field name="Url" type="string"><sink argpos="-1" kind="open_redirect" resource="web"/></field>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.ObjectResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.PartialViewResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.RedirectResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <constructor name="RedirectResult" signature="RedirectResult(string)" match="name">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </constructor>
+    <field name="Url" type="string"><sink argpos="-1" kind="open_redirect" resource="web"/></field>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.RedirectToActionResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <constructor name="RedirectToActionResult" signature="RedirectToActionResult(string,string)" match="name">
+      <sink argpos="0" kind="action_manipulation" resource="web"/>
+      <sink argpos="1" kind="controller_manipulation" resource="web"/>
+    </constructor>
+    <field name="ActionName" type="string"><sink argpos="-1" kind="action_manipulation" resource="web"/></field>
+    <field name="ControllerName" type="string"><sink argpos="-1" kind="controller_manipulation" resource="web"/></field>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.RedirectToPageResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <!-- TODO sinks? -->
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.RedirectToRouteResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <!-- TODO sinks? -->
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.SignInResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.SignOutResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.StatusCodeResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <field name="StatusCode" type="int"/>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.BadRequestResult" supertypes="Microsoft.AspNetCore.Mvc.StatusCodeResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.ConflictResult" supertypes="Microsoft.AspNetCore.Mvc.StatusCodeResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.NoContentResult" supertypes="Microsoft.AspNetCore.Mvc.StatusCodeResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.NotFoundResult" supertypes="Microsoft.AspNetCore.Mvc.StatusCodeResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.OkResult" supertypes="Microsoft.AspNetCore.Mvc.StatusCodeResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.UnauthorizedResult" supertypes="Microsoft.AspNetCore.Mvc.StatusCodeResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.UnprocessableEntityResult" supertypes="Microsoft.AspNetCore.Mvc.StatusCodeResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.UnsupportedMediaTypeResult" supertypes="Microsoft.AspNetCore.Mvc.StatusCodeResult">
+    <tags>mvcactionresult</tags>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.ViewComponentsResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <field name="ViewComponentName" type="string">
+      <sink argpos="0" kind="view_manipulation" resource="web"/>
+    </field>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.ViewResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+    <field name="ViewName" type="string">
+      <sink argpos="0" kind="view_manipulation" resource="web"/>
+    </field>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.RazorPages.PageResult" supertypes="Microsoft.AspNetCore.Mvc.ActionResult">
+    <tags>mvcactionresult</tags>
+  </class>
+
+</library>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="other_HTTP" technology="python">
+  <description>HTTP libraries (client / less-common web frameworks)</description>
+
+  <module name="requests">
+    <description url="https://requests.readthedocs.io/">HTTP client ("HTTP for Humans")</description>
+    <function name="get" signature="get(url,params,**kwargs)" match="name" alias="head,post,put,patch,delete,options">
+      <return type="requests.Response" />
+      <source argpos="-1" kind="user_input" resource="web" />
+      <sink argpos="0" kind="resource_injection" resource="web"/>
+      <sink paramNames="auth" kind="sensitive_data" resource="web"/>
+      <sink argpos="0" kind="insecure_transport" resource="web" />
+      <sink argpos="0" kind="ssrf" resource="web" >
+        <checker id="python.ssrfChecker"/>
+      </sink>
+      <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+    </function>
+    <function name="request" signature="request(method,url,**kwargs)" match="name">
+      <return type="requests.Response" />
+      <source argpos="-1" kind="user_input" resource="web" />
+      <sink argpos="0,1" kind="resource_injection" resource="web"/>
+      <sink argpos="1" kind="insecure_transport" resource="web" />
+      <sink argpos="1" kind="ssrf" resource="web" >
+        <checker id="python.ssrfChecker"/>
+      </sink>
+      <sink argpos="1" kind="http_parameter_pollution" resource="web"/>
+    </function>
+
+    <class name="Session">
+      <field name="auth"><sink argpos="-1" kind="sensitive_data" resource="web"/></field>
+      <function name="get" signature="get(url,params,**kwargs)" match="name" alias="head,post,put,patch,delete,options">
+        <return type="requests.Response" />
+        <source argpos="-1" kind="user_input" resource="web" />
+        <sink argpos="0" kind="resource_injection" resource="web"/>
+        <sink paramNames="auth" kind="sensitive_data" resource="web"/>
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+      </function>
+      <function name="request" signature="request(method,url,**kwargs)" match="name">
+        <return type="requests.Response" />
+        <source argpos="-1" kind="user_input" resource="web" />
+        <sink argpos="0,1" kind="resource_injection" resource="web"/>
+        <sink argpos="1" kind="http_parameter_pollution" resource="web"/>
+      </function>
+    </class>
+  
+    <class name="Response">
+      <field name="url" type="str">
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="field" type="str">
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="status_code" type="str">
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="text" type="str">
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="cookies" type="dict">
+        <tags>CWE:784</tags>
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="headers" type="dict">
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="links" type="dict">
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+
+    </class>
+  </module>
+  
+  <!-- cherrypy -->
+  <module name="cherrypy">
+    <description url="https://cherrypy.org/">Minimal Python Web Framework</description>
+    <member name="response" type="cherrypy.Response"/>
+
+    <class name="Response" >
+      <field name="cookie" type="dict" >
+        <sink argpos="-1" kind="header_manipulation" resource="web"/>
+        <sink argpos="-1" kind="cookie_poisoning" resource="web"/>
+        <sink argpos="-1" kind="cookie_plaintext_storage" resource="web" />
+      </field>
+      <field name="headers" type="dict" >
+        <tags>open_redirect: -2</tags>
+        <source argpos="-1" kind="user_input" resource="web"/>
+        <sink argpos="-2" kind="header_manipulation" resource="web"/>
+      </field>
+    </class>
+
+    <module name="lib" >
+      <module name="auth_basic">
+        <function name="authorized" signature="authorized()" >
+          <neutralization argpos="-2" kind="authorization" resource="other" />
+          <source argpos="-2" kind="missing_access_control" resource="other" />
+          <sink argpos="-1" kind="security_decision" resource="web"/>
+        </function>
+        <function name="validate_password" signature="validate_password(str,str,str)" >
+          <neutralization argpos="-2" kind="authorization" resource="other" />
+          <source argpos="-2" kind="missing_access_control" resource="other" />
+          <sink argpos="-1" kind="security_decision" resource="web"/>
+        </function>
+      </module>
+    </module>
+  </module>
+</library>

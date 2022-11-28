@@ -1,0 +1,852 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="System.Net" technology="csharp">
+
+  <description url="https://docs.microsoft.com/dotnet/api/system.net">Networking APIs</description>
+
+  <class name="System.Net.CookieException" supertypes="System.Exception"/>
+  <class name="System.Net.HttpListenerException" supertypes="System.Exception"/>
+  <class name="System.Net.ProtocolViolationException" supertypes="System.Exception"/>
+  <class name="System.Net.WebException" supertypes="System.Exception"/>
+
+  <class name="System.Net.Http.HttpRequestException" supertypes="System.Exception"/>
+  <class name="System.Net.Mail.SmtpException" supertypes="System.Exception"/>
+  <class name="System.Net.PeerToPeer.PeerToPeerException" supertypes="System.Exception"/>
+
+  <class name="System.Net.Security.AuthenticatedStream" supertypes="System.IO.Stream">
+    <tags>stream_leak,disposable,server_insecure_transport</tags>
+    <constructor name="AuthenticatedStream" signature="AuthenticatedStream()" match="name"/>
+  </class>
+
+  <class name="System.Net.Sockets.NetworkStream" supertypes="System.IO.Stream">
+    <tags>stream_leak,disposable,server_insecure_transport</tags>
+    <constructor name="NetworkStream" signature="NetworkStream()" match="name" />
+  </class>
+
+  <class name="System.Net.IWebProxy" kind="interface">
+    <field name="Credentials" type="System.Net.ICredentials"/>
+    <method name="GetProxy" signature="GetProxy(System.Uri)">
+      <return type="System.Uri"/>
+    </method>
+  </class>
+
+  <class name="System.Net.WebProxy" supertypes="System.Net.IWebProxy">
+    <constructor name="WebProxy" signature="WebProxy(String)" match="name">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </constructor>
+    <field name="Address">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </field>
+    <field name="Credentials" type="System.Net.ICredentials"/>
+    <method name="GetDefaultProxy" signature="GetDefaultProxy()" instance="false">
+      <return type="System.Net.WebProxy"/>
+    </method>
+  </class>
+
+  <class name="System.Net.ICredentials" kind="interface">
+    <method name="GetCredential" signature="GetCredential(System.Uri,string)" match="name">
+      <return type="System.Net.NetworkCredential"/>
+    </method>
+    <method name="IsBypassed" signature="IsBypassed(System.Uri)">
+      <return type="bool"/>
+    </method>
+  </class>
+
+  <!-- HTTP requests (SSRF, insecure_transport) -->
+  <class name="System.Net.Http.HttpClient">
+    <description>Provides a base class for sending HTTP requests and receiving HTTP responses from a resource identified by a URI.</description>
+    <field name="BaseAddress" type="System.Uri">
+      <tags>insecure_transport</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </field>
+    <field name="DefaultRequestHeaders" type="System.Net.Http.Headers.HttpRequestHeaders">
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </field>
+
+    <method name="DeleteAsync" signature="DeleteAsync(string)" match="name">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="System.Net.Http.HttpResponseMessage"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="GetAsync" signature="GetAsync(string)" match="name">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="System.Net.Http.HttpResponseMessage"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="GetByteArrayAsync" signature="GetByteArrayAsync(string)" match="name">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="byte[]"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="GetStreamAsync" signature="GetStreamAsync(string)" match="name">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="System.IO.Stream"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="GetStringAsync" signature="GetStringAsync(string)">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="string"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="PostAsync" signature="PostAsync(string,System.Net.Http.HttpContent)" match="name">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="System.Net.Http.HttpResponseMessage"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <!--sink argpos="0" kind="http_parameter_pollution" resource="web"/-->
+    </method>
+    <method name="PutAsync" signature="PutAsync(string,System.Net.Http.HttpContent)" match="name">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="System.Net.Http.HttpResponseMessage"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <!--sink argpos="0" kind="http_parameter_pollution" resource="web"/-->
+    </method>
+  </class>
+
+  <class name="System.Net.Http.HttpRequestMessage">
+    <constructor name="HttpRequestMessage" signature="HttpRequestMessage(System.Net.Http.HttpMethod,string)">
+      <sink argpos="1" kind="ssrf" resource="network"/>
+    </constructor>
+    <field name="Content" type="System.Net.Http.HttpContent"/>
+    <field name="RequestUri" type="System.Uri">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </field>
+  </class>
+
+  <class name="System.Net.Http.HttpResponseMessage">
+    <field name="Content" type="System.Net.Http.HttpContent"><source argpos="-1" kind="network_input" resource="web"/></field>
+    <field name="Headers" type="System.Net.Http.Headers.HttpResponseHeaders"><source argpos="-1" kind="network_input" resource="web"/></field>
+    <field name="RequestMessage" type="System.Net.Http.HttpRequestMessage"/>
+  </class>
+
+  <class name="System.Net.Http.Headers.HttpHeaders" kind="abstract_class">
+    <method name="Add" signature="Add(string,string)">
+      <tags>header.name:0,header.value:1</tags>
+      <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="TryAddWithoutValidation" signature="TryAddWithoutValidation(string,string)">
+      <tags>retval-needs-check,header.name:0,header.value:1</tags>
+      <return type="bool"/>
+      <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Net.Http.HttpContent" kind="abstract_class">
+    <tags>disposable</tags>
+    <field name="Headers" type="System.Net.Http.Headers.HttpContentHeaders"/>
+  </class>
+  
+  <class name="System.Net.Http.ByteArrayContent" supertypes="System.Net.Http.HttpContent">
+    <constructor name="ByteArrayContent" signature="ByteArrayContent(byte[])" match="name">
+    </constructor>
+  </class>
+  
+  <class name="System.Net.Http.FormUrlEncodedContent" supertypes="System.Net.Http.HttpContent">
+    <constructor name="FormUrlEncodedContent" signature="FormUrlEncodedContent(System.Collections.Generic.IEnumerable)">
+      <sink argpos="0" kind="http_parameter_pollution" resource="network"/>
+    </constructor>
+  </class>
+
+  <class name="System.Net.Http.Headers.HttpRequestHeaders" supertypes="System.Net.Http.Headers.HttpHeaders">
+  </class>
+
+  <class name="System.Net.Http.Headers.HttpContentHeaders" supertypes="System.Net.Http.Headers.HttpHeaders">
+  </class>
+
+  <class name="System.Net.Http.Headers.HttpResponseHeaders" supertypes="System.Net.Http.Headers.HttpHeaders">
+  </class>
+
+  <class name="System.Net.Http.Headers.HttpHeaderValueCollection" supertypes="System.Collections.ICollection">
+    <method name="ParseAdd" signature="ParseAdd(string)">
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="TryParseAdd" signature="TryParseAdd(string)">
+      <tags>retval-needs-check</tags>
+      <return type="bool"/>
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Net.Http.HttpClientExtensions">
+    <method name="PostAsJsonAsync" signature="PostAsJsonAsync(System.Net.Http.HttpClient,string,T)" match="name">
+      <sink argpos="1" kind="ssrf" resource="network"/>
+    </method>
+    <method name="PostAsXmlAsync" signature="PostAsXmlAsync(System.Net.Http.HttpClient,string,T)" match="name">
+      <sink argpos="1" kind="ssrf" resource="network"/>
+    </method>
+    <method name="PostAsync" signature="PostAsync(System.Net.Http.HttpClient,string,T,System.Net.Http.Formatting.MediaTypeFormatter)" match="name">
+      <sink argpos="1" kind="ssrf" resource="network"/>
+    </method>
+    <method name="PutAsJsonAsync" signature="PutAsJsonAsync(System.Net.Http.HttpClient,string,T)" match="name">
+      <sink argpos="1" kind="ssrf" resource="network"/>
+    </method>
+    <method name="PutAsXmlAsync" signature="PutAsXmlAsync(System.Net.Http.HttpClient,string,T)" match="name">
+      <sink argpos="1" kind="ssrf" resource="network"/>
+    </method>
+    <method name="PutAsync" signature="PutAsync(System.Net.Http.HttpClient,string,T,System.Net.Http.Formatting.MediaTypeFormatter)" match="name">
+      <sink argpos="1" kind="ssrf" resource="network"/>
+    </method>
+  </class>
+
+  <class name="System.Net.WebRequest" kind="abstract_class">
+    <description>Makes a request to a Uniform Resource Identifier (URI). This is an abstract class.</description>
+    <constructor name="WebRequest" signature="WebRequest()" match="name"></constructor>
+
+    <field name="Proxy" type="System.Net.IWebProxy"/>
+    <method name="Create" signature="Create(string)" instance="false">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="CreateDefault" signature="CreateDefault(System.Uri)" instance="false">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="CreateHttp" signature="CreateHttp(string)" instance="false">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="GetRequestStream" signature="GetRequestStream()">
+      <return type="System.IO.Stream"/>
+    </method>
+    <method name="GetRequestStreamAsync" signature="GetRequestStreamAsync()">
+      <return type="System.Threading.Tasks.Task&lt;System.IO.Stream&gt;"/>
+    </method>
+    <method name="GetResponse" signature="GetResponse()">
+      <return type="System.Net.WebResponse"/>
+    </method>
+    <method name="GetResponseAsync" signature="GetResponseAsync()">
+      <return type="System.Threading.Tasks.Task&lt;System.Net.WebResponse&gt;"/>
+    </method>
+  </class>
+
+  <class name="System.IO.Packaging.PackWebRequest" supertypes="System.Net.WebRequest"/>
+  <class name="System.Net.FileWebRequest" supertypes="System.Net.WebRequest"/>
+  <class name="System.Net.FtpWebRequest" supertypes="System.Net.WebRequest"/>
+  <class name="System.Net.HttpWebRequest" supertypes="System.Net.WebRequest"/>
+
+  <class name="System.Net.WebResponse" kind="abstract_class">
+    <tags>stream_leak,disposable</tags>
+    <field name="ContentLength" type="string">
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </field>
+    <field name="ContentType" type="string">
+      <source argpos="-1" kind="network_input" resource="network"/>
+    </field>
+    <field name="Headers" type="System.Net.WebHeaderCollection">
+      <source argpos="-1" kind="network_input" resource="network"/>
+    </field>
+    <field name="ResponseUri" type="System.Uri">
+      <source argpos="-1" kind="network_input" resource="network"/>
+    </field>
+
+    <method name="GetResponseStream" signature="GetResponseStream()">
+      <return type="System.IO.Stream"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.IO.Packaging.PackWebResponse" supertypes="System.Net.WebResponse"/>
+  <class name="System.Net.FileWebResponse" supertypes="System.Net.WebResponse"/>
+  <class name="System.Net.FtpWebResponse" supertypes="System.Net.WebResponse"/>
+  <class name="System.Net.HttpWebResponse" supertypes="System.Net.WebResponse">
+    <tags>stream_leak,disposable</tags>
+    <field name="CharacterSet" type="string"><source argpos="-1" kind="network_input" resource="web"/></field>
+    <field name="ContentEncoding" type="string"><source argpos="-1" kind="network_input" resource="web"/></field>
+    <field name="ContentEncoding" type="string"><source argpos="-1" kind="network_input" resource="web"/></field>
+    <field name="Cookies" type="System.Net.CookieCollection"/>
+    <!-- The rest of properties *probably* cannot convey injection payload and be properly parsed by the runtime, so ignore 'em -->
+    <method name="GetResponseHeader" signature="GetResponseHeader(string)">
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Net.WebHeaderCollection" supertypes="System.Collections.Specialized.NameValueCollection">
+    <tags>Serializable</tags>
+    <field name="Item" type="array" elementType="string">
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </field>
+    <method name="Item" signature="Item(string)">
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+    <method name="Add" signature="Add(string,string)" match="name" alias="AddWithoutValidate,Set">
+      <tags>header.name:0,header.value:1</tags>
+      <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+    </method>
+    <method name="Get" signature="Get(string)" match="name" alias="GetValues">
+      <return type="string"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Net.CookieCollection" supertypes="System.Collection.ICollection">
+    <field name="Item" type="array" elementType="System.Net.Cookie"/>
+    <method name="Item" signature="Item(string)">
+      <return type="System.Net.Cookie"/>
+    </method>
+    <method name="Add" signature="Add(System.Net.Cookie)"/>
+  </class>
+
+  <class name="System.Net.Cookie">
+    <constructor name="Cookie" signature="Cookie(string,string,string,string)" match="name">
+      <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.path:2,cookie.domain:3</tags>
+      <sink argpos="0,1,2,3" kind="header_manipulation" resource="web"/>
+    </constructor>
+    <field name="Comment" type="string">
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </field>
+    <field name="CommentUri" type="string">
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </field>
+    <field name="Domain" type="string">
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </field>
+    <field name="Expires" type="string">
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </field>
+    <field name="Name" type="string">
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </field>
+    <field name="Value" type="string">
+      <tags>CWE:784</tags>
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </field>
+    <field name="Path" type="string">
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </field>
+    <field name="Port" type="string">
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </field>
+    <field name="HttpOnly" type="bool"/>
+    <field name="Secure" type="bool"/>
+  </class>
+
+  <class name="System.Net.WebUtility">
+    <method name="HtmlEncode" signature="HtmlEncode(string)" match="name">
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="UrlEncode" signature="UrlEncode(string)">
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Net.WebClient">
+    <description>Provides common methods for sending data to and receiving data from a resource identified by a URI.</description>
+    <field name="BaseAddress" type="System.Uri">
+      <tags>insecure_transport</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </field>
+    <field name="Credentials" type="System.Net.ICredentials"/>
+    <field name="Headers" type="System.Net.WebHeaderCollection">
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </field>
+    <field name="Proxy" type="System.Net.IWebProxy"/>
+    <field name="QueryString" type="System.Collections.Specialized.NameValueCollection">
+      <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+    </field>
+    <field name="ResponseHeaders" type="System.Net.WebHeaderCollection">
+      <source argpos="-1" kind="network_input" resource="network"/>
+    </field>
+
+    <method name="DownloadData" signature="DownloadData(string)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <source argpos="-1" kind="network_input" resource="network"/>
+    </method>
+    <method name="DownloadDataAsync" signature="DownloadDataAsync(System.Uri)" match="name">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="DownloadDataTaskAsync" signature="DownloadDataTaskAsync(string)">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="byte[]"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+    <method name="DownloadFile" signature="DownloadFile(string,string)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="DownloadFileAsync" signature="DownloadFileAsync(System.Uri,string)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="DownloadFileTaskAsync" signature="DownloadFileTaskAsync(string,string)">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="byte[]"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="DownloadString" signature="DownloadString(string)">
+      <tags>insecure_transport:0</tags>
+      <return type="string"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+    <method name="DownloadStringAsync" signature="DownloadStringAsync(System.Uri)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="DownloadStringTaskAsync" signature="DownloadStringTaskAsync(string)">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="string"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+    <method name="OpenRead" signature="OpenRead(string)">
+      <tags>insecure_transport:0</tags>
+      <return type="System.IO.Stream"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <source argpos="-1" kind="network_input" resource="network"/>
+    </method>
+    <method name="OpenReadAsync" signature="OpenReadAsync(string)" match="name">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="OpenReadTaskAsync" signature="OpenReadTaskAsync(string)">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="System.IO.Stream"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="OpenWrite" signature="OpenWrite(string)">
+      <tags>insecure_transport:0</tags>
+      <return type="System.IO.Stream"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="OpenWrite" signature="OpenWrite(string,string)">
+      <tags>insecure_transport:0</tags>
+      <return type="System.IO.Stream"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+    </method>
+    <method name="OpenWriteAsync" signature="OpenWriteAsync(System.Uri)" match="name">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="OpenWriteTaskAsync" signature="OpenWriteTaskAsync(string)">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="System.IO.Stream"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="UploadData" signature="UploadData(string,byte[])">
+      <tags>insecure_transport:0</tags>
+      <return type="byte[]"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+    <method name="UploadData_2" signature="UploadData(string,string,byte[])">
+      <tags>insecure_transport:0</tags>
+      <return type="byte[]"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+    <method name="UploadDataAsync" signature="UploadDataAsync(System.Uri,byte[])">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="UploadDataAsync_2" signature="UploadDataAsync(System.Uri,string,byte[])">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+    </method>
+    <method name="UploadDataAsync_3" signature="UploadDataAsync(System.Uri,string,byte[],object)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+    </method>
+    <method name="UploadDataTaskAsync" signature="UploadDataTaskAsync(string,byte[])">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="byte[]"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+    <method name="UploadDataTaskAsync_2" signature="UploadDataTaskAsync(string,string,byte[])">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="byte[]"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+    <method name="UploadFile" signature="UploadFile(string,string)">
+      <tags>insecure_transport:0</tags>
+      <return type="hyte[]"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="path_traversal" resource="filesystem"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+    <method name="UploadFile_2" signature="UploadFile(string,string,string)">
+      <tags>insecure_transport:0</tags>
+      <return type="hyte[]"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+      <sink argpos="2" kind="path_traversal" resource="filesystem"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+    <method name="UploadFileAsync" signature="UploadFileAsync(System.Uri,string)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="UploadFileAsync_2" signature="UploadFileAsync(System.Uri,string,string)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+      <sink argpos="2" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="UploadFileAsync_3" signature="UploadFileAsync(System.Uri,string,string,object)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+      <sink argpos="2" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="UploadFileTaskAsync" signature="UploadFileTaskAsync(string,string)">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="byte[]"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="UploadFileTaskAsync_2" signature="UploadFileTaskAsync(string,string,string)">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="byte[]"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+      <sink argpos="2" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="UploadString" signature="UploadString(string,string)">
+      <tags>insecure_transport:0</tags>
+      <return type="string"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+    <method name="UploadString_2" signature="UploadString(string,string,string)">
+      <tags>insecure_transport:0</tags>
+      <return type="string"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+    </method>
+    <method name="UploadStringAsync" signature="UploadStringAsync(System.Uri,string)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="UploadStringAsync_2" signature="UploadStringAsync(System.Uri,string,string)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+    </method>
+    <method name="UploadStringAsync_3" signature="UploadStringAsync(System.Uri,string,string,object)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+    </method>
+    <method name="UploadStringTaskAsync" signature="UploadStringTaskAsync(string,string)">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="string"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </method>
+    <method name="UploadStringTaskAsync_2" signature="UploadStringTaskAsync(string,string,string)">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="string"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+    </method>
+    <method name="UploadValues" signature="UploadValues(string,System.Collections.Specialized.NameValueCollection)">
+      <tags>insecure_transport:0</tags>
+      <return type="byte[]"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <!--sink argpos="1" kind="http_parameter_pollution" resource="web"/-->
+    </method>
+    <method name="UploadValues" signature="UploadValues(string,string,System.Collections.Specialized.NameValueCollection)">
+      <tags>insecure_transport:0</tags>
+      <return type="byte[]"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+      <!--sink argpos="2" kind="http_parameter_pollution" resource="web"/-->
+    </method>
+    <method name="UploadValuesAsync" signature="UploadValuesAsync(System.Uri,System.Collections.Specialized.NameValueCollection)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <!--sink argpos="1" kind="http_parameter_pollution" resource="web"/-->
+    </method>
+    <method name="UploadValuesAsync" signature="UploadValuesAsync(System.Uri,string,System.Collections.Specialized.NameValueCollection)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+      <!--sink argpos="2" kind="http_parameter_pollution" resource="web"/-->
+    </method>
+    <method name="UploadValuesAsync" signature="UploadValuesAsync(System.Uri,string,System.Collections.Specialized.NameValueCollection,object)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+      <!--sink argpos="2" kind="http_parameter_pollution" resource="web"/-->
+    </method>
+    <method name="UploadValuesTaskAsync" signature="UploadValuesTaskAsync(string,System.Collections.Specialized.NameValueCollection)">
+      <tags>insecure_transport:0</tags>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <!--sink argpos="1" kind="http_parameter_pollution" resource="web"/-->
+    </method>
+    <method name="UploadValuesTaskAsync" signature="UploadValuesTaskAsync(string,string,System.Collections.Specialized.NameValueCollection)">
+      <tags>insecure_transport:0</tags>
+      <return type="System.Threading.Tasks.Task" elementType="byte[]"/>
+      <source argpos="-1" kind="network_input" resource="web"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="web"/>
+      <!--sink argpos="2" kind="http_parameter_pollution" resource="web"/-->
+    </method>
+  </class>
+
+  <class name="System.Net.IPAddress">
+    <method name="Parse" signature="Parse(string)">
+      <sink argpos="0" kind="hardcoded_info" resource="network"/>
+    </method>
+    <method name="TryParse" signature="TryParse(string,System.Net.IPAddress)">
+      <tags>retval-needs-check</tags>
+      <return type="bool"/>
+      <sink argpos="0" kind="hardcoded_info" resource="network"/>
+    </method>
+  </class>
+
+  <class name="System.Net.IPEndPoint" supertypes="System.Net.EndPoint">
+    <constructor name="IPEndPoint" signature="IPEndPoint(System.Net.IPAddress,System.Int32)">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </constructor>
+    <field name="Address" type="System.Net.IPAddress"/>
+    <field name="Port" type="System.Int32">
+      <sink argpos="0" kind="resource_injection" resource="network"/>
+    </field>
+    <method name="Create" signature="Create(System.Net.SocketAddress)">
+      <return type="System.Net.IPEndPoint"/>
+    </method>
+    <method name="Serialize" signature="Serialize()">
+      <return type="System.Net.SocketAddress"/>
+    </method>
+  </class>
+
+  <class name="System.Net.Dns">
+    <method name="BeginGetHostAddresses" signature="BeginGetHostAddresses(string,System.AsyncCallback,object)"
+            alias="BeginGetHostByName,BeginGetHostEntry,BeginResolve">
+      <sink argpos="0" kind="hardcoded_info" resource="network"/>
+    </method>
+    <method name="GetHostByAddress" signature="GetHostByAddress(string)"
+            alias="GetHostByAddresses,GetHostAddressesAsync,GetHostByName,GetHostEntry,Resolve">
+      <sink argpos="0" kind="hardcoded_info" resource="network"/>
+    </method>
+  </class>
+
+  <class name="System.Net.NetworkCredential" supertypes="System.Net.ICredentials">
+    <constructor name="NetworkCredential" signature="NetworkCredential(string,string)" match="name">
+      <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+    </constructor>
+    <field name="Password" type="string">
+      <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+    </field>
+    <field name="SecurePassword" type="string">
+      <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+    </field>
+    <field name="UserName" type="string">
+      <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+    </field>
+  </class>
+
+  <class name="System.Net.Sockets.Socket" supertypes="System.IDisposable">
+    <tags>disposable</tags>
+    <method name="BeginConnect" signature="BeginConnect(string,System.Int32,System.AsyncCallback,object)">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </method>
+    <method name="BeginConnect" signature="BeginConnect(System.Net.IPAddress,System.Int32,System.AsyncCallback,object)">
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </method>
+    <method name="Bind" signature="Bind(System.Net.IPEndPoint)">
+      <tags>server-socket:bind</tags>
+    </method>
+    <method name="Connect" signature="Connect(string,System.Int32)">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </method>
+    <method name="Connect" signature="Connect(System.Net.IPAddress,System.Int32)">
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </method>
+  </class>
+
+  <class name="System.Net.Sockets.TcpClient">
+    <tags>insecure_transport</tags>
+    <constructor name="TcpClient" signature="TcpClient(string,System.Int32)">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </constructor>
+    <method name="Connect" signature="Connect(string,System.Int32)">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </method>
+    <method name="Connect" signature="Connect(System.Net.IPAddress,System.Int32)">
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </method>
+  </class>
+
+  <class name="System.Net.Sockets.UdpClient">
+    <tags>insecure_transport</tags>
+    <constructor name="UdpClient" signature="UdpClient(string,System.Int32)">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </constructor>
+    <constructor name="UdpClient" signature="UdpClient(System.Int32)">
+      <sink argpos="0" kind="resource_injection" resource="network"/>
+    </constructor>
+    <method name="Connect" signature="Connect(string,System.Int32)">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </method>
+    <method name="Connect" signature="Connect(System.Net.IPAddress,System.Int32)">
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </method>
+  </class>
+
+  <class name="System.Net.Sockets.UdpSingleSourceMulticastClient">
+    <tags>insecure_transport</tags>
+    <constructor name="UdpSingleSourceMulticastClient" signature="UdpSingleSourceMulticastClient(System.Net.IPAddress, System.Net.IPAddress, System.Int32)">
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </constructor>
+  </class>
+
+  <class name="System.Net.Sockets.UdpAnySourceMulticastClient">
+    <tags>insecure_transport</tags>
+    <constructor name="UdpAnySourceMulticastClient" signature="UdpAnySourceMulticastClient(System.Net.IPAddress, System.Int32)">
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </constructor>
+  </class>
+
+  <class name="System.Net.Sockets.UdpClient">
+    <tags>insecure_transport</tags>
+    <constructor name="UdpClient" signature="UdpClient(string,System.Int32)">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </constructor>
+    <constructor name="UdpClient" signature="UdpClient(System.Int32)">
+      <sink argpos="0" kind="resource_injection" resource="network"/>
+    </constructor>
+    <method name="Connect" signature="Connect(string,System.Int32)">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </method>
+    <method name="Connect" signature="Connect(System.Net.IPAddress,System.Int32)">
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </method>
+  </class>
+
+
+  <class name="System.Net.Sockets.TcpListener">
+    <constructor name="TcpListener" signature="TcpListener(System.Int32)">
+      <sink argpos="0" kind="resource_injection" resource="network"/>
+    </constructor>
+    <constructor name="TcpListener" signature="TcpListener(System.Net.IPAddress,System.Int32)">
+      <sink argpos="0" kind="ssrf" resource="network"/>
+      <sink argpos="1" kind="resource_injection" resource="network"/>
+    </constructor>
+    <method name="Create" signature="Create(System.Int32)">
+      <return type="System.Net.Sockets.TcpListener"/>
+      <sink argpos="0" kind="resource_injection" resource="network"/>
+    </method>
+  </class>
+  
+  <class name="System.Net.Mail.SmtpClient">
+    <tags>disposable,transport.smtp</tags>
+    <constructor name="SmtpClient" signature="SmtpClient()"/>
+    <constructor name="SmtpClient_1" signature="SmtpClient(string)">
+      <sink argpos="0" kind="resource_injection" resource="network"/>
+    </constructor>
+    <constructor name="SmtpClient_2" signature="SmtpClient(string,System.Int32)">
+      <sink argpos="0,1" kind="resource_injection" resource="network"/>
+    </constructor>
+    <method name="Send" signature="Send(string,string,string,string)">
+      <sink argpos="0,1,2" kind="mail_command_injection" resource="network"/>
+    </method>
+    <method name="Send_1" signature="Send(System.Net.Mail.MailMessage)">
+      <!--  sink argpos="0" kind="mail_command_injection" resource="network"/-->
+    </method>
+    <method name="SendAsync" signature="SendAsync(string,string,string,string,object)">
+      <sink argpos="0,1,2,4" kind="mail_command_injection" resource="network"/>
+    </method>
+    <method name="SendAsync_1" signature="SendAsync(System.Net.Mail.MailMessage,Object)">
+      <!-- sink argpos="0,1" kind="mail_command_injection" resource="network"/-->
+    </method>
+    <method name="SendMailAsync" signature="SendMailAsync(string,string,string,string)">
+      <sink argpos="0,1,2" kind="mail_command_injection" resource="network"/>
+    </method>
+    <method name="SendMailAsync_1" signature="SendMailAsync(System.Net.Mail.MailMessage)">
+      <!-- sink argpos="0" kind="mail_command_injection" resource="network"/-->
+    </method>
+  </class>
+  
+  <class name="System.Net.Mail.MailAddress">
+    <constructor name="MailAddress" signature="MailAddress()" match="numargs">
+      <sink argpos="0,1" kind="mail_command_injection" resource="network"/>
+    </constructor>
+  </class>
+  
+  <class name="System.Net.Mail.MailMessage">
+    <constructor name="MailMessage" signature="MailMessage()"/>
+    <constructor name="MailMessage_1" signature="MailMessage(string,string,string,string)">
+      <sink argpos="0,1,2" kind="mail_command_injection" resource="network"/>
+    </constructor>
+    <constructor name="MailMessage_2" signature="MailMessage(System.Net.Mail.MailAddress,System.Net.Mail.MailAddress)">
+      <!--  sink argpos="0,1" kind="mail_command_injection" resource="network"/-->
+    </constructor>
+    <field name="To" type="System.Net.Mail.MailAddressCollection" alias="Bcc,CC,ReplyToList">
+      <!--  sink argpos="0" kind="mail_command_injection" resource="network"/-->
+    </field>
+    <field name="From" type="System.Net.Mail.MailAddress" alias="ReplyTo,Sender">
+      <sink argpos="0" kind="mail_command_injection" resource="network"/>
+    </field>
+    <field name="Subject" type="string">
+      <sink argpos="0" kind="mail_command_injection" resource="network"/>
+    </field>
+    <field name="Headers" type="System.Net.Mail._NameValueCollection">
+      <!--  sink argpos="0" kind="mail_command_injection" resource="network"/-->
+    </field>
+  </class>
+  
+  <class name="System.Net.Mail._NameValueCollection" supertypes="System.Collections.Specialized.NameValueCollection">
+    <method name="Add" signature="Add(string,string)">
+      <sink argpos="0,1" kind="mail_command_injection" resource="network"/>
+    </method>
+    <method name="BaseAdd" signature="BaseAdd(string,object)">
+      <sink argpos="0,1" kind="mail_command_injection" resource="network"/>
+    </method>
+  </class>
+  
+  <class name="System.Net.Mail.MailAddressCollection">
+    <method name="Add" signature="Add(System.Net.Mail.MailAddress)">
+      <sink argpos="0" kind="mail_command_injection" resource="network"/>
+    </method>
+  </class>
+
+  <class name="System.Net.ServicePointManager">
+    <field name="SecurityProtocol" type="System.Net.SecurityProtocolType" />
+  </class>
+
+  <class name="System.Net.Security.SslStream">
+    <constructor name="SslStream" signature="SslStream()" match="name" />
+  </class>
+
+</library>

@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric"
+    version="1.1">
+
+  <metric id="OPT.relations" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.SIZE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.SIZE.DATABASE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.SQL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds />
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <internal-name id="OPT.PLSQL.SIZE.OBJECTS" />
+        <java-class>com.als.plsql.metrics.DatabaseObjectsMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.SQL">
+        <internal-name id="OPT.SQL.SIZE.OBJECTS" />
+        <java-class>com.optimyth.sql.metrics.SchemaSqlSizeRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+        <internal-name id="OPT.TRANSACTSQL.SIZE.OBJECTS" />
+        <java-class>com.optimyth.qaking.tsql.metrics.DatabaseObjectsMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+    <code-examples />
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+      <i18n ref="OPT.LANGUAGE.SPANISH">
+        <name><![CDATA[Relaciones]]></name>
+        
+        <description>
+<![CDATA[
+Número de relaciones en base de datos.
+]]>
+        </description>
+        <implementation-descriptions />
+        <parameters />
+      </i18n>
+
+      <i18n ref="OPT.LANGUAGE.ENGLISH">
+        <name><![CDATA[Relations]]></name>
+        
+        <description>
+<![CDATA[
+Number of database relations.
+]]>
+        </description>
+        <implementation-descriptions />
+        <parameters />
+      </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

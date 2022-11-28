@@ -1,0 +1,1000 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="kotlin.http" technology="kotlin" standard="http">
+
+  <description>Kotlin web frameworks and HTTP libraries</description>
+
+  <module name="io.ktor" standard="Ktor">
+    <description url="https://api.ktor.io/" >Asynchronous Web framework for Kotlin</description>
+
+    <function name="io.ktor.server.engine.embeddedServer" signature="io.ktor.server.engine.embeddedServer(factory io.ktor.server.engine.ApplicationEngineFactory,
+  port kotlin.Int, host kotlin.String, watchPaths kotlin.collections.List, configure TConfiguration, module io.ktor.application.Application)" match="name">
+      <return type="io.ktor.server.engine.ApplicationEngine" />
+      <sink argpos="1,2" kind="resource_injection" resource="network"/>
+      <sink argpos="2" kind="ssrf" resource="web"/>
+    </function>
+
+    <class name="io.ktor.server.engine.ApplicationEngine" kind="interface" />
+
+    <function name="io.ktor.routing.routing" signature="io.ktor.routing.routing(configuration io.ktor.routing.Routing)" alias="io.ktor.application.Application.routing"/>
+
+    <class name="io.ktor.routing.Routing" supertypes="io.ktor.routing.Route" />
+    <class name="io.ktor.routing.Route" supertypes="io.ktor.application.ApplicationCallPipeline" />
+
+    <function name="io.ktor.application.ApplicationCall.respondText" signature="io.ktor.application.ApplicationCall.respondText(text kotlin.String,
+    contentType io.ktor.http.ContentType, status io.ktor.http.HttpStatusCode, configure F)" >
+      <return type="kotlin.Unit" />
+      <sink argpos="0" kind="xss" resource="web" />
+    </function>
+
+    <function name="io.ktor.routing.get" signature="io.ktor.routing.get(call io.ktor.application.ApplicationCall)"
+              alias="io.ktor.routing.post,io.ktor.routing.patch,io.ktor.routing.delete,io.ktor.routing.options" />
+
+    <class name="io.ktor.application.ApplicationCall" kind="interface" >
+      <field name="application" type="io.ktor.application.Application" />
+      <field name="attributes" type="io.ktor.util.Attributes" />
+      <field name="parameters" type="io.ktor.http.Parameters" />
+      <field name="request" type="io.ktor.request.ApplicationRequest" />
+      <field name="response" type="io.ktor.response.ApplicationResponse" />
+      <field name="sessions" type="io.ktor.sessions.CurrentSession" />
+
+      <method name="respond" signature="respond(message kotlin.Any)">
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+      <method name="respond" signature="respond(status io.ktor.http.HttpStatusCode, message kotlin.Any)" >
+        <sink argpos="1" kind="xss" resource="web" />
+      </method>
+      <method name="respondRedirect" signature="respondRedirect(url kotlin.String, permanent kotlin.Boolean)" match="name">
+        <sink argpos="0" kind="open_redirect" resource="web" />
+        <sink argpos="0" kind="execution_after_redirect" resource="web" />
+      </method>
+      <method name="respondText" signature="respondText(text kotlin.String, contentType io.ktor.http.ContentType, status io.ktor.http.HttpStatusCode)" match="name">
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+      <method name="respondBytes" signature="respondBytes(bytes kotlin.ByteArray, contentType io.ktor.http.ContentType, status io.ktor.http.HttpStatusCode)"  match="name">
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+      <method name="respondFile" signature="respondFile(baseDir java.io.File, fileName kotlin.String)">
+        <!-- seems safe -->
+      </method>
+      <method name="respondTextWriter" signature="respondTextWriter(contentType io.ktor.http.ContentType, status io.ktor.http.HttpStatusCode, producer kotlin.Any)" match="name"
+              alias="respondWrite,respondOutputStream">
+        <source argpos="2" kind="user_output" resource="web"/>
+      </method>
+      <method name="respondHtml" signature="respondHtml(status io.ktor.http.HttpStatusCode, block kotlin.Any)">
+        <!-- seems safe, at least with autoescaping template libs, like kotlinx.html -->
+      </method>
+    </class>
+
+    <class name="io.ktor.sessions.CurrentSession">
+      <method name="findName" signature="findName(type kotlin.reflect.KClass)" >
+        <return type="kotlin.String" />
+      </method>
+      <method name="get" signature="get(name kotlin.String)" >
+        <return type="kotlin.Any" />
+      </method>
+      <method name="set" signature="set(name kotlin.String, value kotlin.Any)" >
+        <tags>CWE:501, stateChange</tags>
+        <sink argpos="0,1" kind="trust_boundary" resource="web"/>
+      </method>
+      <method name="set" signature="set(T)" >
+        <tags>CWE:501, stateChange</tags>
+        <sink argpos="0" kind="trust_boundary" resource="web"/>
+      </method>
+    </class>
+
+    <function name="io.ktor.application.ApplicationCall.receive" signature="io.ktor.application.ApplicationCall.receive()" match="name"
+              alias="receiveChannel,receiveMultipart,receiveOrNull,receiveParameter,receiveStream,receiveText" >
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+    <function name="io.ktor.application.ApplicationCall.respond" signature="io.ktor.application.ApplicationCall.respond(status io.ktor.http.HttpStatusCode, message kotlin.Any)" match="name" >
+      <sink argpos="1" kind="xss" resource="web" />
+    </function>
+    <function name="io.ktor.application.ApplicationCall.respondBytes" signature="io.ktor.application.ApplicationCall.respondBytes()" match="name" >
+      <sink argpos="2" kind="xss" resource="web" />
+    </function>
+    <function name="io.ktor.application.ApplicationCall.respondFile" signature="io.ktor.application.ApplicationCall.respondFile()" match="name" >
+      <sink argpos="0,1" kind="xss" resource="web" />
+    </function>
+    <function name="io.ktor.application.ApplicationCall.respondHtml" signature="io.ktor.application.ApplicationCall.respondHtml()" match="name" >
+      <sink argpos="1" kind="xss" resource="web" />
+    </function>
+    <function name="io.ktor.application.ApplicationCall.respondHtmlTemplate" signature="io.ktor.application.ApplicationCall.respondHtmlTemplate()" match="name" >
+      <sink argpos="2" kind="xss" resource="web" />
+    </function>
+    <function name="io.ktor.application.ApplicationCall.respondOutputStream" signature="io.ktor.application.ApplicationCall.respondOutputStream()" match="name" >
+      <sink argpos="1" kind="xss" resource="web" />
+    </function>
+    <function name="io.ktor.application.ApplicationCall.respondRedirect" signature="io.ktor.application.ApplicationCall.respondRedirect()" match="name" alias="redirect">
+      <sink argpos="0" kind="open_redirect" resource="web" />
+      <sink argpos="0" kind="execution_after_redirect" resource="web" />
+      <sink argpos="0" kind="http_parameter_pollution" />
+      <sink argpos="0" kind="insecure_transport" resource="network" />
+    </function>
+    <function name="io.ktor.application.ApplicationCall.respondText" signature="io.ktor.application.ApplicationCall.respondText()" match="name" >
+      <sink argpos="0" kind="xss" resource="web" />
+    </function>
+    <function name="io.ktor.application.ApplicationCall.respondTemplate" signature="io.ktor.application.ApplicationCall.respondTemplate()" match="name" >
+      <sink argpos="0" kind="xss" resource="web" />
+    </function>
+    <function name="io.ktor.application.ApplicationCall.respondTextWriter" signature="io.ktor.application.ApplicationCall.respondTextWriter()" match="name" >
+      <sink argpos="2" kind="xss" resource="web" />
+    </function>
+    <function name="io.ktor.application.ApplicationCall.respondWrite" signature="io.ktor.application.ApplicationCall.respondWrite()" match="name" >
+      <sink argpos="2" kind="xss" resource="web" />
+    </function>
+    <function name="io.ktor.application.ApplicationCall.url" signature="io.ktor.application.ApplicationCall.url()" match="name" >
+      <sink argpos="0" kind="http_parameter_pollution" />
+      <sink argpos="0" kind="insecure_transport" resource="network" />
+    </function>
+
+    <class name="io.ktor.server.engine.BaseApplicationCall" supertypes="io.ktor.application.ApplicationCall" />
+    <class name="io.ktor.routing.RoutingApplicationCall" supertypes="io.ktor.application.ApplicationCall" />
+
+    <class name="io.ktor.application.Application" supertypes="io.ktor.application.ApplicationCallPipeline" >
+      <method name="log" signature="log()" match="name" >
+        <return type="java.util.logging.Logger" />
+      </method>
+    </class>
+
+    <class name="io.ktor.http.Parameters" kind="interface" supertypes="io.ktor.util.StringValues" />
+    <class name="io.ktor.http.Headers" kind="interface" supertypes="io.ktor.util.StringValues" />
+
+    <class name="io.ktor.util.StringValues" kind="interface" >
+      <method name="entries" signature="entries()" >
+        <return type="kotlin.collections.Set" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="forEach" signature="forEach()" >
+        <source argpos="0" kind="user_input" resource="web" />
+      </method>
+      <method name="get" signature="get(name kotlin.String)" >
+        <return type="kotlin.String" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="getAll" signature="getAll(name kotlin.String)" >
+        <return type="kotlin.collections.List" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="names" signature="names()" >
+        <return type="kotlin.collections.Set" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="toMap" signature="toMap()" >
+        <return type="kotlin.collections.Map" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <class name="io.ktor.request.ApplicationRequest" kind="interface" >
+      <field name="call" type="io.ktor.application.ApplicationCall" />
+      <field name="cookies" type="io.ktor.request.RequestCookies" />
+      <field name="headers" type="io.ktor.util.StringValues" />
+      <field name="local" type="io.ktor.http.RequestConnectionPoint" />
+      <field name="pipeline" type="io.ktor.request.ApplicationReceivePipeline" />
+      <field name="queryParameters" type="io.ktor.http.Parameters">
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+    </class>
+
+    <function name="io.ktor.request.ApplicationRequest.header" signature="io.ktor.request.ApplicationRequest.header()" >
+      <return type="kotlin.String" />
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+    <function name="io.ktor.request.ApplicationRequest.queryString" signature="io.ktor.request.ApplicationRequest.queryString()" >
+      <return type="kotlin.String" />
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+    <function name="io.ktor.request.ApplicationRequest.queryParameters" signature="io.ktor.request.ApplicationRequest.queryParameters()" >
+      <return type="io.ktor.http.Parameters" elementType="kotlin.String" />
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+    <function name="io.ktor.request.ApplicationRequest.contentType" signature="io.ktor.request.ApplicationRequest.contentType()" >
+      <return type="io.ktor.http.ContentType" />
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+    <function name="io.ktor.request.ApplicationRequest.contentCharset" signature="io.ktor.request.ApplicationRequest.contentCharset()" >
+      <return type="java.nio.charset.Charset" />
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+    <function name="io.ktor.request.ApplicationRequest.document" signature="io.ktor.request.ApplicationRequest.document()" >
+      <return type="kotlin.String" />
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+    <function name="io.ktor.request.ApplicationRequest.path" signature="io.ktor.request.ApplicationRequest.path()" >
+      <return type="kotlin.String" />
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+    <function name="io.ktor.request.ApplicationRequest.authorization" signature="io.ktor.request.ApplicationRequest.authorization()" >
+      <return type="kotlin.String" />
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+    <function name="io.ktor.request.ApplicationRequest.location" signature="io.ktor.request.ApplicationRequest.location()" >
+      <return type="kotlin.String" />
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+    <function name="io.ktor.request.ApplicationRequest.accept" signature="io.ktor.request.ApplicationRequest.accept()"
+              alias="io.ktor.request.ApplicationRequest.acceptItems,io.ktor.request.ApplicationRequest.acceptEncoding,
+           io.ktor.request.ApplicationRequest.acceptEncodingItems,io.ktor.request.ApplicationRequest.acceptLanguage,
+           io.ktor.request.ApplicationRequest.acceptLanguageItems,io.ktor.request.ApplicationRequest.acceptCharset,
+           io.ktor.request.ApplicationRequest.acceptCharsetItems">
+      <return type="kotlin.String" />
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+    <function name="io.ktor.request.ApplicationRequest.host" signature="io.ktor.request.ApplicationRequest.host()" >
+      <return type="kotlin.String" />
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+    <function name="io.ktor.request.ApplicationRequest.port" signature="io.ktor.request.ApplicationRequest.port()" >
+      <return type="kotlin.Int" />
+      <source argpos="-1" kind="user_input" resource="web" />
+    </function>
+
+    <class name="io.ktor.response.ApplicationResponse" kind="interface" >
+      <field name="call" type="io.ktor.application.ApplicationCall" />
+      <field name="cookies" type="io.ktor.request.ResponseCookies" />
+      <field name="headers" type="io.ktor.response.ResponseHeaders" />
+      <field name="pipeline" type="io.ktor.request.ApplicationReceivePipeline" />
+
+      <method name="cacheControl" signature="cacheControl()" match="name" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="contentRange" signature="contentRange()" match="name" >
+        <sink argpos="0,1,2" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="etag" signature="etag()" match="name" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="expires" signature="expires()" match="name" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="header" signature="header()" match="name" >
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="lastModified" signature="lastModified()" match="name" >
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="link" signature="link()" match="name" >
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+    </class>
+
+    <function name="io.ktor.request.ApplicationResponse.link" signature="io.ktor.request.ApplicationResponse.link()" match="name" >
+      <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+      <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+    </function>
+
+    <class name="io.ktor.server.engine.BaseApplicationResponse" supertypes="io.ktor.request.ApplicationResponse" />
+    <class name="io.ktor.routing.RoutingApplicationResponse" supertypes="io.ktor.request.ApplicationResponse" />
+    <class name="io.ktor.server.netty.NettyApplicationResponse" supertypes="io.ktor.request.BaseApplicationResponse" />
+    <class name="io.ktor.server.servlet.ServletApplicationResponse" supertypes="io.ktor.request.BaseApplicationResponse" >
+      <field name="servletResponse" type="javax.servlet.http.HttpServletResponse" />
+    </class>
+
+    <class name="io.ktor.server.testing.TestApplicationResponse" supertypes="io.ktor.request.BaseApplicationResponse" />
+
+    <class name="io.ktor.response.ResponseHeaders">
+      <method name="allValues" signature="allValues()" >
+        <return type="io.ktor.http.Headers" />
+      </method>
+      <method name="append" signature="append()" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="get" signature="get(name kotlin.String)" >
+        <return type="kotlin.String" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="values" signature="values(name kotlin.String)" >
+        <return type="kotlin.collections.List" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+
+    </class>
+
+    <class name="io.ktor.request.RequestCookies">
+      <field name="rawCookies" type="kotlin.collections.Map" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="request" type="io.ktor.request.ApplicationRequest" />
+
+      <method name="fetchCookies" signature="fetchCookies()" >
+        <return type="kotlin.collections.Map" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="get" signature="get()" >
+        <return type="kotlin.String" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <class name="io.ktor.request.ResponseCookies">
+      <method name="append" signature="append()" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="get" signature="get()" >
+        <return type="kotlin.String" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <class name="io.ktor.server.servlet.ServletApplicationRequestCookies" supertypes="io.ktor.request.RequestCookies" />
+
+    <class name="io.ktor.application.ApplicationCallPipeline" supertypes="io.ktor.util.pipeline.Pipeline" />
+    <class name="io.ktor.util.pipeline.Pipeline"/>
+
+    <class name="io.ktor.client.call.HttpClientCall" supertypes="kotlin.CoroutineScope, kotlin.Closeable" >
+      <field name="request" type="io.ktor.client.request.HttpRequest" />
+      <field name="client" type="io.ktor.client.HttpClient" />
+    </class>
+
+    <class name="io.ktor.client.HttpClient" supertypes="" >
+      <field name="attributes" type="io.ktor.util.Attributes" />
+      <field name="engine" type="io.ktor.client.engine.HttpClientEngine" />
+      <field name="engineConfig" type="io.ktor.client.engine.HttpClientEngineConfig" />
+      <field name="receivePipeline" type="io.ktor.client.response.HttpReceivePipeline" />
+      <field name="requestPipeline" type="io.ktor.client.request.HttpRequestPipeline" />
+      <field name="responsePipeline" type="io.ktor.client.response.HttpResponsePipeline" />
+      <field name="sendPipeline" type="io.ktor.client.request.HttpSendPipeline" />
+
+      <method name="call" signature="call(block io.ktor.client.request.HttpRequestBuilder)" match="numargs" >
+        <return type="io.ktor.client.call.HttpClientCall" />
+        <sink argpos="0" kind="ssrf" resource="web"/>
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        <sink argpos="0" kind="insecure_transport" resource="web"/>
+        <source argpos="0" kind="user_input" resource="web" />
+      </method>
+      <method name="call" signature="call(url kotlin.String, block io.ktor.client.request.HttpRequestBuilder)" match="numargs" >
+        <return type="io.ktor.client.call.HttpClientCall" />
+        <sink argpos="0" kind="ssrf" resource="web"/>
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        <sink argpos="0" kind="insecure_transport" resource="web"/>
+        <source argpos="1" kind="user_input" resource="web" />
+      </method>
+      <method name="cookies" signature="cookies(url kotlin.String)" match="numargs" >
+        <return type="kotlin.collections.List" elementType="io.ktor.http.Cookie" />
+      </method>
+      <method name="delete" signature="delete(block io.ktor.client.request.HttpRequestBuilder)" match="numargs" alias="get,head,options,patch,post,put,request" >
+        <sink argpos="0" kind="ssrf" resource="web"/>
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        <sink argpos="0" kind="insecure_transport" resource="web"/>
+        <source argpos="-1,0" kind="user_input" resource="web" />
+      </method>
+      <method name="delete" signature="delete(urlString kotlin.String, block io.ktor.client.request.HttpRequestBuilder)" match="numargs" alias="get,head,options,patch,post,put,request" >
+        <sink argpos="0" kind="ssrf" resource="web"/>
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        <sink argpos="0" kind="insecure_transport" resource="web"/>
+        <source argpos="-1,1" kind="user_input" resource="web" />
+      </method>
+      <method name="delete" signature="delete(scheme kotlin.String, host kotlin.String, port kotlin.Int, path kotlin.String,
+        body kotlin.Any, block io.ktor.client.features.websocket.ClientWebSocketSession)" match="numargs" alias="get,head,options,patch,post,put,request" >
+        <sink argpos="1" kind="ssrf" resource="web"/>
+        <sink argpos="1" kind="http_parameter_pollution" resource="web"/>
+        <sink argpos="1" kind="insecure_transport" resource="web"/>
+        <sink argpos="1,2" kind="resource_injection" resource="web"/>
+        <sink argpos="3" kind="path_traversal" resource="web"/>
+        <source argpos="-1,5" kind="user_input" resource="web" />
+      </method>
+      <method name="embeddedServer" signature="embeddedServer()" match="numargs" >
+        <return type="io.ktor.server.engine.ApplicationEngine" />
+      </method>
+      <method name="embeddedServer" signature="embeddedServer(factory ApplicationEngineFactory, port kotlin.Int, host kotlin.String, watchPaths kotlin.collections.List, parentCoroutineContext T, configure TConfiguration, module Application)" match="numargs" >
+        <return type="io.ktor.server.engine.ApplicationEngine" />
+        <sink argpos="1,2" kind="resource_injection" resource="web"/>
+      </method>
+      <method name="httpServer" signature="httpServer()" match="numargs" >
+        <return type="io.ktor.server.cio.HttpServer" />
+      </method>
+      <method name="submitForm" signature="submitForm(scheme kotlin.String, host kotlin.String, port kotlin.Int, path kotlin.String, formParameters io.ktor.http.Parameters, encodeInquery kotlin.Boolean, block io.ktor.client.request.HttpRequestBuilder)" match="numargs" >
+        <sink argpos="0,1,2" kind="resource_injection" resource="web"/>
+        <sink argpos="3" kind="path_traversal" resource="web"/>
+      </method>
+      <method name="submitFormWithBinaryData" signature="submitFormWithBinaryData(scheme kotlin.String, host kotlin.String, port kotlin.Int, path kotlin.String, formData kotlin.collections.List, block io.ktor.client.request.HttpRequestBuilder)" match="numargs" >
+        <sink argpos="0,1,2" kind="resource_injection" resource="web"/>
+        <sink argpos="3" kind="path_traversal" resource="web"/>
+      </method>
+      <method name="webSocketSession" signature="webSocketSession(method io.ktor.http.HttpMethod, host kotlin.String, port kotlin.Int, path kotlin.String, block io.ktor.client.request.HttpRequestBuilder)" match="numargs" alias="webSocketRawSession" >
+        <sink argpos="0,1,2" kind="resource_injection" resource="web"/>
+        <sink argpos="3" kind="path_traversal" resource="web"/>
+      </method>
+      <method name="wss" signature="wss(request io.ktor.client.request.HttpRequestBuilder, block io.ktor.client.features.websocket.ClientWebSocketSession)" match="numargs" alias="websocket,websocketRaw,ws,wsRaw" >
+        <sink argpos="0" kind="ssrf" resource="web"/>
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        <sink argpos="0" kind="insecure_transport" resource="web"/>
+        <source argpos="1" kind="user_input" resource="web" />
+      </method>
+      <method name="wss" signature="wss(urlString kotlin.String, request io.ktor.client.request.HttpRequestBuilder, block io.ktor.client.features.websocket.ClientWebSocketSession)" match="numargs" alias="websocket,websocketRaw,ws,wsRaw" >
+        <sink argpos="0" kind="ssrf" resource="web"/>
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        <sink argpos="0" kind="insecure_transport" resource="web"/>
+        <source argpos="2" kind="user_input" resource="web" />
+      </method>
+      <method name="wss" signature="wss(method io.ktor.http.HttpMethod, host kotlin.String, port kotlin.Int, path kotlin.String,
+        request io.ktor.client.request.HttpRequestBuilder, block io.ktor.client.features.websocket.ClientWebSocketSession)" match="numargs" alias="websocket,websocketRaw,ws,wsRaw" >
+        <sink argpos="1" kind="ssrf" resource="web"/>
+        <sink argpos="1" kind="http_parameter_pollution" resource="web"/>
+        <sink argpos="1" kind="insecure_transport" resource="web"/>
+        <sink argpos="0,1,2" kind="resource_injection" resource="web"/>
+        <sink argpos="3" kind="path_traversal" resource="web"/>
+        <source argpos="5" kind="user_input" resource="web" />
+      </method>
+      <method name="wssRaw" signature="wssRaw(method io.ktor.http.HttpMethod, host kotlin.String, port kotlin.Int, path kotlin.String,
+        request io.ktor.client.request.HttpRequestBuilder, block io.ktor.client.features.websocket.ClientWebSocketSession)" >
+        <sink argpos="1" kind="ssrf" resource="web"/>
+        <sink argpos="1" kind="http_parameter_pollution" resource="web"/>
+        <sink argpos="1" kind="insecure_transport" resource="web"/>
+        <sink argpos="0,1,2" kind="resource_injection" resource="web"/>
+        <sink argpos="3" kind="path_traversal" resource="web"/>
+        <source argpos="5" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <class name="io.ktor.http.Cookie">
+      <constructor name="Cookie" signature="Cookie(name kotlin.String, value kotlin.String, encoding io.ktor.http.CookieEncoding, maxAge kotlin.Int, expires io.ktor.util.date.GMTDate,
+    domain kotlin.String, path kotlin.String, secure kotlin.Boolean, httpOnly kotlin.Boolean, extensions kotlin.collections.Map">
+        <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.maxAge:3,cookie.domain:4,cookie.path:5,cookie.secure:6,cookie.secure:7</tags>
+        <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      </constructor>
+
+    </class>
+
+    <function name="io.ktor.sessions.cookie" signature="io.ktor.sessions.cookie(name kotlin.String, sessionType kotlin.reflect.KClass, storage io.ktor.sessions.SessionStorage)"
+              alias="io.ktor.sessions.Configuration.cookie" match="fullsignature"/>
+
+    <function name="io.ktor.sessions.cookie" signature="io.ktor.sessions.cookie(name kotlin.String, storage io.ktor.sessions.SessionStorage)" alias="io.ktor.sessions.Configuration.cookie" match="fullsignature"/>
+
+    <function name="io.ktor.sessions.cookie" signature="io.ktor.sessions.cookie(name kotlin.String, sessionType kotlin.reflect.KClass, storage io.ktor.sessions.SessionStorage,
+    block io.ktor.sessions.CookieIdSessionBuilder)" alias="io.ktor.sessions.Configuration.cookie" match="numargs" />
+
+    <function name="io.ktor.sessions.cookie" signature="io.ktor.sessions.cookie(name kotlin.String,storage io.ktor.sessions.SessionStorage,
+    block io.ktor.sessions.CookieIdSessionBuilder)" alias="io.ktor.sessions.Configuration.cookie" match="numargs"/>
+
+    <function name="io.ktor.sessions.cookie" signature="io.ktor.sessions.cookie(name kotlin.String, sessionType kotlin.reflect.KClass)" alias="io.ktor.sessions.Configuration.cookie" match="fullsignature"/>
+
+    <function name="io.ktor.sessions.cookie" signature="io.ktor.sessions.cookie(name kotlin.String, block io.ktor.sessions.CookieIdSessionBuilder)" alias="io.ktor.sessions.Configuration.cookie" match="numargs" />
+
+    <function name="io.ktor.sessions.cookie" signature="io.ktor.sessions.cookie(name kotlin.String, sessionType kotlin.reflect.KClass,
+    block io.ktor.sessions.CookieIdSessionBuilder)" alias="io.ktor.sessions.Configuration.cookie" match="numargs" />
+
+    <class name="io.ktor.sessions.CookieIdSessionBuilder">
+      <field name="cookie" type="io.ktor.sessions.CookieConfiguration"/>
+    </class>
+
+    <class name="io.ktor.sessions.CookieConfiguration">
+      <field name="extensions" type="kotlin.collections.MutableMap">
+        <sink argpos="-1" kind="cookie_plaintext_storage" resource="web" />
+      </field>
+    </class>
+
+    <class name="io.ktor.sessions.SessionStorage" kind="interface" />
+
+    <class name="io.ktor.client.request.HttpRequestBuilder" supertypes="io.ktor.http.HttpMessageBuilder" >
+      <field name="body" type="kotlin.Any" />
+
+      <method name="url" signature="url(block io.ktor.http.URLBuilder)" >
+        <return type="kotlin.Unit" />
+      </method>
+    </class>
+
+    <class name="io.ktor.http.URLBuilder">
+      <constructor name="URLBuilder" signature="URLBuilder(protocol io.ktor.http.URLProtocol, host kotlin.String, port kotlin.Int, user kotlin.String,
+    password kotlin.String, encodedPath kotlin.String, parameters io.ktor.http.ParametersBuilder, fragment kotlin.String, trailingQuery kotlin.Boolean)" >
+        <tags>username:3, password:4</tags>
+        <sink argpos="1" kind="ssrf" resource="web"/>
+        <sink argpos="1" kind="http_parameter_pollution" resource="web"/>
+        <sink argpos="1" kind="insecure_transport" resource="web"/>
+      </constructor>
+    </class>
+
+    <class name="io.ktor.http.HttpMessageBuilder" kind="interface" >
+      <field name="headers" type="io.ktor.http.HeadersBuilder" />
+
+      <method name="cookies" signature="cookies()" >
+        <return type="io.ktor.client.call.HttpClientCall" />
+      </method>
+    </class>
+
+    <class name="io.ktor.http.HeadersBuilder" supertypes="io.ktor.util.StringValuesBuilder" />
+
+    <class name="io.ktor.util.StringValuesBuilder">
+      <method name="get" signature="get(name kotlin.String)" >
+        <return type="kotlin.String" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="getAll" signature="getAll(name kotlin.String)" >
+        <return type="kotlin.collections.List" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="names" signature="names()" >
+        <return type="kotlin.collections.Set" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="set" signature="set()" >
+        <return type="kotlin.collections.Set" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <class name="io.ktor.client.request.HttpRequest" kind="interface" supertypes="io.ktor.http.HttpMessage, kotlin.CoroutineScope" >
+      <field name="call" type="io.ktor.client.call.HttpClientCall" />
+    </class>
+
+    <class name="io.ktor.http.HttpMessage" kind="interface" >
+      <field name="headers" type="io.ktor.http.Headers" >
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </field>
+    </class>
+
+    <class name="io.ktor.http.Headers" kind="interface" supertypes="io.ktor.util.StringValues" />
+
+    <class name="io.ktor.server.cio.HttpServer">
+      <constructor name="HttpServer" signature="HttpServer(rootServerJob Job, acceptJob Job, serverSocket Deferred)" >
+        <sink argpos="2" kind="ssrf" resource="web"/>
+      </constructor>
+    </class>
+
+    <function name="ldapAuthenticate" signature="ldapAuthenticate(credential UserPasswordCredential, ldapServerURL kotlin.String, userDNFormat: kotlin.String)" match="name" >
+      <return type="io.ktor.auth.UserIdPrincipal" />
+      <sink argpos="1" kind="ssrf" resource="network"/>
+      <sink argpos="0" kind="insecure_transport" resource="network" />
+      <sink argpos="1" kind="http_parameter_pollution" resource="network"/>
+    </function>
+
+    <class name="io.ktor.cliente.engine.android.AndroidClientEngine" supertypes="io.ktor.client.engine.HttpClientJvmEngine"/>
+    <class name="io.ktor.cliente.engine.HttpClientJvmEngine" supertypes="io.ktor.client.engine.HttpClientEngine"/>
+    <class name="io.ktor.cliente.engine.HttpClientEngine" supertypes="io.ktor.client.HttpClient"/>
+  </module>
+
+  <module name="khttp" standard="khttp">
+    <description url="https://khttp.readthedocs.io/">HTTP library</description>
+
+    <function name="khttp.get" signature="khttp.get(url kotlin.String, params kotlin.collections.Map)" alias="khttp.delete, khttp.head, khttp.options, khttp.post, khttp.put" match="name" >
+      <sink argpos="0" kind="ssrf"/>
+      <sink argpos="0" kind="insecure_transport" resource="network" />
+      <sink argpos="0" kind="http_parameter_pollution" resource="filesystem" />
+      <source argpos="-1" kind="user_input" resource="network" />
+    </function>
+    <function name="khttp.request" signature="khttp.request(kotlin.String, java.lang.String)" match="name" >
+      <sink argpos="1" kind="ssrf"/>
+      <sink argpos="1" kind="insecure_transport" resource="network" />
+      <sink argpos="1" kind="http_parameter_pollution" resource="filesystem" />
+      <source argpos="-1" kind="user_input" resource="network" />
+    </function>
+  </module>
+
+  <module name="com.github.kittinunf.fuel" standard="Fuel">
+    <description url="https://github.com/kittinunf/fuel">HTTP networking library</description>
+
+    <function name="com.github.kittinunf.fuel.Fuel.get" signature="com.github.kittinunf.fuel.Fuel.get(kotlin.String)"
+              alias="com.github.kittinunf.fuel.Fuel.post, com.github.kittinunf.fuel.Fuel.put, com.github.kittinunf.fuel.Fuel.path,
+            com.github.kittinunf.fuel.Fuel.head, com.github.kittinunf.fuel.Fuel.request" >
+      <return type="com.github.kittinunf.fuel.core.Request" />
+      <sink argpos="0" kind="ssrf"/>
+      <sink argpos="0" kind="insecure_transport" resource="network" />
+      <sink argpos="0" kind="http_parameter_pollution" resource="filesystem" />
+      <source argpos="-1" kind="user_input" resource="network" />
+    </function>
+
+    <class name="com.github.kittinunf.fuel.core.Request" kind="interface" >
+      <method name="requestProgress" signature="requestProgress()" >
+        <return type="com.github.kittinunf.fuel.core.Request" />
+      </method>
+      <method name="responseProgress" signature="responseProgress()" >
+        <return type="com.github.kittinunf.fuel.core.Request" />
+      </method>
+      <method name="timeout" signature="timeout(timeout kotlin.Int)" >
+        <return type="com.github.kittinunf.fuel.core.Request" />
+      </method>
+      <method name="timeoutRead" signature="timeoutRead(timeoutRead kotlin.Int)" >
+        <return type="com.github.kittinunf.fuel.core.Request" />
+      </method>
+      <method name="useHttpCache" signature="useHttpCache(useHttpCache kotlin.Boolean)" >
+        <return type="com.github.kittinunf.fuel.core.Request" />
+      </method>
+      <method name="allowRedirects" signature="allowRedirects(allowRedirects kotlin.Boolean)" >
+        <return type="com.github.kittinunf.fuel.core.Request" />
+      </method>
+      <method name="get" signature="get(header kotlin.String)" >
+        <return type="com.github.kittinunf.fuel.core.Request" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="set" signature="set(header kotlin.String, value Any)" >
+        <tags>CWE:113,header.name:0,header.value:1</tags>
+        <return type="com.github.kittinunf.fuel.core.Request" />
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="header" signature="header(map kotlin.collections.Map)" match="name">
+        <tags>CWE:113,header.name:0,header.value:1</tags>
+        <return type="com.github.kittinunf.fuel.core.Request" />
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="appendHeader" signature="appendHeader(header kotlin.String, value Any)" match="name" >
+        <tags>CWE:113,header.name:0,header.value:1</tags>
+        <return type="com.github.kittinunf.fuel.core.Request" />
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="response" signature="response(ResultHandler)" match="name" >
+        <return type="com.github.kittinunf.fuel.core.Request" />
+      </method>
+      <method name="responseString" signature="responseString(com.github.kittinunf.fuel.core.ResultHandler)" match="name" >
+        <return type="com.github.kittinunf.fuel.core.Request" />
+      </method>
+      <method name="body" signature="body()" match="name" >
+        <return type="com.github.kittinunf.fuel.core.Request" />
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+    </class>
+
+    <class name="com.github.kittinunf.fuel.core.ResultHandler" kind="interface" >
+      <method name="success" signature="com.github.kittinunf.fuel.core.request, com.github.kittinunf.fuel.core.response, value)" />
+      <method name="failure" signature="com.github.kittinunf.fuel.core.request, com.github.kittinunf.fuel.core.response, value)" />
+    </class>
+
+    <class name="com.github.kittinunf.fuel.core.Response">
+      <method name="get" signature="get" >
+        <return type="kotlin.String" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="body" signature="body" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <class name="com.github.kittinunf.fuel.core.FuelManager">
+      <field name="instance" type="com.github.kittinunf.fuel.core.FuelManager" />
+      <field name="basePath" type="kotlin.String" >
+        <sink argpos="-2" kind="http_parameter_pollution" />
+        <sink argpos="-2" kind="ssrf"/>
+        <sink argpos="-2" kind="insecure_transport" resource="network" />
+      </field>
+    </class>
+  </module>
+
+  <module name="io.ipfs.kotlin" standard="ipfs-api-kotlin">
+    <description url="https://github.com/ligi/ipfs-api-kotlin">API for kotlin to access a IPFS node via http</description>
+
+    <class name="io.ipfs.kotlin.IPFSConfiguration">
+      <constructor name="IPFSConfiguration" signature="IPFSConfiguration(base_url kotlin.String, okHttpClient okhttp3.OkHttpClient, moshi com.squareup.moshi.Moshi)" >
+        <sink argpos="0" kind="http_parameter_pollution" />
+        <sink argpos="0" kind="ssrf"/>
+        <sink argpos="0" kind="insecure_transport" resource="network" />
+      </constructor>
+    </class>
+
+    <class name="io.ipfs.kotlin.IPFS">
+      <constructor name="IPFS" signature="IPFS(configuration io.ipfs.kotlin.IPFSConfiguration)" match="numargs" />
+      <constructor name="IPFS" signature="IPFS(base_url kotlin.String, okHttpClient okhttp3.OkHttpClient, moshi com.squareup.moshi.Moshi)" match="numargs" >
+        <sink argpos="0" kind="http_parameter_pollution" />
+        <sink argpos="0" kind="ssrf"/>
+        <sink argpos="0" kind="insecure_transport" resource="network" />
+      </constructor>
+
+      <field name="add" type="io.ipfs.kotlin.commands.Add" />
+      <field name="get" type="io.ipfs.kotlin.commands.Get" />
+      <field name="info" type="io.ipfs.kotlin.commands.Info" />
+      <field name="stats" type="io.ipfs.kotlin.commands.Stats" />
+      <field name="pins" type="io.ipfs.kotlin.commands.Pins" />
+      <field name="repo" type="io.ipfs.kotlin.commands.Repo" />
+      <field name="name" type="io.ipfs.kotlin.commands.Name" />
+
+      <field name="connection" type="io.ipfs.kotlin.IPFSConnection" />
+    </class>
+
+    <class name="io.ipfs.kotlin.IPFSConnection">
+      <method name="callCmd" signature="callCmd(cnd kotlin.String)" >
+        <return type="okhttp3.ResponseBody" />
+        <sink argpos="0" kind="command_injection" resource="other" />
+      </method>
+      <method name="setErrorByJSON" signature="setErrorByJSON(jsonString kotlin.String" >
+        <sink argpos="0" kind="json_injection" resource="other" />
+      </method>
+    </class>
+
+    <class name="io.ipfs.kotlin.commands.Add">
+      <method name="file" signature="file(file java.io.File, name Kotlin.String, filename kotlin.String)" >
+        <sink argpos="0, 2" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="directory" signature="directory(file java.io.File, name Kotlin.String, filename kotlin.String)" >
+        <sink argpos="0, 2" kind="path_traversal" resource="filesystem" />
+      </method>
+    </class>
+
+    <class name="io.ipfs.kotlin.commands.Name">
+      <method name="publish" signature="publish(hash kotlin.String)" >
+        <return type="kotlin.String" />
+        <sink argpos="0" kind="command_injection" resource="os" />
+        <source argpos="-1" kind="user_input" resource="other"  />
+      </method>
+      <method name="resolve" signature="resolve(hash kotlin.String)" >
+        <return type="kotlin.String" />
+        <sink argpos="0" kind="command_injection" resource="os" />
+        <source argpos="-1" kind="user_input" resource="other"  />
+      </method>
+    </class>
+
+    <class name="io.ipfs.kotlin.commands.Get">
+      <method name="cat" signature="cat(hash String)" >
+        <return type="kotlin.String" />
+        <sink argpos="0" kind="command_injection" resource="os" />
+        <source argpos="-1" kind="user_input" resource="other"  />
+      </method>
+      <method name="catBytes" signature="catBytes(hash String)" >
+        <sink argpos="0" kind="command_injection" resource="os" />
+        <source argpos="-1" kind="user_input" resource="other"  />
+      </method>
+      <method name="catStream" signature="catStream(hash String, handler I->T)" >
+        <sink argpos="0" kind="command_injection" resource="os" />
+        <source argpos="-1" kind="user_input" resource="other"  />
+      </method>
+    </class>
+
+    <class name="io.ipfs.kotlin.commands.Pins">
+      <method name="add" signature="add(hash kotlin.String)" >
+        <return type="kotlin.Boolean" />
+        <sink argpos="0" kind="command_injection" resource="os" />
+        <source argpos="-1" kind="user_input" resource="other"  />
+      </method>
+    </class>
+
+    <class name="io.ipfs.kotlin.commands.Repo">
+      <method name="listFromNDJson" signature="listFromNDJson(source okio.BufferedSource)" >
+        <return type="kotlin.collections.List" />
+        <sink argpos="0" kind="json_injection" resource="os" />
+        <source argpos="-1" kind="user_input" resource="other"  />
+      </method>
+    </class>
+  </module>
+
+  <module name="org.wasabifx.wasabi" standard="Wasabi">
+    <description url="https://github.com/wasabifx/wasabi">HTTP framework</description>
+
+    <class name="org.wasabifx.wasabi.app.AppServer">
+      <field name="httpServer" type="org.wasabifx.wasabi.protocol.http.HttpServer" />
+
+      <method name="get"
+              signature="get(path kotlin.String, handlers org.wasabifx.wasabi.routing.RouteHandler,org.wasabifx.wasabi.routing.RouteHandler...)"
+              alias="post,put,head,delete,options,patch" />
+    </class>
+
+    <class name="org.wasabifx.wasabi.protocol.http.HttpServer">
+      <field name="appServer" type="org.wasabifx.wasabi.app.AppServer" />
+    </class>
+
+    <class name="org.wasabifx.wasabi.routing.RouteHandler">
+      <field name="request" type="org.wasabifx.wasabi.protocol.http.Request" />
+      <field name="response" type="org.wasabifx.wasabi.protocol.http.Response" />
+    </class>
+
+    <class name="org.wasabifx.wasabi.protocol.http.Request">
+      <field name="uri" type="kotlin.String" />
+      <field name="rawHeaders" type="kotlin.collections.Map" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="document" type="kotlin.String" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="path" type="kotlin.String" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="scheme" type="kotlin.String" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="body" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="remoteAddress" type="java.net.InetSocketAddress" />
+      <field name="port" type="kotlin.Int" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="urlPort" type="kotlin.String" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="host" type="kotlin.String" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="queryParams" type="kotlin.collections.Map" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="routeParams" type="kotlin.collections.Map" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="bodyParams" type="kotlin.collections.Map" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="cookies" type="kotlin.collections.Map" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="session" type="org.wasabifx.wasabi.protocol.http.Session" />
+
+      <constructor name="Request" signature="Request(httpRequest io.netty.handler.codec.http.HttpRequest, address java.net.InetSocketAddress)" />
+      <constructor name="Request" signature="Request(http2Headers io.netty.handler.codec.http2.Http2Headers, address java.net.InetSocketAddress)" />
+    </class>
+
+    <class name="org.wasabifx.wasabi.protocol.http.Response">
+      <method name="redirect" signature="redirect(url java.String, redirectType org.wasabifx.wasabi.protocol.http.StatusCodes)" >
+        <sink argpos="0" kind="open_redirect" resource="web"/>
+        <sink argpos="0" kind="execution_after_redirect" resource="web" />
+        <sink argpos="0" kind="insecure_transport" resource="web"/>
+      </method>
+      <method name="sendFile" signature="sendFile(filename kotlin.String, contentType kotlin.String)" match="name" >
+        <sink argpos="0" kind="path_traversal" resource="web"/>
+        <sink argpos="0" kind="xss" resource="web"/>
+      </method>
+      <method name="send" signature="send(obj kotlin.Any contentType kotlin.String)" match="name" >
+        <sink argpos="0" kind="path_traversal" resource="web"/>
+        <sink argpos="0" kind="xss" resource="web"/>
+      </method>
+    </class>
+
+    <class name="org.wasabifx.wasabi.protocol.http.Session"/>
+    <class name="org.wasabifx.wasabi.protocol.http.Cookie">
+      <constructor name="Cookie" signature="Cookie(name kotlin.String, value kotlin.String)" >
+        <tags>cookie.create,cookie.name:0,cookie.value:1</tags>
+        <propagate from="0,1" to="-1"/>
+      </constructor>
+    </class>
+  </module>
+
+  <module name="org.http4k" standard="http4k">
+    <description url="https://www.http4k.org/">"Server as a Function" HTTP toolkit</description>
+
+    <class name="org.http4k.core.Response" kind="interface" supertypes="org.http4k.core.HttpMessage" />
+    <class name="org.http4k.core.HttpMessage" kind="interface" supertypes="java.io.Closeable" >
+      <method name="header" signature="header(name kotlin.String)" >
+        <tags>header.name:0</tags>
+        <return type="kotlin.String" />
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="header" signature="header(name kotlin.String, value kotlin.String)" >
+        <tags>header.name:0,header.value:1</tags>
+        <return type="org.http4k.core.HttpMessage" />
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="headers" signature="headers(headers org.http4k.core.Headers)" >
+        <tags>header</tags>
+        <return type="org.http4k.core.HttpMessage" />
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="body" signature="body()" match="name" >
+        <return type="org.http4k.core.HttpMessage" />
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+      <method name="bodyString" signature="bodyString()" match="name" >
+        <return type="kotlin.String" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <class name="org.http4k.core.Uri">
+      <constructor name="Uri" signature="Uri(scheme kotlin.String, userInfo kotlin.String, host kotlin.String, port kotlin.Int, path kotlin.String, query kotlin.String)" >
+        <sink argpos="2,3,4" kind="ssrf"/>
+        <sink argpos="4" kind="http_parameter_pollution"/>
+        <sink argpos="2" kind="insecure_transport" resource="network" />
+      </constructor>
+    </class>
+
+    <class name="org.http4k.core.Request" kind="interface" supertypes="org.http4k.core.HttpMessage" >
+      <constructor name="Request" signature="Request(method org.http4k.core.Method, uri org.http4k.core.Uri, headers org.http4k.core.Headers, body org.http4k.core.Body)" >
+        <sink argpos="1" kind="ssrf" resource="network"/>
+        <sink argpos="1" kind="http_parameter_pollution" resource="filesystem" />
+      </constructor>
+
+      <method name="query" signature="query(name kotlin.String, value kotlin.String)" >
+        <return type="org.http4k.core.Request" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="query" signature="query(name kotlin.String)" >
+        <return type="kotlin.String" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="queries" signature="queries(name kotlin.String)" >
+        <return type="kotlin.collections.List" elementType="kotlin.String" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <class name="org.http4k.core.Headers" supertypes="org.http4k.core.Parameters" />
+    <class name="org.http4k.core.Parameters" supertypes="kotlin.collections.List" />
+
+    <class name="org.http4k.core.Credentials">
+      <constructor name="Credentials" signature="Credentials(user kotlin.String, password kotlin.String)" >
+        <tags>username:0, password:1</tags>
+      </constructor>
+    </class>
+
+    <class name="org.http4k.core.HttpHandler" kind="interface" />
+    <class name="org.http4k.server.ServerConfig" kind="interface" >
+      <method name="toServer" signature="toServer(httpHandler org.http4k.core.HttpHandler)" >
+        <return type="org.http4k.server.Http4kServer" />
+      </method>
+    </class>
+    <class name="org.http4k.server.ApacheServer" supertypes="org.http4k.server.ServerConfig" >
+      <constructor name="ApacheServer" signature="ApacheServer(port kotlin.Int)" >
+        <sink argpos="0" kind="resource_injection" resource="network"/>
+      </constructor>
+      <constructor name="ApacheServer" signature="ApacheServer(port kotlin.Int, address java.net.InetAddress)" >
+        <sink argpos="0,1" kind="resource_injection" resource="network"/>
+      </constructor>
+    </class>
+    <class name="org.http4k.server.KtorCIO" supertypes="org.http4k.server.ServerConfig" >
+      <constructor name="KtorCIO" signature="KtorCIO(port kotlin.Int)" >
+        <sink argpos="0,1" kind="resource_injection" resource="network"/>
+      </constructor>
+    </class>
+    <class name="org.http4k.server.Netty" supertypes="org.http4k.server.ServerConfig" >
+      <constructor name="Netty" signature="Netty(port kotlin.Int)" >
+        <sink argpos="0,1" kind="resource_injection" resource="network"/>
+      </constructor>
+    </class>
+    <class name="org.http4k.server.SunHttp" supertypes="org.http4k.server.ServerConfig" >
+      <constructor name="SunHttp" signature="SunHttp(port kotlin.Int)" >
+        <sink argpos="0,1" kind="resource_injection" resource="network"/>
+      </constructor>
+    </class>
+    <class name="org.http4k.server.Undertow" supertypes="org.http4k.server.ServerConfig" >
+      <constructor name="Undertow" signature="Undertow(port kotlin.Int, enableHttp2: kotlin.Boolean)" match="name" >
+        <sink argpos="0,1" kind="resource_injection" resource="network"/>
+      </constructor>
+    </class>
+    <class name="org.http4k.server.WsServerConfig" supertypes="org.http4k.server.ServerConfig" >
+      <method name="toWsServer" signature="toWsServer(httpHandler org.http4k.websocket.WsHandler)" >
+        <return type="org.http4k.server.Http4kServer" />
+      </method>
+    </class>
+    <class name="org.http4k.server.Jetty" kind="interface" supertypes="org.http4k.server.WsServerConfig" >
+      <constructor name="Jetty" signature="Jetty(port kotlin.Int)" >
+        <sink argpos="0" kind="resource_injection" resource="network"/>
+      </constructor>
+      <constructor name="Jetty" signature="Jetty(port kotlin.Int, server org.http4k.server.Http4kServer)" >
+        <sink argpos="0,1" kind="resource_injection" resource="network"/>
+      </constructor>
+    </class>
+
+    <class name="org.http4k.routing.RoutingWsHandler" kind="interface" supertypes="org.http4k.websocket.WsHandler" />
+  </module>
+
+  <module name="com.iyanuadelekan.kanary" standard="Kanary">
+    <description url="https://github.com/SeunAdelekan/Kanary">Web framework for building REST APIs</description>
+
+    <class name="com.iyanuadelekan.kanary.core.KanaryController">
+      <method name="beforeAction" signature="beforeAction(request javax.servlet.http.HttpServletRequest, response javax.servlet.http.HttpServletResponse)" />
+      <method name="afterAction" signature="afterAction(request javax.servlet.http.HttpServletRequest, response javax.servlet.http.HttpServletResponse)" />
+    </class>
+
+    <class name="com.iyanuadelekan.kanary.core.KanaryRouter" supertypes="com.iyanuadelekan.kanary.interfaces.RouterInterface" />
+    <class name="com.iyanuadelekan.kanary.interfaces.RouterInterface" kind="interface" >
+      <method name="get"
+              signature="get(path kotlin.String, action (Request, HttpServletRequest, HttpServletResponse)->Unit, controller com.iyanuadelekan.kanary.core.KanaryController)"
+              alias="post,delete,patch,options" />
+    </class>
+
+    <class name="com.iyanuadelekan.kanary.server.Server" supertypes="org.eclipse.jetty.server.Server" >
+      <method name="listen" signature="listen(port kotlin.Int)" >
+        <sink argpos="0" kind="resource_injection" resource="network"/>
+      </method>
+    </class>
+
+    <!-- javax.servlet.http.HttpServletResponse extension -->
+    <function name="com.iyanuadelekan.kanary.helpers.http.response.sendJson" signature="com.iyanuadelekan.kanary.helpers.http.response.sendJson(obj kotlin.Any)" >
+      <sink argpos="0" kind="xss" resource="web"/>
+    </function>
+    <function name="com.iyanuadelekan.kanary.helpers.http.response.send" signature="com.iyanuadelekan.kanary.helpers.http.response.send(message kotlin.String)" >
+      <sink argpos="0" kind="xss" resource="web"/>
+    </function>
+    <function name="com.iyanuadelekan.kanary.helpers.http.response.sendFile" signature="com.iyanuadelekan.kanary.helpers.http.response.sendFile(file java.io.File, contentType kotlin.String, contentLength kotlin.Int)" match="name">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </function>
+    <function name="com.iyanuadelekan.kanary.helpers.http.response.redirect" signature="com.iyanuadelekan.kanary.helpers.http.response.redirect(url kotlin.String)" match="name">
+      <sink argpos="0" kind="insecure_transport" resource="network" />
+      <sink argpos="0" kind="open_redirect"/>
+      <sink argpos="0" kind="execution_after_redirect" resource="web" />
+    </function>
+    <function name="com.iyanuadelekan.kanary.helpers.http.response.sendHtml" signature="com.iyanuadelekan.kanary.helpers.http.response.sendHtml(html kotlin.String)" >
+      <sink argpos="0" kind="xss" resource="web"/>
+    </function>
+    <function name="com.iyanuadelekan.kanary.helpers.http.response.withStatus" signature="com.iyanuadelekan.kanary.helpers.http.response.withStatus(status kotlin.Int)" >
+      <return type="javax.servlet.http.HttpServletResponse" />
+    </function>
+  </module>
+</library>

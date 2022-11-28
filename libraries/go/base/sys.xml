@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="sys">
+
+  <module name="sys.windows" >
+    <description url="https://pkg.go.dev/golang.org/x/sys/window">Low-level Windows OS primitives</description>
+
+    <class name="sys.windows.LazyDLL" >
+      <method name="Lock" signature="Lock()" />
+      <method name="Unlock" signature="Unlock()" />
+    </class>
+
+    <function name="sys.windows.NewLazyDLL" signature="sys.windows.NewLazyDLL(go.string)" alias="sys.windows.NewLazySystemDLL">
+      <return type="sys.windows.LazyDLL" />
+      <sink argpos="0" kind="process_control" resource="os" />
+    </function>
+    <function name="sys.windows.Chdir" signature="sys.windows.Chdir(go.string)" >
+      <return type="go.error" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="sys.windows.Chmod" signature="sys.windows.Chmod(go.string,go.uint32)">
+      <return type="go.error" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="sys.windows.Chown" signature="sys.windows.Chown(go.string,go.int,go.int)">
+      <return type="go.error" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      <sink argpos="1,2" kind="resource_injection" resource="filesystem" />
+    </function>
+    <function name="sys.windows.Getenv" signature="sys.windows.Getenv(go.string)">
+      <return type="go.string,go.bool" />
+      <source argpos="-1" kind="environment_input" resource="environment" />
+    </function>
+  </module>
+
+  <module name="sys.unix" >
+    <description url="https://pkg.go.dev/golang.org/x/sys/unix">Low-level Unix OS primitives</description>
+
+    <function name="sys.unix.Access" signature="sys.unix.Access(go.string,go.uint32)">
+      <return type="go.error" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="sys.unix.Bind" signature="sys.unix.Bind(go.int,sys.unix.Sockaddr)">
+      <return type="go.error" />
+      <sink argpos="0,1" kind="resource_injection" resource="filesystem" />
+    </function>
+    <function name="sys.unix.BindToDevice" signature="sys.unix.BindToDevice(go.int,go.string)">
+      <return type="go.error" />
+      <sink argpos="0,1" kind="resource_injection" resource="filesystem" />
+    </function>
+    <function name="sys.unix.Chdir" signature="sys.unix.Chdir(go.string)" alias="sys.unix.Chroot">
+      <return type="go.error" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="sys.unix.Chmod" signature="sys.unix.Chmod(go.string,go.uint32)">
+      <return type="go.error" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="sys.unix.Chown" signature="sys.unix.Chown(go.string,go.int,go.int)" alias="sys.unix.Lchown">
+      <return type="go.error" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      <sink argpos="1,2" kind="resource_injection" resource="filesystem" />
+    </function>
+    <function name="sys.unix.CopyFileRange" signature="sys.unix.CopyFileRange(go.int,go.int64,go.int,go.int64,go.int,go.int)">
+      <return type="go.int,go.error" />
+    </function>
+    <function name="sys.unix.Creat" signature="sys.unix.Creat(go.string,go.uint32)">
+      <return type="go.int,go.error" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="sys.unix.DeleteModule" signature="sys.unix.DeleteModule(go.string,go.int)">
+      <return type="go.error" />
+      <sink argpos="0" kind="resource_injection" resource="filesystem" />
+    </function>
+    <function name="sys.unix.Exec" signature="sys.unix.Exec(go.string,go.slice,go.slice)">
+      <return type="go.error" />
+      <sink argpos="0" kind="command_injection" resource="filesystem" />
+    </function>
+    <function name="sys.unix.Getenv" signature="sys.unix.Getenv(go.string)">
+      <return type="go.string,go.bool" />
+      <source argpos="-1" kind="environment_input" resource="environment" />
+    </function>
+    <function name="sys.unix.Mkdir" signature="sys.unix.Mkdir(go.string,go.uint32)">
+      <return type="go.error" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="sys.unix.Mkfifo" signature="sys.unix.Mkfifo(go.string,go.uint32)">
+      <return type="go.error" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="sys.unix.Mkdirat" signature="sys.unix.Mkdirat(go.int,go.string,go.uint32)">
+      <return type="go.error" />
+      <sink argpos="1" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="sys.unix.Mkfifoat" signature="sys.unix.Mkfifoat(go.int,go.string,go.uint32)">
+      <return type="go.error" />
+      <sink argpos="1" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="sys.unix.Mknod" signature="sys.unix.Mknod(go.string,go.uint32,go.int)">
+      <return type="go.error" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="sys.unix.Mknodat" signature="sys.unix.Mknodat(go.int,go.string,go.uint32,go.int)">
+      <return type="go.error" />
+      <sink argpos="1" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="sys.unix.Mount" signature="sys.unix.Mount(go.string,go.string,go.strin,go.string,go.string)">
+      <return type="go.error" />
+      <sink argpos="0,1,2" kind="resource_injection" resource="filesystem" />
+    </function>
+    <function name="sys.unix.Nanosleep" signature="sys.unix.Nanosleep(sys.unix.Timespec,sys.unix.Timesppec)">
+      <return type="go.error" />
+      <sink argpos="0,1,2" kind="command_injection" resource="filesystem" />
+    </function>
+    <function name="sys.unix.Open" signature="sys.unix.Open(go.string,go.int,go.uint32)">
+      <return type="go.int,go.error" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+  </module>
+</library>

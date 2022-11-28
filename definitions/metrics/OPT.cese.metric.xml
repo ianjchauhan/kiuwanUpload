@@ -1,0 +1,614 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.cese" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COMPLEXITY" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COMPLEXITY" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.LOWER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.FUNCTION" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds />
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <internal-name id="OPT.ABAP.COMPLEXITY.CESE" />
+        <java-class>com.als.abap.metrics.EssentialComplexityAbapMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.COMPLEXITY.CESE" />
+        <java-class>com.optimyth.csharp.metrics.EssentialComplexityCsharpMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.COMPLEXITY.CESE" />
+        <java-class>com.als.cpp.metrics.EssentialComplexityCppMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+        <internal-name id="OPT.COBOL.COMPLEXITY.CESE" />
+        <java-class>com.als.cobol.metrics.EssentialComplexityCobolMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.COMPLEXITY.CESE" />
+        <java-class>com.als.java.metrics.EssentialComplexityJavaMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL">
+        <internal-name id="OPT.NATURAL.COMPLEXITY.CESE" />
+        <java-class>com.optimyth.qaking.natural.metrics.EssentialComplexityNaturalMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <internal-name id="OPT.PLSQL.COMPLEXITY.CESE" />
+        <java-class>com.als.plsql.metrics.EssentialComplexityPlSqlMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+        <internal-name id="OPT.VB6.COMPLEXITY.CESE" />
+        <java-class>com.optimyth.qaking.vb6.metrics.EssentialComplexityVB6MetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.COMPLEXITY.CESE" />
+        <java-class>com.optimyth.vbnet.metrics.EssentialComplexityVBnetMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+   <!-- Code examples for each language parser -->
+    <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <code-example name="metricCodeExampleAbap" result-value="5">
+<![CDATA[
+FORM DO_INBOUND USING ZFILE PGM_ID MODE ABEND_ON_ERROR_IF_SPACE.
+
+  IF SY-SUBRC NE 0
+     OR ZFILE CS 'FILESPEC'.
+    REFRESH: ZZMSG_TAB1, ZZMSG_TAB2.
+    CLEAR ZZMSG_TAB2.
+    MOVE 'Cannot Open File' TO ZZMSG_TAB2.
+    APPEND ZZMSG_TAB2.
+    CLEAR ZZMSG_TAB2.
+    MOVE 'File Name is:' TO ZZMSG_TAB2.
+    APPEND ZZMSG_TAB2.
+    CLEAR ZZMSG_TAB2.
+    MOVE ZFILE  TO ZZMSG_TAB2.
+    APPEND ZZMSG_TAB2.
+    CALL FUNCTION 'Z_SEND_MESSAGE'
+         EXPORTING
+              PGM_ID     = PGM_ID
+         TABLES
+              ZZMSG_TAB1 = ZZMSG_TAB1
+              ZZMSG_TAB2 = ZZMSG_TAB2.
+    IF ABEND_ON_ERROR_IF_SPACE IS INITIAL.
+      MESSAGE A450(ZABBOTT) WITH 'Could Not Find Input File' ZFILE.            "CESE 1
+    ELSE.
+      RAISE ERROR.
+    ENDIF.
+  ENDIF.
+
+*Open dataset for output
+  IF MODE = 'B'.
+    OPEN DATASET ZFILE FOR INPUT IN BINARY MODE.
+  ENDIF.
+
+CHECK NOT SY-SUBRC GT 0.                                                       "CESE 2
+
+  MOVE ZFILE TO ZZTAB-FILENAME.
+  APPEND ZZTAB.
+  MESSAGE S450(ZABBOTT) WITH 'Param-in = ' ZZTAB-PARAM-IN.                     "CESE 3
+  MESSAGE S450(ZABBOTT) WITH '-- Mode = ' ZZTAB-MODE                           "CESE 4
+                        'I/OInd=' ZZTAB-INOUTIND.
+  MESSAGE S450(ZABBOTT) WITH '-- File = ' ZZTAB-FILENAME.                      "CESE 5
+
+  INDX-AEDAT = SY-DATUM.
+  INDX-USERA = SY-UNAME.
+  INDX-PGMID = PGM_ID.
+  EXPORT ZZTAB        TO DATABASE INDX(AR) CLIENT SY-MANDT
+                                           ID KEY-INDX.
+
+  COMMIT WORK.
+
+ENDFORM.
+]]>
+      </code-example>
+      </language-parser>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="metricCodeExampleCsharp" result-value="2">
+<![CDATA[
+using System;
+
+class Stress {
+
+    static void Main (string [] args)
+    {
+        foreach (string arg in args){
+            if (arg == "-h" || arg == "--help"){
+                Console.WriteLine ("-h, --help     Shows help");
+                Console.WriteLine ("-c, --checked  Generate checked contexts");
+                break;                                             //CESE 1
+            }
+            if (arg == "--checked" || arg == "-c"){
+                mode = "checked";
+                continue;                                          //CESE 2
+            }
+        }
+        wl ("using System;\nclass Test {\n");
+
+        generate_receptors ();
+        generate_emision ();
+
+        generate_main ();
+        wl ("}\n");
+    }
+}
+]]>
+      </code-example>
+      </language-parser>
+   <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <code-example name="metricCodeExampleCpp" result-value="2">
+<![CDATA[
+typedef map< SOCKET, LZHL_SOCKET > GlobalMapType;
+static void _putInt( BYTE*& p, unsigned int val ) {
+
+    if ( val <= 127 ) {
+      *p++ = (BYTE)val;
+      break;                                  //CESE 1
+
+    } else {
+      *p++ = (BYTE)( 0x80 | ( val & 0x7F ) );
+      val >>= 7;
+    }
+     while ((c = *p) != 0) {                 //CESE 2
+      val >>= 7;
+        break;
+        }
+}
+]]>
+      </code-example>
+      </language-parser>
+   <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+        <code-example name="metricCodeExampleCobol" result-value="2">
+<![CDATA[
+      ******************************************************************
+      *              2110-BUSCAR-DESCRIPCION                           *
+      ******************************************************************
+       2110-SEARCH-DES.
+            CALL ROUTINE-LIST-TC USING MESSAGE-GO-TC,
+                                         MESSAGE-BACK-TC
+                ON EXCEPTION                                                     
+                   MOVE WN-ERROR-PROG       TO CDERR
+                   MOVE ROUTINE-LIST-TC     TO DSARGU1
+                   MOVE WC-EXCEPTION-ERR    TO DSARGU2
+
+                PERFORM 9999-MANAGEM-ERRORS
+                   THRU 9999-MANAGEM-ERRORS-EXIT
+
+            END-CALL.
+            EXEC CICS HANDLE ABEND
+               PROGRAM('EXITPGM')
+            END-EXEC.
+]]>
+      </code-example>
+      </language-parser>
+   <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="metricCodeExampleJava" result-value="2">
+<![CDATA[
+package objzr.ci.cliente;
+
+import objzr.ci.componentes.*;
+
+public class CITabObjetoInmueble extends objzr.ae.presentacion.AqTab implements objzr.ci.componentes.CIPanelObjeto {
+    public final int NUM_PANELES_OBJ_INMUEBLE = 2;
+private boolean completarMensajeGrabacion(objzr.ci.componentes.CIEstructuraDatosGrid datos) {
+    CIPanelObjeto panelActual = null;
+    boolean completadoCorrectamente = true;
+    for (int i = 0; i < NUM_PANELES_OBJ_INMUEBLE; i++) {  //prueba
+        panelActual = (CIPanelObjeto) devolverPanel(i);
+        completadoCorrectamente = panelActual.completarMensajeGrabacion(datos);
+        if (!completadoCorrectamente)
+           break;                                            //CESE 1
+    }
+    return completadoCorrectamente;
+}
+}
+
+public class INDDPRID0130 {
+
+    public int getNumber() {
+        synchronized ( this ) {
+        try { Thread.sleep( 3000 ); } catch (InterruptedException e) {}         //CESE 2
+            return number;
+        }
+    }
+
+    public String getString() {
+        synchronized ( this ) {
+            return str;
+        }
+    }
+}
+
+]]>
+      </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL">
+        <code-example name="metricCodeExampleNatural" result-value="2">
+<![CDATA[
+ 3600 DEFINE SUBROUTINE CARGAR-ANO-TABLA
+ 3650 DECIDE FOR FIRST CONDITION
+ 3660   WHEN TAR(WI) EQ 625
+ 3670     MOVE 2002                   TO WANO-AUX
+ 3680     FOR I=1 TO 20
+ 3690       MOVE WANO-AUX TO ANO-625(I)
+ 3700       ADD 1 TO WANO-AUX
+ 3710       IF ANO-625(I) EQ WANO
+ 3720         ESCAPE BOTTOM                                 CESE 1
+ 3730       END-IF
+ 3740     END-FOR
+ 3750   WHEN TAR(WI) EQ 651
+ 3760     MOVE 2002                   TO WANO-AUX
+ 3770     FOR I=1 TO 20
+ 3780       MOVE WANO-AUX TO ANO-651(I)
+ 3790       ADD 1 TO WANO-AUX
+ 3800       IF ANO-651(I) EQ WANO
+ 3810         ESCAPE TOP                                    CESE 2
+ 3820       END-IF
+ 3830     END-FOR
+ 4110   WHEN NONE
+ 4120     IGNORE
+ 4130 END-DECIDE
+
+ 4140 END-SUBROUTINE
+ 4150 ************************************************************************
+ 4160 END     /***   FIN DEL PROGRAMA
+ 4170 ************************************************************************
+]]>
+        </code-example>
+      </language-parser>
+
+  <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <code-example name="metricCodeExamplePlsql" result-value="2">
+<![CDATA[
+    CREATE OR REPLACE Procedure UpdateCourse
+       ( name_in IN varchar2 )
+    IS
+        cnumber number;
+        cursor c1 is
+        select course_number
+          from courses_tbl
+          where course_name = name_in;
+
+    BEGIN
+        open c1;
+        fetch c1 into cnumber;
+        insert into student_courses
+        ( course_name,
+          course_number)
+        values ( name_in,
+                        cnumber );
+        commit;
+        close c1;
+    EXCEPTION                            --CESE 1
+    WHEN OTHERS THEN
+          raise_application_error(-20001,'An error was encountered - '||SQLCODE||' -ERROR- '||SQLERRM);
+    END;
+
+CREATE OR REPLACE FUNCTION FACTURACION.FN_SAP_IT (
+   e_nrowid_in   ROWID                              /* Redefinicion a ROWID */
+)
+   RETURN NUMBER
+AS
+BEGIN
+          BEGIN
+            SELECT csap
+              INTO k_ccodsap
+              FROM txcodsap
+             WHERE ctipocod = 'A'
+               AND cipf = ee_cipfemb
+               AND cdocumen = ee_cdocuemb
+               AND brsch = ee_brsch;
+         EXCEPTION                 --CESE 2
+            WHEN NO_DATA_FOUND
+            THEN
+               k_ccodsap := NULL;
+         END;
+END fn_sap_it;
+/
+]]>
+      </code-example>
+      </language-parser>
+  <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+        <code-example name="metricCodeExampleVb6" result-value="6">
+<![CDATA[
+Private Sub CmdLimpiar_Click()
+    On Error GoTo CmdLimpiarClick_Error                    'CESE 1
+
+    vLimpiarPantalla
+
+    Exit Sub
+
+CmdLimpiarClick_Error:
+    Call errvManejaErrores(Err)
+    Resume                                                 'CESE 2
+
+End Sub
+
+
+Sub vLimpiarPantalla()
+
+    On Error GoTo LimpiarPantalla_Error                    'CESE 3
+
+       vLimpiarFr1General Fr1Informe, sFlagsInforme
+
+    Exit Sub
+
+LimpiarPantalla_Error:
+    Call errvManejaErrores(Err)
+    Continue                                               'CESE 4
+
+End Sub
+
+Private Sub Fr1Informe_KeyPress(KeyAscii As Integer)
+    On Error GoTo Fr1Informe_KeyPress_Error                'CESE 5
+
+
+    Call inpvMayusculasKeypress(KeyAscii)
+
+    Exit Sub
+Fr1Informe_KeyPress_Error:
+    Call errvManejaErrores(Err)
+    Resume                                                 'CESE 6
+
+End Sub
+]]>
+      </code-example>
+      </language-parser>
+  <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="metricCodeExampleVbnet" result-value="4">
+<![CDATA[
+Imports System.xml
+Imports Bde.Aps.Ars.Plataforma.Soporte.XML
+Imports Bde.Aps.Ars.Plataforma.Soporte.ArsSp
+Imports Bde.Aps.Ars.Plataforma.MVC
+Imports Bde.Aps.Ars.Plataforma.Soporte.Auditoria
+Imports Bde.Aps.Ars.Plataforma.Soporte.Mail
+
+
+Public Class servicioBJS
+    Inherits ControladorAbstractoBJS
+
+    Protected Overridable Sub validarEntrada()
+
+    End Sub
+
+#Region "Validaciones de tipos"
+
+    Private Sub ValidarCampoCadena(ByVal nombre As String, ByVal valor As String)
+        If Trim(valor).Length = 0 Then
+            Return
+        End If
+
+        Try                                                                  'CESE 1
+            CStr(valor).ToString()
+            Return
+        Catch
+            Throw New Exception("El valor " & valor & " de """ & nombre & """ no es de tipo cadena")          'CESE 2
+        End Try
+    End Sub
+
+    Private Sub ValidarCampoNumero(ByVal nombre As String, ByVal valor As String)
+        If Trim(valor).Length = 0 Then
+            Return
+        End If
+
+        Try                                                                 'CESE 3
+            Integer.Parse(valor)
+            Return
+        Catch
+            Throw New Exception("El valor " & valor & " de """ & nombre & """ no es de tipo numérico")        'CESE 4
+        End Try
+    End Sub
+#End Region
+
+End Class
+]]>
+      </code-example>
+      </language-parser>
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Complejidad esencial]]></name>
+      
+      <description>
+<![CDATA[
+Complejidad esencial por bloque de ejecución (CESE). La métrica CESE devuelve el valor de la complejidad esencial para el elemento bajo análisis. Cuenta estructuras para el manejo de excepciones y errores, así como las que alteran el diagrama de flujo del progama de forma incondicional (goto).
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+La complejidad esencial contabiliza las instrucciones continue, check (una expresión lógica) y message (utilizada para lanzar un mensaje de excepción).
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+La complejidad esencial contabiliza el número de sentencias: goto, go y claúsulas de excepción (ExceptionClause, on exception).
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+La complejidad esencial contabiliza  el número de sentencias: break, continue, catch, throw y goto.
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+<![CDATA[
+La complejidad esencial utiliza la fórmula: 1 + NodosNoReducibles + PuntosDeEntrada + PuntosDeTerminacion
+donde:
+
+ - "NodosNoReducibles" son las sentencias COBOL ENTRY, RETURN, TERMINATE, ALTER, EXIT PROGRAM, GOBACK y STOP RUN, y los comandos CICS ABEND, LINK,RETURN, XCTL, HANDLE ABEND, HANDLE AID y HANDLE CONDITION.
+ - "PuntosDeEntrada" son las sentencias COBOL ENTRY.
+ - "PuntosDeTerminacion" son las sentencias COBOL EXIT PROGRAM, GOBACK y STOP RUN, y los comandos CICS ABEND, RETURN y XCTL CICS.
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+La complejidad esencial contabiliza el número de sentencias:  break y continue (tanto etiquetadas como no), catch, throw y throws.
+
+NOTA: Cuando se ejecuta esta métrica sobre código JSP, se devuelve un valor para el método artificial llamado 'jspService'. Este método contiene todo el código Java definido en los scriptlets <% ...%> y la evaluación de todas las expresion JSP <%= ... %>
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL">
+<![CDATA[
+La complejidad esencial contabiliza las instrucciones at break, escape, lanzamiento de excepciones utilizando on error, terminate y SuspendIdenticalSuppress
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+La complejidad esencial contabiliza el número de sentencias: goto y excepciones(ExceptionHandler).
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+<![CDATA[
+La complejidad esencial contabiliza el número de sentencias: Exit, While, Exit For, Exit Do, ExitSub, Continue, OnError, Resume, Throw, GoTo y GoSub.
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+La complejidad esencial contabiliza el número de sentencias: Exit, While, Exit For, Exit Do, Continue For, Continue While, Continue Do, Catch, Throw y Goto.
+        ]]></implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Essential complexity]]></name>
+      
+      <description>
+<![CDATA[
+Essential complexity for block of execution (CESE). The metric CESE returns the value of the essential complexity for the element under analysis. Counts structures for error and exception management as well as those which alter the program flow diagram in an unconditional way (goto).
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+The essential complexity counts the sentences "continue", "check" (a logical expression) and "message" (used to throw a message of exception).
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+The essential complexity counts the number of sentences "goto", "go" and exception statements (ExceptionClause, on exception).
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+The essential complexity counts the number of sentences "break", "continue", "catch", "throw" and "goto".
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+<![CDATA[
+The essential complexity uses this formula: 1 + NonreductibleNodes + EntryPoints + TerminationPoints
+where:
+
+ - "NonreductibleNodes" are ENTRY, RETURN, TERMINATE, ALTER, EXIT PROGRAM, GOBACK and STOP RUN COBOL statements, and ABEND, LINK,RETURN, XCTL, HANDLE ABEND, HANDLE AID and HANDLE CONDITION CICS commands.
+ - "EntryPoints" are ENTRY COBOL statements.
+ - "TerminationPoints" are EXIT PROGRAM, GOBACK and STOP RUN COBOL statements, and ABEND, RETURN and XCTL CICS commands.
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+The essential complexity counts the number of sentences "break" and "continue" (labelled or not),"catch", "throw" and "throws".
+
+NOTE: When execute this metric over JSP code, it returns value for an artificial method called 'jspService'. This method contains all the Java code embedded in the scriptlets <% ... %> and the evaluation of all the JPS expressions <%= ... %>
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL">
+<![CDATA[
+The essential complexity counts the instructions "at break", throwing exceptions "on error", "escape", "terminate" and "SuspendIdenticalSuppress".
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+The essential complexity counts the number of sentences "goto" and "exceptions" (ExceptionHandler).
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+<![CDATA[
+The essential complexity counts the number of sentences "Exit", "While", "Exit For", "Exit Do", "ExitSub", "Continue", "OnError", "Resume", "Throw", "GoTo" and "GoSub".
+        ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+The essential complexity counts the number of sentences "Exit", "While", "Exit For", "Exit Do", "Continue For", "Continue While", "Continue Do", "Catch", "Throw" and "Goto".
+        ]]></implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

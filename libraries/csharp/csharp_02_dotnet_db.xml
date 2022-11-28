@@ -1,0 +1,1476 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="dotnet.database" technology="csharp">
+  <description>.NET Database libraries</description>
+
+  <!-- ADO.NET base classes -->
+  <module name="System.Data" standard="ADO.NET">
+    <description url="https://docs.microsoft.com/dotnet/framework/data/adonet/">ADO.NET Framework</description>
+
+    <class name="System.Data.IDbConnection">
+      <description>Represents a connection to a database.</description>
+      <tags>database_connection, database_leak, disposable</tags>
+      <method name="Close" signature="Close(void)">
+        <neutralization argpos="-2" kind="database_leak"/>
+      </method>
+      <field name="ConnectionString" type="string">
+        <sink argpos="-1" kind="connection_string_injection" resource="database"/>
+      </field>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="System.Data.IDbCommand"/>
+      </method>
+      <method name="ChangeDatabase" signature="ChangeDatabase(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="System.Data.IDataRecord" kind="interface">
+      <field name="Item" type="array">
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </field>
+      <method name="Item" signature="Item(string)" match="name">
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetBoolean" signature="GetBoolean(int)">
+        <return type="bool"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetByte" signature="GetByte(int)">
+        <return type="byte"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetBytes" signature="GetBytes(int,long,System.Byte[],int,int)">
+        <return type="long"/>
+        <propagate from="-2" to="2"/>
+        <source argpos="2" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetChar" signature="GetChar(int)">
+        <return type="char"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetChars" signature="GetChars(int,long,System.Char[],int,int)">
+        <return type="char"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetData" signature="GetData(int)">
+        <return type="System.Data.IDataReader"/>
+      </method>
+      <method name="GetDateTime" signature="GetDateTime(int)">
+        <return type="System.DateTime"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetDecimal" signature="GetDecimal(int)">
+        <return type="System.Decimal"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetDouble" signature="GetDouble(int)">
+        <return type="double"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetFloat" signature="GetFloat(int)">
+        <return type="float"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetGuid" signature="GetGuid(int)">
+        <return type="System.Guid"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetInt16" signature="GetInt16(int)">
+        <return type="short"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetInt32" signature="GetInt32(int)">
+        <return type="int"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetInt64" signature="GetInt64(int)">
+        <return type="long"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetString" signature="GetString(int)">
+        <return type="string"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetValue" signature="GetValue(int)">
+        <return type="object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetValues" signature="GetValues(object[])">
+        <return type="int"/>
+        <source argpos="0" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="System.Data.IDataReader" kind="interface" supertypes="System.Data.IDataRecord">
+      <method name="NextResult" signature="NextResult()" >
+        <tags>potential_infinite_loop_neutralizer</tags>
+      </method>
+      <method name="Read" signature="Read()" >
+        <tags>potential_infinite_loop_neutralizer</tags>
+      </method>
+    </class>
+
+    <class name="System.Data.Common.DbConnection" supertypes="System.Data.IDbConnection">
+      <description>Represents a connection to a database.</description>
+      <tags>database_connection, database_leak, disposable</tags>
+    </class>
+
+    <class name="System.Data.Common.DbConnectionStringBuilder" supertypes="System.Collections.IDictionary">
+      <field name="ConnectionString" type="string">
+        <sink argpos="-1" kind="connection_string_injection" resource="database"/>
+      </field>
+      <method name="ToString" signature="ToString()">
+        <tags>connection_string</tags>
+        <return type="string"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+    </class>
+
+    <class name="System.Data.IDbCommand" kind="interface">
+      <description>
+        Represents an SQL statement that is executed while connected to a data source,
+        and is implemented by .NET Framework data providers that access relational databases.
+      </description>
+      <field name="CommandText" type="string">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </field>
+      <field name="CommandType" type="System.Data.CommandType"/>
+      <field name="Connection" type="System.Data.Common.DbConnection"/>
+      <field name="DbConnection" type="System.Data.Common.DbConnection"/>
+      <field name="Parameters" type="System.Data.Common.DbParameterCollection" elementType="System.Data.Common.DbParameter">
+        <tags>sql-parameters,potentialPk</tags>
+      </field>
+      <method name="Parameters" signature="Parameters(string)">
+        <tags>sql-parameters,potentialPk, name:0, value:-1</tags>
+      </method>
+      <method name="CreateParameter" signature="CreateParameter()">
+        <tags>sql-parameters,potentialPk</tags>
+        <return type="System.Data.Common.DbParameter"/>
+      </method>
+      <method name="ExecuteNonQuery" signature="ExecuteNonQuery()" alias="ExecuteNonQueryAsync">
+        <return type="int"/>
+      </method>
+      <method name="ExecuteReader" signature="ExecuteReader()" match="name" alias="ExecuteReaderAsync">
+        <return type="System.Data.IDataReader"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="ExecuteScalar" signature="ExecuteScalar()" match="name" alias="ExecuteScalarAsync">
+        <return type="object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="Prepare" signature="Prepare()"></method>
+    </class>
+
+    <class name="System.Data.Common.DbCommand" supertypes="System.Data.IDbCommand">
+      <description>Represents an SQL statement or stored procedure to execute against a data source.</description>
+      <field name="CommandText" type="string">
+        <sink argpos="-1" kind="sql_injection" resource="database"/>
+      </field>
+
+      <method name="ExecuteReader" signature="ExecuteReader()" match="name" alias="ExecuteReaderAsync">
+        <return type="System.Data.Common.DbDataReader"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="System.Data.Common.DbDataAdapter" supertypes="System.Data.Common.DataAdapter">
+      <field name="DeleteCommand" type="System.Data.Common.DbCommand"/>
+      <field name="InsertCommand" type="System.Data.Common.DbCommand"/>
+      <field name="SelectCommand" type="System.Data.Common.DbCommand"/>
+      <field name="UpdateCommand" type="System.Data.Common.DbCommand"/>
+    </class>
+
+    <class name="System.Data.Common.DbParameterCollection" supertypes="System.Data.IDataParameterCollection">
+      <field name="Item" type="array" elementType="System.Data.Common.DbParameter"/>
+      <method name="Add" signature="Add(System.Data.Common.DbParameter)">
+        <return type="int"/>
+      </method>
+      <method name="AddRange" signature="AddRange(System.Data.Common.DbParameter[])">
+        <tags>value:0</tags>
+      </method>
+      <method name="Insert" signature="Insert(int,System.Data.Common.DbParameter)">
+        <tags>value:1</tags>
+      </method>
+      <method name="Item" signature="Item(string)">
+        <tags>name:0, value:-1</tags>
+      </method>
+    </class>
+
+    <class name="System.Data.Common.DbParameter" supertypes="System.Data.IDataParameter,System.Data.IDbDataParameter">
+      <tags>sql-parameter</tags>
+      <constructor name="DbParameter" signature="DbParameter()"></constructor>
+      <field name="ParameterName" type="string"><tags>name</tags></field>
+      <field name="Value" type="object"><tags>value</tags></field>
+    </class>
+
+    <class name="System.Data.Common.DbDataReader" kind="abstract_class" supertypes="System.MarshalByRefObject,System.Data.IDataReader">
+      <method name="GetEnumerator" signature="GetEnumerator()">
+        <return type="System.Collections.IEnumerator"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetFieldValue" signature="GetFieldValue(int)" match="name" alias="GetFieldValueAsync">
+        <return type="object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetProviderSpecificValue" signature="GetProviderSpecificValue(int)">
+        <return type="object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetProviderSpecificValues" signature="GetProviderSpecificValue(object[])">
+        <return type="int"/>
+        <source argpos="0" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetStream" signature="GetStream(int)">
+        <return type="System.IO.Stream"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="GetTextReader" signature="GetTextReader(int)">
+        <return type="System.IO.TextReader"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="System.Data.DataTableReader" supertypes="System.Data.Common.DbDataReader"></class>
+
+    <class name="System.Data.SqlTypes.SqlFileStream" supertypes="System.IO.Stream">
+      <tags>stream_leak,disposable</tags>
+    </class>
+
+    <class name="System.Data.Common.DbTransaction" kind="abstract_class" supertypes="System.Data.Common.IDbTransaction, System.IDisposable">
+      <field name="Connection" type="System.Data.Common.DbConnection" alias="DbConnection"/>
+      <method name="Commit" signature="Commit()"/>
+      <method name="Rollback" signature="Rollback()"/>
+    </class>
+
+    <class name="System.Data.DataTable" >
+      <method name="WriteXmlSchema" signature="WriteXmlSchema(System.String)" >
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="WriteXmlSchema" signature="WriteXmlSchema(System.String, System.Boolean)" >
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="WriteXml" signature="WriteXml(System.String)" >
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="WriteXml" signature="WriteXml(System.String)" >
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="WriteXml" signature="WriteXml(System.String, System.Data.XmlWriteMode)" >
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="WriteXml" signature="WriteXml(System.String, System.Boolean)" >
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="WriteXml" signature="WriteXml(System.String, System.Data.XmlWriteMode, System.Boolean)" >
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      </method>
+    </class>
+
+    <module name="System.Data.Objects">
+      <description url="https://docs.microsoft.com/en-us/dotnet/api/system.data.objects?view=netframework-4.8">Object Services API</description>
+
+      <class name="System.Data.Objects.ObjectParameterCollection">
+        <field name="Item" type="array" />
+        <method name="Item" signature="Item(string)">
+          <tags>potentialPk, sql-parameters, name:0, value:-1</tags>
+        </method>
+        <method name="Add" signature="Add(System.Data.Objects.ObjectParameter)">
+          <tags>potentialPk</tags>
+          <return type="System.Data.Objects.ObjectParameter"/>
+        </method>
+      </class>
+
+      <class name="System.Data.Objects.ObjectQuery">
+        <field name="Parameters" type="System.Data.Objects.ObjectParameterCollection" >
+          <tags>potentialPk</tags>
+        </field>
+        <method name="Parameters" signature="Parameters(string)">
+          <tags>potentialPk, sql-parameters, name:0, value:-1</tags>
+        </method>
+      </class>
+
+      <class name="System.Data.Objects.ObjectParameter">
+        <field name="name" />
+        <field name="value" >
+          <tags>potentialPk:1</tags>
+        </field>
+        <constructor name="ObjectParameter" signature="ObjectParameter(String, Object)" >
+          <tags>potentialPk:1</tags>
+        </constructor>
+      </class>
+    </module>
+  </module>
+
+  <!-- Entity API -->
+  <module name="System.Data.Entity" standard="System.Data.Entity">
+    <description url="https://docs.microsoft.com/dotnet/api/system.data.entity?view=entity-framework-6.2.0">ADO.NET Entity Framework</description>
+
+    <class name="System.Data.Entity.Database">
+      <field name="Connection" type="System.Data.Common.DbConnection"/>
+      <method name="ExecuteSqlCommand" signature="ExecuteSqlCommand(string, System.Object...)" alias="ExecuteSqlCommandAsync" match="name">
+        <tags>database_operation</tags>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="SqlQuery" signature="SqlQuery(string,System.Object...)">
+        <tags>database_operation</tags>
+        <return type="System.Data.Entity.Infrastructure.DbRawSqlQuery"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="SqlQuery" signature="SqlQuery(System.Type,string,System.Object...)">
+        <tags>database_operation</tags>
+        <return type="System.Data.Entity.Infrastructure.DbRawSqlQuery"/>
+        <sink argpos="1" kind="sql_injection" resource="database"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="System.Data.Entity.DbQuery"></class>
+
+    <class name="System.Data.Entity.DbSet" supertypes="System.Data.Entity.DbQuery">
+      <method name="SqlQuery" signature="SqlQuery(string)" match="name">
+        <tags>database_operation</tags>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="System.Data.Entity.DbContext">
+      <tags>database_connection, database_leak, disposable</tags>
+      <constructor name="DbContext" signature="DbContext(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <constructor name="DbContext" signature="DbContext(string,System.Data.Entity.Infrastructure.DbCompiledModel)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="SaveChanges" signature="SaveChanges()" alias="SaveChangesAsync" match="name">
+        <tags>database_operation,database_write</tags>
+      </method>
+      <field name="Database" type="System.Data.Entity.Database"/>
+    </class>
+  </module>
+
+  <module name="System.Data.EntityClient" standard="System.Data.Entity">
+    <description url="https://docs.microsoft.com/dotnet/api/system.data.entityclient?view=netframework-4.8">
+      ADO.NET Provider for the Entity Framework.
+    </description>
+
+    <class name="System.Data.EntityClient.EntityConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Contains a reference to a conceptual model and a data source connection.</description>
+      <tags>database_connection, database_leak,disposable</tags>
+      <constructor name="EntityConnection" signature="EntityConnection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="System.Data.EntityClient.EntityCommand"/>
+      </method>
+      <method name="BeginTransaction" signature="BeginTransaction()">
+        <return type="System.Data.EntityClient.EntityTransaction"/>
+      </method>
+
+    </class>
+
+    <class name="System.Data.EntityClient.EntityCommand" supertypes="System.Data.Common.DbCommand">
+      <constructor name="EntityCommand" signature="EntityCommand()"/>
+      <constructor name="EntityCommand" signature="EntityCommand(string, System.Data.EntityClient.EntityConnection)" match="name">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <field name="Connection" type="System.Data.EntityClient.EntityConnection"/>
+      <field name="Parameters" type="System.Data.EntityClient.EntityParameterCollection" elementType="System.Data.EntityClient.EntityParameter"/>
+    </class>
+
+    <class name="System.Data.EntityClient.EntityParameterCollection" supertypes="System.Data.Common.DbParameterCollection">
+      <field name="Item" type="array" elementType="System.Data.EntityClient.EntityParameter"/>
+      <method name="Item" signature="Item(string)">
+        <return type="System.Data.EntityClient.EntityParameter"/>
+      </method>
+      <method name="Add" signature="Add(System.Data.EntityClient.EntityParameter)">
+        <return type="System.Data.EntityClient.EntityParameter"/>
+      </method>
+      <method name="Add" signature="Add(string, object)" match="name">
+        <tags>name:0</tags>
+        <return type="System.Data.EntityClient.EntityParameter"/>
+      </method>
+      <method name="AddRange" signature="AddRange(System.Data.EntityClient.EntityParameter[])">
+        <tags>value:0</tags>
+      </method>
+      <method name="AddWithValue" signature="AddWithValue(string, object)">
+        <tags>name:0,value:1</tags>
+        <return type="System.Data.EntityClient.EntityParameter"/>
+      </method>
+      <method name="Insert" signature="Insert(int,System.Data.EntityClient.EntityParameter)">
+        <tags>value:1</tags>
+      </method>
+    </class>
+
+    <class name="System.Data.EntityClient.EntityParameter" supertypes="System.Data.Common.DbParameter">
+      <constructor name="EntityParameter" signature="SqlParameter()"></constructor>
+      <constructor name="EntityParameter" signature="EntityParameter(string,System.Data.DbType)">
+        <tags>name:0</tags>
+      </constructor>
+      <constructor name="EntityParameter" signature="EntityParameter(string,System.Data.DbType,int)">
+        <tags>name:0</tags>
+      </constructor>
+      <constructor name="EntityParameter" signature="EntityParameter(string,System.Data.DbType,int,string)">
+        <tags>name:0</tags>
+      </constructor>
+      <constructor name="EntityParameter" signature="EntityParameter(string,System.Data.DbType,int,ParameterDirection,bool,byte,byte,string,DataRowVersion,object)">
+        <tags>name:0,value:9</tags>
+      </constructor>
+      <field name="ParameterName" type="string"><tags>name</tags></field>
+      <field name="Value" type="object"><tags>value</tags></field>
+    </class>
+
+    <class name="System.Data.EntityClient.EntityConnectionStringBuilder" supertypes="System.Data.Common.DbConnectionStringBuilder">
+      <constructor name="EntityConnectionStringBuilder" signature="EntityConnectionStringBuilder(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <field name="ProviderConnectionString" type="string">
+        <sink argpos="-1" kind="connection_string_injection" resource="database"/>
+      </field>
+    </class>
+
+    <class name="System.Data.EntityClient.EntityTransaction" supertypes="System.Data.Common.DbTransaction"/>
+
+    <class name="System.Data.EntityClient.EntityDataReader" supertypes="System.Data.Common.DbDataReader"></class>
+
+  </module>
+
+  <module name="System.Data.OleDb" standard="OleDB">
+    <description url="https://docs.microsoft.com/dotnet/api/system.data.oledb?view=dotnet-plat-ext-3.1">ADO.Net Data Provider for OLE DB</description>
+
+    <class name="System.Data.OleDb.OleDbConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a data source.</description>
+      <tags>database_connection, database_leak, disposable</tags>
+      <constructor name="OleDbConnection" signature="OleDbConnection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="BeginTransaction" signature="BeginTransaction()">
+        <return type="System.Data.OleDb.OleDbTransaction"/>
+      </method>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="System.Data.OleDb.OleDbCommand"/>
+      </method>
+    </class>
+
+    <class name="System.Data.OleDb.OleDbCommand" supertypes="System.Data.Common.DbCommand">
+      <description>Represents an SQL statement or stored procedure to execute against a data source.</description>
+      <constructor name="OleDbCommand" signature="OleDbCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OleDbCommand" signature="OleDbCommand(string,System.Data.OleDb.OleDbConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OleDbCommand" signature="OleDbCommand(string,System.Data.OleDb.OleDbConnection,System.Data.OleDb.OleDbTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="System.Data.OleDb.OleDbConnectionStringBuilder" supertypes="System.Data.Common.DbConnectionStringBuilder">
+      <constructor name="OleDbConnectionStringBuilder" signature="OleDbConnectionStringBuilder(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="System.Data.OleDb.OleDbTransaction" supertypes="System.Data.Common.DbTransaction"/>
+
+    <class name="System.Data.OleDb.OleDbDataReader" supertypes="System.Data.Common.DbDataReader"></class>
+  </module>
+
+  <!--  Sql Server API -->
+  <module name="System.Data.SqlClient" standard="System.Data.SqlClient">
+    <description url="https://docs.microsoft.com/dotnet/api/system.data.sqlclient?view=dotnet-plat-ext-3.1">ADO.NET Provider for SQL Server.</description>
+
+    <class name="System.Data.SqlClient.SqlConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a SQL Server database.</description>
+      <tags>database_connection, database_leak, disposable</tags>
+      <constructor name="SqlConnection" signature="SqlConnection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <constructor name="SqlConnection" signature="SqlConnection(string,System.Data.SqlClient.SqlCredential)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <field name="AccessToken" type="string"></field>
+      <field name="Credential" type="System.Data.SqlClient.SqlCredential"/>
+      <field name="DataSource" type="string"></field>
+      <field name="FileName" type="string"></field>
+      <field name="OleDbService" type="string"></field>
+      <field name="PersistSecurityInfo" type="bool"></field>
+      <field name="Provider" type="string"></field>
+
+      <method name="BeginTransaction" signature="BeginTransaction()" match="name">
+        <return type="System.Data.SqlClient.SqlTransaction"/>
+      </method>
+      <method name="ChangeDatabase" signature="ChangeDatabase(string)">
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+      </method>
+      <method name="ChangePassword" signature="ChangePassword(string,System.Data.SqlClient.SqlCredential,System.Security.SecureString)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="ChangePassword" signature="ChangePassword(string,string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+        <sink argpos="1" kind="hardcoded_credentials" resource="database"/>
+      </method>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="System.Data.SqlClient.SqlCommand"/>
+      </method>
+    </class>
+
+    <class name="System.Data.SqlClient.SqlCommand" supertypes="System.Data.Common.DbCommand">
+      <description>Represents a Transact-SQL statement or stored procedure to execute against a SQL Server database.</description>
+      <constructor name="SqlCommand" signature="SqlCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SqlCommand" signature="SqlCommand(string,System.Data.SqlClient.SqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SqlCommand" signature="SqlCommand(string,System.Data.SqlClient.SqlConnection,System.Data.SqlClient.SqlTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <field name="CommandText" type="string">
+        <sink argpos="-1" kind="sql_injection" resource="database"/>
+      </field>
+      <field name="Connection" type="System.Data.SqlClient.SqlConnection"/>
+      <field name="Parameters" type="System.Data.SqlClient.SqlParameterCollection" elementType="System.Data.SqlClient.SqlParameter">
+        <tags>sql-parameters,potentialPk</tags>
+      </field>
+      <method name="CreateParameter" signature="CreateParameter()">
+        <return type="System.Data.SqlClient.SqlParameter"/>
+      </method>
+      <method name="ExecuteReader" signature="ExecuteReader()" match="name">
+        <return type="System.Data.SqlClient.SqlDataReader"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="ExecuteXmlReader" signature="ExecuteXmlReader()" match="name">
+        <return type="System.Xml.XmlReader"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="EndExecuteReader" signature="EndExecuteReader(System.IAsyncResult)" match="name">
+        <return type="System.Data.SqlClient.SqlDataReader"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="EndExecuteXmlReader" signature="EndExecuteXmlReader(System.IAsyncResult)" match="name">
+        <return type="System.Xml.XmlReader"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="ExecuteScalar" signature="ExecuteScalar()">
+        <return type="object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="Parameters" signature="Parameters(string)">
+        <tags>sql-parameters,potentialPk,name:0, value:-1</tags>
+      </method>
+    </class>
+
+    <class name="System.Data.SqlClient.SqlDataAdapter" supertypes="System.Data.Common.DbDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the DataSet and update a SQL Server database.</description>
+      <constructor name="SqlDataAdapter" signature="SqlDataAdapter(System.Data.SqlClient.SqlCommand)"/>
+      <constructor name="SqlDataAdapter" signature="SqlDataAdapter(string,System.Data.SqlClient.SqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SqlDataAdapter" signature="SqlDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+        <sink argpos="1" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <field name="DeleteCommand" type="System.Data.SqlClient.SqlCommand"/>
+      <field name="InsertCommand" type="System.Data.SqlClient.SqlCommand"/>
+      <field name="SelectCommand" type="System.Data.SqlClient.SqlCommand"/>
+      <field name="UpdateCommand" type="System.Data.SqlClient.SqlCommand"/>
+    </class>
+
+    <class name="System.Data.SqlClient.SqlConnectionStringBuilder" supertypes="System.Data.Common.DbConnectionStringBuilder">
+      <constructor name="SqlConnectionStringBuilder" signature="SqlConnectionStringBuilder(string)">
+        <sink argpos="0" kind="connection_string_injection"/>
+      </constructor>
+      <field name="UserID" type="string"><sink argpos="-1" kind="hardcoded_credentials" resource="database"/></field>
+      <field name="Password" type="string"><sink argpos="-1" kind="hardcoded_credentials" resource="database"/></field>
+      <field name="IntegratedSecurity" type="bool"></field>
+      <field name="PersistSecurityInfo" type="bool"></field>
+      <field name="AttachDBFilename" type="string"></field>
+      <field name="DataSource" type="string"></field>
+      <field name="InitialCatalog" type="string"></field>
+    </class>
+
+    <class name="System.Data.SqlClient.SqlParameterCollection" supertypes="System.Data.Common.DbParameterCollection">
+      <field name="Item" type="array" elementType="System.Data.SqlClient.SqlParameter"/>
+      <method name="Add" signature="Add(System.Data.SqlClient.SqlParameter)">
+        <return type="System.Data.SqlClient.SqlParameter"/>
+      </method>
+      <method name="Add" signature="Add(string, object)" match="name">
+        <tags>name:0</tags>
+        <return type="System.Data.SqlClient.SqlParameter"/>
+      </method>
+      <method name="AddRange" signature="AddRange(System.Data.SqlClient.SqlParameter[])">
+        <tags>value:0</tags>
+      </method>
+      <method name="AddWithValue" signature="AddWithValue(string, object)">
+        <tags>name:0,value:1,potentialPk</tags>
+      </method>
+      <method name="Insert" signature="Insert(int,System.Data.SqlClient.SqlParameter)">
+        <tags>value:1</tags>
+      </method>
+      <method name="Item" signature="Item(string)">
+        <tags>name:0,value:-1,potentialPk</tags>
+      </method>
+    </class>
+
+    <class name="System.Data.SqlClient.SqlParameter" supertypes="System.Data.Common.DbParameter">
+      <tags>sql-parameter</tags>
+      <constructor name="SqlParameter" signature="SqlParameter()"></constructor>
+      <constructor name="SqlParameter" signature="SqlParameter(string,object)">
+        <tags>name:0,value:1</tags>
+      </constructor>
+      <constructor name="SqlParameter" signature="SqlParameter(string,System.Data.SqlDbType)">
+        <tags>name:0</tags>
+      </constructor>
+      <constructor name="SqlParameter" signature="SqlParameter(string,System.Data.SqlDbType,int)">
+        <tags>name:0</tags>
+      </constructor>
+      <constructor name="SqlParameter" signature="SqlParameter(string,System.Data.SqlDbType,int,string)">
+        <tags>name:0</tags>
+      </constructor>
+      <constructor name="SqlParameter" signature="SqlParameter(string,System.Data.SqlDbType,int,ParameterDirection,bool,byte,byte,string,DataRowVersion,object)">
+        <tags>name:0,value:9</tags>
+      </constructor>
+      <constructor name="SqlParameter" signature="SqlParameter(string,System.Data.SqlDbType,int,ParameterDirection,bool,byte,byte,string,DataRowVersion,object,string,string,string)">
+        <tags>name:0,value:9</tags>
+      </constructor>
+      <field name="ParameterName" type="string"><tags>name</tags></field>
+      <field name="SqlValue" type="object"><tags>value</tags></field>
+      <field name="Value" type="object"><tags>value</tags></field>
+    </class>
+
+    <class name="System.Data.SqlClient.SqlDataReader" supertypes="System.Data.Common.DbDataReader"></class>
+    
+    <class name="System.Data.SqlClient.SqlTransaction" supertypes="System.Data.Common.DbTransaction"/>
+
+    <class name="System.Data.SqlClient.SqlCredential">
+      <constructor name="SqlCredential" signature="SqlCredential(string,System.Security.SecureString)">
+        <sink argpos="0" kind="hardcoded_credentials" resource="database"/>
+        <!-- SecureString for password is not hardcoded, but it might be built from hardcoded string -->
+      </constructor>
+      <field name="UserID" type="string"/>
+      <field name="Password" type="System.Security.SecureString"/>
+    </class>
+  </module>
+
+  <!-- SqlServer CE API -->
+  <module name="System.Data.SqlServerCe" standard="System.Data.SqlServerCe">
+    <description url="https://docs.microsoft.com/previous-versions/sql/compact/sql-server-compact-4.0/ec4st0e3(v%3dvs.100)">
+      ADO.NET provider for SQL Server Compact
+    </description>
+
+    <class name="System.Data.SqlServerCe.SqlCeConnection" supertypes="System.Data.Common.DbConnection">
+      <constructor name="SqlCeConnection" signature="SqlCeConnection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="System.Data.SqlServerCe.SqlCeCommand"/>
+      </method>
+    </class>
+
+    <class name="System.Data.SqlServerCe.SqlCeCommand" supertypes="System.Data.Common.DbCommand">
+      <description>Represents an SQL statement or stored procedure to execute against a data source.</description>
+      <constructor name="SqlCeCommand" signature="SqlCeCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SqlCeCommand" signature="SqlCeCommand(string,System.Data.SqlServerCe.SqlCeConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SqlCeCommand" signature="SqlCeCommand(string,System.Data.SqlServerCe.SqlCeConnection,System.Data.SqlServerCe.SqlCeTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="System.Data.SqlServerCe.SqlCeDataAdapter" supertypes="System.Data.Common.DbDataAdapter">
+      <constructor name="SqlCeDataAdapter" signature="SqlCeDataAdapter(System.Data.SqlServerCe.SqlCeCommand)"/>
+      <constructor name="SqlCeDataAdapter" signature="SqlCeDataAdapter(string,System.Data.SqlServerCe.SqlCeConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SqlCeDataAdapter" signature="SqlCeDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+        <sink argpos="1" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <field name="DeleteCommand" type="System.Data.SqlServerCe.SqlCeCommand"/>
+      <field name="InsertCommand" type="System.Data.SqlServerCe.SqlCeCommand"/>
+      <field name="SelectCommand" type="System.Data.SqlServerCe.SqlCeCommand"/>
+      <field name="UpdateCommand" type="System.Data.SqlServerCe.SqlCeCommand"/>
+    </class>
+  </module>
+
+  <!--  ORACLE API -->
+  <module name="System.Data.OracleClient" standard="System.Data.OracleClient">
+    <description url="https://docs.microsoft.com/dotnet/api/system.data.oracleclient?view=dotnet-plat-ext-3.1">ADO.NET Provider for Oracle</description>
+
+    <class name="System.Data.OracleClient.OracleConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_connection, database_leak, disposable</tags>
+      <constructor name="OracleConnection" signature="OracleConnection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="System.Data.OracleClient.OracleCommand"/>
+      </method>
+    </class>
+
+    <class name="System.Data.OracleClient.OracleCommand" supertypes="System.Data.Common.DbCommand">
+      <description>Represents an Oracle statement or stored procedure to execute against a SQL Server database.</description>
+      <constructor name="OracleCommand" signature="OracleCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OracleCommand" signature="OracleCommand(string,System.Data.OracleClient.OracleConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OracleCommand" signature="OracleCommand(string,System.Data.OracleClient.OracleConnection,System.Data.OracleClient.OracleTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="System.Data.OracleClient.OracleDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the DataSet and update an Oracle database.</description>
+      <constructor name="OracleDataAdapter" signature="OracleDataAdapter(string,System.Data.OracleClient.OracleConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OracleDataAdapter" signature="OracleDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="System.Data.OracleClient.OracleConnectionStringBuilder" supertypes="System.Data.Common.DbConnectionStringBuilder">
+      <constructor name="OracleConnectionStringBuilder" signature="OracleConnectionStringBuilder(string)">
+        <sink argpos="0" kind="connection_string_injection"/>
+      </constructor>
+      <field name="DataSource" type="string"></field>
+      <field name="UserID" type="string"><sink argpos="-1" kind="hardcoded_credentials" resource="database"/></field>
+      <field name="Password" type="string"><sink argpos="-1" kind="hardcoded_credentials" resource="database"/></field>
+      <field name="IntegratedSecurity" type="bool"></field>
+      <field name="PersistSecurityInfo" type="bool"></field>
+    </class>
+
+    <class name="System.Data.OracleClient.OracleDataReader" supertypes="System.Data.Common.DbDataReader"></class>
+
+    <class name="System.Data.OracleClient.OracleBFile" supertypes="System.IO.Stream">
+      <tags>stream_leak,disposable</tags>
+    </class>
+
+    <class name="System.Data.OracleClient.OracleLob" supertypes="System.IO.Stream">
+      <tags>stream_leak,disposable</tags>
+    </class>
+  </module>
+
+  <!-- SQLite API, both System.Data.SQLite and Mono.Data.Sqlite namespaces -->
+  <module name="System.Data.SQLite" standard="System.Data.SQLite">
+    <description url="https://system.data.sqlite.org/">ADO.NET provider for SQLite</description>
+
+    <class name="System.Data.SQLite.SQLiteConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_connection, database_leak, disposable</tags>
+      <constructor name="SQLiteConnection" signature="SQLiteConnection(string)" match="name">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="System.Data.SQLite.SQLiteCommand"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="System.Data.SQLite.SQLiteCommand" supertypes="System.Data.Common.DbCommand">
+      <description>Represents an Oracle statement or stored procedure to execute against a Informix database.</description>
+      <constructor name="SQLiteCommand" signature="SQLiteCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SQLiteCommand" signature="SQLiteCommand(string,System.Data.SQLiteConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SQLiteCommand" signature="SQLiteCommand(string,System.Data.SQLiteConnection,System.Data.SQLiteTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <method name="ExecuteReader" signature="ExecuteReader()" >
+        <return type="System.Data.SqliteDataReader" />
+      </method>
+    </class>
+
+    <class name="System.Data.SQLite.SqliteDataReader" supertypes="System.Data.Common.DbDataReader" alias="Microsoft.Data.Sqlite.SqliteDataReader">
+      <field name="FieldCount" type="int" >
+        <tags>potential_infinite_loop_neutralizer</tags>
+      </field>
+      <method name="Read" signature="Read()" >
+        <tags>potential_infinite_loop_neutralizer</tags>
+      </method>
+    </class>
+
+    <class name="System.Data.SQLite.SQLiteDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the DataSet and update an SQLite database.</description>
+      <constructor name="SQLiteDataAdapter" signature="SQLiteDataAdapter(string,System.Data.SQLiteConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SQLiteDataAdapter" signature="SQLiteDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <!-- Mono.Data.Sqlite -->
+    <class name="Mono.Data.Sqlite.SqliteConnection" supertypes="System.Data.SQLite.SQLiteConnection"/>
+    <class name="Mono.Data.Sqlite.SqliteCommand" supertypes="System.Data.SQLite.SQLiteCommand"/>
+    <class name="Mono.Data.Sqlite.SqliteDataReader" supertypes="System.Data.SQLite.SqliteDataReader"/>
+    <class name="Mono.Data.Sqlite.SqliteDataAdapter" supertypes="System.Data.SQLite.SQLiteDataAdapter"/>
+  </module>
+
+  <module name="SQLite-net">
+    <description url="https://github.com/praeclarum/sqlite-net">SQLite-net - .NET library for SQLite3</description>
+    <!-- Was Xamarin's library for SQLite on Android, now it works on all .NET platforms -->
+    <class name="SQLite.SQLiteConnection">
+      <tags>database_leak,disposable</tags>
+      <constructor name="SQLiteConnection" signature="SQLiteConnection(string)" match="name">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="CreateCommand" signature="CreateCommand(string)" match="name">
+        <return type="SQLite.SQLiteCommand"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="Execute" signature="Execute(string)" match="name">
+        <return type="int"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="ExecuteScalar" signature="ExecuteScalar(string)" match="name" alias="FindWithQuery">
+        <return type="object"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="Query" signature="Query(string)" match="name" alias="DeferredQuery">
+        <return type="System.Collections.Generic.IEnumerable"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="SQLite.Net.SQLiteConnection" supertypes="SQLite.SQLiteConnection">
+      <description>SQLite.Net, a fork from SQLite project, now defunct</description>
+      <tags>database_leak,disposable</tags>
+      <constructor name="SQLiteConnection" signature="SQLiteConnection(string)" match="name">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="SQLite.SQLiteAsyncConnection">
+      <tags>database_leak,disposable</tags>
+      <constructor name="SQLiteAsyncConnection" signature="SQLiteAsyncConnection(string)" match="name">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="ExecuteAsync" signature="ExecuteAsync(string)" match="name">
+        <return type="System.Threading.Tasks.Task" elementType="int"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="ExecuteScalarAsync" signature="ExecuteScalarAsync(string)" match="name" alias="FindWithQueryAsync">
+        <return type="System.Threading.Tasks.Task" elementType="object"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="QueryAsync" signature="QueryAsync(string)" match="name" alias="DeferredQueryAsync">
+        <return type="System.Threading.Tasks.Task" elementType="System.Collections.Generic.IEnumerable"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="SQLite.SQLiteCommand">
+      <field name="CommandText" type="string"><sink argpos="0" kind="sql_injection" resource="database"/></field>
+      <constructor name="SQLiteCommand" signature="SQLiteCommand(SQLite.SQLiteConnection)"/>
+      <method name="ExecuteQuery" signature="ExecuteQuery()" match="name" alias="ExecuteDeferredQuery">
+        <return type="System.Collections.Generic.IEnumerable"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+  </module>
+
+  <!-- LINQ to SQL -->
+  <module name="System.Data.Linq" standard="System.Data.Linq">
+    <description url="https://docs.microsoft.com/dotnet/api/system.data.linq?view=netframework-4.8">LINQ to SQL</description>
+
+    <class name="System.Data.Linq.DataContext">
+      <description>Represents the main entry point for the LINQ to SQL framework.</description>
+      <method name="ExecuteCommand" signature="ExecuteCommand(string,Object[]...)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="ExecuteQuery" signature="ExecuteQuery(System.Type,string,Object[]...)">
+        <return type="System.Collections.Generic.IEnumerable"/>
+        <sink argpos="1" kind="sql_injection" resource="database"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="ExecuteQuery" signature="ExecuteQuery(string,Object[]...)">
+        <return type="System.Collections.Generic.IEnumerable"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="System.Linq.IQueryable" kind="interface" supertypes="System.Collections.Generic.IEnumerable"/>
+  </module>
+
+  <!-- ODBC -->
+  <module name="System.Data.Odbc" standard="System.Data.Odbc">
+    <description url="https://docs.microsoft.com/dotnet/api/system.data.odbc?view=dotnet-plat-ext-3.1">ADO.NET Provider for ODBC</description>
+
+    <class name="System.Data.Odbc.OdbcConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a data source.</description>
+      <tags>database_connection, database_leak, disposable</tags>
+      <constructor name="OdbcConnection" signature="OdbcConnection(string)" match="name">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="System.Data.Odbc.OdbcCommand"/>
+      </method>
+    </class>
+
+    <class name="System.Data.Odbc.OdbcCommand" supertypes="System.Data.Common.DbCommand">
+      <description>Represents an SQL statement or stored procedure to execute against a data source.</description>
+      <constructor name="OdbcCommand" signature="OdbcCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OdbcCommand" signature="OdbcCommand(string,System.Data.Odbc.OdbcConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OdbcCommand" signature="OdbcCommand(string,System.Data.Odbc.OdbcConnection,System.Data.Odbc.OdbcTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="System.Data.Odbc.OdbcDataAdapter" supertypes="System.Data.Common.DbDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the DataSet and update an ODBC database.</description>
+      <constructor name="OdbcDataAdapter" signature="OdbcDataAdapter(System.Data.Odbc.OdbcCommand)"/>
+      <constructor name="OdbcDataAdapter" signature="OdbcDataAdapter(string,System.Data.Odbc.OdbcConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OdbcDataAdapter" signature="OdbcDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+        <sink argpos="1" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <field name="DeleteCommand" type="System.Data.Odbc.OdbcCommand"/>
+      <field name="InsertCommand" type="System.Data.Odbc.OdbcCommand"/>
+      <field name="SelectCommand" type="System.Data.Odbc.OdbcCommand"/>
+      <field name="UpdateCommand" type="System.Data.Odbc.OdbcCommand"/>
+    </class>
+
+    <class name="System.Data.Odbc.OdbcConnectionStringBuilder" supertypes="System.Data.Common.DbConnectionStringBuilder">
+      <constructor name="OdbcConnectionStringBuilder" signature="OdbcConnectionStringBuilder(string)">
+        <sink argpos="0" kind="connection_string_injection"/>
+      </constructor>
+      <field name="Driver" type="string"></field>
+      <field name="Dsn" type="string"></field>
+    </class>
+
+    <class name="System.Data.Odbc.OdbcDataReader" supertypes="System.Data.Common.DbDataReader"></class>
+  </module>
+
+  <!--  ORACLE -->
+  <module name="Oracle.DataAccess.Client" standard="Oracle.DataAccess.Client">
+    <description url="https://docs.oracle.com/database/121/ODPNT/client.htm">Oracle Data Provider for ADO.NET</description>
+
+    <class name="Oracle.DataAccess.Client.OracleConnection" supertypes="System.Data.Common.DbConnection"
+           alias="Oracle.ManagedDataAccess.Client.OracleConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_connection, database_leak, disposable</tags>
+      <constructor name="OracleConnection" signature="OracleConnection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="Oracle.DataAccess.Client.OracleCommand"/>
+      </method>
+    </class>
+
+    <class name="Oracle.DataAccess.Client.OracleCommand" supertypes="System.Data.IDbCommand"
+           alias="Oracle.ManagedDataAccess.Client.OracleCommand">
+      <description>Represents a Oracle statement to execute against a Oracle database.</description>
+      <constructor name="OracleCommand" signature="OracleCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OracleCommand" signature="OracleCommand(string,Oracle.DataAccess.Client.OracleConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OracleCommand" signature="OracleCommand(string,Oracle.DataAccess.Client.OracleConnection,Oracle.DataAccess.Client.OracleTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Oracle.DataAccess.Client.OracleDataAdapter" supertypes="System.Data.Common.DbDataAdapter"
+           alias="Oracle.ManagedDataAccess.Client.OracleDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the Dataset and update a Oracle database.</description>
+      <constructor name="OracleDataAdapter" signature="OracleDataAdapter(string,Oracle.DataAccess.Client.OracleConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OracleDataAdapter" signature="OracleDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+        <sink argpos="1" kind="connection_string_injection" resource="database"/>
+      </constructor>
+    </class>
+  </module>
+
+  <!-- MySQL API -->
+  <module name="MySql.Data.MySqlClient" standard="MySql.Data.MySqlClient">
+    <description url="https://dev.mysql.com/doc/dev/connector-net/8.0/html/connector-net-reference.htm">MySQL Connector/NET API</description>
+
+    <class name="MySql.Data.MySqlClient.MySqlConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_connection, database_leak, disposable</tags>
+      <constructor name="MySqlConnection" signature="MySqlConnection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <constructor name="MySqlConnection" signature="MySqlConnection(string,string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+        <sink argpos="1" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="MySql.Data.MySqlClient.MySqlCommand"/>
+      </method>
+    </class>
+
+    <class name="MySql.Data.MySqlClient.MySqlCommand" supertypes="System.Data.IDbCommand">
+      <description>Represents a MySQL statement or stored procedure to execute against a MySQL database.</description>
+      <constructor name="MySqlCommand" signature="MySqlCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="MySqlCommand" signature="MySqlCommand(string,MySql.Data.MySqlClient.MySqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="MySqlCommand" signature="MySqlCommand(string,MySql.Data.MySqlClient.MySqlConnection,MySql.Data.MySqlClient.MySqlTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="MySql.Data.MySqlClient.MySqlDataAdapter" supertypes="System.Data.Common.DbDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the DataSet and update a MySQL database.</description>
+      <constructor name="MySqlDataAdapter" signature="MySqlDataAdapter(string,MySql.Data.MySqlClient.MySqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="MySqlDataAdapter" signature="MySqlDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="MySql.Data.MySqlClient.MySqlDataReader" supertypes="System.Data.Common.DbDataReader"></class>
+  </module>
+
+  <!-- Sybase iAnywhere -->
+  <module name="iAnywhere.Data.SQLAnywhere" standard="iAnywhere.Data.SQLAnywhere">
+    <description url="http://infocenter.sybase.com/help/topic/com.sybase.help.sqlanywhere.12.0.1/dbprogramming/pg-part-dotnet.html">
+      ADO.NET provider for Sybase SQLAnywhere
+    </description>
+
+    <class name="iAnywhere.Data.SQLAnywhere.Common.DbConnection" supertypes="System.Data.IDbConnection"/>
+    <class name="iAnywhere.Data.SQLAnywhere.SAConnection" supertypes="iAnywhere.Data.SQLAnywhere.Common.DbConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_connection, database_leak, disposable</tags>
+      <constructor name="SAConnection" signature="SAConnection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="iAnywhere.Data.SQLAnywhere.SACommand"/>
+      </method>
+    </class>
+
+    <class name="iAnywhere.Data.SQLAnywhere.SACommand" supertypes="iAnywhere.Data.SQLAnywhere.Common.DbCommand">
+      <description>Represents an Oracle statement or stored procedure to execute against a Sybase iAnywhere database.</description>
+      <constructor name="SACommand" signature="SACommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SACommand" signature="SACommand(string,iAnywhere.Data.SQLAnywhere.SAConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SACommand" signature="SACommand(string,iAnywhere.Data.SQLAnywhere.SAConnection,iAnywhere.Data.SQLAnywhere.SATransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="iAnywhere.Data.SQLAnywhere.SADataAdapter" supertypes="System.Data.Common.DbDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the DataSet and update an Sybase iAnywhere database.</description>
+      <constructor name="SADataAdapter" signature="SADataAdapter(string,iAnywhere.Data.SQLAnywhere.SAConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SADataAdapter" signature="SADataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+    
+    <class name="iAnywhere.Data.SQLAnywhere.SADataReader" supertypes="System.Data.Common.DbDataReader"></class>
+  </module>
+
+  <!-- Sybase ASE -->
+  <module name="Sybase.Data.AseClient" standard="Sybase.Data.AseClient">
+    <description url="http://infocenter.sybase.com/help/topic/com.sybase.help.sdk_12.5.1.adonet/html/adonet/Adodotnet_apiref.htm">
+      ADO.NET Provider for Sybase ASE
+    </description>
+    <class name="Sybase.Data.AseClient.AseConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_connection, database_leak, disposable</tags>
+      <constructor name="AseConnection" signature="AseConnection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="Sybase.Data.AseClient.AseCommand"/>
+      </method>
+    </class>
+
+    <class name="Sybase.Data.AseClient.AseCommand" supertypes="System.Data.IDbCommand">
+      <description>Represents a Ase statement to execute against a Sybase ASE database.</description>
+      <constructor name="AseCommand" signature="AseCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="AseCommand" signature="AseCommand(string,Sybase.Data.AseClient.AseConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="AseCommand" signature="AseCommand(string,Sybase.Data.AseClient.AseConnection,Sybase.Data.AseClient.AseTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Sybase.Data.AseClient.AseDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the DataSet and update a Sybase ASE database.</description>
+      <constructor name="AseDataAdapter" signature="AseDataAdapter(string,Sybase.Data.AseClient.AseConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="AseDataAdapter" signature="AseDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+    <class name="Sybase.Data.AseClient.AseDataReader" supertypes="System.Data.IDataReader"></class>
+  </module>
+
+  <!-- DB2 -->
+  <module name="IBM.Data.DB2" standard="IBM.Data.DB2">
+    <description url="https://www.ibm.com/support/knowledgecenter/SSEPGG_11.1.0/com.ibm.swg.im.dbclient.adonet.ref.doc/doc/IBMDataDB2Namespace.html">
+      ADO.NET provider for IBM DB2
+    </description>
+
+    <class name="IBM.Data.DB2.DB2Connection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_connection, database_leak, disposable</tags>
+      <constructor name="DB2Connection" signature="DB2Connection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="IBM.Data.DB2.DB2Command"/>
+      </method>
+    </class>
+
+    <class name="IBM.Data.DB2.DB2Command" supertypes="System.Data.Common.DbCommand">
+      <description>Represents an Oracle statement or stored procedure to execute against a DB2 database.</description>
+      <constructor name="DB2Command" signature="DB2Command(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="DB2Command" signature="DB2Command(string,IBM.Data.DB2.DB2Connection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="DB2Command" signature="DB2Command(string,IBM.Data.DB2.DB2Connection,IBM.Data.DB2.DB2Transaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="IBM.Data.DB2.DB2DataAdapter" supertypes="System.Data.Common.DbDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the DataSet and update an DB2 database.</description>
+      <constructor name="DB2DataAdapter" signature="DB2DataAdapter(string,IBM.Data.DB2.DB2Connection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="DB2DataAdapter" signature="DB2DataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="IBM.Data.DB2.DB2DataReader" supertypes="System.Data.Common.DbDataReader"></class>
+  </module>
+
+  <!-- Informix -->
+  <module name="IBM.Data.Informix" standard="IBM.Data.Informix">
+    <description url="https://www.ibm.com/support/knowledgecenter/SSGU8G_11.50.0/com.ibm.net_cc.doc/com.ibm.swg.im.dbclient.adonet.ref.doc/doc/IBMDataDB2Namespace.htm">
+      ADO.NET provider for IBM Informix
+    </description>
+
+    <class name="IBM.Data.Informix.IfxConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_connection, database_leak, disposable</tags>
+      <constructor name="IfxConnection" signature="IfxConnection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="IBM.Data.Informix.IfxCommand"/>
+      </method>
+    </class>
+
+    <class name="IBM.Data.Informix.IfxCommand" supertypes="System.Data.Common.DbCommand">
+      <description>Represents an Oracle statement or stored procedure to execute against a Informix database.</description>
+      <constructor name="IfxCommand" signature="IfxCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="IfxCommand" signature="IfxCommand(string,IBM.Data.Informix.IfxConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="IfxCommand" signature="IfxCommand(string,IBM.Data.Informix.IfxConnection,IBM.Data.Informix.IfxTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="IBM.Data.Informix.IfxDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the DataSet and update an Informix database.</description>
+      <constructor name="IfxDataAdapter" signature="IfxDataAdapter(string,IBM.Data.Informix.IfxConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="IfxDataAdapter" signature="IfxDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+  </module>
+
+  <!-- NHibernate -->
+  <module name="NHibernate" standard="NHibernate">
+    <description url="https://nhibernate.info/">NHibernate - ORM for .NET</description>
+
+    <class name="NHibernate.ISession" kind="interface" standard="NHibernate">
+      <description>Represents central API class abstracting the notion of a persistence service in Hibernate.</description>
+      <tags>database_connection</tags>
+      <method name="CreateFilter" signature="CreateFilter(object,string)">
+        <return type="NHibernate.IQuery"/>
+        <sink argpos="1" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="CreateQuery" signature="CreateQuery(string)">
+        <return type="NHibernate.IQuery"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="CreateSQLQuery" signature="CreateSQLQuery(string)">
+        <return type="NHibernate.ISQLQuery"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="CreateSQLQuery" signature="CreateSQLQuery(string,string,System.Type)">
+        <return type="NHibernate.IQuery"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="Delete" signature="Delete(string)">
+        <return type="int"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="Delete" signature="Delete(string,object,NHibernate.Type.IType)">
+        <return type="int"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="Enumerable" signature="Enumerable(string)">
+        <return type="System.Collections.IEnumerable"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="Enumerable" signature="Enumerable(string,object,NHibernate.Type.IType)">
+        <return type="System.Collections.IEnumerable"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="Filter" signature="Filter(string)">
+        <return type="System.Collections.ICollection"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="Filter" signature="Filter(string,object,NHibernate.Type.IType)">
+        <return type="System.Collections.ICollection"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="Find" signature="Find(string)">
+        <return type="System.Collections.IList"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="Find" signature="Find(string,object,NHibernate.Type.IType)">
+        <return type="System.Collections.IList"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="NHibernate.Cfg.Configuration" standard="NHibernate">
+      <method name="setProperty" signature="setProperty(string,string)">
+        <sink argpos="1" kind="connection_string_injection" resource="database">
+          <!--<checker id="property.matcher">
+            <property name="property" value="connection.connection_string"/>
+            <property name="position" value="0"/>
+          </checker>-->
+        </sink>
+      </method>
+      <method name="BuildSessionFactory" signature="BuildSessionFactory()" match="name">
+        <return type="NHibernate.ISessionFactory"/>
+      </method>
+    </class>
+
+    <class name="NHibernate.ISessionFactory" kind="interface" standard="NHibernate">
+      <method name="OpenSession" signature="OpenSession()" match="name">
+        <return type="NHibernate.ISession"/>
+      </method>
+    </class>
+  </module>
+
+  <!-- PostgreSQL API -->
+  <module name="Npgsql">
+    <description url="https://www.npgsql.org/">ADO.NET provider for PostgreSQL</description>
+
+    <class name="Npgsql.NpgsqlConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_connection, database_leak, disposable</tags>
+      <constructor name="NpgsqlConnection" signature="NpgsqlConnection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <constructor name="NpgsqlConnection" signature="NpgsqlConnection(string,string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+        <sink argpos="1" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <method name="CreateCommand" signature="CreateCommand()">
+        <return type="Npgsql.NpgsqlCommand"/>
+      </method>
+    </class>
+
+    <class name="Npgsql.NpgsqlCommand" supertypes="System.Data.IDbCommand">
+      <description>Represents a PostgreSQL statement or stored procedure to execute against a PostgreSQL database.</description>
+      <constructor name="NpgsqlCommand" signature="NpgsqlCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="NpgsqlCommand" signature="NpgsqlCommand(string,Npgsql.NpgsqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="NpgsqlCommand" signature="NpgsqlCommand(string,Npgsql.NpgsqlConnection,Npgsql.NpgsqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Npgsql.NpgsqlDataAdapter" supertypes="System.Data.Common.DbDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the DataSet and update a PostgreeSQL database.</description>
+      <constructor name="NpgsqlDataAdapter" signature="NpgsqlDataAdapter(string,Npgsql.NpgsqlDataAdapter)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="NpgsqlDataAdapter" signature="NpgsqlDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+    
+    <class name="Npgsql.NpgsqlDataReader" supertypes="System.Data.Common.DbDataReader"></class>
+  </module>
+
+  <!-- NoSQL -->
+
+  <!-- REDIS -->
+  <!-- Redis seems secure againts NoSQL injection: https://redis.io/topics/security -->
+  <module name="ServiceStack.Redis">
+    <description url="https://github.com/ServiceStack/ServiceStack.Redis">ServiceStack C# client for Redis</description>
+    <class name="ServiceStack.Redis.RedisClient">
+      <constructor name="RedisClient" signature="RedisClient(string)" >
+        <sink argpos="0,1" kind="connection_string_injection"/>
+        <sink argpos="0,1" kind="resource_injection"/>
+        <sink argpos="0,1" kind="sensitive_info"/>
+      </constructor>
+    </class>
+  </module>
+
+  <!-- MongoDB -->
+  <module name="MongoDB.Driver">
+    <description url="https://docs.mongodb.com/drivers/csharp">MongoDB .NET Driver</description>
+
+    <class name="MongoDB.Driver.MongoClient">
+      <constructor name="MongoClient" signature="MongoClient()" />
+      <constructor name="MongoClient" signature="MongoClient(String)" >
+        <sink kind="connection_string_injection" resource="database" argpos="0"/>
+      </constructor>
+      <method name="GetServer" signature="GetServer()" >
+        <return type="MongoDB.Driver.MongoServer" />
+      </method>
+    </class>
+
+    <class name="MongoDB.Driver.MongoServer">
+      <method name="GetDatabase" signature="GetDatabase(String)" >
+        <return type="MongoDB.Driver.MongoDatabase" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="GetDatabase" signature="GetDatabase(String, MongoDatabaseSettings)" >
+        <return type="MongoDB.Driver.MongoDatabase" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="GetDatabase" signature="GetDatabase(String, WriteConcern)" >
+        <return type="MongoDB.Driver.MongoDatabase" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+    </class>
+
+    <class name="MongoDB.Driver.MongoDatabase">
+      <field name="Server" type="MongoDB.Driver.MongoServer"/>
+
+      <method name="CreateCollection" signature="CreateCollection(String)" >
+        <return type="MongoDB.Driver.MongoCollection" />
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="eval" signature="eval(EvalArgs">
+        <sink kind="code_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="GetCollection" signature="GetCollection(String)" >
+        <return type="MongoDB.Driver.MongoCollection" />
+        <sink argpos="0" kind="nosql_injection" resource="database" />
+      </method>
+    </class>
+
+    <class name="MongoDB.Driver.MongoCollection">
+      <method name="Count" signature="Count()" match="name">
+        <return type="MongoDB.Driver.MongoCollection" />
+        <sink argpos="0" kind="nosql_injection" resource="database" />
+      </method>
+      <method name="FindOne" signature="FindOne()" match="name">
+        <return type="MongoDB.Driver.MongoCollection" />
+        <sink argpos="0" kind="nosql_injection" resource="database" />
+        <source argpos="-2" kind="database_input" resource="database"/>
+      </method>
+      <method name="FindAs" signature="FindAs()" match="name">
+        <return type="MongoDB.Driver.MongoCollection" />
+        <sink argpos="0" kind="nosql_injection" resource="database" />
+        <source argpos="-2" kind="database_input" resource="database"/>
+      </method>
+      <method name="FindAsync" signature="FindAsync()" match="name">
+        <return type="System.Threading.Tasks.Task" />
+        <sink argpos="0,1" kind="nosql_injection" resource="database" />
+        <source argpos="-2" kind="database_input" resource="database"/>
+      </method>
+      <method name="Remove" signature="Remove()" match="name">
+        <return type="MongoDB.Driver.MongoCollection" />
+        <sink argpos="0" kind="nosql_injection" resource="database" />
+      </method>
+      <method name="Update" signature="Update()" match="name">
+        <return type="MongoDB.Driver.MongoCollection" />
+        <sink argpos="0" kind="nosql_injection" resource="database" />
+        <source argpos="-2" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="MongoDB.Driver.MongoCursor"/>
+  </module>
+
+  <!-- HBase -->
+  <module name="Microsoft.HBase.Client">
+    <description url="https://github.com/hdinsight/hbase-sdk-for-net">HBase client library for .NET</description>
+
+    <class name="Microsoft.HBase.Client.HBaseClient">
+      <constructor name="HBaseClient" signature="HBaseClient(ClusterCredentials)" />
+
+      <method name="CreateScannerAsync" signature="CreateScannerAsync(string, Scanner, RequestOptions)">
+        <sink argpos="0, 1, 2" kind="nosql_injection" resource="database" />
+        <source argpos="-2" kind="database_input" resource="database" />
+      </method>
+    </class>
+
+    <class name="Microsoft.HBase.Client.ClusterCredentials">
+      <constructor name="ClusterCredentials" signature="ClusterCredentials(URI, string, string)" >
+        <sink argpos="0" kind="connection_string_injection"/>
+        <sink argpos="0" kind="resource_injection"/>
+        <sink argpos="1,2" kind="sensitive_info"/>
+      </constructor>
+    </class>
+  </module>
+
+  <!-- Third-party -->
+  <class name="RunSQLQuery.RunSQLQuery">
+    <field name="Result" type="System.Data.DataTable">
+     <source argpos="0" kind="database_input" resource="database"/>
+    </field>
+    <method name="RunSQL" signature="RunSQL(string,string)">
+      <return type="string"/>
+      <sink argpos="1" kind="sql_injection" resource="database"/>
+    </method>
+    <method name="RunSQL" signature="RunSQL(string,string,System.Collections.Hashtable)">
+      <return type="string"/>
+      <sink argpos="1" kind="sql_injection" resource="database"/>
+    </method>
+  </class>
+</library>

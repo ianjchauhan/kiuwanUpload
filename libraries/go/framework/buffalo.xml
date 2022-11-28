@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="buffalo" standard="Buffalo">
+
+  <description url="https://gobuffalo.io/">Go web development system</description>
+
+  <module name="github.com.gobuffalo.buffalo" >
+    <class name="github.com.gobuffalo.buffalo.App" supertypes="github.com.gobuffalo.buffalo.Options" >
+      <field name="Middleware" type="github.com.gobuffalo.buffalo.MiddlewareStack" />
+
+      <method name="Serve" signature="Serve(...github.com.gobuffalo.buffalo.servers.Server)" >
+        <return type="go.error" />
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+      </method>
+      <method name="ServeFiles" signature="ServeFiles(go.string,net.http.FileSystem)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="path_traversal" resource="network" />
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+      </method>
+      <method name="ServeHTTP" signature="ServeHTTP(net.http.ResponseWriter,net.http.Request)" >
+        <return type="go.error" />
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+      </method>
+      <method name="ANY" signature="ANY(go.string,github.com.gobuffalo.buffalo.Handler)"
+              alias="DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT" >
+        <tags>route:1</tags>
+      </method>
+      <method name="Group" signature="Group(go.string)" >
+        <return type="github.com.gobuffalo.buffalo.App" />
+      </method>
+    </class>
+
+    <function name="github.com.gobuffalo.buffalo.NewApp" signature="github.com.gobuffalo.buffalo.NewApp()" >
+      <return type="github.com.gobuffalo.buffalo.App" />
+    </function>
+
+    <class name="github.com.gobuffalo.buffalo.Context" supertypes="context.Context" >
+      <field name="app" type="github.com.gobuffalo.buffalo.App" />
+      <field name="params" type="go.map" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="flash" type="go.map">
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="session" type="github.com.gobuffalo.buffalo.Session" />
+      <field name="request" type="net.http.Request" />
+      <field name="tx" type="github.com.gobuffalo.pop.Connection" />
+
+      <method name="Response" signature="Response()" >
+        <return type="net.http.ResponseWriter" />
+      </method>
+      <method name="Request" signature="Request()" >
+        <return type="net.http.Request" />
+      </method>
+      <method name="Session" signature="Session()" >
+        <return type="github.com.gobuffalo.buffalo.Session" />
+      </method>
+      <method name="Cookies" signature="Cookies()" >
+        <return type="github.com.gobuffalo.buffalo.Cookies" />
+      </method>
+      <method name="Params" signature="Params()" >
+        <return type="github.com.gobuffalo.buffalo.ParamValues" />
+      </method>
+      <method name="Param" signature="Param(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Set" signature="Set(go.string,go.interface)" >
+        <sink argpos="1" kind="xss" resource="web" />
+      </method>
+      <method name="Logger" signature="Logger()" >
+        <return type="github.com.gobuffalo.buffalo.Logger" />
+      </method>
+      <method name="Render" signature="Render(go.int,github.com.gobuffalo.buffalo.render.Renderer)" >
+        <return type="go.error" />
+        <sink argpos="1" kind="xss" resource="web" />
+      </method>
+      <method name="Error" signature="Error(go.int,go.error)" >
+        <return type="go.error" />
+      </method>
+      <method name="Redirect" signature="Redirect(go.int,go.string,...go.interface)" >
+        <return type="go.error" />
+        <sink argpos="1" kind="open_redirect" resource="web" />
+        <sink kind="execution_after_redirect" argpos="1" resource="web"/>
+      </method>
+      <method name="Data" signature="Data()" >
+        <return type="go.map" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Flash" signature="Flash()" >
+        <return type="github.com.gobuffalo.buffalo.Flash" />
+      </method>
+      <method name="File" signature="File(go.string)" >
+        <return type="github.com.gobuffalo.buffalo.binding.File,go.error" />
+      </method>
+      <method name="Bind" signature="Bind(go.interface)" >
+        <return type="go.error" />
+        <source argpos="0" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <class name="github.com.gobuffalo.buffalo.DefaultContext" supertypes="github.com.gobuffalo.buffalo.Context" >
+      <method name="Value" signature="Value(go.interface)" >
+        <return type="go.interface" />
+      </method>
+    </class>
+
+    <class name="github.com.gobuffalo.buffalo.Session" supertypes="github.com.gorilla.sessions.Session" >
+      <method name="Delete" signature="Delete(go.interface)" >
+        <tags>write</tags>
+        <sink argpos="0" kind="trust_boundary" resource="web" />
+      </method>
+      <method name="Get" signature="Get(go.interface)" >
+        <return type="go.interface" />
+      </method>
+      <method name="GetOnce" signature="GetOnce(go.interface)" >
+        <return type="go.interface" />
+      </method>
+      <method name="Set" signature="Set(go.string,go.interface)" >
+        <tags>write</tags>
+        <sink argpos="1" kind="trust_boundary" resource="web" />
+      </method>
+    </class>
+
+    <class name="github.com.gobuffalo.buffalo.Flash" >
+      <method name="Set" signature="Set(go.string,go.slice)" >
+        <sink argpos="1" kind="xss" resource="web" />
+      </method>
+      <method name="Add" signature="Add(go.string,go.interface)" >
+        <sink argpos="1" kind="xss" resource="web" />
+      </method>
+    </class>
+
+    <class name="github.com.gobuffalo.buffalo.Response" supertypes="net.http.ResponseWriter" >
+      <method name="Write" signature="Write(go.slice)" >
+        <return type="go.int,go.error" />
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+    </class>
+
+    <class name="github.com.gobuffalo.buffalo.Logger" supertypes="github.com.gobuffalo.buffalo.FieldLogger" />
+    <class name="github.com.gobuffalo.buffalo.FieldLogger" supertypes="github.com.gobuffalo.buffalo.logger.Logger" />
+    <class name="github.com.gobuffalo.buffalo.Logger" >
+      <method name="Debugf" signature="Debugf(go.string,...go.interface)" alias="Infof,Printf,Warnf,Errorf,Fatalf" >
+        <tags>write</tags>
+        <sink argpos="0" kind="format_injection" />
+        <sink argpos="1,2,3,4,5" kind="log_forging" />
+      </method>
+      <method name="Debug" signature="Debug(go.string,...go.interface)" alias="Info,Warn,Error,Fatal,Panic" >
+        <tags>write</tags>
+        <sink argpos="0,1,2,3,4" kind="log_forging" />
+      </method>
+    </class>
+
+    <function name="github.com.gobuffalo.buffalo.New" signature="github.com.gobuffalo.buffalo.New" >
+      <return type="github.com.gobuffalo.buffalo.FieldLogger" />
+    </function>
+
+    <class name="github.com.gobuffalo.buffalo.Cookies" >
+      <method name="Get" signature="Get(go.slice)" >
+        <return type="go.string,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" >
+          <tags>CWE:784</tags>
+        </source>
+      </method>
+      <method name="Set" signature="Set(go.string,go.string,time.Duration)" >
+        <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.persistent:2</tags>
+        <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      </method>
+      <method name="SetWithExpirationTime" signature="SetWithExpirationTime(go.string,go.string,time.Time)" >
+        <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.persistent:2</tags>
+        <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      </method>
+      <method name="SetWithPath" signature="SetWithPath(go.string,go.string,go.string)" >
+        <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.path:2</tags>
+        <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      </method>
+    </class>
+
+    <class name="github.com.gobuffalo.buffalo.Options" kind="struct" >
+      <field name="Name" type="go.string" />
+      <field name="Addr" type="go.string" >
+        <source argpos="-1" kind="sensitive_info" resource="network" />
+      </field>
+      <field name="Host" type="go.string">
+        <source argpos="-1" kind="sensitive_info" resource="network" />
+      </field>
+      <field name="Env" type="go.string" />
+      <field name="Logger" type="github.com.gobuffalo.buffalo.Logger" />
+      <field name="SessionStore" type="github.com.gorilla.sessions.Store" />
+      <field name="Context" type="context.Context" />
+    </class>
+
+    <class name="github.com.gobuffalo.buffalo.ParamValues" kind="struct" >
+      <method name="Get" signature="Get(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <function name="github.com.gobuffalo.buffalo.NewOptions" signature="github.com.gobuffalo.buffalo.NewOptions()" >
+      <return type="github.com.gobuffalo.buffalo.Options" />
+    </function>
+
+    <class name="github.com.gobuffalo.buffalo.render.Renderer" />
+
+    <function name="github.com.gobuffalo.buffalo.render.JSON" signature="github.com.gobuffalo.buffalo.render.JSON(go.interface)" >
+      <tags>serialization:0</tags>
+      <return type="github.com.gobuffalo.buffalo.render.Renderer" />
+    </function>
+    <function name="github.com.gobuffalo.buffalo.render.HTML" signature="github.com.gobuffalo.buffalo.render.HTML(...go.string)" >
+      <return type="github.com.gobuffalo.buffalo.render.Renderer" />
+      <sink argpos="0,1,2,3" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="github.com.gobuffalo.buffalo.render.JavaScript" signature="github.com.gobuffalo.buffalo.render.JavaScript(...go.string)" >
+      <return type="github.com.gobuffalo.buffalo.render.Renderer" />
+      <sink argpos="0,1,2,3" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="github.com.gobuffalo.buffalo.render.Plain" signature="github.com.gobuffalo.buffalo.render.Plain(go.string,...go.interface)" >
+      <return type="github.com.gobuffalo.buffalo.render.Renderer" />
+      <sink argpos="1,2,3" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="github.com.gobuffalo.buffalo.render.Template" signature="github.com.gobuffalo.buffalo.render.Template(go.string,...go.string)" >
+      <return type="github.com.gobuffalo.buffalo.render.Renderer" />
+      <sink argpos="1,2,3" kind="path_traversal" resource="filesystem" />
+    </function>
+  </module>
+
+  <module name="github.com.gobuffalo.buffalo.middleware" >
+    <function name="github.com.gobuffalo.buffalo.middleware.ssl.ForceSSL" signature="github.com.gobuffalo.buffalo.middleware.ssl.ForceSSL()" >
+      <neutralization argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+  </module>
+
+  <module name="github.com.gobuffalo.envy" >
+    <function name="github.com.gobuffalo.envy.Get" signature="github.com.gobuffalo.envy.Get(go.string,go.string)" >
+      <return type="go.string" />
+      <source argpos="-1" kind="environment_input" resource="environment" />
+    </function>
+    <function name="github.com.gobuffalo.envy.MustGet" signature="github.com.gobuffalo.envy.MustGet(go.string)" >
+      <return type="go.string,go.error" />
+      <source argpos="-1" kind="environment_input" resource="environment" />
+    </function>
+  </module>
+
+  <module name="github.com.gobuffalo.mw-csrf" >
+    <globalObject name="github.com.gobuffalo.mw-csrf.New" type="github.com.gobuffalo.Handler" alias="github.com.gobuffalo.buffalo.middleware.csrf.New">
+      <tags>csrfFilter</tags>
+    </globalObject>
+  </module>
+</library>

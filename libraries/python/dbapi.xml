@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="pep249" technology="python">
+
+  <!-- Python Database API v2, a.k.a. DBAPI (PEP 249), the common API many modules implement -->
+  <module name="pep249">
+    <description url="https://www.python.org/dev/peps/pep-0249/">Python Database API (PEP 249)</description>
+
+    <function name="connect" signature="connect(dsn,user,password,host,database,**kwargs)">
+      <return type="pep249.Connection"/>
+      <sink argpos="0" paramNames="dsn" kind="connection_string_injection" resource="database" />
+      <sink argpos="1" paramNames="user" kind="sensitive_data" resource="database" />
+      <sink argpos="2" paramNames="password" kind="sensitive_data" resource="database" />
+      <sink argpos="3" paramNames="host" kind="ssrf" resource="database" />
+      <sink argpos="4" paramNames="database" kind="resource_injection" resource="database" />
+    </function>
+
+    <class name="Connection">
+      <field name="database"><sink argpos="-1" kind="resource_injection" resource="database"/></field>
+      <field name="messages">
+        <source argpos="-1" kind="error_details_source"/>
+      </field>
+
+      <method name="close" signature="close()"/>
+      <method name="commit" signature="commit()"/>
+      <method name="rollback" signature="rollback()"/>
+      <method name="cursor" signature="cursor()">
+        <return type="pep249.Cursor"/>
+      </method>
+
+      <method name="xid" signature="xid(format_id,global_transaction_id,branch_qualifier)"></method>
+      <method name="tpc_begin" signature="tpc_begin(xid)"/>
+      <method name="tpc_prepare" signature="tpc_prepare()"/>
+      <method name="tpc_commit" signature="tpc_commit([xid])"/>
+      <method name="tpc_rollback" signature="tpc_rollback([xid])"/>
+      <method name="tpc_recover" signature="tpc_recover()"/>
+    </class>
+
+    <class name="Cursor">
+      <field name="description"/>
+      <field name="rowcount" type="int"/>
+      <field name="rownumber" type="int"/>
+      <field name="arraysize" type="int"/>
+      <field name="connection" type="pep249.Connection"/>
+      <field name="lastrowid" type="int"/>
+      <field name="messages">
+        <source argpos="-1" kind="error_details_source"/>
+      </field>
+
+      <method name="callproc" signature="callproc(procname[,parameters])">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="close" signature="close()"/>
+      <method name="prepare" signature="prepare(sql)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="execute" signature="execute(sql[,parameters])" alias="executemany">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="fetchone" signature="fetchone()" alias="next">
+        <return type="object" /><!-- sequence, e.g. a tuple, a list, a dictionary... -->
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="fetchall" signature="fetchall()" alias="fetchmany">
+        <return type="object" /><!-- sequence, e.g. a tuple, a list, a dictionary... -->
+        <source argpos="-1" resource="database" kind="database_input" />
+      </method>
+      <method name="nextset" signature="nextset()"/>
+      <method name="setinputsizes" signature="setinputsizes(sizes)"/>
+      <method name="setoutputsize" signature="setoutputsize(size[,column])"/>
+      <method name="scroll" signature="scroll(value[,mode])"/>
+    </class>
+  </module>
+
+</library>

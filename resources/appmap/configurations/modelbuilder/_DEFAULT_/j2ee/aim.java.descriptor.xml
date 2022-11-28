@@ -1,0 +1,189 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='j2ee' subtech='java' descriptor='j2ee/aim.java.xml' label='Process Java classes (source code or bytecode)'>
+  <description>
+    Models Java classes (and optionally, methods), resolving dependencies in the Java language:
+    method calls, object instantiations, inheritance, reference to types and type fields.
+    <br/>
+    Both source (.java) code and bytecode (.class) could be processed.
+    <br/>
+    To activate registration of methods in the model, the property <code>methodsPredicate</code> could be set.
+    Registering all class methods as components is discouraged, as model could have a huge number of components.
+  </description>
+
+  <properties>
+    <property id='aim.j2ee.rule.javaSource.active' type='bool'>
+      <name>javaSourceActive</name>
+      <example>false</example>
+      <description>Activation for source (.java) analysis.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.javaBytecode.active' type='bool'>
+      <name>bytecodeActive</name>
+      <example>false</example>
+      <description>Activation for bytecode (.class) analysis.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.java.software' type='string'>
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>
+        Default (fallback) software name. Please note that global software resolvers could be used to
+        resolve the software where each class file lives.
+      </description>
+    </property>
+
+    <property id='aim.j2ee.rule.java.resolveCalls' type='bool'>
+      <name>resolveCalls</name>
+      <example>true</example>
+      <description>Resolve method calls.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.java.resolveFieldReferences' type='bool'>
+      <name>resolveFieldReferences</name>
+      <example>true</example>
+      <description>Resolve references to fields.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.java.resolveInheritance' type='bool'>
+      <name>resolveInheritance</name>
+      <example>true</example>
+      <description>Resolve inheritance (extends from parent class, inherits from interface).</description>
+    </property>
+
+    <property id='aim.j2ee.rule.java.resolveInstantiations' type='bool'>
+      <name>resolveInstantiations</name>
+      <example>true</example>
+      <description>Resolve object instantiations (usages of the <code>new</code> operator).</description>
+    </property>
+
+    <property id='aim.j2ee.rule.java.resolveTypeReferences' type='bool'>
+      <name>resolveTypeReferences</name>
+      <example>true</example>
+      <description>Resolve type references (casts, type usages in method signatures and field/variable declarations).</description>
+    </property>
+
+    <property id='aim.j2ee.rule.java.addCodeToRelations' type='bool'>
+      <name>addCodeToRelations</name>
+      <example>${aim.common.addCodeToRelations}</example>
+      <description>If true, matching java code will be added to relations.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.java.resolveArtifacts' type='bool'>
+      <name>resolveArtifacts</name>
+      <example>${aim.common.resolveArtifacts}</example>
+      <description>If true, artifacts will be resolved.</description>
+    </property>
+
+    <property id='aim.j2ee.java.resolver' type='enum'>
+      <name>resolver</name>
+      <example>existing</example>
+      <description>
+        Which class resolver to use for resolving dependencies on target classes.
+      </description>
+      <possible>
+        <enumval name="existing">Resolve only relations to classes found in analyzed code.</enumval>
+        <enumval name="matching">Resolve only relations to classes in packages matching <code>packagePatterns</code>.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.j2ee.java.matching.packagePatterns' type='list' subtype='regexp'>
+      <name>packagePatterns</name>
+      <example>.+</example>
+      <description>
+        If <code>resolver</code> is set to <i>matching</i>, the package patterns (regular expressions) to use.
+      </description>
+    </property>
+
+    <property id='aim.j2ee.java.resolveMethodsFilter' type='enum'>
+      <name>resolveMethodsFilter</name>
+      <example>none</example>
+      <description>
+        The strategy to follow for modeling class dependencies with method-level granularity.
+      </description>
+      <possible>
+        <enumval name="none">Dependencies will be modeled with class-level granularity.</enumval>
+        <enumval name="patterns">The list of patterns in <code>methodPatterns</code> will be used to decide which methods to include in AIM model.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.j2ee.java.resolveMethodsFilter.patterns' type='list' subtype='regexp'>
+      <name>methodPatterns</name>
+      <example>.+</example>
+      <description>
+        Comma-separated list of (regexp) patterns on Java fully-qualified types that, when matched, will be registered with method granularity.
+        <br/>
+        If you use ".*" (match any), methods will be shown as components for every type found.
+        <br/>
+        If empty, entities and dependencies will be represented at the type granularity.
+      </description>
+    </property>
+
+    <property id='aim.j2ee.java.methodsPredicate' type='enum'>
+      <name>methodsPredicate</name>
+      <example>none</example>
+      <description>
+        Java rule (either source or bytecode) may register class methods as model entities.
+        This is the strategy to follow for deciding which method declarations to model.
+      </description>
+      <possible>
+        <enumval name="none">No method declaration will be modeled (but methods with dependencies for classes matching aim.j2ee.java.resolveMethodsFilter will be registered).</enumval>
+        <enumval name="nonPrivateMethods">Any method with access scope higher than 'private' will be modeled.</enumval>
+        <enumval name="excludeGetterSetter">All methods, excluding getters and setters, will be modeled.</enumval>
+        <enumval name="patterns">methods with signatures matching aim.j2ee.java.methodsPredicate.patterns property will be registered.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.j2ee.java.methodsPredicate.patterns' type='list' subtype='regexp' separator='|'>
+      <name>patterns</name>
+      <example>.+</example>
+      <description>
+        List of regular expressions (separated by |) that will be used to match method signatures when methodsPredicate=patterns.
+        <br/>
+        Note: Method signatures to check are in the form: methodName(arg1Type,...,argNType), where each type is fully-qualified.
+      </description>
+    </property>
+
+    <property id='aim.j2ee.filter.javaSource' type='list' subtype='antPattern'>
+      <name>javaSource</name>
+      <example>**/*.java</example>
+      <description>Filter (Ant patterns) for java source rule</description>
+    </property>
+
+    <property id='aim.j2ee.filter.javaBytecode' type='list' subtype='antPattern'>
+      <name>javaBytecode</name>
+      <example>**/*.class</example>
+      <description>Filter (Ant patterns) for java bytecode rule</description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>class,operation</values>
+    <description>
+      Creates class components and, if <code>resolveMethodsFilter=patterns</code>
+      (which Java classnames to process for methods) and <code>methodsPredicate</code>
+      (which methods to process for matched classes) accept a method, it is modeled as an operation
+      contained in the Java class.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      class-contains->operation,
+      class|operation-inherits|calls|uses|instantiates|references->class|operation
+    </values>
+    <description>
+      Resoves inheritance, method calls, variable references, object instantiations and type references, between classes
+      When an operation is modeled (according to the <code>resolveMethodsFilter</code> and <code>methodsPredicate</code>),
+      it acts as the source/target of the relation. Operation is contained in the class that declares the method.
+    </description>
+  </createdRelations>
+
+  <importantConfigurations activation="aim.j2ee.rule.javaSource.active">
+    <alternative>
+      <value>aim.j2ee.java.methodsPredicate=excludeGetterSetter</value>
+      <value>aim.j2ee.java.resolveMethodsFilter=patterns</value>
+    </alternative>
+  </importantConfigurations>
+
+</block>

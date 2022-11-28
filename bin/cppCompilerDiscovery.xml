@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="qaking" default="help" basedir=".">
+
+  <property environment="env"/>
+  <property name="technology" value="c"/>
+  <property name="compilers" value="gcc,clang,vstudio"/>
+  <property name="outputDir" value="${basedir}" />
+  <property name="JKQA_HOME" value="${env.JKQA_HOME}"/>
+
+  <path id="classpath">
+    <pathelement path="${JKQA_HOME}/bin"/>
+    <pathelement path="${JKQA_HOME}/conf"/>
+    <fileset dir="${JKQA_HOME}/lib">
+      <include name="qaKingCore.jar"/>
+      <include name="qaking_cpp_parser.jar"/>
+      <include name="log4j*.jar"/>
+      <include name="guava*.jar"/>
+      <include name="alsUtils.jar"/>
+      <include name="spring*.jar"/>
+    </fileset>
+  </path>
+
+  <taskdef name="compiler.discovery" classname="com.optimyth.qaking.cpp.discovery.CompilerDiscovery" classpathref="classpath"/>
+
+  <target name="run">
+    <compiler.discovery technology="${technology}" compilersToCheck="${compilers}" outputDir="${outputDir}"/>
+  </target>
+
+  <target name="help">
+    <echo>
+Detects C/C++ compilers installed in the local workstation
+and extracts basic configuration, like include directories
+and predefined macros.
+
+Usage:
+ant -f cppCompilerDiscovery.xml run [-Dtechnology=c|cpp] [-Dcompilers=COMPILERS] -DoutputDir=OUTDIR
+
+where:
+* technology: One of c (for C language) or cpp (for C++). Default: c
+
+* COMPILERS: Comma separated list with compilers to check. Compilers supported are:
+  - vstudio: Visual Studio C/C++ compiler (cl.exe).
+  - gcc: GNU GCC.
+  - clang: LLVM clang.
+  By default, all will be detected. You may limit to a single compiler, or include version
+  number if multiple compilers are installed. For example, vstudio-12.0 means Visual Studio 12.0.
+
+* OUTDIR: Directory where the configuration file will be stored. Defaults to current directory.
+
+NOTE: It is important that the environment (including path) for the compilers is set.
+For example, for Visual Studio, you may run the vcvarsall.bat script before running this.
+    </echo>
+  </target>
+
+</project>

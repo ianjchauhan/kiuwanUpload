@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.proceduresPerFile" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.SIZE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.SIZE.DATABASE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds />
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <internal-name id="OPT.ABAP.SIZE.NPF" />
+        <java-class>com.als.abap.metrics.ProceduresAbapMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <internal-name id="OPT.PLSQL.SIZE.OBJECTS" />
+        <java-class>com.als.plsql.metrics.DatabaseObjectsMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+        <internal-name id="OPT.TRANSACTSQL.SIZE.OBJECTS" />
+        <java-class>com.optimyth.qaking.tsql.metrics.DatabaseObjectsMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+    <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <code-example name="metricCodeExampleAbap" result-value="2">
+<![CDATA[
+FORM DO_INBOUND USING ZFILE PGM_ID MODE ABEND_ON_ERROR_IF_SPACE.           "PROCEDURE 1
+
+  IF SY-SUBRC NE 0
+     OR ZFILE CS 'FILESPEC'.
+    REFRESH: ZZMSG_TAB1, ZZMSG_TAB2.
+    CLEAR ZZMSG_TAB2.
+    MOVE 'Cannot Open File' TO ZZMSG_TAB2.
+    APPEND ZZMSG_TAB2.
+    CLEAR ZZMSG_TAB2.
+    MOVE 'File Name is:' TO ZZMSG_TAB2.
+    APPEND ZZMSG_TAB2.
+    CLEAR ZZMSG_TAB2.
+    MOVE ZFILE  TO ZZMSG_TAB2.
+    APPEND ZZMSG_TAB2.
+    CALL FUNCTION 'Z_SEND_MESSAGE'
+         EXPORTING
+              PGM_ID     = PGM_ID
+         TABLES
+              ZZMSG_TAB1 = ZZMSG_TAB1
+              ZZMSG_TAB2 = ZZMSG_TAB2.
+    IF ABEND_ON_ERROR_IF_SPACE IS INITIAL.
+      MESSAGE A450(ZABBOTT) WITH 'Could Not Find Input File' ZFILE.
+    ELSE.
+      RAISE ERROR.
+    ENDIF.
+  ENDIF.
+
+  COMMIT WORK.
+
+ENDFORM.
+*&--------------------------------------------------------------------*
+*& Form output
+*&--------------------------------------------------------------------*
+FORM OUTPUT.                                                               "PROCEDURE 2
+ WRITE / SY-ULINE(66).
+ LOOP AT IT_LDBN.
+  WRITE: / SY-VLINE,
+   IT_LDBN-CHECK AS CHECKBOX,
+   SY-VLINE,
+   (15) IT_LDBN-STRUCTURE,
+   SY-VLINE,
+   (40) IT_LDBN-NODETEXT,
+   SY-VLINE.
+ ENDLOOP.
+WRITE / SY-ULINE(66).
+ENDFORM. "output
+
+]]>
+        </code-example>
+      </language-parser>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <code-example name="metricCodeExamplePlsql" result-value="2">
+<![CDATA[
+CREATE OR REPLACE PACKAGE BODY CONF_ETIQ_ENTREGA3.MC_QRY IS
+  PROCEDURE GetCentrales(pCdc        IN NUMBER,                         --PROCEDURE 1
+                         pResultado  OUT SYS_REFCURSOR)
+  IS
+  BEGIN
+    OPEN pResultado FOR
+        WITH 
+          rol AS (
+            SELECT cdc,
+                   sistema_id,
+                   id_rol_nplex
+              FROM table1
+                   INNER JOIN (SELECT *
+                                 FROM rol_nplex
+                                WHERE cdc                     = pCdc
+                                  AND estado_configuracion_id = CONSTANTES_QRY.EC_OPERATIVO)
+                   USING (cdc, rol_nplex_id))
+        SELECT s.id_sistema                 AS "idSistema",
+               c.id_central                 AS "idNodo",  /*
+               otro
+               comentario*/
+               s.descripcion                AS "descripcion",
+               /*nombre
+               recuperado*/       s.nombre                     AS "nombreSistema",
+               h.nombre                     AS "nombreHost",
+               r.id_rol_nplex               AS "idRol",
+               --r.descripcion                AS "descripcionRolNplex",
+               s.ip_servicios_generales     AS "ip",   --r.descripcion
+               s.puerto_servicios_generales AS "puerto",
+               /*tipoSistema*/
+               s.tipo_sistema_id            AS "tipoSistema"
+          FROM tables2 s
+               INNER JOIN (SELECT * 
+                             FROM host
+                            WHERE cdc                     = pCdc
+                              AND estado_configuracion_id = CONSTANTES_QRY.EC_OPERATIVO) h
+               USING (cdc, host_id)
+               INNER JOIN (SELECT * 
+                             FROM central
+                            WHERE cdc                     = pCdc
+                              AND estado_configuracion_id = CONSTANTES_QRY.EC_OPERATIVO) c
+               USING (cdc, sistema_id)
+               INNER JOIN rol r
+               USING (cdc, sistema_id)
+      ORDER BY s.id_sistema;
+  END GetCentrales; 
+PROCEDURE delete_employee_salary(                                      --PROCEDURE 2
+      p_factor IN NUMBER
+    ) AS
+      v_employee_count INTEGER;
+    BEGIN
+        DELETE FROM employee
+      WHERE       first_name = 'junk';
+        COMMIT;
+    EXCEPTION
+     WHEN OTHERS THEN
+       ROLLBACK;
+   END update_employee_salary;
+     
+  END MC_QRY;
+
+]]>
+        </code-example>
+      </language-parser>
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Procedimientos]]></name>
+      
+      <description>
+<![CDATA[
+Número de procedimientos.
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Cuenta todos los procedimientos (FORM) definidos en un mismo fichero.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Cuenta todos los procedimientos almacenados declarados en un mismo fichero.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+<![CDATA[
+Cuenta todos los procedimientos almacenados declarados en un mismo fichero.
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Procedures]]></name>
+      
+      <description>
+<![CDATA[
+Number of procedures.
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Counts all the procedures (FORM) defined in the same file.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Counts all the stored procedures declared in the same file.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+<![CDATA[
+Counts all the stored procedures declared in the same file.
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

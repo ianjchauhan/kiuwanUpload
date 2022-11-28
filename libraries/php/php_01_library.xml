@@ -1,0 +1,1349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="php_library" technology="php">
+  <description url="https://www.php.net/manual/en/funcref.php">PHP language library</description>
+
+  <globalObject name="_GET" type="array" alias="HTTP_GET_VARS">
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </globalObject>
+  <globalObject name="_POST" type="array" alias="HTTP_POST_VARS">
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </globalObject>
+  <globalObject name="_COOKIE" type="array" alias="HTTP_COOKIE_VARS">
+    <source argpos="-1" kind="user_input" resource="web"/>
+    <source argpos="-1" kind="security_decision_source" resource="web"/>
+  </globalObject>
+  <globalObject name="_REQUEST" type="array" alias="HTTP_REQUEST_VARS">
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </globalObject>
+  <globalObject name="_FILES" type="array" alias="HTTP_POST_FILES">
+    <source argpos="-1" kind="user_input" resource="web">
+      <checker id="filesChecker"/>
+    </source>
+  </globalObject>
+  <globalObject name="_SESSION" type="array" alias="HTTP_SESSION_VARS">
+    <!-- Not a directly user-controlled element -->
+  </globalObject>
+  <globalObject name="_SERVER" type="array" alias="HTTP_SERVER_VARS">
+    <source argpos="-1" kind="user_input" resource="web">
+      <checker id="serverChecker"/>
+    </source>
+  </globalObject>
+  <globalObject name="_ENV" type="array" alias="HTTP_ENV_VARS">
+    <source argpos="-1" kind="user_input" resource="environment"/>
+  </globalObject>
+  <globalObject name="HTTP_RAW_POST_DATA" type="scalar">
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </globalObject>
+  <globalObject name="argv" type="array">
+    <source argpos="-1" kind="user_input" resource="os"/>
+  </globalObject>
+  <globalObject name="argc" type="int"/>
+  <globalObject name="http_response_header" type="array">
+    <source argpos="-1" kind="other_input" resource="web"/>
+  </globalObject>
+
+  <function name="isset" signature="isset(mixed $var, mixed $...)">
+    <return type="bool"/>
+  </function>
+  <function name="is_null" signature="is_null(mixed $var)">
+    <return type="bool"/>
+  </function>
+
+  <function name="getopt" signature="getopt(string $options, array $longopts, int &amp;$optind)">
+    <return type="array"/>
+    <source argpos="-1" kind="user_input" resource="os"/>
+  </function>
+
+  <function name="get_headers" signature="get_headers(string $url, int $format = 0, resource $context = NULL)">
+    <return type="array"/>
+    <source argpos="-1" kind="other_input" resource="web"/>
+    <sink argpos="0" kind="ssrf" resource="web"/>
+    <sink argpos="0" kind="resource_injection" resource="web"/>
+  </function>
+  <function name="runkit_superglobals">
+    <return type="array"/>
+    <source argpos="-1" kind="other_input" resource="other"/>
+  </function>
+  <function name="import_request_variables" signature="import_request_variables(string $types, string $prefix='')">
+    <tags>deprecated</tags>
+    <return type="bool"/>
+    <!-- TODO this really sets script variables (with given prefix) from globals -->
+    <source argpos="-1" kind="other_input" resource="web"/>
+  </function>
+
+  <module name="spl">
+    <function name="spl_autoload" signature="spl_autoload(string $class_name, string $file_extensions = spl_autoload_extensions)">
+      <sink kind="code_injection" argpos="0"/>
+    </function>
+    <function name="spl_autoload_register" signature="spl_autoload_register(callable $autoload_function, bool $throw=TRUE, bool $prepend=FALSE)">
+      <sink kind="code_injection" argpos="0"/>
+    </function>
+  </module>
+
+  <!-- log forging -->
+  <module name="logging">
+    <function name="trigger_error" alias="user_error" signature="trigger_error( string $error_msg, int $error_type = E_USER_NOTICE)">
+      <return type="bool"/>
+      <sink kind="xss" argpos="0" neutralizer="xss,string" resource="web"/>
+      <sink kind="log_forging" argpos="0" neutralizer="*" resource="other"/>
+    </function>
+    <function name="error_log" signature="error_log(string $message, int $message_type = 0, string $destination, string $extra_headers)">
+      <sink kind="log_forging" argpos="0" neutralizer="*"/>
+      <sink kind="mail_header_manipulation" argpos="3" resource="other"/>
+      <sink kind="mail_command_injection" argpos="2,3" resource="network"/>
+      <sink kind="resource_injection" argpos="2" resource="network"/><!-- email address, only when 2nd arg = 3 -->
+    </function>
+    <function name="syslog" signature="syslog(int $priority, string $message)">
+      <sink kind="log_forging" argpos="1" neutralizer="*" resource="other"/>
+    </function>
+  </module>
+
+  <!-- file functions -->
+  <module name="file">
+    <function name="readfile" signature="readfile(string $filename, bool $use_include_path = FALSE, resource $context = NULL)">
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+      <sink kind="http_parameter_pollution" argpos="0" neutralizer="http_parameter_pollution" resource="network"/>
+    </function>
+    <function name="bzopen">
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="dio_open">
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="fopen">
+      <tags>sensitive_error_message:needs_error_handling</tags>
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+      <sink kind="http_parameter_pollution" argpos="0" neutralizer="http_parameter_pollution" resource="network"/>
+      <sink kind="missing_authorization" argpos="0" neutralizer="missing_authorization"/>
+    </function>
+    <function name="eio_open" signature="eio_open(string $path, int $flags, int $mode, int $pri, callable $callback, mixed $data)">
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="gzopen">
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="zip_open">
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+    </function>
+
+    <function name="chmod" alias="chgrp,chown">
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="copy">
+      <sink kind="path_traversal" argpos="0,1" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="file_exists">
+      <tags>file_info</tags>
+      <!-- not a sink for path_traversal, file contents are not read/written -->
+      <!--<sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>-->
+    </function>
+    <function name="fileatime" alias="filectime,filegroup,fileinode,filemtime,fileowner,fileperms,filesize,filetype,lstat,readlink,stat">
+      <tags>file_info</tags>
+      <!-- not a sink for path_traversal, file stats are gathered, but contents are not read/written -->
+      <!--<sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>-->
+    </function>
+    <function name="link" alias="symlink, eio_link, eio_symlink">
+      <sink kind="path_traversal" argpos="0,1" resource="filesystem"/>
+    </function>
+    <function name="unlink" alias="eio_unlink">
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="linkinfo">
+      <!--<sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>-->
+    </function>
+    <function name="mkdir" alias="eio_mkdir, eio_mknod">
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="rename" alias="eio_rename">
+      <sink kind="path_traversal" argpos="0,1" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="rmdir" alias="eio_rmdir">
+      <sink kind="path_traversal" argpos="0,1" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="touch">
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="parse_ini_file" signature="parse_ini_file(string $filename, bool $process_sections = FALSE, int $scanner_mode = INI_SCANNER_NORMAL)">
+      <return type="array"/>
+      <source argpos="-1" kind="file_input"/>
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="tempnam">
+      <sink kind="path_traversal" argpos="0,1" neutralizer="file" resource="filesystem"/>
+    </function>
+
+    <function name="bzread" signature="bzread(resource $bz, int $length=1024)">
+      <return type="string"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="dio_read" signature="dio_read(resource $bz, int $len=1024)">
+      <return type="string"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="exif_imagetype" signature="exif_imagetype(string $filename)">
+      <tags>upload.content</tags>
+      <return type="int"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+      <neutralization kind="dangerous_file_upload" argpos="0"/>
+    </function>
+    <function name="exif_read_data" alias="read_exif_data"
+              signature="exif_read_data(mixed $stream, string $sections = NULL, bool $arrays = FALSE, bool $thumbnail = FALSE)">
+      <return type="array"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="exif_thumbnail" signature="exif_thumbnail(mixed $stream, int &amp;$width, int &amp;$height, int &amp;$imagetype)">
+      <return type="string"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="getimagesize">
+      <tags>upload.size,upload.content</tags>
+      <neutralization kind="dangerous_file_upload" argpos="0"/>
+    </function>
+    <function name="fgets" signature="fgets(resource $handle, int $length)">
+      <return type="string"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="fgetss" signature="fgetss(resource $handle, int $length, string $allowable_tags)">
+      <return type="string"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="file" signature="file(string $filename, int $flags=0, resource $context=NULL)">
+      <return type="array"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+      <sink kind="http_parameter_pollution" argpos="0" neutralizer="http_parameter_pollution" resource="network"/>
+    </function>
+    <function name="file_get_contents" alias="stream_get_contents">
+      <return type="string"/>
+      <source argpos="-1" kind="file_input"/>
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+      <sink kind="http_parameter_pollution" argpos="0" neutralizer="http_parameter_pollution" resource="network"/>
+      <sink kind="ssrf" argpos="0" neutralizer="http_parameter_pollution" resource="network"/>
+    </function>
+    <function name="file_put_contents">
+      <tags>file_output</tags>
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+      <sink kind="file_output" argpos="1" resource="filesystem"/>
+    </function>
+    <!--function name="fpassthru">
+      <source kind="file_input"/>
+    </function-->
+    <function name="fputcsv">
+      <tags>file_output</tags>
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+      <sink kind="file_output" argpos="1" resource="filesystem"/>
+      <sink kind="csv_formula_injection" argpos="1" resource="other"/>
+    </function>
+    <function name="fread">
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="eio_read"></function>
+    <function name="fscanf">
+      <source argpos="-1" kind="file_input"/>
+      <sink kind="format_injection" argpos="1" resource="filesystem"/>
+    </function>
+    <function name="fprintf" signature="fprintf(resource $handle, string $format, mixed $...)">
+      <return type="int"/>
+      <sink kind="format_injection" argpos="1" resource="formatstr"/>
+      <sink kind="file_output" argpos="2" resource="filesystem"/>
+    </function>
+    <functionAlias name="vfprintf" super="fprintf" signature="vfprintf(resource $handle, string $format, array $args)"/>
+    <function name="sprintf" signature="sprintf(string $format, mixed $...)">
+      <return type="string"/>
+      <sink kind="format_injection" argpos="0" resource="formatstr"/>
+      <propagate from="0,1" to="-1" />
+    </function>
+
+    <function name="fwrite" signature="fwrite(resource $handle, string $string, int $length)" alias="fputs, eio_write">
+      <tags>file_output</tags>
+      <sink kind="file_output" argpos="1" resource="filesystem"/>
+    </function>
+    <function name="get_meta_tags" signature="get_meta_tags(string $filename, bool $use_include_path = FALSE)">
+      <return type="array"/>
+      <source argpos="-1" kind="file_input"/>
+      <sink kind="path_traversal" argpos="0" neutralizer="file" resource="filesystem"/>
+    </function>
+    <function name="glob" signature="glob(string $pattern, int $flags = 0)">
+      <return type="array"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="gzread" signature="gzread(resource $zp, int $length)">
+      <return type="string"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="readdir" signature="readdir(resource $dir_handle)">
+      <return type="string"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="scandir" signature="scandir(string $directory, int $sort_order)">
+      <return type="array"/>
+      <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="zip_read" signature="zip_read(resource $zip)">
+      <return type="resource"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+
+    <function name="imagecreatefrombmp" signature="imagecreatefrombmp(string $filename)"
+              alias="imagecreatefromgif,imagecreatefromjpeg,imagecreatefrompng,imagecreatefromgd,imagecreatefromgd2,imagecreatefromstring,imagecreatefromwbmp,imagecreatefromwebp,imagecreatefromxbm,imagecreatefromxpm">
+      <tags>upload.content</tags>
+      <neutralization kind="dangerous_file_upload" argpos="0"/>
+    </function>
+
+    <function name="finfo_open" signature="finfo_open(int $options)">
+      <return type="finfo"/>
+    </function>
+    <function name="finfo_file" signature="finfo_file(resource $finfo, string $file_name, int $options, resource $context)">
+      <tags>upload.content</tags>
+      <return type="string"/>
+      <neutralization kind="dangerous_file_upload" argpos="1"/>
+    </function>
+    <function name="finfo_open">
+      <return type="finfo"/>
+    </function>
+
+    <class name="finfo">
+      <constructor name="finfo" signature="finfo(int $options)"/>
+      <method name="file" signature="file(string $file_name, int $options, resource $context)">
+        <tags>upload.content</tags>
+        <return type="string"/>
+        <neutralization kind="dangerous_file_upload" argpos="1"/>
+      </method>
+    </class>
+  </module>
+
+  <!-- Neutralization functions for strings -->
+  <function name="in_array" signature="in_array(mixed $key, array $array)">
+    <tags>whitelist.sanitize</tags>
+    <return type="bool"/>
+    <!-- This is often used in whitelist validation -->
+    <neutralization kind="string" argpos="0"/>
+    <neutralization kind="open_redirect" argpos="0"/>
+    <neutralization kind="command_injection" argpos="0"/>
+    <neutralization kind="sql_injection" argpos="0"/>
+    <neutralization kind="xpath_injection" argpos="0"/>
+    <neutralization kind="code_injection" argpos="0"/>
+    <neutralization kind="ldap_injection" argpos="0"/>
+    <neutralization kind="file" argpos="0"/>
+    <neutralization kind="missing_authorization" argpos="0"/>
+    <neutralization kind="improper_validation_array_index" argpos="0"/>
+  </function>
+  <functionAlias name="array_key_exists" super="in_array" signature="array_key_exists(mixed $key, array $array)"></functionAlias>
+  <function name="is_numeric" alias="is_bool,is_double,is_float,is_int,is_integer,is_real">
+    <tags>numeric.sanitize</tags>
+    <neutralization kind="string" argpos="0"/>
+  </function>
+  <function name="empty">
+    <tags>clear.sanitize</tags>
+    <neutralization kind="string" argpos="0"/>
+  </function>
+  <function name="unset">
+    <tags>clear.sanitize</tags>
+    <neutralization kind="string" argpos="0"/>
+  </function>
+  <function name="intval" alias="floatval,doubleval,boolval">
+    <tags>numeric.sanitize</tags>
+    <neutralization kind="string" argpos="0"/>
+    <neutralization kind="command_injection" argpos="0"/>
+    <neutralization kind="sql_injection" argpos="0"/>
+    <neutralization kind="open_redirect" argpos="0"/>
+    <neutralization kind="xpath_injection" argpos="0"/>
+    <neutralization kind="file" argpos="0"/>
+    <neutralization kind="xss" argpos="0"/>
+  </function>
+  <function name="settype">
+    <tags>cast.sanitize</tags>
+    <neutralization kind="string" argpos="0"/>
+    <neutralization kind="command_injection" argpos="0"/>
+    <neutralization kind="sql_injection" argpos="0"/>
+    <neutralization kind="xpath_injection" argpos="0"/>
+    <neutralization kind="code_injection" argpos="0"/>
+    <neutralization kind="file" argpos="0"/>
+    <neutralization kind="xss" argpos="0"/>
+  </function>
+  <function name="filter_input" alias="filter_input_array"><!-- problem: external var is specified by name, needs a specific matcher -->
+    <tags>filter.sanitize</tags>
+    <neutralization kind="string" argpos="-1"/>
+  </function>
+  <function name="filter_var" signature="filter_var(mixed $variable, int $filter = FILTER_DEFAULT, mixed $options = NULL)"
+            alias="filter_var_array">
+    <!--
+    Note that, according to http://php.net/manual/en/function.filter-var.php, proper neutralization
+    depends on on the targeted vulnerability and $filter and $options values. The filters that properly sanitize
+    against a certain vulnerability are enumerated after the vuln kind tag. Please note that * tag contains filters
+    that may neutralize any vuln kind, like regexp (FILTER_VALIDATE_REGEXP) or custom validation functions (FILTER_CALLBACK).
+    -->
+    <tags>
+      filter.sanitize,
+      safeParameters:FILTER_VALIDATE_DOMAIN/FILTER_VALIDATE_FLOAT/FILTER_VALIDATE_MAC/
+                     FILTER_SANITIZE_MAGIC_QUOTES/FILTER_SANITIZE_NUMBER_FLOAT,
+      *:FILTER_VALIDATE_REGEXP/FILTER_CALLBACK/FILTER_VALIDATE_BOOLEAN/FILTER_VALIDATE_INT/FILTER_SANITIZE_NUMBER_INT,
+      string:,
+      ldap_injection:FILTER_SANITIZE_SPECIAL_CHARS/FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+      open_redirect:FILTER_SANITIZE_NUMBER_FLOAT/FILTER_VALIDATE_FLOAT,
+      xss:FILTER_SANITIZE_SPECIAL_CHARS/FILTER_SANITIZE_FULL_SPECIAL_CHARS/FILTER_SANITIZE_STRING/FILTER_SANITIZE_STRIPPED
+    </tags>
+    <return type="mixed"/>
+    <neutralization kind="string" argpos="0" />
+    <neutralization kind="sql_injection" argpos="0"/>
+    <neutralization kind="ldap_injection" argpos="0"/>
+    <neutralization kind="xml_injection" argpos="0"/>
+    <neutralization kind="xpath_injection" argpos="0"/>
+    <neutralization kind="file" argpos="0"/>
+    <neutralization kind="code_injection" argpos="0"/>
+    <neutralization kind="command_injection" argpos="0"/>
+    <neutralization kind="open_redirect" argpos="0"/>
+    <neutralization kind="xss" argpos="0"/>
+  </function>
+  <function name="http_build_query" signature="http_build_query(mixed $query_data)">
+    <neutralization kind="xss" argpos="0"/>
+  </function>
+  <function name="urlencode" signature="urlencode(string $str)">
+    <tags>url.sanitize</tags>
+    <return type="string"/>
+    <neutralization argpos="0" kind="string"/>
+    <neutralization argpos="-1" kind="http_parameter_pollution"/>
+  </function>
+  <function name="urldecode" signature="urldecode(string $str)">
+    <return type="string"/>
+    <retaint kind="http_parameter_pollution" argpos="0"/>
+  </function>
+  <function name="rawurlencode">
+    <tags>url.sanitize</tags>
+    <return type="string"/>
+    <neutralization kind="string" argpos="0"/>
+    <neutralization kind="http_parameter_pollution" argpos="-1"/>
+  </function>
+  <function name="rawurldecode">
+    <return type="string"/>
+    <retaint kind="http_parameter_pollution" argpos="-1"/>
+  </function>
+  <function name="round" signature="round(float $val)">
+    <return type="float"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="floor" signature="floor(float $value)">
+    <return type="float"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="strlen">
+    <return type="int"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="hexdec" signature="hexdec(string $hex_string)">
+    <tags>numeric.sanitize</tags>
+    <return type="number"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="strpos" signature="strpos(string $haystack, mixed $neddle, int $offset = 0)" alias="strrpos">
+    <return type="int"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="substr" alias="mb_substr"
+            signature="substr(string $string, int $start, int $length)">
+    <!--neutralization kind="string" argpos="0"/-->
+    <propagate from="0" to="-1"/>
+  </function>
+  <function name="str_replace"
+            signature="str_replace(mixed $search, mixed $replace, mixed $subject, int &amp;$count)">
+    <tags>string.sanitize, whitelist.sanitize</tags>
+    <neutralization kind="string" argpos="2"/>
+    <propagate from="2" to="-1,3"/>
+  </function>
+  <function name="crc32" signature="crc32(string $str)">
+    <tags>checksum.sanitize</tags>
+    <return type="int"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="base64_encode" signature="base64_encode(string $data)">
+    <tags>string.sanitize</tags>
+    <return type="string"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="ord" signature="ord(string $string)">
+    <tags>string.sanitize</tags>
+    <return type="int"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="count" alias="sizeof" signature="count(mixed $array, int mode = COUNT_NORMAL)">
+    <tags>count.sanitize</tags>
+    <return type="int"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="bin2hex" signature="bin2hex(string $str)">
+    <tags>string.sanitize</tags>
+    <return type="string"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="levenshtein" signature="levenshtein(string $str1, string $str2)">
+    <return type="int"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="abs" signature="abs(mixed $number)">
+    <return type="number"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="bindec" signature="bindec(string $str)" alias="hexdec">
+    <tags>numeric.sanitize</tags>
+    <return type="number"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="decbin" signature="decbin(int $number)" alias="dechex">
+    <return type="string"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="rand" signature="rand(int $min, int $max)">
+    <return type="int"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+  <function name="max" signature="max(array $values)" alias="min">
+    <return type="mixed"/>
+    <neutralization argpos="-1" kind="string"/>
+  </function>
+
+  <!-- Functions that "insecure" (makes tainted) string again -->
+  <function name="rawurldecode" signature="rawurldecode(string $str)">
+    <return type="string"/>
+    <retaint kind="string" argpos="-1"/>
+  </function>
+  <function name="urldecode" signature="urldecode(string $str)">
+    <return type="string"/>
+    <retaint kind="string" argpos="-1"/>
+  </function>
+  <function name="base64_decode" signature="base64_decode(string $data, bool $strict = FALSE)">
+    <return type="string"/>
+    <retaint kind="string" argpos="-1"/>
+  </function>
+  <function name="html_entity_decode" signature="html_entity_decode(string $string)">
+    <return type="string"/>
+    <retaint kind="string" argpos="-1"/>
+  </function>
+  <function name="str_rot13" signature="str_rot13(string $str)">
+    <tags>data:0</tags>
+    <return type="string"/>
+    <retaint kind="string" argpos="-1"/>
+    <sink kind="weak_hash_algorithm" resource="crypto" argpos="0"/>
+  </function>
+  <function name="chr" signature="chr(int $byteval)">
+    <return type="string"/>
+    <retaint kind="string" argpos="-1"/>
+  </function>
+
+  <!-- Neutralization functions for XSS (Cross-Site Scripting) -->
+  <function name="htmlentities" signature="htmlentities(string $string)">
+    <return type="string"/>
+    <neutralization argpos="-1" kind="xss"/>
+    <neutralization argpos="-1" kind="xpath_injection"/>
+    <neutralization argpos="-1" kind="sql_injection"/>
+    <neutralization argpos="-1" kind="command_injection"/>
+    <neutralization argpos="-1" kind="file"/>
+    <neutralization argpos="-1" kind="code_injection"/>
+    <neutralization argpos="-1" kind="xss"/>
+  </function>
+  <function name="htmlspecialchars" signature="htmlspecialchars(string $string)">
+    <return type="string"/>
+    <neutralization argpos="-1" kind="xss"/>
+    <neutralization argpos="-1" kind="command_injection"/>
+    <neutralization argpos="-1" kind="xpath_injection"/>
+    <neutralization argpos="-1" kind="sql_injection"/>
+    <neutralization argpos="-1" kind="file"/>
+    <neutralization argpos="-1" kind="code_injection"/>
+  </function>
+
+  <!-- Neutralization functions for SQLi (SQL Injection) -->
+  <function name="addslashes" signature="addslashes(string $str)">
+    <return type="string"/>
+    <neutralization argpos="-1" kind="sql_injection"/><!-- probably not enough... -->
+    <neutralization argpos="-1" kind="xpath_injection"/>
+    <neutralization argpos="-1" kind="nosql_injection"/>
+  </function>
+  <functionAlias name="addcslashes" super="addslashes" signature="addcslashes(string $str, string $charlist)"/>
+
+  <function name="json_encode" signature="json_encode(mixed $value, int $options, int $depth)">
+    <return type="string"/>
+    <neutralization argpos="-1" kind="nosql_injection"/>
+  </function>
+
+  <function name="implode" signature="implode(string $glue, array $pieces)">
+    <neutralization argpos="-1" kind="nosql_injection"/>
+  </function>
+
+  <!--
+  Neutralization functions for file handling.
+  Note: dirname() does not neutralize typically, while realpath() canonicalizes but not neutralizes
+  -->
+  <function name="basename" signature="basename(string $path, string $suffix)">
+    <return type="string"/>
+    <neutralization argpos="-1" kind="file" resource="filesystem"/>
+  </function>
+  <function name="dirname" signature="dirname(string $path, int $levels)">
+    <return type="string"/>
+  </function>
+  <function name="realpath" signature="realpath(string $path)">
+    <tags>file.canonizalize</tags>
+    <return type="string"/>
+  </function>
+  <function name="pathinfo" signature="pathinfo(string $path, int $options)">
+    <return type="mixed"/>
+    <neutralization argpos="-1" kind="file" resource="filesystem"/>
+  </function>
+  <function name="fnmatch" signature="fnmatch(string $pattern, string $string, int $flags)">
+    <return type="bool"/>
+    <sink kind="regex_dos" argpos="0" />
+    <neutralization kind="file" argpos="1" resource="filesystem"/>
+  </function>
+  <function name="is_uploaded_file" signature="is_uploaded_file(string $filename)">
+    <return type="bool"/>
+    <neutralization kind="file" argpos="0" resource="filesystem"/>
+  </function>
+  <function name="move_uploaded_file" signature="move_uploaded_file(string $filename, string $destination)">
+    <return type="bool"/>
+    <!--neutralization kind="file" argpos="0" resource="filesystem"/-->
+    <sink kind="dangerous_file_upload" argpos="0" neutralizer=""/>
+  </function>
+
+  <!-- XSS sink functions. echo and print statements should be also considered -->
+  <function name="print_r" signature="print_r(mixed $expression, bool $return = FALSE)">
+    <tags>sensitive_error_message:needs_sensitiveness_check</tags>
+    <return type="mixed"/>
+    <sink kind="xss" argpos="0" neutralizer="xss,string" resource="web"/>
+  </function>
+  <function name="exit" signature="exit(mixed $status)">
+    <tags>sensitive_error_message:needs_sensitiveness_check,correct_location_redirect</tags>
+    <sink kind="xss" argpos="0" neutralizer="xss,string" resource="web"/>
+  </function>
+  <functionAlias name="die" super="exit" signature="die(mixed $status)"/>
+  <function name="printf" signature="printf(string $format, mixed $...)">
+    <tags>sensitive_error_message:needs_sensitiveness_check</tags>
+    <return type="int"/>
+    <sink kind="format_injection" argpos="0" resource="formatstr"/>
+    <sink kind="xss" argpos="0,1" neutralizer="xss,string" resource="web"/>
+  </function>
+  <functionAlias name="vprintf" super="printf" signature="vprintf(string $format, array $args)"/>
+
+  <!-- HTTP Response splitting sink (not vulnerable for PHP 4.4.2+) -->
+  <function name="header" signature="header(string $header)">
+    <tags>location_redirect:0</tags>
+    <sink kind="header_manipulation" argpos="0" neutralizer="string" resource="web"/>
+    <sink kind="open_redirect" argpos="0" neutralizer="open_redirect" resource="web">
+      <checker id="argPatternChecker"><property name="argpos" value="0"/><property name="pattern" value="(?i)'?location\s*:.*"/></checker>
+    </sink>
+    <sink kind="execution_after_redirect" argpos="0" resource="web">
+      <checker id="argPatternChecker"><property name="argpos" value="0"/><property name="pattern" value="(?i)'?location\s*:.*"/></checker>
+    </sink>
+  </function>
+  <function name="setcookie" alias="setrawcookie"
+            signature="setcookie(string $name, string $value, int $expires = 0, string $path = '', string $domain = '', bool $secure = FALSE, bool $httponly = FALSE)">
+    <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.persistent:2,cookie.path:3,cookie.domain:4,cookie.secure:5,cookie.httpOnly:6</tags>
+    <return type="bool"/>
+    <sink kind="cookie_plaintext_storage" argpos="1" neutralizer="string" resource="web"/>
+    <sink kind="header_manipulation" argpos="0,1,3,4" neutralizer="string" resource="web"/>
+    <sink kind="sensitive_data" argpos="0,1,3,4" neutralizer="sensitive_data" resource="web"/>
+  </function>
+
+  <!-- code execution sinks. Functions that dynamically evaluate code, that could be tainted -->
+  <function name="array_diff_uassoc" alias="array_diff_ukey">
+    <sink kind="code_injection" argpos="2"/>
+  </function>
+  <function name="array_filter" alias="array_intersect_uassoc,array_intersect_ukey">
+    <sink kind="code_injection" argpos="1"/>
+  </function>
+  <function name="array_map">
+    <sink kind="code_injection" argpos="0"/>
+  </function>
+  <function name="array_reduce">
+    <sink kind="code_injection" argpos="1"/>
+  </function>
+  <function name="array_udiff" alias="array_udiff_assoc,array_uintersect,array_uintersect_assoc">
+    <sink kind="code_injection" argpos="2"/>
+  </function>
+  <function name="array_udiff_uassoc" alias="array_uintersect_uassoc">
+    <sink kind="code_injection" argpos="2,3"/>
+  </function>
+  <function name="array_walk" alias="array_walk_recursive"
+            signature="array_walk(array &amp;$array, callable $callback, mixed $userdata = NULL)">
+    <return type="bool"/>
+    <sink kind="code_injection" argpos="1"/>
+  </function>
+  <function name="assert">
+    <sink kind="code_injection" argpos="0"/>
+  </function>
+  <function name="assert_options">
+    <sink kind="code_injection" argpos="0,1"/>
+  </function>
+  <function name="call_user_func" alias="call_user_func_array">
+    <sink kind="code_injection" argpos="0"/>
+  </function>
+  <function name="create_function" signature="create_function(string $args, string $code)">
+    <return type="string"/>
+    <sink kind="code_injection" argpos="0,1"/>
+  </function>
+  <function name="dotnet_load">
+    <sink kind="code_injection" argpos="0"/>
+  </function>
+  <function name="forward_static_call">
+    <sink kind="code_injection" argpos="0"/>
+  </function>
+  <function name="forward_static_call_array">
+    <sink kind="code_injection" argpos="0"/>
+  </function>
+  <function name="eio_busy">
+    <sink kind="code_injection" argpos="2"/>
+  </function>
+  <function name="eio_chmod">
+    <sink kind="code_injection" argpos="3"/>
+  </function>
+  <function name="eio_chown">
+    <sink kind="code_injection" argpos="4"/>
+  </function>
+  <function name="eio_close">
+    <sink kind="code_injection" argpos="2"/>
+  </function>
+  <function name="eio_custom">
+    <sink kind="code_injection" argpos="0,1"/>
+  </function>
+  <function name="eio_dup2">
+    <sink kind="code_injection" argpos="3"/>
+  </function>
+  <function name="eio_fallocate">
+    <sink kind="code_injection" argpos="5"/>
+  </function>
+  <function name="eio_fchmod">
+    <sink kind="code_injection" argpos="3"/>
+  </function>
+  <function name="eio_fchown">
+    <sink kind="code_injection" argpos="4"/>
+  </function>
+  <function name="eio_fdatasync">
+    <sink kind="code_injection" argpos="2"/>
+  </function>
+  <function name="eio_fstat">
+    <sink kind="code_injection" argpos="2"/>
+  </function>
+  <function name="eio_fstatvfs">
+    <sink kind="code_injection" argpos="2"/>
+  </function>
+  <function name="eval" signature="eval(string $code)">
+    <return type="mixed"/>
+    <sink kind="code_injection" argpos="0"/>
+  </function>
+  <function name="event_buffer_new">
+    <sink kind="code_injection" argpos="1,2,3"/>
+  </function>
+  <function name="event_set">
+    <sink kind="code_injection" argpos="3"/>
+  </function>
+
+  <!-- Iterable / iterators -->
+  <module name="predefined_types">
+    <class name="Countable" kind="interface">
+      <method name="count" signature="count()"><return type="int"/></method>
+    </class>
+    <class name="ArrayAccess" kind="interface">
+      <description>Interface for accessing objects as arrays</description>
+    </class>
+    <class name="Traversable" kind="interface"></class>
+    <class name="Iterator" kind="interface" supertypes="Traversable">
+      <method name="current" signature="current()"><return type="mixed"/></method>
+      <method name="key" signature="key()"><return type="scalar"/></method>
+      <method name="next" signature="next()"/>
+      <method name="rewind" signature="rewind()"/>
+      <method name="valid" signature="valid()"><return type="bool"/></method>
+    </class>
+    <class name="SeekableIterator" kind="interface" supertypes="Iterator">
+      <method name="seek" signature="seek(int $position)"/>
+    </class>
+    <class name="ArrayIterator" kind="interface" supertypes="ArrayAccess, SeekableIterator, Countable, Serializable">
+      <constructor name="ArrayIterator" signature="ArrayIterator($mixed $array, int $flags)"></constructor>
+      <method name="append" signature="append(mixed $value)"></method>
+      <method name="asort" signature="asort(void)" alias="ksort, natsort, natcasesort"></method>
+      <method name="uasort" signature="uasort(callable $compare)" alias="uksort"></method>
+      <method name="getArrayCopy" signature="getArrayCopy()"><return type="array"/></method>
+    </class>
+    <class name="IteratorIterator" supertypes="Iterator">
+      <constructor name="IteratorIterator" signature="IteratorIterator(Traversable $it)"></constructor>
+      <method name="getInnerIterator" signature="getInnerIterator()"><return type="Traversable"/></method>
+    </class>
+    <class name="FilterIterator" kind="abstract_class" supertypes="IteratorIterator">
+      <constructor name="FilterIterator" signature="FilterIterator(Iterator $it)"></constructor>
+      <method name="accept" signature="accept()"><return type="bool"/></method>
+    </class>
+    <class name="RegexIterator" supertypes="FilterIterator">
+      <constructor name="RegexIterator" signature="RegexIterator(Iterator $it, string $regex, int $mode, int $flags, int $preg_flags)">
+        <tags>usePREG</tags>
+        <sink argpos="1" kind="regex_dos"/>
+      </constructor>
+    </class>
+    <class name="InfiniteIterator" supertypes="IteratorIterator"></class>
+    <class name="EmptyIterator" supertypes="Iterator"/>
+    <class name="IteratorAggregate" kind="interface" supertypes="Traversable">
+      <method name="getIterator" signature="getIterator()"><return type="Traversable"/></method>
+    </class>
+    <class name="DirectoryIterator" supertypes="SeekableIterator" alias="FilesystemIterator, GlobIterator">
+      <constructor name="DirectoryIterator" signature="DirectoryIterator(string $path)">
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+      </constructor>
+      <method name="current" signature="current()"><return type="DirectoryIterator"/></method>
+    </class>
+    <class name="Generator" supertypes="Iterator">
+      <method name="getReturn" signature="getReturn()"><return type="mixed"/></method>
+      <method name="send" signature="send(mixed $value)"><return type="mixed"/></method>
+      <method name="throw" signature="throw(Throwable $exception)"><return type="mixed"/></method>
+    </class>
+    <class name="ArrayObject" supertypes="IeteratorAggregate, ArrayAccess, Serializable, Countable">
+      <constructor name="ArrayObject" signature="ArrayObject(mixed $input, int $flags, mixed $iterator_class)"></constructor>
+      <method name="append" signature="append(mixed $value)"></method>
+      <method name="exchangeArray" signature="exchangeArray(mixed $array)"><return type="array"/></method>
+      <method name="getArrayCopy" signature="getArrayCopy()"><return type="array"/></method>
+      <method name="getIterator" signature="getIterator()"><return type="ArrayIterator"/></method>
+      <method name="asort" signature="asort(void)" alias="ksort, natsort, natcasesort"></method>
+      <method name="uasort" signature="uasort(callable $compare)" alias="uksort"></method>
+    </class>
+
+    <class name="Throwable" kind="interface">
+      <method name="getMessage" signature="getMessage()"><return type="string"/></method>
+      <method name="getCode" signature="getCode()"><return type="int"/></method>
+      <method name="getFile" signature="getFile()"><return type="string"/></method>
+      <method name="getLine" signature="getLine()"><return type="int"/></method>
+      <method name="getTrace" signature="getTrace()"><return type="array"/></method>
+      <method name="getTraceAsString" signature="getTraceAsString()"><return type="string"/></method>
+      <method name="getPrevious" signature="getPrevious()"><return type="Throwable"/></method>
+    </class>
+
+    <class name="Error" supertypes="Throwable">
+      <description>See https://www.php.net/manual/en/class.error.php</description>
+      <constructor name="Error" signature="Error(string $message, int $code, Throwable $previous)"/>
+    </class>
+    <class name="ArithmeticError" supertypes="Error" alias="AssertionError, ParseError, TypeError"/>
+    <class name="DivisionByZeroError" supertypes="ArithmeticError"/>
+    <class name="ArgumentCountError" supertypes="TypeError"/>
+
+    <class name="Exception" supertypes="Throwable">
+      <constructor name="Exception" signature="Exception(string $message, int $code, Throwable $previous)"/>
+    </class>
+    <class name="ClosedGeneratorException"
+           supertypes="Exception" alias="DOMException, ErrorException, IntlException, LogicException, PharException, ReflectionException, RuntimeException, SodiumException"/>
+    <class name="BadFunctionCallException" supertypes="LogicException"
+           alias="BadMethodCallException, DomainException, InvalidArgumentException, LengthException, OutOfRangeException"/>
+    <class name="OutOfBoundsException" supertypes="RuntimeException"
+           alias="OverflowException, PDOException, RangeException, UnderflowException, UnexpectedValueException"/>
+
+    <class name="Serializable" kind="abstract_class">
+      <method name="serialize" signature="serialize()"><return type="string"/></method>
+      <method name="unserialize" signature="unserialize(string $serialized)"></method>
+    </class>
+    <class name="Closure">
+      <method name="bind" instance="false" signature="bin(Closure $closure, object $newThis, mixed $newscope = 'static')">
+        <return type="Closure"/>
+      </method>
+      <method name="fromCallable" instance="false" signature="fromCallable(callable $callable)">
+        <return type="Closure"/>
+      </method>
+      <method name="bindTo" signature="bindTo(object $newThis, mixed $newscope = 'static')">
+        <return type="Closure"/>
+      </method>
+      <method name="call" signature="call(object $newThis, mixed $...)">
+        <return type="mixed"/>
+      </method>
+    </class>
+    <class name="WeakReference">
+      <method name="create" instance="false" signature="create(object $referent)"><return type="WeakReference"/></method>
+      <method name="get" signature="get()"><return type="object"/></method>
+    </class>
+
+    <class name="StdClass">
+      <description>Class with no members, that could be set with any dynamic member</description>
+    </class>
+
+    <function name="iterator_apply" signature="iterator_apply(Traversable $iterator, callable $function, array $args = NULL)">
+      <return type="int"/>
+      <sink kind="code_injection" argpos="1"/>
+    </function>
+    <function name="iterator_count" signature="iterator_count(Traversable $iterator)"><return type="int"/></function>
+    <function name="iterator_to_array" signature="iterator_to_array(Traversable $iterator, bool $use_keys)">
+      <return type="array"/>
+    </function>
+  </module>
+
+  <!-- regex -->
+  <module name="regex">
+    <function name="ereg_replace" alias="eregi_replace"
+              signature="ereg_replace(string $pattern, string $replacement, string $str)">
+      <tags>deprecated, deprecatedBy:preg_replace, regex.sanitize</tags>
+      <sink kind="regex_dos" argpos="0"/>
+      <neutralization argpos="2" kind="string"/>
+    </function>
+    <function name="ereg" alias="eregi"
+              signature="ereg(string $pattern, string $string, array &amp;$regs)">
+      <tags>deprecated, deprecatedBy:preg_match</tags>
+      <return type="int"/>
+      <sink kind="regex_dos" argpos="0"/>
+      <neutralization argpos="1" kind="string"/>
+      <propagate from="1" to="2"/>
+    </function>
+    <function name="split" alias="spliti" signature="split(string $pattern, string $string, int $limit)">
+      <tags>deprecated, deprecatedBy:preg_split</tags>
+      <return type="array"/>
+      <sink kind="regex_dos" argpos="0"/>
+    </function>
+
+    <function name="mb_ereg_replace" alias="mb_eregi_replace"
+              signature="mb_ereg_replace(string $pattern, string $replacement, string $str, string $option = 'msr')">
+      <tags>regex.sanitize, modifiers:3</tags>
+      <return type="string"/>
+      <sink kind="regex_dos" argpos="0"/>
+      <sink kind="code_injection" argpos="0,1" neutralizer="preg" resource="os">
+        <checker id="regexChecker"><property name="modifiersPosition" value="3"/></checker>
+      </sink>
+      <neutralization argpos="2" kind="string"/>
+    </function>
+    <function name="mb_ereg_search_init"
+              signature="mb_ereg_search_init(string $string, string $pattern, string $option)">
+      <tags>regex.sanitize</tags>
+      <return type="bool"/>
+      <sink kind="regex_dos" argpos="0"/>
+      <neutralization argpos="1" kind="string"/>
+    </function>
+    <function name="mb_ereg_search" signature="mb_ereg_search(string $pattern, string $option)">
+      <return type="bool"/>
+      <sink kind="regex_dos" argpos="0"/>
+    </function>
+    <function name="preg_grep" signature="preg_grep(string $pattern, array $input, int $flags)">
+      <tags>regex.sanitize</tags>
+      <sink kind="regex_dos" argpos="0" neutralizer="preg"/>
+      <neutralization argpos="1" kind="string"/>
+    </function>
+    <function name="preg_match" alias="preg_match_all"
+              signature="preg_match(string $pattern, string $subject, array &amp;$matches, int $flags, int $offset)">
+      <tags>regex.sanitize, usePREG</tags>
+      <return type="int"/>
+      <sink kind="regex_dos" argpos="0" neutralizer="preg"/>
+      <neutralization argpos="1" kind="string"/>
+    </function>
+    <function name="preg_quote" signature="preg_quote(string $str, string $delimiter)">
+      <tags>usePREG</tags>
+      <neutralization kind="preg" argpos="-1"/>
+    </function>
+    <function name="preg_replace"
+              signature="preg_replace(mixed $pattern, mixed $replacement, mixed $subject, int $limit, int &amp;$count)">
+      <tags>regex.sanitize, usePREG</tags>
+      <return type="mixed"/>
+      <sink kind="regex_dos" argpos="0" neutralizer="preg"/>
+      <sink kind="code_injection" argpos="0,1" neutralizer="preg">
+        <checker id="regexChecker"><property name="modifiersPosition" value="0"/></checker>
+      </sink>
+      <neutralization argpos="2" kind="string"/>
+      <neutralization argpos="2" kind="command_injection"/>
+      <neutralization argpos="2" kind="sql_injection"/>
+      <neutralization argpos="2" kind="xpath_injection"/>
+      <neutralization argpos="2" kind="file"/>
+      <neutralization argpos="2" kind="code_injection"/>
+      <neutralization argpos="2" kind="xss"/>
+    </function>
+    <functionAlias name="preg_filter" super="preg_replace"/>
+    <function name="preg_replace_callback"
+              signature="preg_replace_callback(mixed $pattern, callable $callback, mixed $subject, int $limit, int &amp;$count)">
+      <tags>regex.sanitize, usePREG</tags>
+      <return type="mixed"/>
+      <sink kind="regex_dos" argpos="0" neutralizer="preg"/>
+      <sink kind="code_injection" argpos="1" neutralizer="preg"/>
+      <neutralization argpos="2" kind="string"/>
+    </function>
+    <function name="preg_replace_callback_array"
+              signature="preg_replace_callback_array(array $patsCallbacks, mixed $subject, int $limit, int &amp;$count)">
+      <tags>regex.sanitize, usePREG</tags>
+      <return type="mixed"/>
+      <sink kind="regex_dos" argpos="0" neutralizer="preg"/>
+      <neutralization argpos="1" kind="string"/>
+      <neutralization argpos="1" kind="command_injection"/>
+    </function>
+    <!-- does not neutralize, only splits... -->
+    <function name="preg_split" signature="preg_split(string $pattern, string $subject, int $limit, int &amp;$count)">
+      <tags>usePREG</tags>
+      <return type="array"/>
+      <sink kind="regex_dos" argpos="0" neutralizer="preg"/>
+    </function>
+  </module>
+
+  <function name="ob_start" signature="ob_start(callable $output_callback)">
+    <sink kind="code_injection" argpos="0"/>
+  </function>
+  <function name="register_shutdown_function" signature="register_shutdown_function(callable $callback, mixed $...)">
+    <sink kind="code_injection" argpos="0"/>
+  </function>
+  <function name="register_tick_function" signature="register_tick_function(callable $callback, mixed $...)">
+    <sink kind="code_injection" argpos="0"/>
+  </function>
+  <function name="runkit_method_add" alias="runkit_method_redefine">
+    <sink kind="code_injection" argpos="0,1,2,3"/>
+  </function>
+  <function name="runkit_method_copy" alias="runkit_method_rename,runkit_function_add">
+    <sink kind="code_injection" argpos="0,1,2"/>
+  </function>
+  <function name="runkit_function_copy" alias="runkit_function_redefine,runkit_function_rename">
+    <sink kind="code_injection" argpos="0,1"/>
+  </function>
+  <function name="session_set_save_handler">
+    <sink kind="code_injection" argpos="0,1,2,3,4"/>
+  </function>
+  <function name="set_error_handler">
+    <sink kind="code_injection" argpos="0"/>
+  </function>
+  <function name="set_exception_handler">
+    <sink kind="code_injection" argpos="0"/>
+  </function>
+  <function name="stream_wrapper_register">
+    <sink kind="code_injection" argpos="1"/>
+  </function>
+  <function name="usort" alias="uasort,uksort">
+    <sink kind="code_injection" argpos="1"/>
+  </function>
+
+  <!--
+  Error reporting neutralization
+  -->
+  <function name="error_reporting">
+    <neutralization kind="sensitive_error_message" argpos="-1"/>
+  </function>
+
+  <!--
+  File inclusion sinks.
+  Please note that include/include_once/require/require_once should be include sinks as well
+  -->
+  <function name="parsekit_compile_file" signature="parsekit_compile_file(string $filename, array &amp;$errors, int $options)">
+    <return type="array"/>
+    <sink kind="file_inclusion" argpos="0" neutralizer="file"/>
+  </function>
+  <function name="php_check_syntax" signature="php_check_syntax(string $filename, string &amp;$error_message)">
+    <return type="bool"/>
+    <sink kind="file_inclusion" argpos="0" neutralizer="file"/>
+  </function>
+  <function name="runkit_import" signature="runkit_import(string $filename, int $flags)">
+    <return type="bool"/>
+    <sink kind="file_inclusion" argpos="0" neutralizer="file"/>
+  </function>
+  <function name="set_include_path" signature="set_include_path(string $new_include_path)">
+    <return type="string"/>
+    <sink kind="file_inclusion" argpos="0" neutralizer="file"/>
+  </function>
+  <function name="virtual" signature="virtual(string $filename)">
+    <return type="bool"/>
+    <sink kind="file_inclusion" argpos="0" neutralizer="file"/>
+  </function>
+
+  <!--
+  Command execution sinks (for OS Command injection). Backticks operator should be included as well
+  -->
+  <module name="exec">
+    <function name="exec" signature="exec(string $command, array &amp;$output, int &amp;$return_var)">
+      <return type="string"/>
+      <sink kind="command_injection" argpos="0" neutralizer="command_injection" resource="os"/>
+      <source kind="other_input" argpos="1, -1" resource="os"/>
+    </function>
+    <function name="system" signature="system(string $command, int &amp;$return_var)">
+      <return type="string"/>
+      <sink kind="command_injection" argpos="0" neutralizer="command_injection" resource="os"/>
+      <source kind="other_input" argpos="-1" resource="os"/>
+    </function>
+    <function name="shell_exec" signature="shell_exec(string $command)">
+      <return type="string"/>
+      <sink kind="command_injection" argpos="0" neutralizer="command_injection" resource="os"/>
+      <source kind="other_input" argpos="-1" resource="os"/>
+    </function>
+    <function name="passthru" signature="passthru(string $command, int &amp;$return_var)">
+      <sink kind="command_injection" argpos="0" neutralizer="command_injection" resource="os"/>
+      <source kind="other_input" argpos="-1" resource="os"/>
+    </function>
+    <function name="proc_open" signature="proc_open(string $cmd, array $descriptorspec, array &amp;$pipes, string $cwd, array $env, array $other_options)">
+      <return type="resource"/>
+      <sink kind="command_injection" argpos="0" neutralizer="command_injection" resource="os"/>
+      <sink kind="path_traversal" argpos="3" resource="filesystem"/>
+    </function>
+    <function name="popen" signature="popen(string $cmd, string $mode)">
+      <return type="resource"/>
+      <sink kind="command_injection" argpos="0" neutralizer="command_injection" resource="os"/>
+    </function>
+    <function name="pcntl_exec" signature="pcntl_exec(string $cmd, array $args, array $envs)">
+      <sink kind="command_injection" argpos="0" neutralizer="command_injection" resource="os"/>
+    </function>
+    <function name="expect_popen" signature="expect_popen(string $command)">
+      <return type="resource"/>
+      <sink kind="command_injection" argpos="0" neutralizer="command_injection" resource="os"/>
+      <source kind="other_input" argpos="-1" resource="os"/>
+    </function>
+
+    <!-- Neutralization functions for OS Command Injection -->
+    <function name="escapeshellarg" signature="escapeshellarg(string $arg)">
+      <tags>command.sanitize</tags>
+      <return type="string"/>
+      <neutralization argpos="-1" kind="command_injection" resource="os"/>
+    </function>
+    <function name="escapeshellcmd" signature="escapeshellcmd(string $command)">
+      <tags>command.sanitize</tags>
+      <return type="string"/>
+      <neutralization argpos="-1" kind="command_injection" resource="os"/>
+    </function>
+
+    <function name="mail" signature="mail(string $to, string $subject, string $message, mixed $additional_headers, string $additional_parameters)"
+              alias="mb_send_mail">
+      <return type="bool"/>
+      <sink kind="resource_injection" argpos="0,3" resource="network"/>
+      <sink kind="mail_command_injection" argpos="0,1,3" resource="network"/>
+      <sink kind="mail_header_manipulation" argpos="1,3" resource="network"/>
+      <!-- escapeshellcmd() is called, so probably this is incorrect -->
+      <sink kind="command_injection" argpos="4" neutralizer="command_injection" resource="os"/>
+    </function>
+
+    <function name="w32api_invoke_function" signature="w32api_invoke_function(string $funcname, mixed $argyment, mixed $...)">
+      <return type="mixed"/>
+      <sink kind="command_injection" argpos="0" resource="os"/>
+    </function>
+    <function name="w32api_register_function" signature="w32api_register_function(string $library, string $function_name, string $return_type)">
+      <sink kind="resource_injection" argpos="0" resource="environment"/>
+      <sink kind="command_injection" argpos="1" resource="os"/>
+    </function>
+  </module>
+
+  <module name="xml">
+    <function name="domxml_open_file">
+      <return type="DOMDocument"/>
+      <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      <sink kind="xml_injection" argpos="0"/>
+    </function>
+    <function name="simplexml_load_file" alias="simplexml_load_string">
+      <return type="SimpleXMLElement"/>
+      <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      <sink kind="xml_injection" argpos="0"/><!-- neutralization: libxml_disable_entity_loader(true) -->
+    </function>
+    <function name="simplexml_load_string">
+      <return type="SimpleXMLElement"/>
+      <sink kind="xml_injection" argpos="0"/><!-- neutralization: libxml_disable_entity_loader(true) -->
+    </function>
+    <function name="simplexml_import_dom">
+      <return type="SimpleXMLElement"/>
+    </function>
+    <function name="xmlwriter_open_uri">
+      <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+    </function>
+    <function name="xpath_new_context">
+      <return type="XPathContext"/>
+    </function>
+    <function name="xpath_eval" alias="xpath_eval_expression,xptr_eval">
+      <sink kind="xpath_injection" argpos="1" neutralizer="xpath_injection"/>
+    </function>
+
+    <class name="DOMDocument">
+      <method name="load" signature="load" alias="loadHTMLFile">
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+        <sink kind="xml_injection" argpos="0"/><!-- neutralization: libxml_disable_entity_loader(true) -->
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="loadXML" signature="loadXML" alias="loadHTML">
+        <sink kind="xml_injection" argpos="0"/><!-- neutralization: libxml_disable_entity_loader(true) -->
+      </method>
+      <method name="save" signature="save" alias="saveHTMLFile">
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </method>
+      <method name="xpath_new_context" signature="xpath_new_context">
+        <return type="XPathContext"/>
+      </method>
+    </class>
+
+    <class name="SimpleXMLElement">
+      <constructor name="SimpleXMLElement" signature="SimpleXMLElement">
+        <sink kind="xml_injection" argpos="0"/><!-- neutralization: libxml_disable_entity_loader(true) -->
+        <!--sink kind="path_traversal" argpos="0" resource="filesystem"/-->
+      </constructor>
+      <method name="xpath" signature="xpath">
+        <return type="array"/>
+        <sink kind="xpath_injection" argpos="0" neutralizer="xpath_injection"/>
+        <sink kind="missing_authorization" argpos="0" neutralizer="missing_authorization"/>
+      </method>
+      <method name="addChild" signature="addChild" alias="attributes,children">
+        <return type="SimpleXMLElement"/>
+      </method>
+      <method name="asXml" signature="asXml">
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </method>
+    </class>
+
+    <class name="DOMXPath">
+      <method name="query" signature="query" alias="evaluate">
+        <return type="DOMNodeList"/>
+        <sink kind="xpath_injection" argpos="0" neutralizer="xpath_injection"/>
+      </method>
+    </class>
+
+    <class name="XPathContext">
+      <method name="xpath_eval" signature="xpath_eval" alias="xpath,xpath_eval_expression,xptr_eval">
+        <sink kind="xpath_injection" argpos="0" neutralizer="xpath_injection"/>
+      </method>
+    </class>
+
+    <class name="XMLReader">
+      <method name="open" signature="open">
+        <return type="XMLReader"/>
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+        <sink kind="xml_injection" argpos="0"/>
+      </method>
+      <method name="xml" signature="xml">
+        <return type="XMLReader"/>
+        <sink kind="xml_injection" argpos="0"/>
+      </method>
+    </class>
+
+    <class name="XMLWriter">
+      <method name="openURI" signature="openURI">
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </method>
+    </class>
+
+    <class name="XSLTProcessor">
+      <method name="importStyleSheet" signature="importStyleSheet">
+        <sink kind="xslt_injection" argpos="0" />
+      </method>
+    </class>
+
+  </module>
+
+  <!--
+  LDAP injection sinks
+  -->
+  <function name="ldap_add">
+    <sink kind="ldap_injection" argpos="1,2" neutralizer="string,ldap_injection"/>
+  </function>
+  <function name="ldap_delete">
+    <sink kind="ldap_injection" argpos="1" neutralizer="string,ldap_injection"/>
+  </function>
+  <function name="ldap_read" alias="ldap_list,ldap_search">
+    <sink kind="ldap_injection" argpos="2" neutralizer="string,ldap_injection"/>
+  </function>
+
+  <!--
+  Connect sinks, where the user can control host/URL or a local/destination filename
+  for a connection-oriented function
+  -->
+  <function name="curl_init">
+    <sink kind="resource_injection" argpos="0" resource="network"/>
+    <sink kind="ssrf" argpos="0" resource="network"/>
+  </function>
+  <function name="curl_setopt">
+    <sink kind="resource_injection" argpos="1,2" resource="network"/>
+  </function>
+  <function name="curl_setopt_array">
+    <sink kind="resource_injection" argpos="1" resource="network"/>
+  </function>
+  <function name="curl_escape">
+    <neutralization argpos="-1" kind="http_parameter_pollution" resource="network"/>
+  </function>
+  <function name="curl_unescape">
+    <retaint argpos="-1" kind="http_parameter_pollution" resource="network"/>
+  </function>
+  <function name="cyrus_query">
+    <sink kind="resource_injection" argpos="1" resource="network"/>
+  </function>
+  <function name="fsockopen">
+    <sink kind="resource_injection" argpos="0" resource="network"/>
+    <sink kind="ssrf" argpos="0,1" resource="network"/>
+  </function>
+  <function name="pfsockopen">
+    <sink kind="resource_injection" argpos="0" resource="network"/>
+    <sink kind="ssrf" argpos="0,1" resource="network"/>
+  </function>
+  <function name="socket_connect" alias="socket_bind">
+    <sink kind="ssrf" argpos="1,2" resource="network"/>
+  </function>
+  <function name="socket_create_listen">
+    <sink kind="resource_injection" argpos="0" resource="network"/>
+  </function>
+  <function name="ftp_chmod">
+    <sink kind="resource_injection" argpos="1,2" resource="network"/>
+  </function>
+  <function name="ftp_connect">
+    <sink kind="insecure_transport" argpos="0" resource="network">
+      <tags>insecure:ftp</tags>
+    </sink>
+    <sink kind="resource_injection" argpos="0,1" resource="network"/>
+  </function>
+  <function name="ftp_exec">
+    <sink kind="resource_injection" argpos="1" resource="network"/>
+  </function>
+  <function name="ftp_delete">
+    <sink kind="resource_injection" argpos="1" resource="network"/>
+  </function>
+  <function name="ftp_fget">
+    <sink kind="resource_injection" argpos="2" resource="network"/>
+  </function>
+  <function name="ftp_get">
+    <sink kind="resource_injection" argpos="1,2" resource="network"/>
+  </function>
+  <function name="ftp_nlist">
+    <sink kind="resource_injection" argpos="1" resource="network"/>
+  </function>
+  <function name="ftp_nb_get">
+    <sink kind="resource_injection" argpos="1,2" resource="network"/>
+  </function>
+  <function name="ftp_nb_fget">
+    <sink kind="resource_injection" argpos="2" resource="network"/>
+  </function>
+  <function name="ftp_nb_put">
+    <sink kind="resource_injection" argpos="1,2" resource="network"/>
+  </function>
+  <function name="ftp_nb_fput">
+    <sink kind="resource_injection" argpos="1" resource="network"/>
+  </function>
+  <function name="ftp_login">
+    <sink kind="hardcoded_credentials" argpos="1"/>
+    <sink kind="hardcoded_password" argpos="2"/>
+  </function>
+  <function name="ftp_ssl_connect">
+    <sink kind="resource_injection" argpos="0,1" resource="network"/>
+  </function>
+  <function name="imap_open">
+    <sink kind="resource_injection" argpos="0" resource="network"/>
+  </function>
+  <function name="imap_mail">
+    <sink kind="resource_injection" argpos="0" resource="network"/>
+    <sink kind="mail_header_manipulation" argpos="1,3" resource="network"/>
+    <sink kind="mail_command_injection" argpos="0,1,3" resource="network"/>
+  </function>
+  <function name="ldap_connect">
+    <sink kind="resource_injection" argpos="0" resource="network"/>
+  </function>
+  <function name="msession_connect">
+    <sink kind="resource_injection" argpos="0" resource="network"/>
+  </function>
+  <function name="socket_bind" alias="socket_connect,socket_send,socket_write">
+    <sink kind="resource_injection" argpos="1" resource="network"/>
+  </function>
+  <function name="stream_socket_client" alias="stream_socket_server">
+    <sink kind="resource_injection" argpos="0" resource="network"/>
+    <sink kind="ssrf" argpos="0" resource="network"/>
+  </function>
+
+  <!-- Serialization injection -->
+  <function name="unserialize">
+    <sink kind="serialization_injection" argpos="0"/>
+  </function>
+
+  <!-- external variable modification, "broken" PHP functions that may overwrite local/global vars -->
+  <function name="parse_str" alias="mb_parse_str" signature="parse_str(string $encoded, array &amp;$result)">
+    <sink kind="external_variable_modification" argpos="0"/>
+  </function>
+
+  <function name="session_unset" alias="session_destroy">
+    <tags>session.close</tags>
+  </function>
+
+  <!-- json injection -->
+  <function name="json_decode" signature="json_decode(string, bool, int, int)" match="name" >
+    <return type="mixed" />
+    <sink kind="json_injection" argpos="0"/>
+  </function>
+
+</library>

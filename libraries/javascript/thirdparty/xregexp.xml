@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="xregexp" standard="xregexp">
+
+  <description url="http://xregexp.com/api/">XRegExp module (extended RegExp)</description>
+
+  <module name="xregexp" >
+    <class name="XRegExp" supertypes="RegExp">
+      <function name="build" alias="cache">
+        <return type="XRegExp"/>
+        <sink kind="regex_dos" argpos="0"/>
+      </function>
+      <function name="escape">
+        <neutralization kind="regex_dos" argpos="0"/>
+      </function>
+      <function name="exec">
+        <return type="Array"/>
+        <neutralization argpos="0"/><!-- neutralization only if return array is validated... -->
+        <sink kind="regex_dos" argpos="1"/>
+      </function>
+      <function name="forEach">
+        <neutralization argpos="0"/>
+        <sink kind="regex_dos" argpos="1"/>
+      </function>
+      <function name="globalize">
+        <return type="XRegExp"/>
+      </function>
+      <function name="match">
+        <return type="String"/><!-- could be Array as well -->
+        <neutralization argpos="0"/>
+        <sink kind="regex_dos" argpos="1"/>
+      </function>
+      <function name="matchChain">
+        <return type="Array"/>
+        <neutralization argpos="0"/>
+      </function>
+      <function name="replace">
+        <return type="String"/>
+        <neutralization argpos="0"/>
+        <sink kind="regex_dos" argpos="1"/>
+        <propagate from="0,2" to="-1"/>
+      </function>
+      <function name="replaceEach">
+        <return type="String"/>
+        <neutralization argpos="0"/>
+        <sink kind="regex_dos" argpos="1"/>
+        <propagate from="0,1" to="-1"/>
+      </function>
+      <function name="split">
+        <return type="Array"/>
+        <sink kind="regex_dos" argpos="1"/>
+        <propagate from="0" to="-1"/>
+      </function>
+      <function name="test">
+        <return type="Boolean"/>
+        <neutralization argpos="0"/>
+        <sink kind="regex_dos" argpos="1"/>
+      </function>
+      <function name="union">
+        <return type="XRegExp"/>
+      </function>
+    </class>
+
+    <function name="XRegExp">
+      <return type="XRegExp"/>
+      <sink kind="regex_dos" argpos="0"/>
+    </function>
+
+    <!-- Could be included with require() in Node.js or RequireJS -->
+    <class name="nodejs/XRegExp" supertypes="XRegExp"/>
+  </module>
+
+</library>

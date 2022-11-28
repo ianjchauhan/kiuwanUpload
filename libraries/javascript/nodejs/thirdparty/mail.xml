@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs.mail" standard="nodejs.mail">
+
+  <description>Mail modules for Node.js</description>
+
+  <module name="nodejs/mail" standard="mail">
+    <description url="https://github.com/weaver/node-mail">Email (SMTP) client</description>
+    <class name="nodejs/mail.Message"></class>
+    <class name="nodejs/mail.MailTransaction">
+      <function name="body">
+        <return type="nodejs/mail.MailTransaction"/>
+      </function>
+      <function name="send">
+        <parameters>
+          <param type="function(Error,nodejs/mail.Message)" callback="true"/>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/mail.MailClient">
+      <function name="message">
+        <return type="nodejs/mail.MailTransaction"/>
+        <!-- mail module performs header escaping against CRLF attacks, so this is probable not a sink!!! -->
+        <sink kind="mail_command_injection" resource="network">
+          <arg pos="0" field="from,sender,to,cc,bcc,subject"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/mail">
+      <function name="Mail">
+        <return type="nodejs/mail.MailClient"/>
+        <sink kind="resource_injection">
+          <arg pos="0" field="host,port,domain,secure"/>
+        </sink>
+        <sink kind="sensitive_data" resource="network">
+          <arg pos="0" field="username,password"/>
+        </sink>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/nodemailer" standard="nodemailer">
+    <description url="https://nodemailer.com/about/">Module for Node.js applications to allow email sending</description>
+
+    <class name="nodejs/nodemailer.Auth">
+      <field name="user" alias="pass" type="String"><sink kind="sensitive_data" resource="network"/></field>
+    </class>
+
+    <class name="nodejs/nodemailer.Account">
+      <field name="host" type="String"><sink kind="resource_injection" resource="network"/></field>
+      <field name="port" type="Number"><sink kind="resource_injection" resource="network"/></field>
+      <field name="secure" type="Boolean"><sink kind="resource_injection" resource="network"/></field>
+      <field name="auth" type="nodejs/nodemailer.Auth"/>
+    </class>
+
+    <class name="nodejs/nodemailer.Message">
+      <field name="from" alias="to,cc,bcc,sender,replyTo,subject" type="String"/>
+      <field name="text" alias="html" type="String"/><!-- safe? -->
+    </class>
+
+    <class name="nodejs/nodemailer.Transport">
+      <function name="sendMail">
+        <parameters>
+          <param type="nodejs/nodemailer.Message"/>
+          <param type="function(Error,Object)"/>
+        </parameters>
+        <sink kind="mail_command_injection" resource="network">
+          <arg pos="0" field="to,cc,bcc,sender,replyTo,subject"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/nodemailer">
+      <function name="createTransport">
+        <parameters>
+          <param type="nodejs/nodemailer.Account"/>
+          <param type="nodejs/nodemailer.Message"/>
+        </parameters>
+        <return type="nodejs/nodemailer.Transport"/>
+        <sink kind="resource_injection" resource="network">
+          <arg pos="0" field="host,port,secure"/>
+        </sink>
+        <sink kind="sensitive_data" resource="network">
+          <arg pos="0" field="auth"/>
+        </sink>
+        <sink kind="mail_command_injection" resource="network">
+          <arg pos="1" field="to,cc,bcc,sender,replyTo,subject"/>
+        </sink>
+      </function>
+    </class>
+  </module>
+  
+</library>

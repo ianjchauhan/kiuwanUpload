@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.returnPts" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COMPLEXITY" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COMPLEXITY" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.FUNCTION" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="5.00" meaning="good" />
+        <threshold from="5.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <internal-name id="OPT.ABAP.COMPLEXITY.RETURNPOINTS" />
+        <java-class>com.als.abap.metrics.ReturnPtsMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <internal-name id="OPT.PLSQL.COMPLEXITY.RETURNPOINTS" />
+        <java-class>com.als.plsql.metrics.ReturnPointsMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+    <code-examples>
+
+     <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <code-example name="metricCodeExampleAbap" result-value="2">
+<![CDATA[
+FORM OUTPUT.                             "RETURN POINT 1
+WRITE / SY-ULINE(66).
+LOOP AT IT_LDBN.
+WRITE: / SY-VLINE,
+IT_LDBN-CHECK AS CHECKBOX,
+SY-VLINE,
+(15) IT_LDBN-STRUCTURE,
+SY-VLINE,
+(40) IT_LDBN-NODETEXT,
+SY-VLINE.
+ENDLOOP.
+WRITE / SY-ULINE(66).
+ENDFORM. "output
+
+FUNCTION Z_IDOC_INBOUND_ASYNCHRONOUS.    "RETURN POINT 2
+data e1edp16 type e1edp16.
+loop at idoc_control_rec_40
+  where mestyp = 'DELINS'.
+  loop at IDOC_DATA_REC_40
+      where docnum = idoc_control_rec_40-docnum and
+  segnam = 'E1EDP16'.
+    move IDOC_DATA_REC_40-sdata to e1edp16.
+    IF not E1EDP16-PRGRS CA 'DWMI'.
+      delete IDOC_DATA_REC_40.
+    ENDIF.
+  endloop.
+endloop.
+CALL FUNCTION 'IDOC_INBOUND_ASYNCHRONOUS'
+  TABLES
+    idoc_control_rec_40       = IDOC_CONTROL_REC_40
+    idoc_data_rec_40  = IDOC_DATA_REC_40.
+ENDFUNCTION.
+]]>
+       </code-example>
+      </language-parser>
+
+     <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <code-example name="metricCodeExamplePlsql" result-value="2">
+<![CDATA[
+    CREATE OR REPLACE Procedure UpdateCourse         --RETURN POINT 1
+       ( name_in IN varchar2 )
+    IS
+        cnumber number;
+        cursor c1 is
+        select course_number
+          from courses_tbl
+          where course_name = name_in;
+
+    BEGIN
+        open c1;
+        fetch c1 into cnumber;
+        insert into student_courses
+        ( course_name,
+          course_number)
+        values ( name_in,
+                        cnumber );
+        commit;
+        close c1;
+    EXCEPTION
+    WHEN OTHERS THEN
+          raise_application_error(-20001,'An error was encountered - '||SQLCODE||' -ERROR- '||SQLERRM);
+    END;
+
+CREATE OR REPLACE FUNCTION FACTURACION.FN_SAP_IT (   --RETURN POINT 2             
+   e_nrowid_in   ROWID                              /* Redefinicion a ROWID */
+)
+   RETURN NUMBER
+AS
+BEGIN
+          BEGIN
+            SELECT csap
+              INTO k_ccodsap
+              FROM txcodsap
+             WHERE ctipocod = 'A'
+               AND cipf = ee_cipfemb
+               AND cdocumen = ee_cdocuemb
+               AND brsch = ee_brsch;
+         EXCEPTION
+            WHEN NO_DATA_FOUND
+            THEN
+               k_ccodsap := NULL;
+         END;
+END fn_sap_it; 
+/
+]]>
+       </code-example>
+      </language-parser>
+    </code-examples>
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Puntos de retorno]]></name>
+      
+      <description>
+<![CDATA[
+Esta métrica cuenta el número de sentencias exit/return encontradas en cada función/procedimiento/método.
+
+Un bloque de código con múltiple puntos de retorno es más difícil de entender y de mantener. Idealmente, cada función/procedimiento/método debería tener un solo punto de retorno "al final", pero esto no es siempre posible.
+
+Intente eliminar puntos de retorno explícitos refactorizando el código. Por ejemplo, una condición que contenga un punto de retorno puede modificarse para colocar dicho punto al final. Sin embargo, en general es mejor tener claridad en el código que obcecarse en tener un solo punto en todos los bloques. Una lógica compleja de control de flujo (como la de validación) podría codificarse con unos cuantos puntos, si fuera necesario.
+
+Nota: Un bloque de código puede tener bloques de control de errores (como try..catch en lenguajes tipo Java) donde puede que se relancen excepciones. Las sentencias también pueden lanzar excepciones que hagan que se salga del bloque. Esta métrica no cuenta dichos retornos "implícitos".
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Calcula el número de puntos de retorno en métodos, funciones y forms.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Número de puntos de retorno de todos los procedure y function.
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Return points]]></name>
+      
+      <description>
+<![CDATA[
+This metric counts the number of exit/return statements found in each function/procedure/method.
+
+A code block with multiple return points is more difficult to understand and maintain. Ideally every function/procedure/method should have a single return point "at the end", but this is not always possible.
+
+Try to remove explicit return points, refactoring the code. For example, a condition followed by a return point can be modified to put the return point at the end. Nevertheless, it is better to have clear code than to try to leave a single return point for all code blocks. Complex control-flow logic (like error-checking logic) can be coded with a few return points, if necessasy.
+
+Note: A code block may have error-control blocks (like try..catch in languages like Java), where an exception can be rethrown. Also code sentences can throw an exception and force an exit from the code block. Those "implicit" return points are not counted.
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Calculates the number of return points in methods, functions and forms.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Number of return points of all the procedures and functions.
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

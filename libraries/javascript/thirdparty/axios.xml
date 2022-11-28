@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="axios" standard="axios">
+
+  <!--
+  Axios is a popular HTTP client based on Promise, for the browser and Node.js.
+  Axios is heavily inspired by the $http service provided in Angular.
+  Ultimately axios is an effort to provide a standalone $http-like service for use outside of Angular.
+
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  const axios = require('axios'); // commonJS
+  import axios from 'axios'; // typescript
+
+  update: 07-Aug-2020 0.19.2
+  -->
+
+  <module name="axios" standard="axios">
+    <description url="https://github.com/axios/axios">Promise based HTTP client for the browser and node.js</description>
+
+    <function name="#module#">
+      <parameters>
+        <param type="axios.Request" last="true"/>
+      </parameters>
+      <return type="axios.Promise"/>
+    </function>
+
+    <class name="axios">
+      <field name="defaults" type="axios.Config"/>
+
+      <method name="create" signature="create(axios.Config)" instance="false">
+        <parameters>
+          <param type="axios.Config"/>
+        </parameters>
+        <return type="axios"/>
+      </method>
+
+      <method name="request" signature="request(axios.Request)">
+        <parameters>
+          <param type="axios.Request" last="true"/>
+        </parameters>
+        <return type="axios.Promise"/>
+      </method>
+      <method name="get" signature="get(String, axios.Config)" match="name" alias="delete,head,options,post,put,patch">
+        <tags>method:name</tags>
+        <parameters>
+          <param type="axios.Config" last="true"/>
+        </parameters>
+        <return type="axios.Promise"/>
+        <sink kind="open_redirect" resource="web" argpos="0"/>
+        <sink kind="ssrf" resource="web" argpos="0"/>
+      </method>
+      <method name="getUri" signature="getUri(axios.Config)" match="name"><return type="String"/></method>
+    </class>
+
+    <class name="axios.Promise" supertypes="Promise">
+      <method name="then" signature="then(function)">
+        <parameters>
+          <param type="function(axios.Response)" callback="true"/>
+        </parameters>
+        <return type="axios.Promise"/>
+      </method>
+      <method name="catch" signature="catch(function)">
+        <parameters>
+          <param type="function(Error)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="axios.Promise"/>
+      </method>
+    </class>
+
+    <class name="axios.Config">
+      <field name="url" alias="baseURL">
+        <sink kind="open_redirect" resource="web"/>
+        <sink kind="ssrf" resource="web"/>
+      </field>
+      <field name="method">
+        <sink kind="resource_injection" resource="web"/>
+      </field>
+      <field name="headers" type="Object">
+        <tags>header:0</tags>
+        <sink kind="header_manipulation" resource="web"/>
+      </field>
+      <field name="auth" type="axios.BasicAuth"/>
+      <field name="xsrfCookieName" type="String"/>
+      <field name="xsrfHeaderName" type="String"/>
+    </class>
+
+    <class name="axios.Request" supertypes="axios.Config"/>
+
+    <class name="axios.Response">
+      <field name="data" type="Object">
+        <source kind="network_input" resource="web"/>
+      </field>
+      <field name="status" type="Number"/>
+      <field name="statusText" type="String"/>
+      <field name="headers" type="Object">
+        <source kind="network_input" resource="web"/>
+      </field>
+      <field name="config" type="axios.Config"/>
+      <field name="request" type="axios.Request"/>
+    </class>
+
+    <class name="axios.BasicAuth">
+      <field name="username" alias="password">
+        <sink kind="hardcoded_credentials"/>
+        <sink kind="sensitive_data"/>
+        <sink kind="credentials_manipulation"/>
+      </field>
+    </class>
+    <class name="axios.ProxyConf">
+      <field name="host" type="String"><sink kind="resource_injection"/></field>
+      <field name="port" type="Number"><sink kind="resource_injection"/></field>
+      <field name="auth" type="axios.BasicAuth"/>
+    </class>
+    <class name="axios.Error" supertypes="Error">
+      <field name="request" type="axios.Request"/>
+      <field name="response" type="axios.Response"/>
+      <field name="config" type="axios.Config"/>
+    </class>
+    
+  </module>
+
+
+</library>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for Struts framework</description>
+  <import resource="../common/aim.common.xml"/>
+  <import resource="aim.java.xml"/>
+  <import resource="classpath:resources/qaking-tech-jsp.xml"/>
+
+  <!--<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="j2ee/aim.struts.properties"/>
+  </bean>-->
+
+  <!-- Rules -->
+  <bean id="aim.struts.rule" class="com.optimyth.apm.builder.rules.struts.StrutsRule">
+    <property name="active" value="${aim.struts.rule.active}"/>
+    <property name="filter" ref="aim.struts.filter"/>
+    <property name="callback">
+      <bean class="com.optimyth.apm.builder.rules.struts.StrutsCallback">
+        <property name="application" value="${aim.struts.software}"/>
+      </bean>
+    </property>
+  </bean>
+
+  <bean name="aim.struts.jsp.rule" class="com.optimyth.apm.builder.rules.struts.JspStrutsRule">
+    <property name="active" value="${aim.struts.jsp.rule.active}"/>
+    <property name="filter" ref="aim.struts.jsp.filter"/>
+    <property name="callback">
+      <bean class="com.optimyth.apm.builder.rules.struts.JspStrutsCallback">
+        <property name="webappName" value="${aim.struts.software}"/>
+        <property name="overrideSoftwareResolver" value="${aim.struts.overrideSoftwareResolver}"/>
+      </bean>
+    </property>
+  </bean>
+
+  <!-- Filters -->
+  <bean id="aim.struts.filter" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.struts.filter}"/>
+  </bean>
+
+  <bean id="aim.struts.jsp.filter" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.struts.jsp.filter}"/>
+  </bean>
+
+</beans>

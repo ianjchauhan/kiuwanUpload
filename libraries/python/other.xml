@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="other" technology="python">
+
+  <description>Popular Python libraries</description>
+
+  <module name="yaml" standard="pyyaml">
+    <description url="https://pyyaml.org/">YAML framework for Python</description>
+
+    <function name="load" signature="load(document)" match="name">
+      <return type="object"/>
+      <sink argpos="0" kind="serialization_injection" resource="other"/>
+    </function>
+    <function name="safe_load" signature="safe_load(document)" match="name">
+      <return type="object"/>
+    </function>
+  </module>
+
+  <module name="pylibmc">
+    <description url="https://pypi.org/project/pylibmc/">Python client for memcached</description>
+
+    <function name="Client" signature="Client()">
+      <return type="pylibmc.Client"/>
+    </function>
+
+    <class name="Client">
+      <method name="set" signature="set(string, string)">
+        <sink argpos="0,1" kind="memcached_injection" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="memcache">
+    <function name="Client" signature="Client()">
+      <return type="memcache.Client"/>
+    </function>
+
+    <class name="Client">
+      <method name="set" signature="set(string, string)">
+        <sink argpos="0,1" kind="memcached_injection" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="redis">
+    <function name="StrictRedis" signature="Client()">
+      <return type="redis.StrictRedis"/>
+    </function>
+
+    <class name="StrictRedis">
+      <method name="set" signature="set(string, string)">
+        <sink argpos="0,1" kind="memcached_injection" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="ldap">
+    <description url="https://www.python-ldap.org/en/latest/reference/ldap.html">Python binding to LDAP API implemented in OpenLDAP</description>
+
+    <function name="initialize"
+              signature="initialize(uri[, trace_level=0[, trace_file=sys.stdout[, trace_stack_limit=None[, bytes_mode=None[, bytes_strictness=None]]]]])">
+      <return type="ldap.LDAPObject"/>
+    </function>
+
+    <class name="LDAPObject">
+      <method name="add" signature="add(dn, modlist)">
+        <return type="int"/>
+        <sink argpos="0,1" paramNames="dn,modlist" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="add_s" signature="add_s(dn, modlist)">
+        <return type="NoneType"/>
+        <sink argpos="0,1" paramNames="dn,modlist" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="add_ext" signature="add_ext(dn, modlist[, serverctrls=None[, clientctrls=None]])">
+        <return type="int"/>
+        <sink argpos="0,1,2,3" paramNames="dn,modlist,serverctrls,clientctrls" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="add_ext" signature="add_ext(dn, modlist[, serverctrls=None[, clientctrls=None]])">
+        <return type="int"/>
+        <sink argpos="0,1,2,3" paramNames="dn,modlist,serverctrls,clientctrls" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="add_ext_s" signature="add_ext_s(dn, modlist[, serverctrls=None[, clientctrls=None]])">
+        <return type="tuple"/>
+        <sink argpos="0,1,2,3" paramNames="dn,modlist,serverctrls,clientctrls" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="modify" signature="modify(dn, modlist)">
+        <return type="int"/>
+        <sink argpos="0,1" paramNames="dn,modlist" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="modify_s" signature="modify_s(dn, modlist)">
+        <return type="NoneType"/>
+        <sink argpos="0,1" paramNames="dn,modlist" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="modify_ext" signature="modify_ext(dn, modlist[, serverctrls=None[, clientctrls=None]])">
+        <return type="int"/>
+        <sink argpos="0,1,2,3" paramNames="dn,modlist,serverctrls,clientctrls" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="modify_ext_s" signature="modify_ext_s(dn, modlist[, serverctrls=None[, clientctrls=None]])">
+        <return type="tuple"/>
+        <sink argpos="0,1,2,3" paramNames="dn,modlist,serverctrls,clientctrls" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="search"
+              signature="search(base, scope[, filterstr='(objectClass=*)'[, attrlist=None[, attrsonly=0]]])">
+        <return type="int"/>
+        <sink argpos="0,1,2,3,4" paramNames="base,scope,filterstr,attrlist,attrsonly" kind="ldap_injection"
+              resource="other"/>
+      </method>
+      <method name="search_s"
+              signature="search_s(base, scope[, filterstr='(objectClass=*)'[, attrlist=None[, attrsonly=0]]])">
+        <return type="list"/>
+        <sink argpos="0,1,2,3,4" paramNames="base,scope,filterstr,attrlist,attrsonly" kind="ldap_injection"
+              resource="other"/>
+      </method>
+      <method name="search_st"
+              signature="search_st(base, scope[, filterstr='(objectClass=*)'[, attrlist=None[, attrsonly=0[, timeout=-1]]]])">
+        <return type="list"/>
+        <sink argpos="0,1,2,3,4,5" paramNames="base,scope,filterstr,attrlist,attrsonly,timeout" kind="ldap_injection"
+              resource="other"/>
+      </method>
+      <method name="search_ext"
+              signature="search_ext(base, scope[, filterstr='(objectClass=*)'[, attrlist=None[, attrsonly=0[, serverctrls=None[, clientctrls=None[, timeout=-1[, sizelimit=0]]]]]]])">
+        <return type="int"/>
+        <sink argpos="0,1,2,3,4,5,6,7"
+              paramNames="base,scope,filterstr,attrlist,attrsonly,serverctrls,clientctrls,sizelimit"
+              kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="search_ext_s"
+              signature="search_ext_s(base, scope[, filterstr='(objectClass=*)'[, attrlist=None[, attrsonly=0[, serverctrls=None[, clientctrls=None[, timeout=-1[, sizelimit=0]]]]]]])">
+        <return type="list"/>
+        <sink argpos="0,1,2,3,4,5,6,7"
+              paramNames="base,scope,filterstr,attrlist,attrsonly,serverctrls,clientctrls,timeout,sizelimit"
+              kind="ldap_injection" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="ldap3">
+    <description url="https://ldap3.readthedocs.io/en/latest/">Pure Python LDAP 3 client library strictly conforming to RFC4510</description>
+    <class name="Connection">
+      <constructor name="Connection" signature="Connection(server)"/>
+      <method name="add" signature="add(dn, object_class=None, attributes=None, controls=None)">
+        <sink argpos="0,1,2,3" paramNames="dn,object_class,attributes,controls" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="compare" signature="compare(dn, attribute, value, controls=None)">
+        <sink argpos="0,1,2,3" paramNames="dn,attributes,value,controls" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="modify" signature="modify(dn, changes, controls=None)">
+        <sink argpos="0,1,2" paramNames="dn,changes,controls" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="search"
+              signature="search(search_base, search_filter, search_scope='SUBTREE', dereference_aliases='ALWAYS', attributes=None, size_limit=0, time_limit=0, types_only=False, get_operational_attributes=False, controls=None, paged_size=None, paged_criticality=False, paged_cookie=None, auto_escape=None)">
+        <sink argpos="0,1,4" paramNames="search_base,search_filter,attributes" kind="ldap_injection" resource="other"/>
+      </method>
+    </class>
+  </module>
+
+  <!-- PyV8 -->
+  <module name="PyV8">
+    <description url="https://pypi.org/project/PyV8/">Python wrapper for Google V8 (JavaScript engine)</description>
+    <class name="JSContext">
+      <method name="JSContext" signature="JSContext()">
+        <return type="PyV8.JSContext"/>
+      </method>
+      <method name="eval" signature="eval(string)">
+        <sink argpos="0" kind="code_injection" resource="environment"/>
+      </method>
+    </class>
+  </module>
+
+  <!-- js2py -->
+  <module name="js2py">
+    <description url="https://pypi.org/project/Js2Py/">JavaScript to Python Translator and JavaScript interpreter written in 100% pure Python</description>
+    <function name="eval_js" signature="eval_js(string)">
+      <sink argpos="0" kind="code_injection" resource="environment"/>
+    </function>
+  </module>
+
+  <!-- py_mini_racer  -->
+  <module name="py_mini_racer">
+    <description url="https://pypi.org/project/py-mini-racer/">Minimal, modern embedded V8 for Python</description>
+    <class name="MiniRacer">
+      <method name="MiniRacer" signature="MiniRacer()">
+        <return type="py_mini_racer.MiniRacer"/>
+      </method>
+      <method name="eval" signature="eval(string)">
+        <sink argpos="0" kind="code_injection" resource="environment"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="json">
+    <description url="https://docs.python.org/3/library/json.html">JSON encoder and decoder. Exposes an API familiar to users of the marshal and pickle modules</description>
+    <function name="dump"
+              signature="dump(obj, fp, *, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, cls=None, indent=None, separators=None, default=None, sort_keys=False, **kw)">
+      <sink argpos="0" kind="json_injection" resource="other"/>
+    </function>
+    <function name="dumps"
+              signature="dumps(obj, *, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, cls=None, indent=None, separators=None, default=None, sort_keys=False, **kw)">
+      <sink argpos="0" kind="json_injection" resource="other"/>
+    </function>
+    <function name="load"
+              signature="load(fp, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)">
+      <sink argpos="0" kind="json_injection" resource="other"/>
+    </function>
+    <function name="loads"
+              signature="loads(s, *, encoding=None, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)">
+      <sink argpos="0" kind="json_injection" resource="other"/>
+    </function>
+    <class name="JSONDecoder">
+      <constructor name="JSONDecoder"
+                   signature="JSONDecoder(*, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, strict=True, object_pairs_hook=None)">
+      </constructor>
+      <method name="decode" signature="decode(s)">
+        <sink argpos="0" kind="json_injection" resource="other"/>
+      </method>
+      <method name="raw_decode" signature="raw_decode(s)">
+        <sink argpos="0" kind="json_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="JSONEncoder">
+      <constructor name="JSONEncoder"
+                   signature="JSONEncoder(*, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, sort_keys=False, indent=None, separators=None, default=None)">
+      </constructor>
+      <method name="default" signature="default(o)">
+        <sink argpos="0" kind="json_injection" resource="other"/>
+      </method>
+      <method name="encode" signature="encode(o)">
+        <sink argpos="0" kind="json_injection" resource="other"/>
+      </method>
+      <method name="iterencode" signature="iterencode(o)">
+        <sink argpos="0" kind="json_injection" resource="other"/>
+      </method>
+    </class>
+  </module>
+</library>

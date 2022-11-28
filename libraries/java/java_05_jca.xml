@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.jca" standard="JCA" technology="java">
+  <description url="https://docs.oracle.com/javase/7/docs/technotes/guides/security/crypto/CryptoSpec.html">Java Cryptography API</description>
+
+  <class name="java.security.SecureRandom" supertypes="java.util.Random">
+    <constructor name="SecureRandom" signature="SecureRandom()">
+    </constructor>
+    <constructor name="SecureRandom" signature="SecureRandom(byte[])">
+      <sink argpos="0" kind="insecure_random" resource="crypto"/>
+    </constructor>
+    <method name="getInstance" signature="getInstance()" match="name">
+      <return type="java.security.SecureRandom"/>
+    </method>
+    <method name="setSeed" signature="setSeed(byte[])" match="name">
+      <sink argpos="0" kind="insecure_random" resource="crypto"/>
+    </method>
+    <method name="getSeed" signature="getSeed(int)">
+      <neutralization argpos="-1" kind="insecure_random" resource="crypto"/>
+    </method>
+    <method name="generateSeed" signature="generateSeed(int)">
+      <neutralization argpos="-1" kind="insecure_random" resource="crypto"/>
+    </method>
+    <method name="nextBytes" signature="nextBytes(byte[])">
+      <propagate from="-2" to="0"/>
+    </method>
+    <method name="next" signature="next()" match="other">
+      <matcher kind="method" function="next.+" args="0"/>
+      <propagate from="-2" to="-1"/>
+    </method>
+  </class>
+
+  <class name="java.security.MessageDigest">
+    <tags>hash</tags>
+    <method name="getInstance" signature="getInstance(java.lang.String)" instance="false" match="name">
+      <tags>hash,algo:0</tags>
+      <return type="java.security.MessageDigest" />
+      <sink kind="weak_hash_algorithm" argpos="0" resource="crypto"/>
+    </method>
+    <method name="update" signature="update(byte[])" match="name">
+      <tags>hash,data:0</tags>
+      <neutralization argpos="0" kind="hash" />
+    </method>
+    <method name="digest" signature="digest()">
+      <tags>hash,data:0</tags>
+      <neutralization argpos="-1" kind="hash" />
+    </method>
+    <method name="digest_2" signature="digest(byte[])">
+      <tags>hash,data:0</tags>
+      <neutralization argpos="0,-1" kind="hash" />
+    </method>
+    <method name="digest_3" signature="digest(byte[], int, int)">
+      <tags>hash,data:0</tags>
+      <neutralization argpos="0,-1" kind="hash" />
+    </method>
+  </class>
+
+  <class name="javax.crypto.Mac">
+    <tags>hmac</tags>
+    <method name="getInstance" signature="getInstance(java.lang.String)" instance="false" match="name">
+      <tags>hmac,algo:0</tags>
+      <return type="javax.crypto.Mac" />
+      <sink kind="weak_hash_algorithm" argpos="0" resource="crypto"/>
+    </method>
+    <method name="init" signature="init(java.security.Key)">
+      <tags>hmac,key:0</tags>
+    </method>
+    <method name="init_2" signature="init(java.security.Key,java.security.spec.AlgorithmParameterSpec)">
+      <tags>hmac,key:0</tags>
+    </method>
+    <method name="update" signature="update(byte[])" match="name">
+      <tags>hmac,data:0</tags>
+      <neutralization argpos="0" kind="mac" />
+    </method>
+    <method name="doFinal" signature="doFinal()">
+      <tags>hmac,data:0</tags>
+      <neutralization argpos="-1" kind="mac" />
+    </method>
+    <method name="doFinal_2" signature="doFinal(byte[])">
+      <tags>hmac,data:0</tags>
+      <neutralization argpos="0,-1" kind="mac" />
+    </method>
+    <method name="doFinal_3" signature="doFinal(byte[], int)">
+      <tags>hmac,data:0</tags>
+      <neutralization argpos="0,-1" kind="mac" />
+    </method>
+    <method name="reset" signature="reset()"/>
+  </class>
+
+  <class name="java.security.KeyStore">
+    <method name="getInstance" signature="getInstance()" match="name">
+      <return type="java.security.KeyStore"/>
+    </method>
+    <method name="load" signature="load(java.io.InputStream,char[])">
+      <tags>password:1</tags>
+      <sink argpos="1" kind="hardcoded_password" resource="crypto"/>
+    </method>
+  </class>
+
+  <class name="java.security.KeyStore.PasswordProtection">
+    <constructor name="PasswordProtection" signature="PasswordProtection(char[])">
+      <tags>password:0</tags>
+      <sink argpos="0" kind="hardcoded_password" resource="crypto"/>
+    </constructor>
+  </class>
+
+  <class name="javax.crypto.Cipher">
+    <method name="getInstance" signature="getInstance(java.lang.String)" match="name" instance="false">
+      <tags>cipher-factory,algo:0</tags>
+      <return type="javax.crypto.Cipher"/>
+      <sink kind="weak_crypto_algorithm" argpos="0" resource="crypto"/>
+    </method>
+    <method name="init" signature="init(int,java.security.Key,java.security.spec.AlgorithmParameterSpec,java.security.SecureRandom)" match="name">
+      <tags>cipher-init,operation:0,key:1,params:2,prng:3</tags>
+    </method>
+    <method name="update" signature="update(byte[])">
+      <tags>encrypt,decrypt,data:0</tags>
+      <return type="byte[]"/>
+      <propagate from="0" to="-1"/>
+      <neutralization argpos="0" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+      <neutralization argpos="0" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+    </method>
+    <method name="update" signature="update(java.nio.ByteBuffer,java.nio.ByteBuffer)">
+      <tags>encrypt,decrypt,data:0</tags>
+      <return type="int"/>
+      <propagate from="0" to="1"/>
+      <neutralization argpos="1" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+      <neutralization argpos="1" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+    </method>
+    <method name="update" signature="update(byte[],int,int)">
+      <tags>encrypt,decrypt,data:0</tags>
+      <return type="byte[]"/>
+      <propagate from="0" to="-1"/>
+      <neutralization argpos="0" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+      <neutralization argpos="0" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+    </method>
+    <method name="update" signature="update(byte[],int,int,byte[])">
+      <tags>encrypt,decrypt,data:0</tags>
+      <return type="int"/>
+      <propagate from="0" to="3"/>
+      <neutralization argpos="3" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+      <neutralization argpos="3" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+    </method>
+    <method name="update" signature="update(byte[],int,int,byte[],int)">
+      <tags>encrypt,decrypt,data:0</tags>
+      <return type="int"/>
+      <propagate from="0" to="3"/>
+      <neutralization argpos="3" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+      <neutralization argpos="3" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+    </method>
+
+    <method name="doFinal" signature="doFinal()">
+      <tags>encrypt,decrypt</tags>
+      <return type="byte[]"/>
+      <propagate from="-2" to="-1"/>
+      <neutralization argpos="-1" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+      <neutralization argpos="-1" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+    </method>
+    <method name="doFinal" signature="doFinal(byte[])">
+      <tags>encrypt,decrypt,data:0</tags>
+      <return type="byte[]"/>
+      <propagate from="0" to="-1"/>
+      <neutralization argpos="0,-1" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+      <neutralization argpos="0,-1" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+    </method>
+    <method name="doFinal" signature="doFinal(java.nio.ByteBuffer,java.nio.ByteBuffer)">
+      <tags>encrypt,decrypt,data:0</tags>
+      <return type="int"/>
+      <propagate from="0" to="1"/>
+      <neutralization argpos="1" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+      <neutralization argpos="1" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+    </method>
+    <method name="doFinal" signature="doFinal(byte[],int,int)">
+      <tags>encrypt,decrypt,data:0</tags>
+      <return type="byte[]"/>
+      <propagate from="0" to="-1"/>
+      <neutralization argpos="0,-1" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+      <neutralization argpos="0,-1" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+    </method>
+    <method name="doFinal" signature="doFinal(byte[],int,int,byte[])">
+      <tags>encrypt,decrypt,data:0</tags>
+      <return type="int"/>
+      <propagate from="0" to="3"/>
+      <neutralization argpos="3" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+      <neutralization argpos="3" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+    </method>
+    <method name="doFinal" signature="doFinal(byte[],int,int,byte[],int)">
+      <tags>encrypt,decrypt,data:0</tags>
+      <return type="int"/>
+      <propagate from="0" to="3"/>
+      <neutralization argpos="3" kind="encryption" resource="crypto"><checker id="j2se.cipher.encryption"/></neutralization>
+      <neutralization argpos="3" kind="decryption" resource="crypto"><checker id="j2se.cipher.decryption"/></neutralization>
+    </method>
+
+    <method name="wrap" signature="wrap(java.security.Key)">
+      <tags>encrypt</tags>
+      <return type="byte[]"/>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </method>
+    <method name="unwrap" signature="unwrap(byte[],java.lang.String,int)">
+      <tags>decrypt,algo:1,data:0</tags>
+      <return type="java.security.Key"/>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+      <sink kind="weak_crypto_algorithm" argpos="1" resource="crypto"/>
+    </method>
+
+    <method name="getAlgorithm" signature="getAlgorithm()"><return type="java.lang.String"/></method>
+    <method name="getBlockSize" signature="getBlockSize()"><return type="int"/></method>
+    <method name="getIV" signature="getIV()"><return type="byte[]"/></method>
+    <method name="getMaxAllowedKeyLength" signature="getMaxAllowedKeyLength(java.lang.String)"><return type="int"/></method>
+    <method name="getMaxAllowedParameterSpec" signature="getMaxAllowedParameterSpec(java.lang.String)"><return type="java.security.spec.AlgorithmParameterSpec"/></method>
+    <method name="getOutputSize" signature="getOutputSize(int)"><return type="int"/></method>
+    <method name="getParameters" signature="getParameters()"><return type="java.security.AlgorithmParameters"/></method>
+    <method name="getProvider" signature="getProvider()"><return type="java.security.Provider"/></method>
+  </class>
+
+  <class name="javax.crypto.SecretKeyFactory">
+    <method name="getInstance" signature="getInstance(java.lang.String)" match="name" instance="false">
+      <tags>key_derivation,algo:0</tags>
+      <return type="javax.crypto.SecretKeyFactory"/>
+      <sink kind="weak_crypto_algorithm" argpos="0" resource="crypto"/>
+    </method>
+    <method name="generateSecret" signature="generateSecret(java.security.spec.KeySpec)">
+      <tags>key_derivation</tags>
+      <return type="javax.crypto.SecretKey"/>
+    </method>
+    <method name="getKeySpec" signature="getKeySpec(javax.crypto.SecretKey,java.lang.Class)">
+      <return type="java.security.spec.KeySpec"/>
+    </method>
+    <method name="translateKey" signature="translateKey(javax.crypto.SecretKey)">
+      <return type="javax.crypto.SecretKey"/>
+    </method>
+  </class>
+
+  <class name="javax.crypto.KeyGenerator">
+    <method name="getInstance" signature="getInstance(java.lang.String)" match="name" instance="false">
+      <tags>key_derivation,algo:0</tags>
+      <return type="javax.crypto.KeyGenerator"/>
+      <sink kind="weak_crypto_algorithm" argpos="0" resource="crypto"/>
+    </method>
+    <method name="getAlgorithm" signature="getAlgorithm()"><return type="java.lang.String"/></method>
+    <method name="getProvider" signature="getProvider()"><return type="java.security.Provider"/></method>
+    <method name="init" signature="init(int, java.security.SecureRandom)" match="name">
+      <tags>key_derivation,keylen:0</tags>
+    </method>
+  </class>
+
+  <class name="java.security.Key" kind="interface" supertypes="java.io.Serializable">
+    <method name="getAlgorithm" signature="getAlgorithm()"><return type="java.lang.String"/></method>
+    <method name="getEncoded" signature="getEncoded()">
+      <tags>key:-1</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="getFormat" signature="getFormat()"><return type="java.lang.String"/></method>
+  </class>
+
+  <class name="javax.security.auth.Destroyable" kind="interface">
+    <method name="destroy" signature="destroy()"><tags>key_destroy</tags></method>
+  </class>
+
+  <class name="javax.crypto.SecretKey" kind="interface" supertypes="java.security.Key,javax.security.auth.Destroyable">
+  </class>
+
+  <class name="javax.crypto.interfaces.PBEKey" kind="interface" supertypes="">
+    <method name="getIterationCount" signature="getIterationCount()"><return type="int"/></method>
+    <method name="getPassword" signature="getPassword()"><tags>sensitive_info,credential,password</tags>
+      <return type="char[]"/>
+      <source argpos="-1" kind="sensitive_info" resource="crypto"/>
+    </method>
+    <method name="getSalt" signature="getSalt()"><return type="byte[]"/></method>
+  </class>
+
+  <class name="java.security.spec.KeySpec" kind="interface"/>
+
+  <class name="java.security.spec.EncodedKeySpec" kind="abstract_class" supertypes="java.security.spec.KeySpec">
+    <constructor name="EncodedKeySpec" signature="EncodedKeySpec(byte[])">
+      <tags>key:0</tags>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+    </constructor>
+    <method name="getEncoded" signature="getEncoded()">
+      <tags>key:-1</tags>
+      <return type="byte[]"/>
+    </method>
+    <method name="getFormat" signature="getFormat()"><return type="java.lang.String"/></method>
+  </class>
+
+  <class name="java.security.spec.PKCS8EncodedKeySpec" supertypes="java.security.spec.EncodedKeySpec">
+    <constructor name="PKCS8EncodedKeySpec" signature="PKCS8EncodedKeySpec(byte[])">
+      <tags>privkey:0</tags>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+    </constructor>
+  </class>
+
+  <class name="java.security.spec.X509EncodedKeySpec" supertypes="java.security.spec.EncodedKeySpec">
+    <constructor name="X509EncodedKeySpec" signature="X509EncodedKeySpec(byte[])">
+      <tags>pubkey:0</tags>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+    </constructor>
+  </class>
+
+  <class name="javax.crypto.spec.SecretKeySpec" supertypes="java.security.spec.KeySpec,javax.crypto.SecretKey">
+    <constructor name="SecretKeySpec" signature="SecretKeySpec(byte[],int,int,java.lang.String)" match="numargs">
+      <tags>symmetricKey,key:0,algo:3</tags>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+      <sink kind="weak_crypto_algorithm" argpos="3" resource="crypto"/>
+    </constructor>
+    <constructor name="SecretKeySpec" signature="SecretKeySpec(byte[],java.lang.String)" match="numargs">
+      <tags>key:0,algo:1</tags>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+      <sink kind="weak_crypto_algorithm" argpos="1" resource="crypto"/>
+    </constructor>
+  </class>
+
+  <class name="javax.crypto.spec.DESKeySpec" supertypes="java.security.spec.KeySpec">
+    <constructor name="DESKeySpec" signature="DESKeySpec(byte[])" match="name">
+      <tags>symmetricKey,key:0,algo:des</tags>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+      <sink kind="weak_crypto_algorithm" argpos="-1" resource="crypto"/>
+    </constructor>
+    <method name="getKey" signature="getKey()">
+      <tags>key:-1</tags>
+      <return type="byte[]"/>
+    </method>
+  </class>
+
+  <class name="javax.crypto.spec.DESedeKeySpec" supertypes="java.security.spec.KeySpec">
+    <constructor name="DESedeKeySpec" signature="DESedeKeySpec(byte[])" match="name">
+      <tags>symmetricKey,key:0,algo:desede</tags>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+      <sink kind="weak_crypto_algorithm" argpos="-1" resource="crypto"/>
+    </constructor>
+    <method name="getKey" signature="getKey()">
+      <tags>key:-1</tags>
+      <return type="byte[]"/>
+    </method>
+  </class>
+
+  <class name="javax.crypto.spec.PBEKeySpec" supertypes="java.security.spec.KeySpec">
+    <constructor name="PBEKeySpec" signature="PBEKeySpec(char[],byte[],int,int)" match="name">
+      <tags>key_derivation,password_hash,password:0,key:0,salt:1,iterations:2,keylen:3</tags>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+      <sink argpos="1" kind="hardcoded_salt" resource="crypto"/>
+    </constructor>
+    <method name="clearPassword" signature="clearPassword()">
+      <tags>key_destroy</tags>
+    </method>
+    <method name="getIterationCount" signature="getIterationCount()"><return type="int"/></method>
+    <method name="getKeyLength" signature="getKeyLength()"><return type="int"/></method>
+    <method name="getPassword" signature="getPassword()">
+      <tags>sensitive_info,credential,password</tags>
+      <return type="char[]"/>
+      <source argpos="-1" kind="sensitive_info" resource="crypto"/>
+    </method>
+    <method name="getSalt" signature="getSalt()"><return type="byte[]"/></method>
+  </class>
+
+  <class name="java.security.spec.RSAPrivateKeySpec" supertypes="java.security.spec.KeySpec">
+    <tags>privkey</tags>
+    <constructor name="RSAPrivateKeySpec" signature="RSAPrivateKeySpec(java.math.BigInteger,java.math.BigInteger)">
+      <sink argpos="0,1" kind="hardcoded_key" resource="crypto"/>
+    </constructor>
+  </class>
+
+  <class name="java.security.spec.RSAPrivateCrtKeySpec" supertypes="java.security.spec.RSAPrivateKeySpec">
+    <tags>privkey</tags>
+    <constructor name="RSAPrivateCrtKeySpec" signature="RSAPrivateCrtKeySpec()" match="name">
+      <sink argpos="0,1,2,3,4,5,6,7" kind="hardcoded_key" resource="crypto"/>
+    </constructor>
+  </class>
+
+  <class name="java.security.spec.RSAPublicKeySpec" supertypes="java.security.spec.KeySpec">
+    <tags>pubkey</tags>
+    <constructor name="RSAPublicKeySpec" signature="RSAPublicKeySpec(java.math.BigInteger,java.math.BigInteger)">
+      <sink argpos="0,1" kind="hardcoded_key" resource="crypto"/>
+    </constructor>
+  </class>
+
+  <class name="java.security.spec.DSAPrivateKeySpec" supertypes="java.security.spec.KeySpec">
+    <tags>privkey</tags>
+    <constructor name="DSAPrivateKeySpec" signature="DSAPrivateKeySpec()" match="name">
+      <sink argpos="0,1,2,3" kind="hardcoded_key" resource="crypto"/>
+    </constructor>
+  </class>
+
+  <class name="java.security.spec.DSAPublicKeySpec" supertypes="java.security.spec.KeySpec">
+    <tags>pubkey</tags>
+    <constructor name="DSAPublicKeySpec" signature="DSAPublicKeySpec()" match="name">
+      <sink argpos="0,1,2,3" kind="hardcoded_key" resource="crypto"/>
+    </constructor>
+  </class>
+
+  <class name="java.security.spec.AlgorithmParameterSpec"/>
+
+  <class name="java.security.AlgorithmParameters">
+    <method name="getInstance" signature="getInstance(java.lang.String)" match="name">
+      <tags>params-factory,algo:0,provider:1</tags>
+      <return type="java.security.AlgorithmParameters"/>
+      <sink kind="weak_crypto_algorithm" argpos="0" resource="crypto"/>
+    </method>
+    <method name="init" signature="init(java.security.spec.AlgorithmParameterSpec)">
+      <tags>params-init,params:0</tags>
+    </method>
+    <method name="init" signature="init(byte[],java.lang.String)">
+      <tags>params-init,params:0</tags>
+    </method>
+  </class>
+
+  <class name="javax.crypto.spec.IvParameterSpec" supertypes="java.security.spec.AlgorithmParameterSpec">
+    <constructor name="IvParameterSpec" signature="IvParameterSpec(byte[])" match="name">
+      <tags>iv:0</tags>
+    </constructor>
+  </class>
+
+  <class name="javax.crypto.spec.GCMParameterSpec" supertypes="java.security.spec.AlgorithmParameterSpec">
+    <constructor name="GCMParameterSpec" signature="IvParameterSpec(int,byte[])" match="name">
+      <tags>taglen:0,iv:1</tags>
+    </constructor>
+  </class>
+
+  <class name="java.security.KeyPairGenerator">
+    <method name="getInstance" signature="getInstance()" match="name" instance="false">
+      <tags>key_derivation,algo:0</tags>
+      <return type="java.security.KeyPairGenerator" />
+      <sink kind="weak_crypto_algorithm" argpos="0" resource="crypto"/>
+    </method>
+    <method name="initialize" signature="initialize(int,java.security.SecureRandom)" match="name">
+      <tags>key_derivation,keylen:0</tags>
+    </method>
+    <method name="generateKeyPair" signature="generateKeyPair()" alias="genKeyPair">
+      <return type="java.security.KeyPair"/>
+    </method>
+  </class>
+
+
+</library>

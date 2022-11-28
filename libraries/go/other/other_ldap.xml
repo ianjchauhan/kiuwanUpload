@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="go.ldap">
+
+  <description>LDAP modules</description>
+
+  <module name="go-ldap">
+    <description url="https://github.com/go-ldap/ldap">Basic LDAP v3 functionality for Go</description>
+
+    <class name="ldap.Conn" kind="struct">
+      <method name="Add" signature="Add(load.AddRequest)">
+        <return type="go.error"/>
+        <sink kind="ldap_injection" argpos="0" resource="other"/>
+      </method>
+      <method name="Bind" signature="Bind(go.string, go.string)">
+        <tags>username:0,password:1</tags>
+        <return type="go.error"/>
+        <sink kind="ldap_injection" argpos="0,1" resource="other"/>
+        <sink kind="anonymous_ldap_bind" argpos="0,1" resource="other"/>
+      </method>
+      <method name="Compare" signature="Compare(go.string, go.string, go.string)">
+        <return type="go.bool,go.error"/>
+        <sink kind="ldap_injection" argpos="0,1,2" resource="other"/>
+      </method>
+      <method name="Del" signature="Del(ldap.DelRequest)">
+        <return type="go.error"/>
+        <sink kind="ldap_injection" argpos="0" resource="other"/>
+      </method>
+      <method name="Modify" signature="Modify(ldap.ModifyRequest)">
+        <return type="go.error"/>
+        <sink kind="ldap_injection" argpos="0" resource="other"/>
+      </method>
+      <method name="PasswordModify" signature="PasswordModify(ldap.PasswordModifyRequest)">
+        <return type="ldap.PasswordModifyResult,go.error"/>
+        <sink kind="ldap_injection" argpos="0" resource="other"/>
+      </method>
+      <method name="Search" signature="Search(ldap.SearchRequest)">
+        <return type="ldap.SearchResult,go.error"/>
+        <sink kind="ldap_injection" argpos="0" resource="other"/>
+      </method>
+      <method name="SearchWithPaging" signature="SearchWithPaging(ldap.SearchRequest, go.uint32)">
+        <return type="ldap.SearchResult,go.error"/>
+        <sink kind="ldap_injection" argpos="0" resource="other"/>
+      </method>
+      <method name="SimpleBind" signature="SimpleBind(ldap.SimpleBindRequest)">
+        <return type="ldap.SimpleBindResult,go.error"/>
+        <sink kind="ldap_injection" argpos="0" resource="other"/>
+      </method>
+    </class>
+
+    <function name="ldap.Dial" signature="ldap.Dial(go.string, go.string)">
+      <return type="ldap.Conn,go.error"/>
+      <sink argpos="0,1" kind="connection_string_injection" resource="database"/>
+    </function>
+
+    <function name="ldap.DialTLS" signature="ldap.DialTLS(go.string, go.string, tls.Config)">
+      <return type="ldap.Conn,go.error"/>
+      <sink argpos="0,1" kind="connection_string_injection" resource="database"/>
+    </function>
+
+    <function name="ldap.NewAddRequest" signature="ldap.NewAddRequest(go.string, go.slice)">
+      <return type="ldap.AddRequest"/>
+    </function>
+
+    <function name="ldap.NewDelRequest" signature="ldap.NewDelRequest(go.string, go.slice)">
+      <return type="ldap.DelRequest"/>
+    </function>
+
+    <function name="ldap.NewEntry" signature="ldap.NewEntry(go.string, go.slice)">
+      <return type="ldpa.Entry"/>
+    </function>
+
+    <function name="ldap.NewModifyRequest" signature="ldap.NewModifyRequest(go.string)">
+      <return type="ldap.ModifyRequest"/>
+    </function>
+
+    <function name="ldap.NewSearchRequest"
+              signature="ldap.NewSearchRequest(go.string, go.int, go.int, go.int, go.int, go.bool, go,string, go.slice, go.slice)">
+      <return type="ldap.SearchRequest"/>
+      <sink kind="anonymous_ldap_bind" argpos="0,1" resource="other"/>
+    </function>
+
+    <function name="ldap.NewSimpleBindRequest" signature="ldap.NewSimpleBindRequest(go.string, go.string, go.slice)">
+      <tags>username:0,password:1</tags>
+      <return type="ldap.SimpleBindRequest"/>
+      <sink argpos="0,1" kind="anonymous_ldap_bind" resource="other" />
+    </function>
+
+    <class name="ldap.AddRequest" kind="struct"/>
+    <class name="ldap.DelRequest" kind="struct"/>
+    <class name="ldap.Entry" kind="struct" />
+    <class name="ldap.EntryAttribute" kind="struct" />
+    <class name="ldap.ModifyDNRequest" kind="struct"/>
+    <class name="ldap.ModifyRequest" kind="struct"/>
+    <class name="ldap.PasswordModifyRequest" kind="struct"/>
+    <class name="ldap.SearchRequest" kind="struct"/>
+    <class name="ldap.SimpleBindRequest" kind="struct"/>
+
+  </module>
+
+  <module name="github.com.go-ldap.ldap" standard="go-ldap.ldap">
+    <class name="github.com.go-ldap.ldap.Conn" supertypes="ldap.Conn" />
+    <class name="github.com.go-ldap.ldap.AddRequest" supertypes="ldap.AddRequest" />
+    <class name="github.com.go-ldap.ldap.DelRequest" supertypes="ldap.DelRequest" />
+    <class name="github.com.go-ldap.ldap.Entry" supertypes="ldap.Entry" />
+    <class name="github.com.go-ldap.ldap.EntryAttribute" supertypes="ldap.EntryAttribute" />
+    <class name="github.com.go-ldap.ldap.ModifyDNRequest" supertypes="ldap.ModifyDNRequest" />
+    <class name="github.com.go-ldap.ldap.ModifyRequest" supertypes="ldap.ModifyRequest" />
+    <class name="github.com.go-ldap.ldap.PasswordModifyRequest" supertypes="ldap.PasswordModifyRequest" />
+    <class name="github.com.go-ldap.ldap.SearchRequest" supertypes="ldap.SearchRequest" />
+    <class name="github.com.go-ldap.ldap.SimpleBindRequest" supertypes="ldap.SimpleBindRequest" />
+
+    <functionAlias name="github.com.go-ldap.ldap.Dial" super="ldap.Dial"/>
+    <functionAlias name="github.com.go-ldap.ldap.DialTLS" super="ldap.DialTLS"/>
+    <functionAlias name="github.com.go-ldap.ldap.NewAddRequest" super="ldap.NewAddRequest"/>
+    <functionAlias name="github.com.go-ldap.ldap.NewDelRequest" super="ldap.NewDelRequest"/>
+    <functionAlias name="github.com.go-ldap.ldap.NewEntry" super="ldap.NewEntry"/>
+    <functionAlias name="github.com.go-ldap.ldap.NewModifyRequest" super="ldap.NewModifyRequest"/>
+    <functionAlias name="github.com.go-ldap.ldap.NewSearchRequest" super="ldap.NewSearchRequest"/>
+    <functionAlias name="github.com.go-ldap.ldap.NewSimpleBindRequest" super="ldap.NewSimpleBindRequest"/>
+  </module>
+
+  <module name="github.com.go-ldap.ldap.v3">
+    <class name="github.com.go-ldap.ldap.v3.Conn" supertypes="ldap.Conn" />
+    <class name="github.com.go-ldap.ldap.v3.AddRequest" supertypes="ldap.AddRequest" />
+    <class name="github.com.go-ldap.ldap.v3.DelRequest" supertypes="ldap.DelRequest" />
+    <class name="github.com.go-ldap.ldap.v3.Entry" supertypes="ldap.Entry" />
+    <class name="github.com.go-ldap.ldap.v3.EntryAttribute" supertypes="ldap.EntryAttribute" />
+    <class name="github.com.go-ldap.ldap.v3.ModifyDNRequest" supertypes="ldap.ModifyDNRequest" />
+    <class name="github.com.go-ldap.ldap.v3.ModifyRequest" supertypes="ldap.ModifyRequest" />
+    <class name="github.com.go-ldap.ldap.v3.PasswordModifyRequest" supertypes="ldap.PasswordModifyRequest" />
+    <class name="github.com.go-ldap.ldap.v3.SearchRequest" supertypes="ldap.SearchRequest" />
+    <class name="github.com.go-ldap.ldap.v3.SimpleBindRequest" supertypes="ldap.SimpleBindRequest" />
+
+    <functionAlias name="github.com.go-ldap.ldap.v3.Dial" super="ldap.Dial"/>
+    <functionAlias name="github.com.go-ldap.ldap.v3.DialTLS" super="ldap.DialTLS"/>
+    <functionAlias name="github.com.go-ldap.ldap.v3.NewAddRequest" super="ldap.NewAddRequest"/>
+    <functionAlias name="github.com.go-ldap.ldap.v3.NewDelRequest" super="ldap.NewDelRequest"/>
+    <functionAlias name="github.com.go-ldap.ldap.v3.NewEntry" super="ldap.NewEntry"/>
+    <functionAlias name="github.com.go-ldap.ldap.v3.NewModifyRequest" super="ldap.NewModifyRequest"/>
+    <functionAlias name="github.com.go-ldap.ldap.v3.NewSearchRequest" super="ldap.NewSearchRequest"/>
+    <functionAlias name="github.com.go-ldap.ldap.v3.NewSimpleBindRequest" super="ldap.NewSimpleBindRequest"/>
+  </module>
+
+  <!--
+  https://github.com/nmcclain/ldap - This is (one of the 187) fork of https://github.com/uavila/ldap,
+  which is a fork of https://github.com/go-ldap/ldap, but NOTHING is added to the API, assume package / import is the same
+  -->
+
+  <module name="github.com.nmcclain.ldap">
+    <class name="github.com.nmcclain.ldap.Conn" supertypes="ldap.Conn" />
+    <class name="github.com.nmcclain.ldap.AddRequest" supertypes="ldap.AddRequest" />
+    <class name="github.com.nmcclain.ldap.DelRequest" supertypes="ldap.DelRequest" />
+    <class name="github.com.nmcclain.ldap.Entry" supertypes="ldap.Entry" />
+    <class name="github.com.nmcclain.ldap.EntryAttribute" supertypes="ldap.EntryAttribute" />
+    <class name="github.com.nmcclain.ldap.ModifyDNRequest" supertypes="ldap.ModifyDNRequest" />
+    <class name="github.com.nmcclain.ldap.ModifyRequest" supertypes="ldap.ModifyRequest" />
+    <class name="github.com.nmcclain.ldap.PasswordModifyRequest" supertypes="ldap.PasswordModifyRequest" />
+    <class name="github.com.nmcclain.ldap.SearchRequest" supertypes="ldap.SearchRequest" />
+    <class name="github.com.nmcclain.ldap.SimpleBindRequest" supertypes="ldap.SimpleBindRequest" />
+
+    <functionAlias name="github.com.nmcclain.ldap.Dial" super="ldap.Dial"/>
+    <functionAlias name="github.com.nmcclain.ldap.DialTLS" super="ldap.DialTLS"/>
+    <functionAlias name="github.com.nmcclain.ldap.NewAddRequest" super="ldap.NewAddRequest"/>
+    <functionAlias name="github.com.nmcclain.ldap.NewDelRequest" super="ldap.NewDelRequest"/>
+    <functionAlias name="github.com.nmcclain.ldap.NewEntry" super="ldap.NewEntry"/>
+    <functionAlias name="github.com.nmcclain.ldap.NewModifyRequest" super="ldap.NewModifyRequest"/>
+    <functionAlias name="github.com.nmcclain.ldap.NewSearchRequest" super="ldap.NewSearchRequest"/>
+    <functionAlias name="github.com.nmcclain.ldap.NewSimpleBindRequest" super="ldap.NewSimpleBindRequest"/>
+  </module>
+
+  <module name="gopkg.in.ldap.v2">
+    <class name="gopkg.in.ldap.v2.ldap.Conn" supertypes="ldap.Conn" />
+    <class name="gopkg.in.ldap.v2.ldap.AddRequest" supertypes="ldap.AddRequest" />
+    <class name="gopkg.in.ldap.v2.ldap.DelRequest" supertypes="ldap.DelRequest" />
+    <class name="gopkg.in.ldap.v2.ldap.Entry" supertypes="ldap.Entry" />
+    <class name="gopkg.in.ldap.v2.ldap.EntryAttribute" supertypes="ldap.EntryAttribute" />
+    <class name="gopkg.in.ldap.v2.ldap.ModifyDNRequest" supertypes="ldap.ModifyDNRequest" />
+    <class name="gopkg.in.ldap.v2.ldap.ModifyRequest" supertypes="ldap.ModifyRequest" />
+    <class name="gopkg.in.ldap.v2.ldap.PasswordModifyRequest" supertypes="ldap.PasswordModifyRequest" />
+    <class name="gopkg.in.ldap.v2.ldap.SearchRequest" supertypes="ldap.SearchRequest" />
+    <class name="gopkg.in.ldap.v2.ldap.SimpleBindRequest" supertypes="ldap.SimpleBindRequest" />
+
+    <functionAlias name="gopkg.in.ldap.v2.ldap.Dial" super="ldap.Dial"/>
+    <functionAlias name="gopkg.in.ldap.v2.ldap.DialTLS" super="ldap.DialTLS"/>
+    <functionAlias name="gopkg.in.ldap.v2.ldap.NewAddRequest" super="ldap.NewAddRequest"/>
+    <functionAlias name="gopkg.in.ldap.v2.ldap.NewDelRequest" super="ldap.NewDelRequest"/>
+    <functionAlias name="gopkg.in.ldap.v2.ldap.NewEntry" super="ldap.NewEntry"/>
+    <functionAlias name="gopkg.in.ldap.v2.ldap.NewModifyRequest" super="ldap.NewModifyRequest"/>
+    <functionAlias name="gopkg.in.ldap.v2.ldap.NewSearchRequest" super="ldap.NewSearchRequest"/>
+    <functionAlias name="gopkg.in.ldap.v2.ldap.NewSimpleBindRequest" super="ldap.NewSimpleBindRequest"/>
+  </module>
+
+  <module name="gopkg.in.ldap.v3">
+    <class name="gopkg.in.ldap.v3.ldap.Conn" supertypes="ldap.Conn" />
+    <class name="gopkg.in.ldap.v3.ldap.AddRequest" supertypes="ldap.AddRequest" />
+    <class name="gopkg.in.ldap.v3.ldap.DelRequest" supertypes="ldap.DelRequest" />
+    <class name="gopkg.in.ldap.v3.ldap.Entry" supertypes="ldap.Entry" />
+    <class name="gopkg.in.ldap.v3.ldap.EntryAttribute" supertypes="ldap.EntryAttribute" />
+    <class name="gopkg.in.ldap.v3.ldap.ModifyDNRequest" supertypes="ldap.ModifyDNRequest" />
+    <class name="gopkg.in.ldap.v3.ldap.ModifyRequest" supertypes="ldap.ModifyRequest" />
+    <class name="gopkg.in.ldap.v3.ldap.PasswordModifyRequest" supertypes="ldap.PasswordModifyRequest" />
+    <class name="gopkg.in.ldap.v3.ldap.SearchRequest" supertypes="ldap.SearchRequest" />
+    <class name="gopkg.in.ldap.v3.ldap.SimpleBindRequest" supertypes="ldap.SimpleBindRequest" />
+
+    <functionAlias name="gopkg.in.ldap.v3.ldap.Dial" super="ldap.Dial"/>
+    <functionAlias name="gopkg.in.ldap.v3.ldap.DialTLS" super="ldap.DialTLS"/>
+    <functionAlias name="gopkg.in.ldap.v3.ldap.NewAddRequest" super="ldap.NewAddRequest"/>
+    <functionAlias name="gopkg.in.ldap.v3.ldap.NewDelRequest" super="ldap.NewDelRequest"/>
+    <functionAlias name="gopkg.in.ldap.v3.ldap.NewEntry" super="ldap.NewEntry"/>
+    <functionAlias name="gopkg.in.ldap.v3.ldap.NewModifyRequest" super="ldap.NewModifyRequest"/>
+    <functionAlias name="gopkg.in.ldap.v3.ldap.NewSearchRequest" super="ldap.NewSearchRequest"/>
+    <functionAlias name="gopkg.in.ldap.v3.ldap.NewSimpleBindRequest" super="ldap.NewSimpleBindRequest"/>
+  </module>
+
+</library>

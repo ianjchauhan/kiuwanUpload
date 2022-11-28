@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="Interprocess_Communication_And_Networking" technology="python">
+
+  <description url="https://docs.python.org/3/library/ipc.html">Networking and Interprocess Communication (Python 3)</description>
+
+  <module name="socket" standard="python3">
+    <member name="SocketType" type="type"/>
+
+    <function name="socket" signature="socket(family=AF_INET, type=SOCK_STREAM, proto=0, fileno=None)">
+      <return type="socket.socket"/>
+    </function>
+    <function name="socketpair" signature="socketpair([family[, type[, proto]]])">
+      <return type="tuple"/>
+    </function>
+    <function name="create_connection" signature="create_connection(address[, timeout[, source_address]])">
+      <return type="socket.socket"/>
+      <sink argpos="0" kind="ssrf" resource="web"/>
+    </function>
+    <function name="fromfd" signature="fromfd(fd, family, type, proto=0)">
+      <return type="socket.socket"/>
+    </function>
+    <function name="gethostbyname" signature="gethostbyname(hostname)">
+      <tags>remote_host</tags>
+      <return type="socket.socket"/>
+    </function>
+    <function name="gethostbyname_ex" signature="gethostbyname_ex(hostname)">
+      <tags>remote_host</tags>
+      <return type="socket.socket"/>
+    </function>
+    <function name="gethostname" signature="gethostname()">
+      <tags>remote_host</tags>
+      <return type="socket.socket"/>
+    </function>
+    <function name="gethostbyaddr" signature="gethostbyaddr(ip_address)">
+      <tags>remote_host</tags>
+      <return type="socket.socket"/>
+    </function>
+
+    <class name="socket">
+      <method name="connect" signature="connect(address)" match="name" >
+        <return type="NoneType"/>
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </method>
+      <method name="connect_ex" signature="connect_ex(address)" match="name" >
+        <return type="NoneType"/>
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="subprocess" standard="python3">
+    <function name="run" signature="run(*popenargs, timeout=None, **kwargs)" match="name">
+      <tags>withShellArgument:true</tags>
+      <return type="int"/>
+      <sink argpos="0" kind="command_injection" resource="environment"/>
+    </function>
+    <function name="call" signature="call(*popenargs, timeout=None, **kwargs)" match="name">
+      <tags>withShellArgument:true</tags>
+      <return type="int"/>
+      <sink argpos="0" kind="command_injection" resource="environment"/>
+    </function>
+    <function name="check_call" signature="check_call(args, *, stdin=None, stdout=None, stderr=None, shell=False)">
+      <tags>withShellArgument:true</tags>
+      <return type="int"/>
+      <sink argpos="0" kind="command_injection" resource="environment"/>
+    </function>
+    <function name="check_output" signature="check_output(args, *, stdin=None, stderr=None, shell=False, universal_newlines=False)">
+      <tags>withShellArgument:true</tags>
+      <return type="int"/>
+      <sink argpos="0" kind="command_injection" resource="environment"/>
+    </function>
+    <class name="Popen">
+      <constructor name="Popen" signature="Popen(args, bufsize=0, executable=None, stdin=None, stdout=None, stderr=None, preexec_fn=None, close_fds=False, shell=False, cwd=None, env=None, universal_newlines=False, startupinfo=None, creationflags=0)" match="name">
+        <tags>withShellArgument:true</tags>
+        <sink argpos="0" kind="command_injection" resource="environment"/>
+      </constructor>
+    </class>
+  </module>
+</library>

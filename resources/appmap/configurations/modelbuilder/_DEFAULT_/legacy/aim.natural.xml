@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+  <description>AIM rules for Software AG's Natural language.</description>
+
+  <import resource="../common/aim.common.xml"/>
+
+  <import resource="classpath:resources/qaking-tech-natural.xml"/>
+
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="legacy/aim.natural.properties"/>
+  </bean-->
+
+  <bean id="aim.natural.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>Natural parser</description>
+    <property name="filter" ref="aim.natural.filter"/>
+    <property name="languageSupport" ref="ls_natural"/>
+  </bean>
+
+  <!-- Rules -->
+
+  <bean id="aim.natural.rule" class="com.optimyth.apm.builder.rules.natural.NaturalBuilderRule">
+    <description>Natural rule for source code (programs, subprograms, subroutines, helproutines, copys)</description>
+    <property name="active" value="${aim.natural.rule.active}"/>
+    <property name="callback" ref="aim.natural.callback" />
+    <property name="filter" ref="aim.natural.filter"/>
+    <property name="processDatabaseOperations" value="${aim.natural.rule.processDatabaseOperations}"/>
+  </bean>
+  
+  <bean id="aim.natural.rule.view" class="com.optimyth.apm.builder.rules.natural.NaturalViewRule">
+    <description>Natural rule for (local) data areas, typically defining Adabas views</description>
+    <property name="active" value="${aim.natural.rule.view.active}"/>
+    <property name="callback" ref="aim.natural.callback"/>
+    <property name="filter" ref="aim.natural.view.filter"/>
+    <property name="viewPattern" value="${aim.natural.rule.view.pattern}"/>
+    <property name="include" value="${aim.natural.rule.view.include}"/>
+  </bean>
+  
+  <bean name="aim.natural.callback" class="com.optimyth.apm.builder.rules.natural.BasicNaturalDependenciesCallback">
+    <property name="application" value="${aim.natural.software}"/>
+    <property name="applicationType" ref="aim.common.softwareType.application"/>
+    <property name="calledResolver" ref="aim.natural.resolver"/>
+    <property name="databaseType" value="${aim.natural.dbsystem}"/>
+    <property name="databaseName" value="${aim.natural.dbname}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+    <property name="mapper" ref="aim.natural.mapper"/>
+    <property name="resolveArtifacts" value="${aim.common.resolveArtifacts}"/>
+    <property name="ignoreCase" value="${aim.natural.ignoreCase}"/>
+  </bean>
+
+  <!-- Resolvers -->
+
+  <bean id="aim.natural.resolver" class="com.optimyth.apm.builder.rules.natural.CalledProgramResolver">
+    <property name="mapper" ref="aim.natural.mapper"/>
+    <property name="fileResolver" ref="aim.natural.fileResolver"/>
+    <property name="resolveArtifacts" value="${aim.common.resolveArtifacts}"/>
+    <property name="acceptUnresolvedArtifacts" value="${aim.common.acceptUnresolved}"/>
+    <property name="application" value="${aim.natural.software}"/>
+    <property name="applicationType" ref="aim.common.softwareType.application"/>
+  </bean>
+    
+  
+  <bean id="aim.natural.mapper" class="com.optimyth.apm.builder.rules.natural.ByExtensionMapper">
+    <property name="typesMap"><map>
+      <entry key="NSC" value="COPY"/>
+
+      <entry key="NSP" value="PROGRAM"/>
+      <entry key="NSN" value="SUBPROGRAM"/>
+      <entry key="NSS" value="SUBROUTINE"/>
+      <entry key="NSH" value="HELPROUTINE"/>
+
+      <entry key="NSM" value="MAP"/>
+
+      <entry key="NSG" value="GDA"/>
+      <entry key="NSL" value="LDA"/>
+      <entry key="NSA" value="PDA"/>
+      <entry key="DDM" value="DDM"/>
+    </map></property>
+  </bean>
+  
+  <bean id="aim.natural.fileResolver" class="com.optimyth.apm.builder.rules.common.fileresolution.MultiDirectoryFileResolver">
+    <property name="basedir" value="${aim.natural.resolver.file.basedir}"/>
+    <property name="patterns" value="${aim.natural.resolver.file.patterns}"/>
+  </bean>
+
+  <!-- Filters -->
+
+  <bean id="aim.natural.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.natural.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.natural.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.natural.filter.pattern"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.natural.filter.default" parent="ls_natural_matcher"/>
+
+  <bean id="aim.natural.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.natural.filter.pattern}"/>
+  </bean>
+
+  <bean id="aim.natural.view.filter" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.natural.rule.view.include}"/>
+  </bean>
+
+</beans>

@@ -1,0 +1,1551 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_aspnet" updated="">
+  <description>EDCAST_MOBILE</description>
+  <rule name="OPT.ASPNET.AuthenticationFormsWithoutSSL" message="AuthenticationFormsWithoutSSL: If authentication is through Forms enable the sending of information through SSL" class="com.optimyth.aspnet.rules.security.AuthenticationFormsWithoutSSL" technology="ASPNET" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[If authentication is through Forms enable the sending of information through SSL.
+Otherwise the information will not be encrypted and an attacker could retrieve it.]]></description>
+    <priority>3</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It prevents an attacker can view the authentication information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<authentication mode="Forms">
+  <forms loginUrl="member_login.aspx"
+    cookieless="UseCookies"
+    requireSSL="false" <!-- VIOLATION -->
+    path="/MyApplication" />
+</authentication>]]></example>
+    <repair><![CDATA[<authentication mode="Forms">
+  <forms loginUrl="member_login.aspx"
+    cookieless="UseCookies"
+    requireSSL="true" <!-- OK -->
+    path="/MyApplication" />
+</authentication>]]></repair>
+    <reference><![CDATA[]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:523,OWASP:2021:A2,PCI-DSS:6.5.8,WASC:24]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.AvoidContentDeliveryNetwork" message="AvoidContentDeliveryNetwork: Do not use Content Delivery Network (CDN) for JavaScript code" class="com.optimyth.aspnet.rules.security.AvoidContentDeliveryNetwork" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.5,ASVS-v4.0.2:5.2.8,CDN,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,code-injection]]></tags>
+    <description><![CDATA[Using a Content Delivery Network (CDN) to serve an application JavaScript code provides better performance and less code
+maintenance for the the application developers, but external JavaScript code is out of control. For sensitive applications
+external delivery of JavaScript code (from a CDN) is forbidden by this rule.
+
+If the CDN is attacked, malicious JavaScript code could be injected in pages served by your application.
+To avoid this scenario, this rule forces to serve all JavaScript content as application resource, and not from external CDN.
+
+As an alternative to complete forbidding importing external scripts from third-party CDN sites, the "integrity" attribute
+on <script> and <link> elements (pointing to cross-origin resources) must be specified, so the browser can check the integrity
+of the linked resources, avoiding to use scripts or CSS files with potentially malicious code. The rule]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<%@ Page AspCompat="true" language="C#" %>
+<asp:ScriptManager ID="sm" EnableCdn="true" runat="Server" /><!-- VIOLATION -->
+<script src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.min.js" type="text/javascript"></script><!-- VIOLATION -->]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/94.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:94,CWETOP25:2021:28]]></security>
+    </normatives>
+    <properties>
+      <property name="cdn.servers" descname="Comma-separated list of CDN hostnames." value="ajax.microsoft.com, ajax.aspnetcdn.com, ajax.googleapis.com, cdnjs.cloudflare.com, cdn.jsdelivr.net, osscdn.com, code.jquery.com, maxcdn.bootstrapcdn.com, tech.yandex.ru"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.AvoidDisabledValidateRequest" message="AvoidDisabledValidateRequest: The value of ValidateRequest in pages must be set to true to prevent code injection attacks" class="com.optimyth.aspnet.rules.security.AvoidDisabledValidateRequest" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.2,ASVS-v4.0.2:13.3.1,ASVS-v4.0.2:5.1.3,ASVS-v4.0.2:5.1.4,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The value of ValidateRequest in pages must be set to true to prevent code injection attacks.
+In case that this attribute is disabled by default, user input values are not encrypted and therefore an attacker could insert malicious code.]]></description>
+    <priority>3</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It prevents an attacker from accessing resources through malicious code.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<%@ Page Language="C#" ValidateRequest="false" %> <!-- VIOLATION -->]]></example>
+    <repair><![CDATA[<%@ Page Language="C#" ValidateRequest="true" %> <!-- OK -->
+or
+<%@ Page Language="C#" %> <!-- OK -->]]></repair>
+    <reference><![CDATA[]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.AvoidDisabledValidateRequestConfig" message="AvoidDisabledValidateRequestConfig: The validateRequest attribute value should be true to prevent code injection attacks" class="com.optimyth.aspnet.rules.security.AvoidDisabledValidateRequestConfig" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.2,ASVS-v4.0.2:13.3.1,ASVS-v4.0.2:5.1.3,ASVS-v4.0.2:5.1.4,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The validateRequest attribute value should be true to prevent code injection attacks.
+In case that this attribute is disabled by default, user-controlled input values may not be encoded,
+and therefore an attacker could insert malicious code.]]></description>
+    <priority>3</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent an attacker access to resources through malicious code.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    <pages validateRequest="false" /> <!-- VIOLATION -->]]></example>
+    <repair><![CDATA[    <pages validateRequest="true" /> <!-- OK -->]]></repair>
+    <reference><![CDATA[]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.AvoidEnabledDebugMode" message="AvoidEnabledDebugMode: ASP.NET Misconfiguration: Creating Debug Binary" class="com.optimyth.aspnet.rules.performance.AvoidEnabledDebugMode" technology="ASPNET" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Logs can be very helpful at development stages but they should be used on later stages
+because they can show rewarding information.
+
+When a log shows sensible information, it can create a security leak, making useless any other system protection
+mechanisms. Also sensible data can have many legal implications due to the established limitations about personal
+information storage.
+
+Also if left enabled debug in production mode, the application performance will be worse.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improves both the application security and performance.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<compilation debug="true"/> <!-- VIOLATION -->]]></example>
+    <repair><![CDATA[<compilation debug="false"/>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/11.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:11,OWASP:2021:A5,PCI-DSS:6.5.5]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.AvoidImpersonation" message="AvoidImpersonation: Avoid impersonation in ASP.Net configuration" class="com.optimyth.aspnet.rules.security.AvoidImpersonation" technology="ASPNET" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Impersonation is when ASP.NET executes code in the context of an authenticated and authorized Windows client making the web request,
+or under a fixed configured Windows account.
+
+By default, ASP.NET does not use impersonation and instead executes all code using the same user account as the ASP.NET process,
+set in Machine.Config, which is typically the ASPNET account. This is contrary to the default behavior of ASP, which uses impersonation by default.
+In Internet Information Services (IIS) 6, the default identity is the NetworkService account.
+
+You should exercise care when using impersonation, because it makes it possible for an application to potentially process
+code using permissions not anticipated by the application designer.
+
+The rule will emit a violation on each <identity impersonate="true" /> element under <system.web>.
+Note: If you are really sure that you DO need impersonation in your web application, you may mute violations for this rule.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid accesses to resources with permissions unexpected by the development team.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<system.web>
+  <!-- VIOLATION -->
+  <identity impersonate="true"
+            userName="registry:HKLM\Software\AspNetProcess,Name"
+            password="registry:HKLM\Software\AspNetProcess,Pwd" />
+</system.web>]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[https://msdn.microsoft.com/en-us/library/134ec8tc.aspx,https://cwe.mitre.org/data/definitions/556.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:556,OWASP:2021:A1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.AvoidSendCookiesUnencryptedHTTP" message="AvoidSendCookiesUnencryptedHTTP: Sending of cookies should be enabled only by HTTP" class="com.optimyth.aspnet.rules.security.AvoidSendCookiesUnencryptedHTTP" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:3.4.2]]></tags>
+    <description><![CDATA[An attacker could carry out a cross-site scripting (XSS) attack and retrieving the values of cookies with sensitive information.
+To avoid JavaScript access to certain cookies, the httpOnly option could be added, either programmatically or by configuration.
+
+By enabling the httpOnlyCookies attribute in Web.Config, cookies are not be accessible from JavaScript code.
+
+Please note that session cookie since ASP.Net 2.0 is always protected with httpOnly attribute, regardless of the configuration.
+The recommended configuration is for custom application cookies.
+
+This is not a complete solution, since httpOnly is not supported by some legacy browsers. Additionally, the JavaScript
+XMLHttpRequest object may provide read access to HTTP headers, including the Set-Cookie header with the cookies even
+when protected with httpOnly (due to bugs in old browsers, mostly fixed).]]></description>
+    <priority>3</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It mitigates cross-site scripting attacks, specially those targeted at cookie theft.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<httpCookies httpOnlyCookies="false" requireSSL="true" /> <!-- VIOLATION -->]]></example>
+    <repair><![CDATA[<httpCookies httpOnlyCookies="true" requireSSL="true" />]]></repair>
+    <reference><![CDATA[http://msdn.microsoft.com/en-us/library/ms533046.aspx]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:1004,OWASP:2021:A3,PCI-DSS:6.5.10,WASC:24]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.AvoidSendCookiesWithoutSSL" message="AvoidSendCookiesWithoutSSL: Send Cookies using SSL" class="com.optimyth.aspnet.rules.security.AvoidSendCookiesWithoutSSL" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:3.4.1,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Cookies should be only sent under TLS/SSL (https://) protocol, specially when the cookies may contain sensitive information.]]></description>
+    <priority>3</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[It prevents an attacker to see sensitive cookies, intercepting HTTP messages on the network.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<httpCookies httpOnlyCookies="true" requireSSL="false" /> <!-- VIOLATION -->]]></example>
+    <repair><![CDATA[<httpCookies httpOnlyCookies="true" requireSSL="true" />]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/614.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:614,CWETOP25:2021:20,OWASP:2021:A5,PCI-DSS:6.5.10,WASC:24]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.CertificateVerificationMisconfiguration" message="CertificateVerificationMisconfiguration: Untrusty certificate verification" class="com.optimyth.aspnet.rules.security.CertificateVerificationMisconfiguration" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.9.2,ASVS-v4.0.2:9.2.1,CWEScope:Authentication,CWEScope:Integrity]]></tags>
+    <description><![CDATA[By default, certificate verification checks that a certificate belongs to a hierarchy ending in a trusted certification authority.
+
+This behavior can be modified, and it is done commonly along development cycle, to accept self-signed certificates or skip verification.
+When deploying in a production environment, verifying that certificate belongs to a hierarchy ending in a trusted certification authority
+must be ensured or security provided by using certificates will be mostly lost.
+
+Certificate verification mode is specified in application config files using certificateValidationMode attribute of
+  /configuration/system.serviceModel/behaviors/endpointBehaviors/behavior/clientCredentials/serviceCertificate/authentication
+for clients and
+  /configuration/system.serviceModel/behaviors/serviceBehaviors/behavior/serviceCredentials/clientCertificate/authentication
+for services.
+
+Default value is ChainTrust. This rule emits violation if finds this attribute with values PeerOrChainTrust, PeerTrust or None.]]></description>
+    <priority>1</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid losing security provided by certificates.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<configuration>
+  <system.serviceModel>
+    <behaviors>
+      <endpointBehaviors>
+        <clientCredentials>
+          <serviceCertificate>
+            <authentication certificateValidationMode="PeerOrChainTrust"/>  <!-- VIOLATION -->
+          </serviceCertificate>
+        </clientCredentials>
+      </endpointBehaviors>
+    </behaviors>
+  </system.serviceModel>
+</configuration>]]></example>
+    <repair><![CDATA[<configuration>
+  <system.serviceModel>
+    <behaviors>
+      <endpointBehaviors>
+        <clientCredentials>
+          <serviceCertificate>
+            <authentication certificateValidationMode="ChainTrust"/>  <!-- OK -->
+          </serviceCertificate>
+        </clientCredentials>
+      </endpointBehaviors>
+    </behaviors>
+  </system.serviceModel>
+</configuration>]]></repair>
+    <reference><![CDATA[https://msdn.microsoft.com/en-us/library/aa347703(v=vs.110).aspx]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:295,CWETOP25:2021:26,OWASP:2021:A7,PCI-DSS:6.5.10]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.ClickjackingProtection" message="ClickjackingProtection: No clickjacking protection configured" class="com.optimyth.aspnet.rules.security.ClickjackingProtection" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.4.3,CAPEC:103,CWEScope:Access-Control,clickjacking]]></tags>
+    <description><![CDATA[Clickjacking, also known as a "UI redress attack", is when an attacker uses multiple transparent or opaque layers to trick a user
+into clicking on a button or link on another page when they were intending to click on the the top level page.
+Thus, the attacker is "hijacking" clicks meant for their page and routing them to another page, most likely owned by
+another application, domain, or both.
+
+Using a similar technique, keystrokes can also be hijacked. With a carefully crafted combination of stylesheets,
+iframes, and text boxes, a user can be led to believe they are typing in the password to their email or bank account,
+but are instead typing into an invisible frame controlled by the attacker.
+
+The rule will emit a violation for each application-level Web.Config <httpProtocol> element not containing anti-clickjacking
+configuration: X-Frame-Options and Content-Security-Policy headers, in this case.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Blocks clickjacking attacks]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<!-- Top-most Web.Config, (web app level) -->
+<configuration>
+  <system.webServer>
+    <httpProtocol allowKeepAlive="true"><!-- VIOLATION, no clickjacking protection -->
+      <customHeaders>
+        <clear/>
+        <add name="X-Powered-By" value="ASP.NET" />
+      </customHeaders>
+    </httpProtocol>
+  </system.webServer>
+</configuration>]]></example>
+    <repair><![CDATA[<!-- Top-most Web.Config, (web app level) -->
+<configuration>
+  <system.webServer>
+    <httpProtocol allowKeepAlive="true">
+      <customHeaders>
+        <clear/>
+        <!-- FIXED - In production, better not to disclose X-Powered-By info -->
+        <add name="X-Frame-Options" value="SAMEORIGIN"/>
+        <add name="Content-Security-Policy" value="frame-ancestors 'self';"/>
+      </customHeaders>
+    </httpProtocol>
+  </system.webServer>
+</configuration>]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Clickjacking_Defense_Cheat_Sheet,https://cwe.mitre.org/data/definitions/16.html,https://cwe.mitre.org/data/definitions/693.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:1021,OWASP:2021:A4]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.CredentialsInConnectionString" message="CredentialsInConnectionString: Insufficiently protected credentials in connection strings" class="com.optimyth.aspnet.rules.security.CredentialsInConnectionString" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.3,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Connection strings in ASP.Net configuration files may contain database credentials (typically, userID and password) in clear text.
+This is considered sensitive enough to be forbidden in production.
+
+Although ASP.Net does not allow access to configuration files from the web, another vulnerability (for example, a path traversal)
+may leak sensitive database information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <connectionStrings>
+    <clear />
+    <!-- OK, Windows authentication used -->
+    <add name="ApplicationServices"
+         connectionString="Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\Northwnd.mdf;Integrated Security=True"
+         providerName="System.Data.SqlClient" />
+    <!-- VIOLATION, clear text database credentials -->
+    <add name="ClearText"
+         connectionString="Persist Security Info=False;User ID=sa;Password=1234;Initial Catalog=AdventureWorks;Server=MySqlServer"
+         providerName="System.Data.SqlClient"/>
+  </connectionStrings>
+</configuration>]]></example>
+    <repair><![CDATA[<!--
+Either use windows authentication, or encrypt the <connectionStrings>
+as explained in https://msdn.microsoft.com/en-us/library/ms178372.aspx
+-->]]></repair>
+    <reference><![CDATA[https://msdn.microsoft.com/en-us/library/ms178372.aspx,https://cwe.mitre.org/data/definitions/522.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:522,CWETOP25:2021:21]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.CredentialsMisconfiguration" message="CredentialsMisconfiguration: Password exposure in Web.config file" class="com.optimyth.aspnet.rules.security.CredentialsMisconfiguration" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.4,ASVS-v4.0.2:3.5.2,ASVS-v4.0.2:6.4.1,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Password exposure leads to an authentication vulnerability difficult to detect.
+
+ASP.Net allows storing web application web credentials in Web.config, for convenience during development cycle.
+
+This feature must be never used in a production environment, because it exposes credentials to anyone who can access Web.config file.
+
+When storing credentials in Web.config file, password can be in clear text - worst scenario - or with their SHA1 or MD5 hash.
+This second case, even better than clear text, it is not safe, beacause there are dictionaries (Rainbow tables) that provide
+reverse look up using hash values.
+
+The rule detects as well clear-text credentials in <identity> elements, for impersonating the application identity
+in the Windows operating system.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credentials exposure.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<configuration>
+  <system.web>
+    <authentication mode="Forms">
+      <forms protection="All">
+        <credentials passwordFormat="Clear">
+          <user name="foo" password="foo"/> <!-- VIOLATION -->
+        </credentials>
+      </forms>
+    </authentication>
+    <identity impersonate="false" userName="MyDomain\MyUser" password="myPassword"/> <!-- VIOLATION -->
+  </system.web>
+</configuration>]]></example>
+    <repair><![CDATA[<configuration>
+  <system.web>
+    <authentication mode="Forms">
+      <forms>
+        <!-- Only when rule allows it -->
+        <credentials passwordFormat="SHA1">
+          <user name="foo" password="VALOR_SHA1"/>
+        </credentials>
+      </forms>
+    </authentication>
+    <identity impersonate="true"
+      userName="registry:HKLM\Software\AspNetProcess,Name"
+      password="registry:HKLM\Software\AspNetProcess,Pwd" />
+  </system.web>   
+</configuration>]]></repair>
+    <reference><![CDATA[https://msdn.microsoft.com/en-us/library/72wdk8cc(v=vs.100).aspx,https://cwe.mitre.org/data/definitions/259.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:259,CWETOP25:2021:16,OWASP:2021:A7,PCI-DSS:6.5.10]]></security>
+    </normatives>
+    <properties>
+      <property name="acceptHashedPasswords" descname="If true, passwords protected with SHA1/MD5 are allowed" value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.CrossSiteScripting" message="CrossSiteScripting: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')" class="com.optimyth.aspnet.rules.security.CrossSiteScripting" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in page content. An attacker could inject browser script code that is executed in the client browser.
+The end-user is the attacked subject, and the software is the vehicle for the attack. This attack is known as Cross-Site Scripting (XSS).
+
+There are three kinds of XSS:
+* Reflected XSS: Attacker causes victim to supply malicious content to a vulnerable web application, which renders HTML content
+  embedding a malicious script executed in victim's browser.
+  A variation of this is named DOM-based XSS, where the vulnerable software does not generate content depending on user input
+  but include script code that use user-controlled input.
+
+* Persistent XSS: Attacker provides malicious content to the vulnerable application, which is stored somewhere.
+  When stored data is fetched and rendered,
+
+Note: This rule only considers the first case ("Reflected XSS").
+
+When other user access to vulnerable pages that embed without proper neutralization the attacker content,
+script code is executed in the victim's browser.
+
+The script executed in the victim's browser could perform malicious activities, like stealing active authentication tokens
+(sometimes in the form of cookies) and performing operations on a insecure webapp (on behalf of the victim) that trusts
+too much identity artifacts in browser and do not request additional authorization for operations ('Cross-Site Request Forgery attack', CSRF).
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but user browsers generally allow scripting languages
+(e.g. JavaScript) in their browsers (disabling JavaScript severely limits a web application).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XSS vulnerabilities.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<%@ Page Language="C#" %>
+
+<!-- code section -->
+<script runat="server">
+   private void loginButton_Click(object sender, RoutedEventArgs e)
+   {
+      string username = txtUsername.Text; // from user-controlled input
+      string password = txtPassword.Text; // same
+      if ( MyAuth.login(username, password) )
+      {
+        // Set auth cookie and redirect, always use FormsAuthentication.SetAuthCookie
+      }
+      else
+      {
+        // VIOLATION, user-controlled input in username inserted into browser HTML content
+        lblMessage.Text = string.Format( "{0} cannot log", username );
+      }
+   }
+</script>
+
+<!-- Layout -->
+<html>
+   <head>
+      <title>Login</title>
+   </head>
+
+   <body>
+     <!-- case #1: login form with XSS in the event handler -->
+     <form runat="server">
+       <asp:Label ID="lblUsername" runat="server" Font-Size="X-Large" Text="User:"></asp:Label>
+       <asp:TextBox runat="server" ID="txtUsername"></asp:TextBox>
+       <asp:Label ID="lblPassword" runat="server" Text="User:"></asp:Label>
+       <asp:TextBox runat="server" ID="txtPassword" TextMode="Password"></asp:TextBox>
+       <asp:Button ID="loginButton" runat="server" OnClick="loginButton_Click" Text="Log In" />
+       <asp:Label ID="lblMessage" runat="server" Text=""></asp:Label>
+     </form>
+
+     <!-- case #2: persisted XSS in data binding -->
+     <asp:Repeater ID="repFeedback" runat="server" >
+       <ItemTemplate>
+         <!-- VIOLATION on each Eval() call, potential XSS -->
+         <p><asp:Label runat="server" ID="CommentsLabel" Text='<%# Eval("Comments") %>'/>
+         <br /> - <i><asp:Label runat="server" ID="NameLabel" Text='<%# Eval("Name") %>'/>
+         (<asp:Label runat="server" ID="EmailLabel" Text='<%# Eval("Email") %>'/>)</i></p>
+       </ItemTemplate>
+     </asp:Repeater>
+
+     <!-- case #3: an ASP.Net value embedded directly into JavaScript -->
+     <script language="JavaScript">
+       function showMessage() {
+         var message='<%= this.txtUsername.Text %>';
+         var div = document.getElementById('lblMessage');
+         // VIOLATION, reflected XSS
+         div.innerHTML = message;
+       }
+     </script>
+
+   </body>
+</html>]]></example>
+    <repair><![CDATA[<%@ Page Language="C#" %>
+<%@ Import Namespace="System.Web.Security.AntiXss" %>
+
+<!-- code section -->
+<script runat="server">
+   private void loginButton_Click(object sender, RoutedEventArgs e)
+   {
+      string username = txtUsername.Text;
+      string password = txtPassword.Text;
+      if (MyAuth.login(username, password))
+      {
+        // Set auth cookie and redirect, always use FormsAuthentication.SetAuthCookie
+      }
+      else
+      {
+        // FIXED, uses Microsoft's AntiXssEncoder encoding class
+        lblMessage.Text = string.Format( "{0} cannot log", AntiXssEncoder.HtmlEncode(username) );
+      }
+   }
+</script>
+
+<!-- Layout -->
+<html>
+   <head>
+      <title>Login</title>
+   </head>
+
+   <body>
+     <!-- case #1: login form with XSS in the event handler -->
+     <form runat="server">
+       <asp:Label ID="lblUsername" runat="server" Font-Size="X-Large" Text="User:"></asp:Label>
+       <asp:TextBox runat="server" ID="txtUsername"></asp:TextBox>
+       <asp:Label ID="lblPassword" runat="server" Text="User:"></asp:Label>
+       <asp:TextBox runat="server" ID="txtPassword" TextMode="Password"></asp:TextBox>
+       <asp:Button ID="loginButton" runat="server" OnClick="loginButton_Click" Text="Log In"></asp:Button>
+       <asp:Label ID="lblMessage" runat="server" Text=""></asp:Label>
+     </form>
+
+     <!-- case #2: persisted XSS in data binding -->
+     <asp:Repeater ID="repFeedback" runat="server" >
+       <ItemTemplate>
+         <!-- FIXED, AntiXssEncoder.HtmlEncode -->
+         <p><asp:Label runat="server" ID="CommentsLabel" Text='<%# AntiXssEncoder.HtmlEncode(DataBinder.Eval(Container.DataItem, Eval("Comments"))) %>'/>
+         <br /> - <i><asp:Label runat="server" ID="NameLabel" Text='<%# AntiXssEncoder.HtmlEncode(DataBinder.Eval(Container.DataItem, Eval("Name"))) %>'/>
+         (<asp:Label runat="server" ID="EmailLabel" Text='<%# AntiXssEncoder.HtmlEncode(DataBinder.Eval(Container.DataItem, Eval("Email"))) %>'/>)</i></p>
+       </ItemTemplate>
+     </asp:Repeater>
+
+     <!-- case #3: an ASP.Net value embedded directly into JavaScript -->
+     <script language="JavaScript">
+       function showMessage() {
+         // FIXED, System.Web.HttpUtility.JavaScriptStringEncode()
+         var message='<%= HttpUtility.JavaScriptStringEncode( this.txtUsername.Text ) %>';
+         var div = document.getElementById('lblMessage');
+         div.innerHTML = message;
+       }
+     </script>
+
+   </body>
+</html>]]></repair>
+    <reference><![CDATA[https://msdn.microsoft.com/en-us/library/ff649310.aspx,https://lockmedown.com/preventing-xss-in-asp-net-made-easy/,http://cwe.mitre.org/data/definitions/79.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:24]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input)" value="user_input, database_input, file_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.DangerousAppSetting" message="DangerousAppSetting: Dangerous application setting" class="com.optimyth.aspnet.rules.security.DangerousAppSetting" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.3.1,ASVS-v4.0.2:14.1.3,ASVS-v4.0.2:2.5.4,ASVS-v4.0.2:3.4.3,ASVS-v4.0.2:3.4.4,ASVS-v4.0.2:3.4.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[ASP.Net allows configuration of certain application settings in the Web.Config <appSettings> element.
+Certain configuration entries, when set with dangerous values, may open the application to certain attacks.
+The following settings are considered dangerous and are reported as violations for this rule:
+
+- AllowAnonymousImpersonation=true: Related to SharePoint; if incoming request is unauthenticated, the events pipeline
+  will use an anonymous impersonation token. This setting is considered unsafe.
+
+- AllowRelaxedHttpUserName=true: ASP.Net performs no check on client's username when synchronizing the username between
+  ASP.Net and native (IIS) layers.
+
+- AllowRelaxedRelativeUrl=true: ASP.Net login pages will not check if the return URL is outside the hosted application.
+
+- JavaScriptDoNotEncodeAmpersand=true: The defaut built-in Javascript string encoding function will not encode ampersand character,
+  which may open the application to cross-side scripting attacks.
+
+- MaxHttpCollectionKeys=N, with N a value larger than the limit set in the MaxHttpCollectionKeys rule property:
+  This is the limit for the client-provided dictionaries in HttpRequest object (Files, Form, Cookies, QueryString, Headers,
+  ServerVariables). When too big, this increases susceptibility to denial-of-service attacks.
+
+- MaxJsonDeserializerMembers=N, with N a value larger than the limit set in the MaxJsonDeserializerMembers rule property:
+  This is the maximum number of items that could be present in any dictionary deserialized by the JavaScriptSerializer type.
+  When too big, this increases susceptibility to denial-of-service attacks.
+
+- ScriptResourceAllowNonJsFiles=true: The ScriptResource.axd handler can serve static files, with any extension (not only .js),
+  in WebForms pages with the <asp:ScriptReference Path="~/the-file.ext" /> markup. Malicious clients may be able to read
+  sensitive files from the web application.
+
+- UseLegacyEncryption=true: ASP.Net will not sign encrypted payloads (ViewState, FormsAuth cookies, ScriptResource.axd URLs),
+  and cryptographic signatures of such payloads will not be verified. This means that important integrity checks are discarded,
+  which opens the door for certain attacks.
+
+- UseLegacyFormsAuthenticationTicketCompatibility=true: Use old serialization format for FormsAuth tickets.
+  On recent ASP.Net framework versions, the new format provides increased security against different attacks.
+
+- UseLegacyMachineKeyEncryption=true: Payloads encrypted with the Encode API will not be signed, which is unsafe.
+  See UseLegacyEncryption before for the same compatibility switch for other payloads processed by the framework.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<configuration>
+  <system.web>
+    <appSettings>
+      <add key="aspnet:AllowAnonymousImpersonation" value="true"/><!-- VIOLATION -->
+      <add key="aspnet:AllowRelaxedHttpUserName" value="true"/><!-- VIOLATION -->
+      <add key="aspnet:AllowRelaxedRelativeUrl" value="true"/><!-- VIOLATION -->
+      <add key="aspnet:JavaScriptDoNotEncodeAmpersand" value="true"/><!-- VIOLATION -->
+      <add key="aspnet:MaxHttpCollectionKeys" value="1001"/><!-- VIOLATION -->
+      <add key="aspnet:MaxJsonDeserializerMembers" value="1001"/><!-- VIOLATION -->
+      <add key="aspnet:ScriptResourceAllowNonJsFiles" value="true"/><!-- VIOLATION -->
+      <add key="aspnet:UseLegacyEncryption" value="true"/><!-- VIOLATION -->
+      <add key="aspnet:UseLegacyFormsAuthenticationTicketCompatibility" value="true"/><!-- VIOLATION -->
+      <add key="aspnet:UseLegacyMachineKeyEncryption" value="true"/><!-- VIOLATION -->
+    </appSettings>
+  </system.web>
+</configuration>]]></example>
+    <repair><![CDATA[<configuration>
+  <system.web>
+    <appSettings>
+      <add key="aspnet:AllowAnonymousImpersonation" value="false"/>
+      <add key="aspnet:AllowRelaxedHttpUserName" value="false"/>
+      <add key="aspnet:AllowRelaxedRelativeUrl" value="false"/>
+      <add key="aspnet:JavaScriptDoNotEncodeAmpersand" value="false"/>
+      <add key="aspnet:MaxHttpCollectionKeys" value="1000"/>
+      <add key="aspnet:MaxJsonDeserializerMembers" value="1000"/>
+      <add key="aspnet:ScriptResourceAllowNonJsFiles" value="false"/>
+      <add key="aspnet:UseLegacyEncryption" value="false"/>
+      <add key="aspnet:UseLegacyFormsAuthenticationTicketCompatibility" value="false"/>
+      <add key="aspnet:UseLegacyMachineKeyEncryption" value="false"/>
+    </appSettings>
+  </system.web>
+</configuration>]]></repair>
+    <reference><![CDATA[https://msdn.microsoft.com/library/hh975440.aspx]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:16,CWE:863,CWETOP25:2021:38,OWASP:2021:A5,PCI-DSS:6.5.8,WASC:01]]></security>
+    </normatives>
+    <properties>
+      <property name="MaxHttpCollectionKeys" descname="Maximum value allowed for the MaxHttpCollectionKeys setting" value="1000"/>
+      <property name="MaxJsonDeserializerMembers" descname="Maximum value allowed for the MaxJsonDeserializerMembers setting" value="1000"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.DirectoryBrowsing" message="DirectoryBrowsing: Directory Browsing enabled" class="com.optimyth.aspnet.rules.security.DirectoryBrowsing" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:4.3.2,CAPEC:127,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Directory Browsing is a web server feature that displays a web page listing the contents of a server directory,
+when the request URL matches a directory (and there is no default resource for that path).
+
+Directory browsing is disabled by default in Microsoft IIS, but administrators may change the configuration.
+In recent versions of ASP.Net and IIS, directory browsing may be configured in Web.Config with the <directoryBrowse>
+element (inside <system.webServer> element, used to pass configuration from application to IIS).
+
+When there is a default page configured, it is returned instead of a directory listing, if the page exits.
+Please note that default document and directory browsing (along with HTTP protocol and HTTP redirect)
+are not locked in the IIS configuration and could be modified in Web.Config files.
+
+For security reasons, directory browsing is considered a bad practice, as it allows attackers to enumerate
+the contents for ASP.Net web directories, which may contain source code, data files and other useful information.
+
+Unless you have compelling reasons for directory browsing, do not allow it.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<!-- In Web.Config -->
+<configuration>
+  <location path="Cms">
+    <system.webServer>
+      <directoryBrowse enabled="true" /><!-- VIOLATION -->
+    </system.webServer>
+  </location>
+
+  <system.webServer>
+    <directoryBrowse enabled="true" showFlags="Date,Time,Extension,Size" /><!-- VIOLATION -->
+  </system.webServer>
+</configuration>]]></example>
+    <repair><![CDATA[<!-- In Web.Config -->
+<configuration>
+  <location path="Cms">
+    <system.webServer>
+      <directoryBrowse enabled="false" /><!-- FIXED -->
+    </system.webServer>
+  </location>
+
+  <system.webServer>
+    <directoryBrowse enabled="false"/><!-- FIXED -->
+  </system.webServer>
+</configuration>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/548.html,https://cwe.mitre.org/data/definitions/16.html,https://technet.microsoft.com/en-us/library/cc731109(v=ws.10).aspx]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:548,OWASP:2021:A5,WASC:16]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.EnableCustomErrorPage" message="EnableCustomErrorPage: ASP.NET Misconfiguration: Missing Custom Error Page" class="com.optimyth.aspnet.rules.maintainability.EnableCustomErrorPage" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.1,CWEScope:Confidentiality,error-handling]]></tags>
+    <description><![CDATA[Register a custom error page by default helps users to understand better errors reported by the application;
+when the error page is properly designed, detailed technical information about the error should not be displayed to the end-users,
+that a potential attacker may leverage to mount attacks.
+
+Otherwise, for unchecked errors, the end-user will be exposed to the default "Yellow Screen of Death" (YSOD), showing
+excessive detail (full stack trace, and even source code fragments).]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Error handling and fault isolation</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid leaking detailed system technical information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<!-- The omission of this configuration is also considered as violation -->
+<customErrors mode="Off"/>  <!-- VIOLATION -->]]></example>
+    <repair><![CDATA[<customErrors mode="On" defaultRedirect="ErrorPage.aspx" />]]></repair>
+    <reference><![CDATA[https://www.troyhunt.com/67-of-aspnet-websites-have-serious/,https://cwe.mitre.org/data/definitions/209.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:209,OWASP:2021:A4,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.EnableViewStateMac" message="EnableViewStateMac: Do not set EnableViewStateMac=false" class="com.optimyth.aspnet.rules.security.EnableViewStateMac" technology="ASPNET" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,essential]]></tags>
+    <description><![CDATA[With Web Forms, the integrity of the ViewState could be procected with a message-authentication code (MAC), configured with the
+EnableViewStateMac attribute (enabled by default).
+
+This configuration could be set in the @Page directive, or in the <pages> element in Web.Config files.
+
+EnableViewStateMac=true is absolutely critical for application security, even if ViewState is not used.
+The view state MAC helps ensure the security of other ASP.NET functions, in addition to view state.
+
+Since ASP.Net 4.5.2, it is not allowed to change the default value (true) for this attribute.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoids an attacker to leverage this setting for uploading and executing arbitrary code on the web server.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<%@ Page language="C#" EnableViewStateMac="false" %> <!-- VIOLATION -->]]></example>
+    <repair><![CDATA[<!-- Set the attribute EnableViewStateMac="true"; or remove it, because the default value is true. -->
+<%@ Page language="C#" EnableViewStateMac="true" %> <!-- OK -->]]></repair>
+    <reference><![CDATA[https://blogs.msdn.microsoft.com/webdev/2014/09/09/farewell-enableviewstatemac/,https://msdn.microsoft.com/en-us/library/system.web.ui.page.enableviewstatemac(v=vs.110).aspx]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:642,OWASP:2021:A5,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.FormsAuthenticacionTimeout" message="FormsAuthenticacionTimeout: Set expiration timeout for authentication cookies" class="com.optimyth.aspnet.rules.security.FormsAuthenticacionTimeout" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.8.1,ASVS-v4.0.2:2.8.6,ASVS-v4.0.2:3.3.1,ASVS-v4.0.2:3.3.2,ASVS-v4.0.2:3.3.3,ASVS-v4.0.2:3.3.4,ASVS-v4.0.2:3.6.1,ASVS-v4.0.2:3.6.2,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[The longer the authentication interval is, the greater the time an atacker has to try compromising the user authenticated session.
+
+In ASP.Net applications, a custom form based authentication can be configured using the <forms> element.
+It has an optional attribute, timeout, where an expiration timeout in minutes can be specified. After that timeout,
+the authentication cookie expires. The default value for timeout, when not provided, is 30 minutes.
+
+The slidingExpiration attribute configures how the active time windows for session timeout is computed, either since
+last request (slidingExpiration=True) or since successful authentication (slidingExpiration=False). False is the
+default value for this option since ASP.Net 2. Setting slidingExpiration to False is recommended in general, and
+particularly when session token is sent out of encrypted TLS/SSL transport (option requireSSL=False).
+
+This rule checks that timeout does not exceed a parametrizable threshold. Default parameter value is 30 minutes.
+
+Additionally, if the 'forceSlidingExpiration' rule property is active, the rule emits a violation when
+slidingExpiration attribute is not set explicitly to False.]]></description>
+    <priority>3</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Minimize the time period an attacker can try comprimising the token session.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<configuration>
+  <system.web>
+    <authentication mode="Forms">
+      <!-- VIOLATION - timeout attribute exceeds default threshold -->
+      <forms timeout="120" requireSSL="true"/>
+    </authentication> 
+  </system.web>
+</configuration>]]></example>
+    <repair><![CDATA[<configuration>
+  <system.web>
+    <authentication mode="Forms">
+      <!-- OK - timeout attribute lower than default threshold -->
+      <forms timeout="10" requireSSL="true"/>
+    </authentication> 
+  </system.web>
+</configuration>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/613.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:613,CWE:807,OWASP:2021:A7,PCI-DSS:6.5.8,WASC:24,WASC:47]]></security>
+    </normatives>
+    <properties>
+      <property name="threshold" descname="Maximum threshold of timeout value." value="30"/>
+      <property name="forceSlidingExpiration" value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.HeaderValidationMisconfiguration" message="HeaderValidationMisconfiguration: Unvalidated data in HTTP response header ('HTTP Response Splitting')" class="com.optimyth.aspnet.rules.security.HeaderValidationMisconfiguration" technology="ASPNET" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Integrity]]></tags>
+    <description><![CDATA[An in-depth HTTP headers validation helps to prevent attacks based on headers manipulation, such as HTTP Response Splitting.
+
+In ASP .NET framework two configurations related to HTTP header validation can be set up in Web.config file:
+
+- Ignore HTTP headers parsing errors (useUnsafeHeaderParsing attribute of httpWebRequest element with true value).
+- Diable HTTP headers verification (enableHeaderChecking attribute of httpRuntime element with false value).
+
+This rule emits a violation when finds any of these configurations.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Reduce exploitability of HTTP headers related flaws.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<configuration>
+  <system.net>
+    <settings>
+      <httpWebRequest useUnsafeHeaderParsing="true"/> <!-- VIOLATION -->
+    </settings>
+  </system.net>
+  <system.web>
+    <httpRuntime enableHeaderChecking="false"/> <!-- VIOLATION -->
+  </system.web>
+</configuration>]]></example>
+    <repair><![CDATA[<configuration>
+  <system.net>
+    <settings>
+      <httpWebRequest/>
+    </settings>
+  </system.net>
+  <system.web>
+    <httpRuntime/>
+  </system.web>
+</configuration>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/113.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:113,OWASP:2021:A3,PCI-DSS:6.5.10]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.HTTPVerbTampering" message="HTTPVerbTampering: Misconfiguration in authorization rules allowing HTTP Verb Tampering" class="com.optimyth.aspnet.rules.security.HTTPVerbTampering" technology="ASPNET" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,essential]]></tags>
+    <description><![CDATA[Security constraints (configured in allow/deny rules under <authorization> elements) allow more access than intended.
+
+This rule emits a violation when an authorization element allows restricted access to certain users or roles,
+but apply a <deny> rule to all users, without forbidding all verbs.
+
+Please note that the default authorization constraint allows any verb to any user.
+
+Note: .Net framework (with the underlying web server) allows HTTP verbs either configured under
+<system.webServer><handlers><add> elements; typically the default HTTP verbs are GET, POST, HEAD and DEBUG.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<configuration>
+  <location path="admin">
+    <system.web>
+      <!-- VIOLATION, HEAD or DEBUG verbs allowed by any user -->
+      <authorization>
+        <allow roles="Users" verbs="GET,POST" />
+        <deny users="*" verbs="GET,POST" />
+      </authorization>
+    </system.web>
+  </location>
+</configuration>]]></example>
+    <repair><![CDATA[<configuration>
+  <location path="admin">
+    <system.web>
+      <authorization>
+        <allow roles="Users" verbs="GET,POST" />
+        <deny users="*" /><!-- FIXED -->
+      </authorization>
+    </system.web>
+  </location>
+</configuration>]]></repair>
+    <reference><![CDATA[https://software-security.sans.org/blog/2016/01/06/http-verb-tampering-in-asp-net]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:288,OWASP:2021:A1,PCI-DSS:6.5.10,WASC:15]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.PathRelativeStylesheetImport" message="PathRelativeStylesheetImport: Path-Relative Stylesheet Import." class="com.optimyth.aspnet.rules.security.PathRelativeStylesheetImport" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:AccessControl,CWEScope:Availability,CWEScope:Integrity]]></tags>
+    <description><![CDATA[A Path-Relative Stylesheet Import (PRSSI) vulnerability occurs when a web application uses relative URLs for importing
+CSS stylesheets. By abusing the path handling features of certain web languages and frameworks, an attacker might
+perform cross-site scripting injection.
+
+Imagine that a vulnerable page has a <link rel='stylesheet' href='style.css'> for importing a stylesheet.
+
+An attacker may provide an extra path following the vulnerable HTML page URL, so the same page could be loaded a second time
+in the context of the link, and the browser will try to parse it as a CSS stylesheet.
+
+When the browser renders the page in quirks mode (either because of no DOCTYPE, or an old one, in the page; or
+because the vulnerable page, without anti-framing measures, is loaded through iframes), a resource with invalid
+content-type for a CSS (e.g. text/html) will be accepted. If the attacker can force the page to reflect content
+he controls (e.g. for URL parameters or from session-stored data), he/she may succeed with the victim's browser
+executing malicious CSS code. For example, @import url(//evil.com), using CSS selectors to steal CSRF tokens,
+executing JavaScript code via expression() function, etc.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<%@ Page Title="My page" Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true"
+    CodeBehind="MyPage.aspx.cs" %>
+
+<asp:Content ID="BodyContent" runat="server" ContentPlaceHolderID="MainContent">
+  <!-- VIOLATION, relative path to CSS -->
+  <link href="styles/theme/print.css" rel="stylesheet" type="text/css"/>
+</asp:Content>]]></example>
+    <repair><![CDATA[<%@ Page Title="My page" Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true"
+    CodeBehind="MyPage.aspx.cs" %>
+
+<asp:Content ID="BodyContent" runat="server" ContentPlaceHolderID="MainContent">
+  <!-- FIXED, the server will render a non-relative path to the browser -->
+  <link runat="server" href="~/styles/theme/print.css" rel="stylesheet" type="text/css"/>
+</asp:Content>]]></repair>
+    <reference><![CDATA[https://portswigger.net/research/detecting-and-exploiting-path-relative-stylesheet-import-prssi-vulnerabilities,https://owasp.org/www-pdf-archive//OWASP-Ionut-Popescu-Less-Known-Web-Application-Vulnerabilities-Stripped.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.7,WASC:08]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.PersistSecurityInfoTrue" message="PersistSecurityInfoTrue: Persist Security Info enabled in connection strings" class="com.optimyth.aspnet.rules.security.PersistSecurityInfoTrue" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.3,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[The default value for Persist Security Info is false; we recommend using this default in all connection strings.
+
+Setting Persist Security Info to true or yes allows security-sensitive information, including the user ID and password,
+to be obtained from a connection after it has been opened. When Persist Security Info is set to false or no,
+security information is discarded after it is used to open the connection, ensuring that an untrusted source
+does not have access to security-sensitive information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <connectionStrings>
+    <clear />
+    <!-- VIOLATION, Persist Security Info is enabled -->
+    <add name="ClearText"
+         connectionString="User ID=sa;Password=1234;Initial Catalog=AdventureWorks;Server=MySqlServer;Persist Security Info=True"
+         providerName="System.Data.SqlClient"/>
+  </connectionStrings>
+</configuration>]]></example>
+    <repair><![CDATA[<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <connectionStrings>
+    <clear />
+    <!-- FIXED, Persist Security Info deactivated -->
+    <add name="ClearText"
+         connectionString="User ID=sa;Password=1234;Initial Catalog=AdventureWorks;Server=MySqlServer;Persist Security Info=False"
+         providerName="System.Data.SqlClient"/>
+  </connectionStrings>
+</configuration>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/522.html,https://msdn.microsoft.com/en-us/library/89211k9b.aspx]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:522,CWETOP25:2021:21,OWASP:2021:A4]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.PreventMIMESniffing" message="PreventMIMESniffing: Prevent MIME sniffing" class="com.optimyth.aspnet.rules.security.PreventMIMESniffing" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.12.2,CAPEC:269,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[MIME sniffing is a browser feature, mainly of Internet Explorer, that attempts to determine the correct content type of download files.
+
+By confusing the MIME sniffing algorithm, the browser can be manipulated into interpreting data in a way that allows an attacker to carry out a cross site scripting.
+
+Microsoft introduced a header to disable MIME sniffing in IE >= 8, X-Content-Type-Options.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent MIME sniffing attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<configuration>
+<configuration>
+   <system.webServer>
+      <httpProtocol>
+         <customHeaders>
+         </customHeaders>  <!--VIOLATION - missing X-Content-Type-Options header -->
+      </httpProtocol>
+   </system.webServer>
+</configuration>]]></example>
+    <repair><![CDATA[<configuration>
+<configuration>
+   <system.webServer>
+      <httpProtocol>
+         <customHeaders>
+            <add name="X-Content-Type-Options" value="nosniff" />  <!-- OK -->
+         </customHeaders>
+      </httpProtocol>
+   </system.webServer>
+</configuration>]]></repair>
+    <reference><![CDATA[https://www.veracode.com/blog/2014/03/guidelines-for-setting-security-headers,https://www.owasp.org/index.php/OWASP_Secure_Headers_Project#tab=Headers]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:646,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:24]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.ReDoSInRegularExpressionValidator" message="ReDoSInRegularExpressionValidator: Regular expression in RegularExpressionValidator may be used for denial of service" class="com.optimyth.aspnet.rules.security.ReDoSInRegularExpressionValidator" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.1.1,CWEScope:Access-Control,ReDoS,denial-of-service]]></tags>
+    <description><![CDATA[Regular expressions engine in ASP.Net is built over a non-deterministic Finite Automaton (NFA). It uses backtracking and,
+although the engine can quickly confirm a positive match, confirming a negative match can take much more longer.
+
+RegularExpressionValidator control, typically used for input validation, could lead to a denial-of-service attack
+(named "regular expression denial-of-service" or ReDoS for short), when the regular expression contains repetition patterns
+that could lead to 'catastrophic backtracking': An attacker may provide crafted input that, when tried for matching against
+the regular expression for negative matching, lead to exponential time increase with the size of the input.
+
+Such regular expressions are named 'evil' for the opportunities for attacks to availability they open.
+
+Since ASP.Net 4.5, regular expressions could be configured with a timeout that could mitigate the problem, even
+when configured with 'evil' regular expressions.
+
+The rule detects RegularExpressionValidator controls (without an explicit timeout) containing potentially 'evil' regular expressions.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<@ Page Title="Change Password" Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true"
+    CodeBehind="ChangePassword.aspx.cs" Inherits="WebSite.Account.ChangePassword" %>
+  <!-- more code -->
+  <asp:TextBox ID="NewPassword" runat="server" CssClass="passwordEntry" TextMode="Password"></asp:TextBox>
+  <!-- VIOLATION, evil regex -->
+  <asp:RegularExpressionValidator ID="NewPasswordRequired" runat="server" ControlToValidate="NewPassword"
+       ValidationExpression="(?!^[0-9]*$)(?!^[a-zA-Z]*$)^([a-zA-Z0-9]+){8,10}"
+       CssClass="failureNotification" ErrorMessage="New Password is required." ToolTip="New Password is required."
+       ValidationGroup="ChangeUserPasswordValidationGroup">*</asp:RegularExpressionValidator>]]></example>
+    <repair><![CDATA[<!-- Option #1 (recommended) - use a safe regex -->
+  <asp:RegularExpressionValidator ID="NewPasswordRequired" runat="server" ControlToValidate="NewPassword"
+       ValidationExpression="(?!^[0-9]*$)(?!^[a-zA-Z]*$)^[a-zA-Z0-9]{8,10}"
+       CssClass="failureNotification" ErrorMessage="New Password is required." ToolTip="New Password is required."
+       ValidationGroup="ChangeUserPasswordValidationGroup">*</asp:RegularExpressionValidator>
+
+<!-- Option #2 (mitigation) - add an explicit timeout (MatchTimeout, milliseconds) -->
+  <asp:RegularExpressionValidator ID="NewPasswordRequired" runat="server" ControlToValidate="NewPassword"
+       ValidationExpression="(?!^[0-9]*$)(?!^[a-zA-Z]*$)^([a-zA-Z0-9]+){8,10}" MatchTimeout="200"
+       CssClass="failureNotification" ErrorMessage="New Password is required." ToolTip="New Password is required."
+       ValidationGroup="ChangeUserPasswordValidationGroup">*</asp:RegularExpressionValidator>]]></repair>
+    <reference><![CDATA[https://msdn.microsoft.com/nl-nl/magazine/ff646973(en-us).aspx,https://cwe.mitre.org/data/definitions/400.html,https://msdn.microsoft.com/en-us/library/gg578045.aspx,https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:400,CWETOP25:2021:27,OWASP:2004:A9]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.ServiceMetadataVisibility" message="ServiceMetadataVisibility: Service metadata exposure" class="com.optimyth.aspnet.rules.security.ServiceMetadataVisibility" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Providing public detailed information about every funtion and parameters of a web service makes easier
+for an attacker a malicious misuse of the service.
+
+In order to facilitate development of clients for werb services, ASP .NET framework can generate automatically
+documentation with a detailed description of operations and parameters of web services.
+In a production environment it is recommended disabling this documentation.
+
+This rule emits a violation if Documentation protocol is enabled in Web.config file explicitly, or if there are
+no protocols specified - by default, Documentation protocol is enabled.]]></description>
+    <priority>3</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid web services detailed information exposure.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<configuration>
+  <system.web>
+    <webServices>
+      <protocols>
+        <add name="HttpSoap"/>
+        <add name="HttpPost"/>
+        <add name="HttpGet"/>
+        <add name="Documentation"/>  <!-- VIOLATION -->
+      </protocols>
+    </webServices>
+  </system.web>
+</configuration>]]></example>
+    <repair><![CDATA[<configuration>
+  <system.web>
+    <webServices>
+      <protocols>
+        <add name="HttpSoap"/>
+        <add name="HttpPost"/>
+        <add name="HttpGet"/>
+        <remove name="Documentation"/>  <!-- OK -->
+      </protocols>
+    </webServices>
+  </system.web>
+</configuration>]]></repair>
+    <reference><![CDATA[https://support.microsoft.com/en-us/kb/815150]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:200,CWETOP25:2021:20,OWASP:2021:A1,PCI-DSS:6.5.5]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.SessionHijackingMisconfiguration" message="SessionHijackingMisconfiguration: A misconfiguration makes easier performing Session hijacking attacks" class="com.optimyth.aspnet.rules.security.SessionHijackingMisconfiguration" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.3.1,ASVS-v4.0.2:14.1.3,ASVS-v4.0.2:2.5.4,ASVS-v4.0.2:3.4.3,ASVS-v4.0.2:3.4.4,ASVS-v4.0.2:3.4.5,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[A Session Hijacking attack (or, alternatively, a Session Fixation attack) allows attackers to get a valid session in a web site,
+and after that, access the web site as the identity targeted by the attacker.
+
+The problem with cookieless modes is that "identity theft" could be easier when the authentication token (or session ID) is
+written in the URL: URLs are stored in web logs; the URL could be sent in the Referer header by the user-agent when following outgoing links;
+the user may share the (non public!) URL with another user or third-party, without knowing that current identity
+is written in the URL; and even a screen shot may show the identity token.
+
+ASP.Net framework provides independent facilities for session and authentication management. When used, a correct configuration
+reduce risk of Session hijacking attacks for web application users. In particular, with session cookie enabled, it should be
+secured (forcing "Secure" -disabled by default- and "HttpOnly" -enabled by default- attributes against network sniffing and JavaScript theft,
+for example with an Cross-Site scripting attack, and having a short session expiration timeframe).
+
+This rules checks that:
+- If web application uses ASP.Net framework built-in session management, it is configured to force use of cookies for session state,
+  when supported by device.
+
+- If web application uses ASP.Net framework built-in authentication in Forms mode, it is configured to force use of cookies
+  for authentication token, when supported by device.
+
+Note: cookieless="AutoDetect" and cookieless="UseDeviceProfile" are allowed, but they make session/authetication tokens vulnerable
+against session hijacking on browsers without cookies support, or with cookies disabled.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent Session Hijacking attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<configuration>
+  <system.web>
+    <sessionState cookieless="UseUri"/>  <!-- VIOLATION - cookieless attribute with false or UseUri value --> 
+    <authentication mode="Forms">
+      <forms cookieless="false"/>  <!-- VIOLATION - cookieless attribute with false or UseUri value -->
+    </authentication>  
+  </system.web>   
+</configuration>]]></example>
+    <repair><![CDATA[<configuration>
+  <system.web>
+    <sessionState cookieless="UseDeviceProfile"/>  <!-- OK - use of cookies, if supported by browser --> 
+    <authentication mode="Forms">
+      <forms cookieless="UseDeviceProfile"/>  <!-- OK - use of cookies, if supported by browser -->
+    </authentication>  
+  </system.web>   
+</configuration>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/807.html,http://software-security.sans.org/blog/2009/06/24/session-attacks-and-aspnet-part-2,http://security.stackexchange.com/questions/17719/what-risks-do-cookieless-sessions-have-what-are-the-mitigations,https://www.troyhunt.com/owasp-top-10-for-net-developers-part-3/,https://cwe.mitre.org/data/def]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:16,CWE:287,CWE:384,CWETOP25:2021:14,OWASP:2021:A7,PCI-DSS:6.5.8,WASC:24]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.SpecifyIntegrityAttribute" message="SpecifyIntegrityAttribute: Specify a integrity attribute on the &lt;script&gt; and &lt;link&gt; elements" class="com.optimyth.aspnet.rules.security.SpecifyIntegrityAttribute" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.14.2,HTML5]]></tags>
+    <description><![CDATA[The "integrity" attribute on <script> and <link> elements (pointing to cross-origin resources) must be specified,
+so the browser can check the integrity of the linked resources, avoiding to use scripts or CSS files with potentially malicious code.
+
+The "integrity" attribute is defined in the Sub-Resource Integrity (SRI) W3C standard.
+The browser automatically will verify the hash of the fetched resource (typically downloaded from a remote content-delivery network or CDN).
+To avoid potential compromise of the CDN, SRI provides a simple hash verification (for any attacker is extermely hard to perform
+any modification on the resource contents, while keeping the same cryptographic hash).
+
+The rule checks for <script src="URL"> or <link rel="stylesheet" href="URL"> elements, without integrity attribute,
+referencing a resource matching the unsafeURLs pattern (any non-local, cross-origin URL, by default).]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[To check the script integrity improves the security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<%@ Page Title="My page" Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true"
+    CodeBehind="MyPage.aspx.cs" %>
+
+<!-- VIOLATION -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<!-- VIOLATION -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">]]></example>
+    <repair><![CDATA[<%@ Page Title="My page" Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true"
+    CodeBehind="MyPage.aspx.cs" %>
+
+<!-- FIXED. integrity attribute set with the expected content hash -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"
+        integrity="sha256-ivk71nXhz9nsyFDoYoGf2sbjrR9ddh+XDkCcfZxjvcM="
+        crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"
+      integrity="sha256-8EtRe6XWoFEEhWiaPkLawAD1FkD9cbmGgEy6F46uQqU="
+      crossorigin="anonymous">]]></repair>
+    <reference><![CDATA[https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity,https://scotthelme.co.uk/subresource-integrity/,https://www.w3.org/TR/SRI/],https://scotthelme.co.uk/protect-site-from-cryptojacking-csp-sri/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:494,OWASP:2021:A8,WASC:15]]></security>
+    </normatives>
+    <properties>
+      <property name="unsafeURLs" descname="Regular expression for resource URLs that should need integrity protection (default: &quot;^https?://&quot;)." value="^https?://"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.TargetBlankVulnerability" message="TargetBlankVulnerability: Improper Neutralization of links to external sites" class="com.optimyth.aspnet.rules.security.TargetBlankVulnerability" technology="ASPNET" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When an user clicks a link to an external site, and that link has the target="_blank" attribute,
+then the new site will be opened into a new tab or window, but will share its process with the original tab or window.
+
+The window.opener object stores information from the original window, so if a malicious attacker achieves to run code into
+the target site then he/she might read or modify the properties included into the window.opener object, even when the
+original and the target sites have different origin.
+
+After that, the attacker might change the original windows for a malicious copy of it, where the user can be tricked
+to login, or to input his/her bank account information or some other sensitive information.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid malicious redirections to sites controlled by the attacker]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<%@ Page Title="Change Password" Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true"
+    CodeBehind="ChangePassword.aspx.cs" Inherits="WebSite.Account.ChangePassword" %>
+
+<asp:Content ID="BodyContent" runat="server" ContentPlaceHolderID="MainContent">
+  <a href="http://attacker-site.example.com/useful-page.html" target="_blank">    <!-- VIOLATION -->
+</asp:Content>]]></example>
+    <repair><![CDATA[<%@ Page Title="Change Password" Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true"
+    CodeBehind="ChangePassword.aspx.cs" Inherits="WebSite.Account.ChangePassword" %>
+
+<asp:Content ID="BodyContent" runat="server" ContentPlaceHolderID="MainContent">
+  <a href="http://attacker-site.example.com/useful-page.html" target="_blank" rel="noopener noreferrer">
+</asp:Content>]]></repair>
+    <reference><![CDATA[https://owasp.org/www-community/attacks/Reverse_Tabnabbing,https://cwe.mitre.org/data/definitions/1022.html,https://dev.to/ben/the-targetblank-vulnerability-by-example,https://mathiasbynens.github.io/rel-noopener/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:1022,OWASP:2021:A5]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedHref" descname="Separated comma list of allowed href values which, when used, exclude that element from
+            being reported" value="#,javascript:void(0);"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.TooBroadCORSPolicy" message="TooBroadCORSPolicy: CORS policy (Cross-Origin Resource Sharing) too broad" class="com.optimyth.aspnet.rules.security.TooBroadCORSPolicy" technology="ASPNET" active="true">
+    <tags><![CDATA[CORS,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[SOP (Same origin policy) mechanism restricts access to content loaded from a web site other than current document origin.
+It is a powerful security feature when preventing attacks through malicious scripts, as Cross site scripting attacks.
+
+In HTML5, SOP feature can be disabled by specifying a CORS (Cross-origin resource sharing) policy using the new HTTP header
+Access-Control-Allow-Origin. This new header provides flexibility but must be used carefully. With a too broad CORS policy,
+exploitability of security flaws increases notably.
+
+This rule emits violation when the new HTTP header Access-Control-Allow-Origin has one ot the too-permissive values "*" or "null",
+in Web.config file.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid a too broad CORS policy.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<configuration>
+  <system.webServer>
+    <httpProtocol>
+      <customHeaders>
+        <add name="Access-Control-Allow-Origin" value="*" /> <!-- VIOLATION -->
+      </customHeaders>
+    </httpProtocol>
+  </system.webServer>
+</configuration>]]></example>
+    <repair><![CDATA[<configuration>
+  <system.webServer>
+    <httpProtocol>
+      <customHeaders>
+        <add name="Access-Control-Allow-Origin" value="http://www.myothersite.com" /> <!-- OK -->
+      </customHeaders>
+    </httpProtocol>
+  </system.webServer>
+</configuration>]]></repair>
+    <reference><![CDATA[https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties,https://enable-cors.org/server_iis7.html,http://cwe.mitre.org/data/definitions/942.html,https://w3c.github.io/webappsec-cors-for-developers]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:942,OWASP:2021:A5,PCI-DSS:6.5.10,WASC:15]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.TraceEnabled" message="TraceEnabled: Trace information enabled and remotely accessible" class="com.optimyth.aspnet.rules.security.TraceEnabled" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.2,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[When trace information is enabled, each page request gathers information that can be accesed later using trace viewer.
+If remote access is also allowed, an attacker can view trace information by browsing to trace.axd.
+
+Trace information provides lots of information about the application and the environment. Such information can be used
+in multiple ways by a malicious user, for performing an attack.
+
+Trace configuration is set up with <trace> element. This rule emits a violation if trace information is enabled
+(attribute enabled=true attribute in <trace> element) and remotely accessible (localOnly=false attribute in <trace> element).
+
+In addition, the trace attribute in @Page directive should not be set to true.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid exposure of system information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<configuration>
+  <system.web>
+    <trace enabled="true" localOnly="false"/>  <!-- VIOLATION -->
+  </system.web>
+</configuration>]]></example>
+    <repair><![CDATA[<configuration>
+  <system.web>
+    <trace enabled="false" localOnly="true"/>  <!-- OK -->
+  </system.web>
+</configuration>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/497.html,https://cwe.mitre.org/data/definitions/16.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:497,OWASP:2021:A1,PCI-DSS:6.5.5]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.UnprotectedRolesInCookies" message="UnprotectedRolesInCookies: Unprotected roles in cookies" class="com.optimyth.aspnet.rules.security.UnprotectedRolesInCookies" technology="ASPNET" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[ASP.Net v2 added a new role manager feature for managing roles in a standard way.
+That feature allows to cache roles in a client-side cookie ("roles cookie").
+If the roles cookie is not protected, an attacker may capture it by sniffing traffic
+(when not sent under SSL), or by reading (or even modifying) cookies stored in a shared browser.
+
+The framework added (configurable) mechanisms to protect the roles cookie.
+This rule checks, when roles cached in cookie, that the roles cookie is adequately
+protected, as documented in the "Security Guidelines: ASP.NET 2.0", section "Protect your authorization cookie".]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<system.web>
+  <!-- VIOLATION: roles cookie not properly protected: cookie in clear, persistent, too-long timeout -->
+  <roleManager
+    enabled="true" cacheRolesInCookie="true"
+    cookieProtection="None"
+    createPersistentCookie="true"
+    cookieTimeout="3000" cookieSlidingExpiration="true"
+    cookieRequireSSL="false">
+    <!-- ... -->
+  </roleManager>
+</system.web>]]></example>
+    <repair><![CDATA[<system.web>
+  <!-- FIXED -->
+  <roleManager
+    enabled="true" cacheRolesInCookie="true"
+    cookieProtection="All"
+    createPersistentCookie="false"
+    cookieTimeout="30" cookieSlidingExpiration="false"
+    cookieRequireSSL="false">
+    <!-- force to use SSL only possible if authenticated users always under HTTPS -->
+  </roleManager>
+</system.web>]]></repair>
+    <reference><![CDATA[https://msdn.microsoft.com/library/ff649487.aspx]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:302,OWASP:2021:A1,PCI-DSS:6.5.4,WASC:15]]></security>
+    </normatives>
+    <properties>
+      <property name="cookieSlidingExpirationChecked" descname="If true, cookieSlidingExpiration must be false." value="true"/>
+      <property name="cookieProtection" descname="Comma-separated list of allowed values for cookieProtection: All, Encryption, Validation, or None." value="All"/>
+      <property name="createPersistentCookieChecked" descname="If true, createPersistentCookie must be false." value="true"/>
+      <property name="cookieTimeoutMax" descname="Max timeout (in minutes) for cookie expiration." value="30"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.WCFAuditMisconfiguration" message="WCFAuditMisconfiguration: Audit of security events misconfiguration in WCF" class="com.optimyth.aspnet.rules.security.WCFAuditMisconfiguration" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:7.1.3,ASVS-v4.0.2:7.1.4,ASVS-v4.0.2:7.2.1,CWEScope:Non-Repudiation,WCF]]></tags>
+    <description><![CDATA[Audit of security events can help to detect an attack or debug security related problems.
+
+WCF provides detailed logging and auditing functionality for security events. It can be configured with the serviceSecurityAudit element in Web.config.
+
+This rule emits a violation if serviceSecurityAudit element in any of these situations:
+
+- Failures when writing auditing events are supressed (suppressAuditFailure attribute).
+- Missing logging of failed or successful events.
+
+In order to avoid false positives when audit is disabled because it is not useful, the rule does not emit a violation when serviceSecurityAudit element not found.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Attack detection and trace.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<configuration>
+<configuration>
+  <system.serviceModel>
+    <behaviors>
+       <serviceBehaviors>
+          <behavior name="MyBehavior">
+             <serviceSecurityAudit  suppressAuditFailure="true"   <!--  VIOLATION - just one violation reporting three misconfigurations -->
+                 serviceAuthorizationAuditLevel="None"
+                 messageAuthenticationAuditLevel="Failure" />
+          </behavior>
+       </serviceBehaviors>
+    </behaviors>
+  </system.serviceModel>
+</configuration>]]></example>
+    <repair><![CDATA[<configuration>
+<configuration>
+  <system.serviceModel>
+    <behaviors>
+       <serviceBehaviors>
+          <behavior name="MyBehavior">
+             <serviceSecurityAudit  suppressAuditFailure="false"         <!-- OK -->
+                 serviceAuthorizationAuditLevel="SuccessAndFailure"      <!-- OK -->
+                 messageAuthenticationAuditLevel="SuccessAndFailure" />  <!-- OK -->
+          </behavior>
+       </serviceBehaviors>
+    </behaviors>
+  </system.serviceModel>
+</configuration>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/388.html,https://cwe.mitre.org/data/definitions/778.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:388,CWE:778,OWASP:2021:A9,PCI-DSS:6.5.5]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.WCFAvoidEnabledDebug" message="WCFAvoidEnabledDebug: Avoid enabling WCF debug information" class="com.optimyth.aspnet.rules.security.WCFAvoidEnabledDebug" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.2,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,WCF]]></tags>
+    <description><![CDATA[Returning exception detailed information to clients can expose sensitive information to attackers.
+
+For WCF services, serviceDebug element of Web.config file allows configuring debug information.
+
+The includeExceptionDetailInFaults attribute, when true, enables the flow of managed exception information to the client.
+
+Its default value is false, and it should never have true value in a production environment.]]></description>
+    <priority>3</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid exposure of sensitive information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<configuration>
+<configuration>
+  <system.serviceModel>
+    <behaviors>
+      <serviceBehaviors>
+        <behavior name="MyBehavior">
+          <serviceDebug includeExceptionDetailInFaults="True"/>   <!-- VIOLATION -->
+        </behavior>
+      </serviceBehaviors>
+    </behaviors>
+  </system.serviceModel>
+</configuration>]]></example>
+    <repair><![CDATA[<configuration>
+<configuration>
+  <system.serviceModel>
+    <behaviors>
+      <serviceBehaviors>
+        <behavior name="MyBehavior">
+          <serviceDebug/>   <!-- OK -->
+        </behavior>
+      </serviceBehaviors>
+    </behaviors>
+  </system.serviceModel>
+</configuration>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/489.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:497,OWASP:2021:A1,PCI-DSS:6.5.5]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ASPNET.WCFTransportSecurity" message="WCFTransportSecurity: Do not use transport security mode in WCF" class="com.optimyth.aspnet.rules.security.WCFTransportSecurity" technology="ASPNET" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.4,ASVS-v4.0.2:13.4.2,ASVS-v4.0.2:4.1.3,ASVS-v4.0.2:4.1.5,ASVS-v4.0.2:7.2.2,ASVS-v4.0.2:8.3.3,ASVS-v4.0.2:8.3.8,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity,WCF]]></tags>
+    <description><![CDATA[WCF offers three different security modes:
+
+- Transport security: the communication layer is responsible for protecting the messages.
+- Message security: each message is signed and/or encrypted before it reaches the transport layer using the WS-Security specification.
+- Mixed mode: the integrity and encryption are provided by the transport layer, and authentication is taken care of at the message layer.
+
+Transport security mode should be avoided, it is vulnerable to a man-in-the-middle-attack and, it totally depends on underlying transport.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve authorization checks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<configuration>
+<configuration>
+  <system.serviceModel>
+    <bindings>
+      <wsHttpBinding>
+        <binding name="myBinding">
+          <security mode="Transport">   <!-- VIOLATION -->
+            <transport clientCredentialType="None"/>
+          </security>
+        </binding>
+      </wsHttpBinding>
+    </bindings>
+  </system.serviceModel>
+</configuration>]]></example>
+    <repair><![CDATA[<configuration>
+<configuration>
+  <system.serviceModel>
+    <bindings>
+      <wsHttpBinding>
+        <binding name="myBinding">
+          <security mode="TransportWithMessageCredential">   <!-- OK -->
+            <transport clientCredentialType="None"/>
+          </security>
+        </binding>
+      </wsHttpBinding>
+    </bindings>
+  </system.serviceModel>
+</configuration>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/285.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:285,OWASP:2021:A1,PCI-DSS:6.5.10]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="ASPNET" technology="ASPNET" active="true" weight="1.0">
+      <description><![CDATA[ASPNET rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="ASPNET" active="true" weight="0.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="ASPNET" active="true" weight="0.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="ASPNET" active="true" weight="0.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="ASPNET" active="true" weight="0.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="ASPNET" active="true" weight="10.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

@@ -1,0 +1,608 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric"
+    version="1.1">
+
+  <metric id="OPT.distance" unit="" aggregation="avg" aggregationScope="namespace">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.LOWER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.NAMESPACE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="1" included="true" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="0.50" meaning="good" />
+        <threshold from="0.50" to="1.00" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters>
+      <parameter id="metricFormula">
+        <default-value><![CDATA[distance = ((fanout / (fanin + fanout)) + abstraction -1).abs()]]></default-value>
+      </parameter>
+      <parameter id="metricScopes">
+        <default-value><![CDATA[namespace]]></default-value>
+      </parameter>
+    </parameters>
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.COUPLING.DIST" />
+        <java-class>com.als.core.metric.DerivedMetricCalculator</java-class>
+        <java-version>1.5</java-version>
+        <parameters ref-list="metricFormula,metricScopes" />
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.COUPLING.DIST" />
+        <java-class>com.als.core.metric.DerivedMetricCalculator</java-class>
+        <java-version>1.5</java-version>
+        <parameters ref-list="metricFormula,metricScopes" />
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.COUPLING.DIST" />
+        <java-class>com.als.core.metric.DerivedMetricCalculator</java-class>
+        <java-version>1.5</java-version>
+        <parameters ref-list="metricFormula,metricScopes" />
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <internal-name id="OPT.OBJECTIVEC.COUPLING.DIST" />
+        <java-class>com.optimyth.qaking.objectivec.metrics.DistanceMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <internal-name id="OPT.PHP.COUPLING.DIST" />
+        <java-class>com.als.core.metric.DerivedMetricCalculator</java-class>
+        <java-version>1.5</java-version>
+        <parameters ref-list="metricFormula,metricScopes" />
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.COUPLING.DIST" />
+        <java-class>com.als.core.metric.DerivedMetricCalculator</java-class>
+        <java-version>1.5</java-version>
+        <parameters ref-list="metricFormula,metricScopes" />
+      </language-parser>
+
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+      <!-- Code examples for each language parser -->
+    <code-examples>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <code-example name="metricCodeExampleCpp" result-value="0.25">
+<![CDATA[
+//FILE: EntityManager.cpp
+
+#include "EntityManager.h"
+#include "EntitySystem.h"
+#include "SystemManager.h"
+#include "BitSize.h"
+#include "World.h"
+#include "Component.h"
+#include "Entity.h"
+
+namespace artemis {
+  EntityManager::EntityManager(World& world) : componentsByType(64) {
+    this->world = &world;
+
+    nextAvailableId = 0;
+    count = 0;
+    uniqueEntityId = 0;
+    totalCreated = 0;
+    totalRemoved = 0;
+  };
+
+  void EntityManager::addComponent(Entity &e, Component * c) {
+    ComponentType type = ComponentTypeManager::getTypeFor(typeid(*c));
+
+    if(type.getId() >= componentsByType.getCapacity()) {
+      componentsByType.set(type.getId(), NULL);
+    }
+
+  };
+}
+
+
+//FILE: ComponentType.c
+
+#include <bitset>
+#include "BitSize.h"
+
+namespace artemis {
+  class ComponentType {
+
+  public:
+    ComponentType(){};
+    std::bitset<BITSIZE> getBit() {return var;};
+    int getId() {return var;};
+    static void reset() {};
+
+  private:
+    static std::bitset<BITSIZE> nextBit;
+    static int nextId;
+    std::bitset<BITSIZE> bit;
+    int id;
+    void init() {};
+
+
+  };
+}
+
+
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="metricCodeExampleCsharp" result-value="0.17">
+<![CDATA[
+//FILE: AddTree.cs
+using System;
+using System.Collections;
+using Deepcode.DataTax;
+
+namespace Deepcode.Extensions
+{
+  public class AddTree
+  {
+    private AddTree [] GetSubnodesArray()
+    {
+      DataTaxonomyTree tree = new DataTaxonomyTree();
+      tree.GetPath("paths");
+      AddinTreeNode node = this;
+      int index = node.Children.Count;
+      AddinTreeNode[] sortedNodes = new AddinTreeNode[index];
+      Hashtable  visited   = new Hashtable(index);
+      Hashtable  ancestor = new Hashtable(index);
+
+      return sortedNodes;
+    }
+  }
+}
+
+//FILE: DataTaxonomyTree.cs
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Data;
+using System.Data.SqlClient;
+
+namespace Deepcode.DataTax
+{
+  public class DataTaxonomyTree : Deepcode.Flux.Core.Data.BaseManager
+  {
+    #region Constructors
+    public DataTaxonomyTree() : base() { }
+    public DataTaxonomyTree(SqlConnection CurrentConnection) : base(CurrentConnection) { }
+    public DataTaxonomyTree(SqlConnection CurrentConnection, SqlTransaction CurrentTransaction) : base(CurrentConnection, CurrentTransaction) { }
+    #endregion
+
+    public DataTaxonomyNode GetPath(string path)
+    {
+      // Process the path - change backslash to forward slash
+      string Path2 = path.Replace('\\', '/');
+      // Split the path on it's elements
+      string [] Elements = Path2.Split('/');
+
+      // Start searching at the root
+      int CurrentParentID = -1;
+      DataTaxonomyNode CurrentNode = null;
+
+
+      // Return the last successful result
+      return CurrentNode;
+    }
+  }
+}
+]]>
+        </code-example>
+      </language-parser>
+
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="metricCodeExampleJava" result-value="0.5">
+<![CDATA[
+//FILE: FanInJava2.java
+
+package com.opt.fanin2;
+
+import com.opt.fanin.FanInJava1;
+
+public class FanInJava2{
+  int j;
+  int i;
+
+  FanInJava2(){
+    FanInJava1 f1 = new FanInJava1();
+    i=f1.geti();
+    j = FanInJava1.suma(i,j);
+  }
+}
+
+
+//FILE: FanInJava1.java
+
+package com.opt.fanin;
+
+public class FanInJava1{
+  int j;
+  int i;
+
+  FanInJava1(){
+    i=0;
+    j=0;
+  }
+
+  public int geti(){
+    return i;
+  }
+
+  public int getj(){
+    return j;
+  }
+
+  public void seti(int i){
+    this.i = i;
+  }
+
+  public void setj(int j){
+    this.j = j;
+  }
+
+  public static int suma(int i, int j){
+    return i+j;
+  }
+
+}
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <code-example name="metricCodeExampleObjectiveC" result-value="0.19">
+<![CDATA[
+[Protocol1.h]
+@protocol Protocol1
+
+- (NSArray *)getData;
+
+@end
+
+[MYClass.h]
+#import "Protocol1.h"
+
+@interface MYClass <Protocol1.h>
+
+  extern CONst1 * const PREFS_MY_CONSTANT;
+  FIEld1 *_privateObject;
+  @property (nonatomic,strong) MYDataProvider * dataProvider;
+  - (RETurn1)initWithDataProvider:(MYDataProvider *)provider;
+  - (id)initWithDataProvider:(PAram1 *)provider;
+  + (NSString *)trace:(MYClass *)subject;
+
+@end
+
+[MYClass.m]
+#import "MYClass.h"
+
+@implementation MYClass
+
+- (id)initWithDataProvider:(PAram1 *)provider {
+
+  appDelegate = (CASt1 *)[[RECeiver1 sharedApplication] delegate];
+
+    LOCalDeclaration1 *backgroundView =[[[RECeiver2 alloc]initWithFrame:CGRectMake(0, 0, 480*appDelegate.xval, 320*appDelegate.yval)]autorelease];
+
+  @try {
+            [treeController setValue:[predicateEditorView predicate] forKeyPath:@"selection.predicate"];
+        }
+        @catch ( CUStomException1 *e ) {
+            [treeController setValue:nil forKeyPath:@"selection.predicate"];
+        }
+        @finally {
+            [FINally1 endSheet:sheet];
+        }
+}
+
+@end
+
+[RECeiver.h]
+@interface RECeiver1
+
+  NSObject *_privateObject;
+
+@end
+
+[RECeiver1.m]
+#import "RECeiver1.h"
+
+@implementation RECeiver1
+
+  NSObject *_privateObject;
+
+@end
+
+[RECeiver2.h]
+@interface RECeiver2
+
+  NSObject *_privateObject;
+
+@end
+
+[RECeiver2.m]
+#import "RECeiver2.h"
+
+@implementation RECeiver2
+
+  NSObject *_privateObject;
+
+@end
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <code-example name="metricCodeExamplePhp" result-value="0">
+<![CDATA[
+//FILE: FanInPhp3.php
+<?php
+
+abstract class FanInClass3
+{
+
+    public function runJob(FanInClass2 $var , FanInClass1 $result)
+    {
+        $var->runJob(this,$result);
+
+        if ($result !== NULL) {
+            $result->startTest($test);
+        }
+    }
+}
+
+//FILE: FanInPhp1.php
+<?php
+
+abstract class FanInClass1
+{
+
+    public function startTest(FanInClass2 $var)
+    {
+        $var->runJob(this,$result);
+
+        $this->process($pipes[0], $job);
+        fclose($pipes[0]);
+
+
+    }
+}
+
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="metricCodeExampleVbnet" result-value="0"><![CDATA[
+'FILE: file1.vb
+Imports Pac.P.Paquete2
+
+Namespace Pac.P.Paquete1
+
+  Class MyClassOne
+
+    Private Const PREDICATE_NODE As New NodePredicate()
+
+     Public Sub Method1()
+       Dim mc2 As New MyClassTwo();
+       mc2.doSomething();
+       doSomething()
+     End Sub
+
+     Public Function method2() As Integer
+        doSomething()
+     End Function
+
+     Public i As Integer
+
+     Private Class innerClass
+
+       Public Sub method()
+        doSomething()
+       End Sub
+
+       Function method2() As Boolean
+        Dim predicate As New NodePredicate()
+       End Function
+     End Class
+
+  End Class
+
+End Namespace
+
+'FILE: file2.vb
+
+Namespace Pac.P.Paquete2
+
+  Class MyClassTwo
+
+    Private Const PREDICATE_NODE As New NodePredicate()
+
+     Public Sub Method1()
+       doSomething()
+     End Sub
+
+     Public Function method2() As Integer
+        doSomething()
+     End Function
+
+     Public i As Integer
+
+     Private Class innerClass
+
+       Public Sub method()
+        doSomething()
+       End Sub
+
+       Function method2() As Boolean
+        Dim predicate As New NodePredicate()
+       End Function
+     End Class
+
+  End Class
+
+End Namespace
+        ]]></code-example>
+      </language-parser>
+
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Distancia]]></name>
+
+      <description>
+<![CDATA[
+La métrica distancia relacciona las métricas de abtracción e inestabilidad. Un subsistema muy inestable generalmente debería ser muy poco abstracto y viceversa.
+
+Se calcula a partir de la inestabilidad y la abstracción:
+
+Distancia = |inestabilidad + abstracción - 1|
+
+Puede tener valores entre 0 y 1. Cada paquete o componente debe estar tan cerca de 0 como sea posible, que corresponden a los paquetes abstractos-estables y
+concretos-inestables.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Calcula la distancia como: distancia = |inestabilidad + abstracción - 1|.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Calcula la distancia como: distancia = |inestabilidad + abstracción - 1|.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Calcula la distancia como: distancia = |inestabilidad + abstracción - 1|.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL">
+<![CDATA[
+Calcula la distancia como: distancia = |inestabilidad + abstracción - 1|.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+<![CDATA[
+Calcula la distancia como: distancia = |inestabilidad + abstracción - 1|.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+Calcula la distancia como: distancia = |inestabilidad + abstracción - 1|.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Calcula la distancia como: distancia = |inestabilidad + abstracción - 1|.
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Distance]]></name>
+
+      <description>
+<![CDATA[
+The distance metric is related with abstraction and instability metrcis. A very instable subsystem should generally be very little abstract and vice versa.
+
+It is computed using instability and abstraction:
+
+Distance = |instability + abstraction - 1|
+
+This value will be in the range 0 and 1. Each package or component should be as close to 0 as possible, corresponding to the abstract-stable packages and
+specific-instable packages.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+It calculates distance as: distance = |instability + abstraction - 1|
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+It calculates distance as: distance = |instability + abstraction - 1|
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+It calculates distance as: distance = |instability + abstraction - 1|
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+<![CDATA[
+It calculates distance as: distance = |instability + abstraction - 1|
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+It calculates distance as: distance = |instability + abstraction - 1|
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+It calculates distance as: distance = |instability + abstraction - 1|
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+
+  <description>AIM rules for HTML.</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-html.xml"/>
+  <import resource="classpath:resources/qaking-tech-javascript.xml"/>
+  <import resource="classpath:resources/qaking-tech-jsp.xml"/>
+
+  <bean id="aim.html.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>HTML parser</description>
+    <property name="filter" ref="aim.html.filter"/>
+    <property name="languageSupport" ref="ls_html"/>
+  </bean>
+
+  <!-- Rule -->
+
+  <bean id="aim.html.rule" class="com.optimyth.apm.builder.rules.html.HtmlRule">
+    <description>Resolves dependencies from HTML files</description>
+    <property name="active" value="${aim.html.rule.active}"/>
+    <property name="webContents" value="${aim.common.srcdir}"/>
+    <property name="tagsToParse" value="${aim.html.rule.tagsToParse}"/>
+    <!-- <property name="extractors" ref="aim.html.rule.extractors"/>  -->
+    <property name="filter" ref="aim.html.filter"/>
+    <property name="callback"><bean class="com.optimyth.apm.builder.rules.html.DefaultHtmlCallback">
+      <property name="resolveArtifacts" value="true"/>
+      <property name="webApplication" value="${aim.html.webapp}"/>
+    </bean></property>
+  </bean>
+
+  <util:map id="aim.html.rule.extractors">
+    <entry key="link"><bean class="com.optimyth.apm.builder.rules.html.HtmlRule$CssTagExtractor"><property name="acceptUnresolvedResources" value="${aim.html.rule.acceptUnresolved}"/></bean></entry>
+    <entry key="a"><bean class="com.optimyth.apm.builder.rules.html.HtmlRule$ATagExtractor"><property name="acceptUnresolvedResources" value="${aim.html.rule.acceptUnresolved}"/></bean></entry>
+    <entry key="img"><bean class="com.optimyth.apm.builder.rules.html.HtmlRule$ImgTagExtractor"><property name="acceptUnresolvedResources" value="${aim.html.rule.acceptUnresolved}"/></bean></entry>
+    <entry key="script"><bean class="com.optimyth.apm.builder.rules.html.HtmlRule$JavascriptTagExtractor"><property name="acceptUnresolvedResources" value="${aim.html.rule.acceptUnresolved}"/></bean></entry>
+    <entry key="frame"><bean class="com.optimyth.apm.builder.rules.html.HtmlRule$FrameTagExtractor"><property name="acceptUnresolvedResources" value="${aim.html.rule.acceptUnresolved}"/></bean></entry>
+    <entry key="iframe"><bean class="com.optimyth.apm.builder.rules.html.HtmlRule$FrameTagExtractor"><property name="acceptUnresolvedResources" value="${aim.html.rule.acceptUnresolved}"/></bean></entry>
+    <entry key="form"><bean class="com.optimyth.apm.builder.rules.html.HtmlRule$FormTagExtractor"><property name="acceptUnresolvedResources" value="${aim.html.rule.acceptUnresolved}"/></bean></entry>
+  </util:map>
+
+  <!-- Filters -->
+
+  <bean id="aim.html.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.html.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.html.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.html.filter.pattern"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.html.filter.default" parent="ls_html_matcher"/>
+
+  <bean id="aim.html.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.html.filter.pattern}"/>
+  </bean>
+
+</beans>

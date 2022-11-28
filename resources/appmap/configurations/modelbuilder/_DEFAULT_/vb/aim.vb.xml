@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for vb6 language.</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-vb6.xml"/>
+
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="vb/aim.vb.properties"/>
+  </bean-->
+
+  <bean id="aim.vb.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>vb parser</description>
+    <property name="filter" ref="aim.vb.filter"/>
+    <property name="languageSupport" ref="ls_vb6"/>
+  </bean>
+
+  <!-- Rules -->
+  
+  <bean id="aim.vb.rule.project" parent="aim.vb.rule.code" class="com.optimyth.apm.builder.rules.vb.VbpBuilderRule">
+    <description>Rule for processing Visual Basic project (.vbp) files</description>
+    <property name="active" value="${aim.vb.rule.project.active}"/>
+    <property name="filter"><null/></property>
+  </bean>
+
+  <bean id="aim.vb.rule.code" class="com.optimyth.apm.builder.rules.vb.VisualBasicBuilderRule">
+    <description>Rule for processing Visual Basic code (.bas, .frm, .cls, etc.)</description>
+    <property name="active" value="${aim.vb.rule.code.active}"/>
+    <property name="basedir" value="${aim.common.srcdir}"/>
+    
+    <property name="callback" ref="aim.vb.rule.callback"/>
+    <property name="filter" ref="aim.vb.filter"/>
+  </bean>
+  
+  <!-- Callbacks -->
+
+  <bean id="aim.vb.rule.callback" class="com.optimyth.apm.builder.rules.vb.BasicVisualBasicCallback">
+    <property name="applicationName" value="${aim.vb.application}"/>
+    <property name="resolveArtifacts" value="${aim.common.resolveArtifacts}"/>
+  </bean>  
+  
+  <!-- Filters -->
+
+  <bean id="aim.vb.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.vb.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.vb.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.vb.filter.pattern"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.vb.filter.default" parent="ls_vb6_matcher"/>
+
+  <bean id="aim.vb.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.vb.filter.pattern}"/>
+  </bean>
+
+</beans>

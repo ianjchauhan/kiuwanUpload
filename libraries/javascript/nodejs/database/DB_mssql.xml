@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/DB_mssql" standard="nodejs">
+
+  <module name="nodejs/DB_mssql" standard="database/mssql">
+    <description url="https://www.npmjs.com/package/mssql">Microsoft SQL Server client for Node.js</description>
+
+    <class name="nodejs/mssql">
+      <tags>hasEvents</tags>
+
+      <function name="connect">
+        <return type="Promise"/>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </function>
+
+      <function name="Connection">
+        <parameters>
+          <param type="Object"/>
+          <param type="function(Error)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/mssql.Connection" />
+        <sink kind="sensitive_data" resource="database">
+          <arg pos="0" field="user,password"/>
+        </sink>
+        <sink kind="resource_injection" resource="database">
+          <arg pos="0" field="database"/>
+        </sink>
+        <sink kind="ssrf" resource="database">
+          <arg pos="0" field="server"/>
+        </sink>
+      </function>
+
+      <function name="Request">
+        <return type="nodejs/mssql.Request"/>
+      </function>
+
+      <function name="PreparedStatement">
+        <return type="nodejs/mssql.PreparedStatement"/>
+      </function>
+
+      <function name="on:error">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/mssql.Connection">
+      <function name="connect">
+        <parameters>
+          <param type="function(Error)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/mssql.Connection"/>
+      </function>
+      <function name="request">
+        <return type="nodejs/mssql.Request"/>
+      </function>
+      <function name="close"/>
+    </class>
+
+    <class name="nodejs/mssql.Request">
+      <tags>hasEvents</tags>
+      <function name="query" alias="execute,batch">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,Array,Object)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1,2" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <return type="Promise"/><!-- todo: then(cb(recordset)), recordset is database_input -->
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </function>
+      <function name="input" alias="output">
+        <return type="nodejs/mssql.Request"/><!-- chaineable -->
+      </function>
+      <function name="pipe"/><!-- writes to stream, vulnerable? -->
+      <function name="on:row">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Object)">
+            <source argpos="0" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+      <function name="on:error">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+      </function>
+    </class>
+
+    <class name="nodejs/mssql.PreparedStatement" supertypes="nodejs/mssql.Request">
+      <function name="input" alias="output">
+        <return type="nodejs/mssql.PreparedStatement"/><!-- chaineable -->
+      </function>
+      <function name="prepare">
+        <parameters>
+          <param type="function(Error)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="Promise"/><!-- todo: then(cb(recordset)), recordset is database_input -->
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </function>
+      <function name="execute">
+        <parameters>
+          <param type="Object"/><!-- safe, prepared stmt params -->
+          <param type="function(Error,Array)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="0" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <return type="Promise"/><!-- todo: then(cb(recordset)), recordset is database_input -->
+      </function>
+    </class>
+  </module>
+
+</library>

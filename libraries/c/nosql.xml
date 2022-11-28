@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="cpp.nosql" standard="noSQL" technology="cpp">
+  <description>C/C++ libraries for popular noSQL databases</description>
+
+  <module name="bson.h" standard="libbson">
+    <description url="http://mongoc.org/libbson/current/api.html">BSON library for C</description>
+
+    <class name="bson_t" kind="struct"></class>
+    <function name="bson_init" signature="void bson_init(bson_t *bson)"></function>
+    <function name="bson_reinit" signature="void bson_reinit(bson_t *bson)"><neutralization kind="*" argpos="0"/></function>
+    <function name="bson_append_t" ></function>
+    
+    <function name="bson_append_value" signature="bool bson_append_value(bson_t *bson, const char *key, int klen, const bson_value_t *val)">
+      <propagate from="1,3" to="0"/>
+    </function>
+    <function name="bson_append_array" signature="bool bson_append_array(bson_t *bson, const char *key, int klen, const bson_t *arr)"
+              alias="bson_append_array_begin">
+      <propagate from="1,3" to="0"/>
+    </function>
+    <function name="BSON_APPEND_ARRAY" match="name"
+              alias="BSON_APPEND_ARRAY_BEGIN, BSON_APPEND_BINARY, BSON_APPEND_DOCUMENT, BSON_APPEND_DOCUMENT_BEGIN, BSON_APPEND_UTF8, BSON_APPEND_SYMBOL, BSON_APPEND_TIME_T, BSON_APPEND_TIMEVAL, BSON_APPEND_DATE_TIME, BSON_APPEND_TIMESTAMP">
+      <propagate from="1,2" to="0"/>
+    </function>
+    <function name="bson_append_binary" signature="bool bson_append_binary(bson_t *bson, const char *key, int klen, bson_subtype_t subtype, const uint8_t *bin, size_t len)">
+      <propagate from="1,4" to="0"/>
+    </function>
+    <function name="bson_append_bool" signature="bson_append_bool(bson_t *bson, const char *key, int klen, bool value)"
+              alias="bson_append_double, bson_append_int32, bson_append_int64, bson_append_decimal128, ">
+      <propagate from="1,3" to="0"/>
+    </function>
+    <function name="BSON_APPEND_BOOL" match="name"
+              alias="BSON_APPEND_DOUBLE, BSON_APPEND_INT32, BSON_APPEND_INT64, BSON_APPEND_DECIMAL128, BSON_APPEND_OID, BSON_APPEND_VALUE">
+      <propagate from="1,2" to="0"/>
+    </function>
+    <function name="bson_append_code" signature="bool bson_append_code(bson_t *bson, const char *key, int klen, const char *javascript)">
+      <propagate from="1,3" to="0"/>
+      <sink kind="nosql_injection" resource="database" argpos="3"/>
+    </function>
+    <function name="bson_append_code_with_scope" signature="bool bson_append_code_with_scope(bson_t *bson, const char *key, int klen, const char *javascript, bson_t *scope)">
+      <propagate from="1,3" to="0"/>
+      <sink kind="nosql_injection" resource="database" argpos="3"/>
+    </function>
+    <function name="BSON_APPEND_CODE" match="name" alias="BSON_APPEND_CODE_WITH_SCOPE">
+      <propagate from="1,2" to="0"/>
+      <sink kind="nosql_injection" resource="database" argpos="2"/>
+    </function>
+    <function name="bson_append_document" signature="bool bson_append_document(bson_t *bson, const char *key, int klen, const bson_t *val)"
+              alias="bson_append_document_begin">
+      <propagate from="1,3" to="0"/>
+    </function>
+    <function name="bson_append_document_end" alias="bson_append_array_end"
+              signature="bool bson_append_document_end(bson_t *bson, bson_t *val)">
+      <propagate from="1" to="0"/>
+    </function>
+    <function name="bson_append_iter" signature="bool bson_append_iter(bson_t *bson, const char *key, int klen, const bson_iter_t *iter)"
+              alias="bson_append_oid, bson_append_time_t, bson_append_timeval, bson_append_date_time">
+      <propagate from="1,3" to="0"/>
+    </function>
+    <function name="bson_append_minkey" signature="bool bson_append_minkey(bson_t *bson, const char *key, int klen)" match="name"
+              alias="bson_append_maxkey, bson_append_null, bson_append_now_utc, bson_append_timestamp, bson_append_undefined">
+      <propagate from="1" to="0"/>
+    </function>
+    <function name="BSON_APPEND_MINKEY" match="name"
+              alias="BSON_APPEND_MAXKEY, BSON_APPEND_NULL, BSON_APPEND_UNDEFINED">
+      <propagate from="1" to="0"/>
+    </function>
+    <function name="bson_append_regex" signature="bool bson_append_regex(bson_t *bson, const char *key, int key_length, const char *regex, const char *options)">
+      <propagate from="1,3,4" to="0"/>
+    </function>
+    <function name="BSON_APPEND_REGEX" match="name">
+      <propagate from="1,2,3" to="0"/>
+    </function>
+    <function name="bson_append_utf8" signature="bool bson_append_utf8 (bson_t *bson, const char *key, int klen, const char *value, int len)"
+              alias="bson_append_symbol">
+      <propagate from="1,3" to="0"/>
+    </function>
+
+    <function name="bson_clear" match="name"><neutralization argpos="0"/></function>
+
+    <function name="bson_new" signature="bson_new()"><return type="bson_t *"/></function>
+    <function name="bson_sized_new" signature="bson_sized_new(size_t size)"><return type="bson_t *"/></function>
+    <function name="bson_new_from_data" signature="bson_t* bson_new_from_data (const uint8_t *data, size_t len)">
+      <return type="bson_t *"/><propagate from="0" to="-1"/>
+    </function>
+    <function name="bson_new_from_buffer" signature="bson_t* bson_new_from_data (uint8_t **buf, size_t len)">
+      <return type="bson_t *"/><propagate from="0" to="-1"/>
+    </function>
+    <function name="bson_new_from_json" signature="bson_t *bson_new_from_json(const uint8_t* data, size_t len, bson_error_t *e)">
+      <return type="bson_t *"/><propagate from="0" to="-1"/>
+    </function>
+    <function name="bson_init_from_json" signature="bool bson_init_from_json (bson_t *bson, const char *data, ssize_t len, bson_error_t *error)"
+              alias="bson_init_static">
+      <return type="bool"/><propagate from="1" to="0"/>
+    </function>
+    <function name="bson_copy" signature="bson_t *bson_copy (const bson_t *bson)"><propagate from="0" to="-1"/></function>
+    <function name="bscon_copy_to" match="name" signature="void bson_copy_to(const bson_t *src, bson_t *dst)"
+              alias="bson_copy_to_excluding, bson_copy_to_excluding_noinit">
+      <propagate from="0" to="1"/>
+    </function>
+    <function name="bson_concat" signature="bool bson_concat (bson_t *dst, const bson_t *src)">
+      <propagate from="0,1" to="0"/>
+    </function>
+
+    <function name="bson_get_data" signature="const uint8_t *bson_get_data(const bson_t *bson)"><return type="uint8_t *"/><propagate from="0" to="-1"/></function>
+    <function name="bson_as_json" signature="char *bson_as_json(const bson_t *bson, size_t *len)"
+              alias="bson_as_canonical_extended_json, bson_as_relaxed_extended_json, bson_array_as_json">
+      <return type="char *"/><propagate from="0" to="1,-1"/>
+    </function>
+
+    <function name="bson_validate" alias="bson_validate_with_error"><description>This does not neutralize json-injection attacks</description></function>
+    <function name="bson_utf8_validate"><description>This does not neutralize json-injection attacks</description></function>
+
+    <function name="bson_append_bcon" signature="bcon_error_t bson_append_bcon(bson *b, const bcon *bc)">
+      <propagate from="0,1" to="0"/>
+    </function>
+    <function name="bson_from_bcon" signature="bcon_error_t bson_from_bcon(bson *b, const bcon *bc );">
+      <propagate from="1" to="0"/>
+    </function>
+    <function name="bcon_new" match="name" alias="BCON_NEW">
+      <return type="bson_t*"/>
+    </function>
+    <function name="bcon_append" signature="void bcon_append(bson_t *bson, ...)" alias="BCON_APPEND">
+     <propagate from="1" to="0"/>
+    </function>
+    <function name="bcon_append_ctx" signature="void bcon_append_ctx (bson_t *bson, bcon_append_ctx_t *ctx, ...)" alias="BCON_APPEND_CTX, bcon_append_ctx_va">
+      <propagate from="2" to="0"/>
+    </function>
+    <function name="bcon_extract_ctx" signature="void bcon_extract_ctx(bson_t *bson, bcon_extract_ctx_t *ctx, ...)" alias="bcon_extract_ctx_va, BCON_EXTRACT_CTX">
+      <propagate from="0" to="2"/>
+    </function>
+    <function name="bcon_extract" signature="void bcon_extract(bson_t *bson, ...)" alias="bcon_extract_va, BCON_EXTRACT">
+      <propagate from="0" to="1"/>
+    </function>
+
+  </module>
+
+  <module name="mongoc.h" standard="libmongoc">
+    <description url="https://docs.mongodb.com/drivers/c">MongoDB C Driver</description>
+    <function name="mongoc_init"/>
+    <function name="mongoc_cleanup"/>
+
+    <function name="mongoc_client_new" signature="mongoc_client_t *mongoc_client_new(const char *uri_string)"
+              alias="mongoc_client_new_from_uri">
+      <return type="mongoc_client_t*"/>
+      <sink kind="connection_string_injection" argpos="0" resource="database"/>
+    </function>
+
+    <function name="mongoc_client_command" match="name">
+      <return type="mongoc_cursor_t*"/>
+      <sink kind="resource_injection" resource="database" argpos="1"/>
+      <sink kind="nosql_injection" resource="database" argpos="6"/>
+      <source kind="database_input" argpos="-1"/>
+      <propagate from="0, 6" to="-1"/>
+    </function>
+    <function name="mongoc_client_command_simple" match="name" alias="mongoc_client_write_command_with_opts">
+      <return type="bool"/>
+      <sink kind="resource_injection" resource="database" argpos="1"/>
+      <sink kind="nosql_injection" resource="database" argpos="2"/>
+      <source kind="database_input" argpos="4"/>
+      <propagate from="0, 2" to="4"/>
+    </function>
+    <function name="mongoc_client_command_simple_with_server_id" match="name">
+      <return type="bool"/>
+      <sink kind="resource_injection" resource="database" argpos="1"/>
+      <sink kind="nosql_injection" resource="database" argpos="2"/>
+      <source kind="database_input" argpos="5"/>
+      <propagate from="0, 2" to="5"/>
+    </function>
+    <function name="mongoc_client_command_with_opts" match="name"
+              alias="mongoc_client_read_command_with_opts, mongoc_client_read_write_command_with_opts">
+      <return type="bool"/>
+      <sink kind="resource_injection" resource="database" argpos="1"/>
+      <sink kind="nosql_injection" resource="database" argpos="2"/>
+      <source kind="database_input" argpos="5"/>
+      <propagate from="0, 2" to="5"/>
+    </function>
+    <function name="mongoc_client_get_collection" signature="mongoc_collection_t *mongoc_client_get_collection(mongoc_client_t *client, const char *db, const char *collection)">
+      <return type="mongoc_collection_t*"/>
+      <sink kind="resource_injection" resource="database" argpos="1"/>
+    </function>
+    <function name="mongoc_client_get_database" signature="mongoc_database_t *mongoc_client_get_database(mongoc_client_t *client, const char *name)">
+      <return type="mongoc_database_t*"/>
+      <sink kind="resource_injection" resource="database" argpos="1"/>
+    </function>
+    <function name="mongoc_client_get_default_database" signature="mongoc_database_t *mongoc_client_get_default_database(mongoc_client_t *client)">
+      <return type="mongoc_database_t*"/>
+    </function>
+    
+    <function name="mongoc_database_add_user" match="name">
+      <tags>username:1, password:2</tags>
+      <sink kind="hardcoded_credentials" argpos="1,2"/>
+      <sink kind="nosql_injection" resource="database" argpos="3,4"/>
+    </function>
+    <function name="mongoc_database_aggregate" match="name">
+      <return type="mongoc_cursor_t *"/>
+      <sink kind="nosql_injection" argpos="1" resource="database"/>
+    </function>
+    <function name="mongoc_database_command" match="name" alias="mongoc_collection_command">
+      <return type="mongoc_cursor_t*"/>
+      <sink kind="nosql_injection" argpos="5" resource="database"/>
+      <source kind="database_input" argpos="-1"/>
+      <propagate from="0, 5" to="-1"/>
+    </function>
+    <function name="mongoc_database_command_with_opts" match="name"
+              alias="mongoc_database_read_command_with_opts, mongoc_database_read_write_command_with_opts, mongoc_collection_command_with_opts, mongoc_collection_read_command_with_opts, mongoc_collection_read_write_command_with_opts">
+      <return type="bool"/>
+      <sink kind="nosql_injection" argpos="1" resource="database"/>
+      <source kind="database_input" argpos="4"/>
+      <propagate from="0, 1" to="4"/>
+    </function>
+    <function name="mongoc_database_write_command_with_opts" match="name" alias="mongoc_collection_write_command_with_opts">
+      <return type="bool"/>
+      <sink kind="nosql_injection" argpos="1" resource="database"/>
+      <source kind="database_input" argpos="3"/>
+      <propagate from="0, 1" to="3"/>
+    </function>
+    <function name="mongoc_database_create_collection" match="name">
+      <return type="mongoc_collection_t *"/>
+      <sink kind="resource_injection" argpos="1" resource="database"/>
+    </function>
+    <function name="mongoc_database_find_collections" match="name"
+              alias="mongoc_database_find_collections_with_opts, mongoc_collection_find_collections, mongoc_collection_find_collections_with_opts">
+      <sink kind="nosql_injection" argpos="1" resource="database"/>
+    </function>
+    <function name="mongoc_database_get_collection" match="name">
+      <return type="mongoc_collection_t *"/>
+      <sink kind="resource_injection" argpos="1" resource="database"/>
+    </function>
+    <function name="mongoc_database_remove_user" match="name">
+      <tags>username:1</tags>
+      <sink kind="hardcoded_credentials" argpos="1" resource="database"/>
+    </function>
+    
+    <function name="mongoc_collection_aggregate" match="name">
+      <return type="mongoc_cursor_t *"/>
+      <sink kind="nosql_injection" argpos="2" resource="database"/>
+    </function>
+    <function name="mongoc_collection_find" match="name">
+      <return type="mongoc_cursor_t*"/>
+      <sink kind="nosql_injection" resource="database" argpos="5"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+
+    <function name="mongoc_collection_find_with_opts" match="name">
+      <return type="mongoc_cursor_t*"/>
+      <sink kind="nosql_injection" resource="database" argpos="1,2"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="mongoc_collection_find_and_modify" match="name">
+      <sink kind="nosql_injection" argpos="1,3" resource="database"/>
+      <sink kind="resource_injection" resource="database" argpos="2,4"/>
+      <source argpos="8" kind="database_input" resource="database"/>
+    </function>
+    <function name="mongoc_collection_find_and_modify_with_opts" match="name">
+      <sink kind="nosql_injection" argpos="1" resource="database"/>
+      <source argpos="3" kind="database_input" resource="database"/>
+    </function>
+    <function name="mongoc_collection_create_index" match="name" alias="mongoc_collection_create_index_with_opts">
+     <sink kind="resource_injection" resource="database" argpos="1"/>
+    </function>
+    <function name="mongoc_collection_delete" match="name"
+              alias="mongoc_collection_remove, mongoc_collection_delete_one, mongoc_collection_delete_many">
+      <sink kind="nosql_injection" argpos="2" resource="database"/>
+    </function>
+    <function name="mongoc_collection_insert" match="name"
+              alias="mongoc_collection_insert_one, mongoc_collection_insert_many, mongoc_collection_save">
+      <!--sink kind="nosql_injection" argpos="2" resource="database"/-->
+    </function>
+    <function name="mongoc_collection_rename" match="name" alias="mongoc_collection_rename_with_opts">
+      <sink kind="resource_injection" argpos="1,2" resource="database"/>
+    </function>
+    <function name="mongoc_collection_replace_one" match="name">
+      <sink kind="nosql_injection" argpos="1" resource="database"/>
+    </function>
+    <function name="mongoc_collection_update" match="name" alias="mongoc_collection_update_one">
+      <sink kind="nosql_injection" argpos="2,3" resource="database"/>
+    </function>
+    <function name="mongoc_collection_update_one" match="name"
+              alias=" mongoc_collection_update_many, mongoc_collection_replace_one">
+      <sink kind="nosql_injection" argpos="1,2" resource="database"/>
+    </function>
+
+    <function name="mongoc_bulk_operation_delete" match="name"
+              alias="mongoc_bulk_operation_delete_one, mongoc_bulk_operation_remove, mongoc_bulk_operation_remove_one, mongoc_bulk_operation_remove_one_with_opts, mongoc_bulk_operation_remove_many_with_opts">
+      <sink kind="nosql_injection" argpos="1" resource="database"/>
+      <propagate from="1" to="0"/>
+    </function>
+    <function name="mongoc_bulk_operation_insert" match="name" alias="mongoc_bulk_operation_insert_with_opts">
+      <sink kind="nosql_injection" argpos="1" resource="database"/>
+      <propagate from="1" to="0"/>
+    </function>
+    <function name="mongoc_bulk_operation_replace_one" match="name" alias="mongoc_bulk_operation_replace_one_with_opts">
+      <sink kind="nosql_injection" argpos="1" resource="database"/>
+    </function>
+    <function name="mongoc_bulk_operation_update" match="name"
+              alias="mongoc_bulk_operation_update_one_with_opts, mongoc_bulk_operation_update_many_with_opts">
+      <sink kind="nosql_injection" argpos="1" resource="database"/>
+    </function>
+    <function name="mongoc_bulk_operation_execute" match="name">
+      <source kind="database_input" argpos="1" resource="database"/>
+    </function>
+
+
+    <function name="mongoc_uri_new_with_error" match="name" alias="">
+      <return type="mongoc_uri_t *"/>
+      <propagate from="0" to="-1"/>
+    </function>
+  </module>
+
+  <module name="bsoncxx" standard="mongocxx">
+    <description url="http://mongocxx.org/api/mongocxx-v3/namespacebsoncxx.html">BSON support for MongoDB C++ Driver</description>
+    <class name="bsoncxx.view_or_value"></class>
+    <class name="bsoncxx.string.view_or_value" supertypes="string, bsoncxx.view_or_value">
+      <method name="data" signature="data()"><return type="char *"/></method>
+    </class>
+    <class name="bsoncxx.stdx.optional" supertypes="optional"/>
+    <class name="bsoncxx.document.view_or_value" supertypes="bsoncxx.view_or_value">
+      <method name="view" signature="view()"><return type="bsoncxx.document.view"/></method>
+    </class>
+    <class name="bsoncxx.document.view">
+      <method name="data" signature="data()"><return type="uint8_t *"/></method>
+      <method name="operator[]" signature="operator[](string key)"><return type="bsoncxx.document.element"/></method>
+    </class>
+    <class name="bsoncxx.document.value">
+      <method name="view" signature="view()"><return type="bsoncxx.document.view"/></method>
+    </class>
+
+    <function name="to_json" signature="to_json(bsoncxx.document.view view)" match="name"><return type="string"/></function>
+    <function name="from_json" signature="from_json(string json)"><return type="bsoncxx.document.value"/></function>
+    <function name="validate" signature="validate(uint8_t *data, size_t len, bsoncxx.validator&amp; validator)" standard="numargs">
+      <return type="optional" elementType="bsoncxx.document.view"/>
+      <neutralization kind="nosql_injection" argpos="0"/>
+    </function>
+  </module>
+
+  <module name="mongocxx" standard="mongocxx">
+    <description url="https://docs.mongodb.com/drivers/cxx">MongoDB C++ Driver</description>
+    <class name="mongocxx.uri">
+      <constructor name="uri" signature="uri(bsoncxx.string.view_or_value uri)"/>
+      <method name="auth_mechanism" signature="auth_mechanism()" alias="auth_source"><return type="string"/></method>
+      <method name="hosts" signature="hosts()"><return type="vector" elementType="mongocxx.uri.host"/></method>
+      <method name="database" signature="database()"><return type="string"/></method>
+      <method name="username" signature="username()"><tags>username:-1</tags><return type="string"/></method>
+      <method name="password" signature="password()"><tags>password:-1</tags><return type="string"/></method>
+      <method name="replica_set" signature="replica_set()"><return type="string"/></method>
+    </class>
+
+    <class name="mongocxx.cursor"></class>
+    <class name="mongocxx.pipeline"/>
+    <class name="mongocxx.client_session"/>
+
+    <class name="mongocxx.instance">
+      <method name="current" signature="current()" instance="false"><return type="mongocxx.instance"/></method>
+    </class>
+
+    <class name="mongocxx.database">
+      <method name="name" signature="name"><return type="string"/></method>
+      <method name="collection" signature="collection(bsoncxx.string.view_or_value name)" alias="operator[]">
+        <return type="mongocxx.collection"/>
+      </method>      
+      <method name="aggregate" signature="aggregate(mongocxx.pipeline&amp; pipeline)" match="numargs">
+        <return type="mongocxx.cursor"/>
+        <sink kind="nosql_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="aggregate_2" signature="aggregate(mongocxx.client_session&amp; session, mongocxx.pipeline&amp; pipeline)" match="numargs">
+        <return type="mongocxx.cursor"/>
+        <sink kind="nosql_injection" resource="database" argpos="1"/>
+      </method>
+      <method name="run_command" signature="run_command(bsoncxx.document.view_or_value cmd)">
+        <return type="bsoncxx.document.value"/>
+        <sink kind="nosql_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="run_command_2" signature="run_command(mongocxx.client_session&amp; session, bsoncxx.document.view_or_value cmd)">
+        <return type="bsoncxx.document.value"/>
+        <sink kind="nosql_injection" resource="database" argpos="1"/>
+      </method>
+      <method name="create_collection" signature="create_collection(string name)" match="name"
+              alias="create_collection_deprecated">
+        <return type="mongocxx.collection"/>
+        <sink kind="resource_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+
+    <class name="mongocxx.collection">
+      <method name="rename" signature="rename(string newName)" match="name">
+        <sink kind="resource_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="aggregate" signature="aggregate(mongocxx.pipeline&amp; pipeline)" match="numargs">
+        <return type="mongocxx.cursor"/>
+        <sink kind="nosql_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="aggregate_2" signature="aggregate(mongocxx.client_session&amp; session, mongocxx.pipeline&amp; pipeline)" match="numargs">
+        <return type="mongocxx.cursor"/>
+        <sink kind="nosql_injection" resource="database" argpos="1"/>
+      </method>
+      <method name="distinct" signature="distinct(string field, bsoncxx.document.view_of_value filter)" match="name">
+        <return type="mongocxx.cursor"/>
+        <sink kind="nosql_injection" resource="database" argpos="1"/>
+      </method>
+      <method name="find" signature="find(bsoncxx.document.view_of_value filter)" match="name">
+        <return type="mongocxx.cursor"/>
+        <sink kind="nosql_injection" resource="database" argpos="0"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="find_one" signature="find_one(bsoncxx.document.view_of_value filter)" match="name"
+              alias="find_one_and_delete">
+        <return type="optional" elementType="bsoncxx.document.value"/>
+        <sink kind="nosql_injection" resource="database" argpos="0"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="find_one_and_replace" signature="find(bsoncxx.document.view_of_value filter, bsoncxx.document.view_of_value replace)" match="name"
+              alias="find_one_and_update">
+        <return type="optional" elementType="bsoncxx.document.value"/>
+        <sink kind="nosql_injection" resource="database" argpos="0"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="insert_one" signature="insert_one(bsoncxx.document.view_of_value doc)" match="name">
+        <return type="mongocxx.result.insert_one"/>
+      </method>
+      <method name="insert_many" signature="insert_one(T collection)" match="name">
+        <return type="mongocxx.result.insert_many"/>
+      </method>
+      <method name="replace_one" signature="replace_one(bsoncxx.document.view_of_value filter, bsoncxx.document.view_of_value replace)" match="name">
+        <return type="mongocxx.result.replace_one"/>
+        <sink kind="nosql_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="update_one" signature="update_one(bsoncxx.document.view_of_value filter, bsoncxx.document.view_of_value replace)" match="name"
+              alias="update_many">
+        <return type="mongocxx.result.update"/>
+        <sink kind="nosql_injection" resource="database" argpos="0"/>
+      </method>
+    </class>
+
+    <class name="mongocxx.client">
+      <constructor name="client" signature="client(mongocxx.uri&amp; uri)" match="name">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </constructor>
+      <method name="uri" signature="uri()"><return type="mongocxx.uri"/></method>
+      <method name="database" signature="database(bsoncxx.string.view_or_value name)" alias="operator[]">
+        <return type="mongocxx.database"/>
+      </method>
+      <method name="start_session" signature="start_session(mongocxx.options.client_session&amp; options)" match="name">
+        <return type="mongocxx.client_session"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="hiredis.h" standard="hiredis">
+    <description url="https://github.com/redis/hiredis">hiredis - "Official" Redis C API</description>
+
+    <class name="redisContext" kind="struct"></class>
+    <class name="redisAsyncContext" kind="struct" supertypes="redisContext"></class>
+
+    <function name="redisConnect" signature="redisConnect(const char* ip, int port)" match="name"
+              alias="redisAsyncConnect, redisConnectWithTimeout, redisConnectNonBlock">
+      <return type="redisContext*"/>
+      <sink kind="resource_injection" argpos="0,1" resource="database"/>
+    </function>
+    <function name="redisConnectBindNonBlock" signature="redisConnectBindNonBlock(const char *ip, int port, const char *source_addr)"
+              alias="redisConnectBindNonBlockWithReuse">
+      <return type="redisContext*"/>
+      <sink kind="resource_injection" argpos="0,1,2" resource="database"/>
+    </function>
+    <function name="redisConnectWithOptions" match="name">
+      <sink kind="resource_injection" argpos="0" resource="database"/>
+    </function>
+    <function name="redisConnectUnix" signature="redisConnectUnix(const char *path)" alias="redisConnectUnixWithTimeout, redisConnectUnixNonBlock">
+      <return type="redisContext*"/>
+      <sink kind="resource_injection" argpos="0" resource="database"/>
+    </function>
+
+    <function name="redisSecureConnection" signature="redisSecureConnection">
+      <sink kind="resource_injection" argpos="1,2,3,4"/>
+    </function>
+
+    <function name="redisGetReply" signature="int redisGetReply(redisContext *c, void **reply)" alias="redisGetReplyFromReader">
+       <source argpos="1" kind="database_input" resource="database"/>
+    </function>
+
+    <function name="redisAppendCommand" signature="int redisAppendCommand(redisContext *c, const char *format, ...)"
+              alias="redisvAppendCommand" match="name" >
+      <return type="int"/>
+      <sink kind="nosql_injection" argpos="1" resource="database"/>
+    </function>
+    <function name="redisAppendCommandArgv" signature="int redisAppendCommand(redisContext *c, int argc, const char *argv, const size_t *argvlen)" match="name">
+      <return type="int"/>
+      <sink kind="nosql_injection" argpos="2" resource="database"/>
+    </function>
+    
+    <function name="redisCommand" signature="redisCommand(redisContext *c, const char *format, ...)" match="name" alias="redisvCommand">
+      <return type="void *"/>
+      <sink kind="nosql_injection" argpos="1" resource="database"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+    <function name="redisCommandArgv" signature="redisCommandArgv(redisContext *c, int argc, const char *argv, const size_t *argvlen)" match="name" >
+      <return type="void *"/>
+      <sink kind="nosql_injection" argpos="2" resource="database"/>
+      <source argpos="-1" kind="database_input" resource="database"/>
+    </function>
+
+    <function name="redisFormatCommand" signature="int redisFormatCommand(char **target, const char *format, ...)" match="name" alias="redisvFormatCommand">
+      <return type="int"/>
+      <sink kind="nosql_injection" argpos="1" resource="database"/>
+      <propagate from="1,2" to="0"/>
+    </function>
+    <function name="redisFormatCommandArgv" signature="int redisFormatCommandArgv(char **c, int argc, const char *argv, const size_t *argvlen)"
+              alias="redisFormatSdsCommandArgv" match="name" >
+      <return type="int"/>
+      <sink kind="nosql_injection" argpos="2" resource="database"/>
+      <propagate from="2" to="0"/>
+    </function>
+
+  </module>
+
+  <module name="redis++.h" standard="redis++">
+    <description url="https://github.com/sewenew/redis-plus-plus">Redis++, C++ client for Redis</description>
+
+    <class name="sw.redis.Redis">
+      <constructor name="Redis" signature="Redis(string&amp; uri)" match="numargs">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </constructor>
+      <method name="command" signature="command(string&amp; cmd, ...)" match="name">
+        <!-- this is controversial, but external control on command should be audited  -->
+        <sink kind="nosql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="set" signature="bool set(string&amp; key, string&amp; val)" match="name" 
+              alias="setex, setnx, setrange, psetex, linsert, del, getset">
+        <!-- this is controversial, but external control on keys should be audited  -->
+        <sink kind="nosql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="get" signature="get(string&amp; key)" match="name"
+              alias="getbit, getrange, incr, incrby, incrbyfloat, dec, decrby">
+        <!--sink kind="nosql_injection" argpos="0" resource="database"/-->
+      </method>
+      <method name="scan" signature="scan(long long cursor, string&amp; pattern)" match="name">
+        <sink kind="nosql_injection" argpos="1" resource="database"/>
+      </method>
+      <method name="eval" signature="eval(string&amp; script)" match="name">
+        <sink kind="code_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+  </module>
+  
+</library>  

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library.database xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  technology="transactsql" name="tsql_sqlserver" standard="SQL_Server_functions_and_types">
+  <description url="https://docs.microsoft.com/sql/t-sql/functions/functions">Default SQL Server procedures/functions and basic types</description>
+
+  <!-- Standard functions -->
+  <function name="quotename" signature="quotename(input nvarchar, quote_char)">
+    <return type="nvarchar"/>
+    <neutralization argpos="0" kind="sql_injection" resource="database"/>
+  </function>
+  <function name="translate" signature="translate(expr varchar, from varchar, to varchar)">
+    <return type="nvarchar"/>
+    <neutralization argpos="0" kind="string"/>
+    <propagate from="0,2" to="-1"/>
+  </function>
+  <function name="replace" signature="replace(string_expr varchar, string_pattern varchar, string_replace varchar)">
+    <return type="varchar"/>
+    <neutralization argpos="0" kind="string"/>
+    <propagate from="0,2" to="-1"/>
+  </function>
+
+  <!-- crypto -->
+  <function name="hashbytes" signature="hashbytes(algorithm varchar, input varchar)">
+    <tags>hash, algo:algorithm</tags>
+    <return type="varbinary"/>
+  </function>
+  <function name="rand" signature="rand(seed int)">
+    <tags>insecure_random</tags>
+    <return type="float"/>
+  </function>
+
+  <database name="master">
+    <!-- Common functions in "default" database -->
+    <procedure name="sp_addlogin" signature="sp_addlogin(loginname sysname, passwd sysname, defdb sysname, deflanguage sysname. sid varbinary, encryptopt varchar)">
+      <tags>addLogin, login:loginname, password:passwd, db:defdb</tags>
+    </procedure>
+    <procedure name="sp_addrolemember" signature="sp_addrolemember(rolename sysname, membername sysname)">
+      <tags>addRole, role:rolename, member:membername</tags>
+    </procedure>
+    <procedure name="sp_addsrvrolemember" signature="sp_addsrvrolemember(loginname sysname, rolename sysname)">
+      <tags>addRole, role:rolename, member:loginname</tags>
+    </procedure>
+    <procedure name="sp_adduser" signature="sp_adduser(loginname sysname, name_in_db sysname, grpname sysname)">
+      <tags>addUser, addRole, role:grpname, member:loginname, dbuser: name_in_db</tags>
+    </procedure>
+    <function name="sp_executesql" signature="sp_executesql(stmt varchar, params varchar)" alias="sp_sqlexec">
+      <return type="boolean"/>
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </function>
+    <procedure name="sp_execute_external_script" signature="sp_execute_external_script(language sysname, script nvarchar, input_data_1 nvarchar, input_data_2 nvarchar, output_data_1_name nvarchar, parallel boolean, params nvarchar)">
+      <sink argpos="1" kind="code_injection" resource="database"/>
+    </procedure>
+    <procedure name="sp_get_query_template" signature="sp_get_query_template(querytext nvarchar, templatetext out nvarchar, parameters out nvarchar)">
+      <sink argpos="0" kind="sql_injection" resource="database"/><!-- not really sql-i, but... -->
+    </procedure>
+    <function name="xp_cmdshell" signature="xp_cmdshell(cmd varchar, no_output boolean)">
+      <return type="varchar"/>
+      <sink argpos="0" kind="command_injection" resource="os"/>
+    </function>
+    <function name="xp_fileexist" signature="xp_fileexist(path varchar, file_exists out int)" alias="dm_os_file_exists">
+      <return type="table"/>
+      <neutralization argpos="0" kind="command_injection" resource="filesystem"/>
+    </function>
+    
+    <function name="xp_sprintf" signature="xp_sprintf(string out varchar, format varchar, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)">
+      <return type="boolean"/>
+      <propagate from="1,2,3,4,5,6,7,8,9,10" to="0"/>
+    </function>
+    <function name="xp_sscanf" signature="xp_sscanf(string varchar, format varchar, arg1 out, arg2 out, arg3 out, arg4 out, arg5 out, arg6 out, arg7 out, arg8 out, arg9 out)">
+      <return type="boolean"/>
+      <propagate from="0,1" to="2,3,4,5,6,7,8,9,10"/>
+    </function>
+  </database>
+
+  <database name="msdb">
+    <procedure name="sp_add_jobstep" signature="sp_add_jobstep(job_id, job_name, step_id, step_name, subsystem, command, additional_parameters)">
+      <sink argpos="5" kind="sql_injection" resource="database">
+        <checker id="msdb.jobstep.sqli"/>
+      </sink>
+      <sink argpos="5" kind="command_injection" resource="os">
+        <checker id="msdb.jobstep.cmdi"/>
+      </sink>
+    </procedure>
+  </database>
+
+</library.database>

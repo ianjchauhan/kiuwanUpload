@@ -1,0 +1,112 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='j2ee' subtech='jdbc' descriptor='j2ee/aim.jdbc.xml' label='Process dependencies between Java classes and database objects in JDBC and Spring JDBC APIs'>
+  <description>
+    Process dependencies between Java classes and database objects in embedded SQL code in JDBC and Spring JDBC (JdbcTemplate) APIs.
+  </description>
+
+  <dependencies>
+    <dependency>j2ee/java</dependency>
+    <dependency>database/plsql</dependency>
+  </dependencies>
+
+  <properties>
+
+    <property id='aim.j2ee.rule.jdbc.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>If true, processing of JDBC API calls in Java classes is performed.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.jdbc.dbtype' type='enum'>
+      <name>dbtype</name>
+      <example>sql</example>
+      <description>Syntax of database SQL code to process.</description>
+      <possible>
+        <enumval name="sql">ANSI SQL-92 SQL syntax.</enumval>
+        <enumval name="oracle">Embedded SQL code is processed using Oracle syntax.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.j2ee.rule.jdbc.dbsystem' type='string'>
+      <name>dbsystem</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>The default database system (or database name) to use when the target database entity cannot be resolved.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.jdbc.dbname' type='string'>
+      <name>dbname</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>The default database name (or schema) to use when the target database entity cannot be resolved.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.jdbc.ignoreCase' type='string'>
+      <name>ignoreCase</name>
+      <example>${aim.common.ignoreCase}</example>
+      <description>If true, case is ignored, for the names of the database entities found in Java code.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.jdbc.createSqlComponents' type='bool'>
+      <name>createSqlComponents</name>
+      <example>true</example>
+      <description>
+        If true, intermediate SQL components between java classes and target database entities are created.
+        If false (the default), no intermediate SQL components are created, and direct relations between java class
+        and target database entities are created.
+      </description>
+    </property>
+
+    <property id='aim.j2ee.rule.jdbc.methods' type='string'>
+      <name>methods</name>
+      <example>prepareCall,prepareStatement,addBatch,execute,executeQuery,executeUpdate</example>
+      <description>Standard JDBC methods that could be used to execute SQL operations.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.jdbc.customMethods' type='list' subtype='string'>
+      <name>customMethods</name>
+      <example>myCreateQuery</example>
+      <description>Add custom method names that are typically used for executing SQL operations.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.jdbc.strictCheck' type='bool'>
+      <name>strictCheck</name>
+      <example>true</example>
+      <description>
+        If true, check that JDBC methods are called on a JDBC object (may not match complex JDBC calls).
+        If false, any call to methods listed in methods/customMethods properties is considered a JDBC call.
+      </description>
+    </property>
+
+    <property id='aim.j2ee.rule.jdbc.methodsGetConnection' type='list' subtype='string'>
+      <name>methodsGetConnection</name>
+      <example>getConnection,getConn</example>
+      <description>Methods that get Connection object to verify is JDBC call (apply only if aim.j2ee.rule.jdbc.strictCheck=true)</description>
+    </property>
+
+    <property id='aim.j2ee.rule.jdbc.ignoreMethodCalls' type="bool">
+      <name>ignoreMethodCalls</name>
+      <example>true</example>
+      <description>
+        If false, method calls are replaced by SQL placeholders. If true, method calls are ignored.
+        Depending on how the SQL is produced in code, set this flag to increase parsing ratio of the extracted SQL code.
+      </description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>class,table,view,synonym,storedProcedure,function</values>
+    <description>
+      Creates class components and the referenced table/view/synonym/storedProcedure/function components in embedded SQL code.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>class-select|insert|update|delete->table|view|synonym|storedProcedure|function</values>
+    <description>
+      Creates select, insert, update and delete relations between classes and referenced tables/views/synonyms/storedProcedures/functions.
+    </description>
+  </createdRelations>
+
+  <importantConfigurations activation="aim.j2ee.rule.jdbc.active" />
+
+</block>

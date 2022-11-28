@@ -1,0 +1,609 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.spring" standard="Spring" technology="java">
+
+  <description url="https://spring.io/projects/spring-framework">Spring Framework</description>
+
+  <!-- https://docs.spring.io/spring/docs/current/spring-framework-reference/ -->
+
+  <class name="org.springframework.util.StringUtils">
+    <method name="getFilename" signature="getFilename(java.lang.String)" alias="getFilenameExtension">
+      <return type="java.lang.String"/>
+      <neutralization argpos="-1" kind="path_traversal"/>
+    </method>
+  </class>
+
+  <class name="org.springframework.context.support.AbstractMessageSource">
+    <method name="getMessage" signature="getMessage(java.lang.String)" match="name" >
+      <return type="java.lang.Object" />
+      <source argpos="-1" kind="other_input" resource="other" />
+    </method>
+  </class>
+
+  <!-- JDBC helpers -->
+
+  <module name="org.springframework.jdbc" standard="spring.jdbc">
+    <description url="https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#jdbc">Spring JDBC abstraction</description>
+
+    <class name="org.springframework.jdbc.core.JdbcOperations" kind="interface">
+      <method name="batchUpdate" signature="batchUpdate(java.lang.String, *)" match="other">
+        <tags>write</tags>
+        <matcher kind="method" function="batchUpdate" args="1"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="execute" signature="execute(java.lang.String, *)" match="other">
+        <tags>write</tags>
+        <matcher kind="method" function="execute" args="1"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="update" signature="update(java.lang.String, *)" match="other">
+        <tags>write</tags>
+        <matcher kind="method" function="update" args="1"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="query" signature="query(java.lang.String, *)" match="other">
+        <tags>read</tags>
+        <matcher kind="method" function="query(?:For[^\(]+)?" args="1"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.jdbc.core.JdbcTemplate" supertypes="org.springframework.jdbc.core.JdbcOperations">
+    </class>
+
+    <class name="org.springframework.jdbc.core.simple.SimpleJdbcTemplate" supertypes="org.springframework.jdbc.core.JdbcOperations">
+    </class>
+
+    <class name="org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate" supertypes="org.springframework.jdbc.core.JdbcOperations">
+    </class>
+
+    <class name="org.springframework.jdbc.core.PreparedStatementCreatorFactory">
+      <constructor name="PreparedStatementCreatorFactory" signature="PreparedStatementCreatorFactory(java.lang.String)" match="name">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <method name="newPreparedStatementCreator" signature="newPreparedStatementCreator(java.lang.String,java.lang.Object[])">
+        <return type="org.springframework.jdbc.core.PreparedStatementCreator"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.jdbc.core.CallableStatementCreatorFactory">
+      <constructor name="CallableStatementCreatorFactory" signature="CallableStatementCreatorFactory(java.lang.String)" match="name">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="org.springframework.jdbc.core.BatchUpdateUtils">
+      <method name="executeBatchUpdate" signature="executeBatchUpdate(java.lang.String)" match="name">
+        <tags>write</tags>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.jdbc.datasource.AbstractDataSource" kind="abstract_class" supertypes="javax.sql.DataSource"/>
+    
+    <class name="org.springframework.jdbc.datasource.AbstractDriverBasedDataSource" kind="abstract_class" supertypes="org.springframework.jdbc.datasource.AbstractDataSource">
+      <method name="getCatalog" signature="getCatalog()" alias="getSchema"><return type="java.lang.String"/></method>
+      <method name="getConnectionFromDriver" signature="getConnectionFromDriver(java.lang.String, java.lang.String)">
+        <tags>username:0, password:1</tags>
+        <return type="java.sql.Connection"/>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="database"/>
+      </method>
+      <method name="getUrl" signature="getUrl()" alias="getUsername, getPassword">
+        <return type="java.lang.String"/>
+        <sink kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="setUsername" signature="setUsername(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setUrl" signature="setUrl(java.lang.String)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setCatalog" signature="setCatalog(java.lang.String)" alias="setSchema">
+        <sink kind="configuration_setting_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+    
+    <class name="org.springframework.jdbc.datasource.DriverManagerDataSource" supertypes="org.springframework.jdbc.datasource.AbstractDriverBasedDataSource">
+      <constructor name="DriverManagerDataSource" signature="DriverManagerDataSource(java.lang.String)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </constructor>
+      <constructor name="DriverManagerDataSource_2" signature="DriverManagerDataSource(java.lang.String, java.util.Properties)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </constructor>
+      <constructor name="DriverManagerDataSource_3" signature="DriverManagerDataSource(java.lang.String, java.lang.String, java.lang.String)">
+        <tags>username:1, password:2</tags>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="hardcoded_credentials" argpos="1,2" resource="database"/>
+      </constructor>
+      <method name="setDriverClassName" signature="setDriverClassName(java.lang.String)">
+        <sink kind="unsafe_reflection" resource="other" argpos="0"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.jdbc.datasource.SimpleDriverDataSource" supertypes="org.springframework.jdbc.datasource.AbstractDriverBasedDataSource">
+      <constructor name="SimpleDriverDataSource" signature="SimpleDriverDataSource(java.sql.Driver, java.lang.String)">
+        <sink kind="connection_string_injection" argpos="1" resource="database"/>
+      </constructor>
+      <constructor name="SimpleDriverDataSource_2" signature="SimpleDriverDataSource(java.sql.Driver, java.lang.String, java.util.Properties)">
+        <sink kind="connection_string_injection" argpos="1" resource="database"/>
+      </constructor>
+      <constructor name="SimpleDriverDataSource_3" signature="SimpleDriverDataSource(java.sql.Driver, java.lang.String, java.lang.String, java.lang.String)">
+        <tags>username:2, password:3</tags>
+        <sink kind="connection_string_injection" argpos="1" resource="database"/>
+        <sink kind="hardcoded_credentials" argpos="2,3" resource="database"/>
+      </constructor>
+    </class>
+    
+    <class name="org.owasp.benchmark.helpers.DatabaseHelper">
+      <field name="JDBCtemplate" type="org.springframework.jdbc.core.JdbcTemplate" />
+    </class>
+  </module>
+
+  <module name="org.springframework.orm" standard="spring.orm">
+    <description url="https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#orm">Spring-ORM - Object Relational Mapping (ORM)</description>
+
+    <!-- JPA (EntityManager) factory bean -->
+    <class name="org.springframework.orm.jpa.AbstractEntityManagerFactoryBean" kind="abstract_class">
+      <method name="setJpaProperties" signature="setJpaProperties()" alias="setJpaPropertyMap" match="name">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.orm.jpa.LocalEntityManagerFactoryBean" supertypes="org.springframework.orm.jpa.AbstractEntityManagerFactoryBean">
+    </class>
+
+    <class name="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" supertypes="org.springframework.orm.jpa.AbstractEntityManagerFactoryBean">
+    </class>
+
+  </module>
+
+  <module name="org.springframework.data" standard="spring.data">
+    <description url="https://spring.io/projects/spring-data">Spring Data</description>
+    <annotation name="org.springframework.data.annotation.Id"><tags>primaryKey</tags></annotation>
+    <annotation name="org.springframework.data.annotation.Immutable"><tags>immutable</tags></annotation>
+    <annotation name="org.springframework.data.annotation.Persistent"><tags>persistent</tags></annotation>
+    <annotation name="org.springframework.data.annotation.ReadOnlyProperty"><tags>transient, read-only</tags></annotation>
+    <annotation name="org.springframework.data.annotation.Transient"><tags>transient</tags></annotation>
+
+    <class name="org.springframework.data.repository.Repository" kind="interface"/>
+    <class name="org.springframework.data.repository.CrudRepository" supertypes="org.springframework.data.repository.Repository" kind="interface">
+      <method name="count" signature="count()"><return type="long"/></method>
+      <method name="delete" signature="delete(T)"><tags>write</tags></method>
+      <method name="deleteAll" signature="deleteAll()" match="name"><tags>write</tags></method>
+      <method name="deleteById" signature="deleteById(ID)"><tags>write</tags></method>
+      <method name="existsById" signature="existsById(ID)"><return type="boolean"/></method>
+      <method name="findAll" signature="findAll()"><tags>read</tags><return type="java.util.Collection" elementType="T"/><source kind="database_input" argpos="-1" resource="database"/></method>
+      <method name="findAllById" signature="findAllById(java.lang.Iterable)"><tags>read</tags><return type="java.util.Collection" elementType="T"/><source kind="database_input" argpos="-1" resource="database"/></method>
+      <method name="findById" signature="findById(ID)"><tags>read</tags><return type="java.util.Optional" elementType="T"/><source kind="database_input" argpos="-1" resource="database"/></method>
+      <method name="save" signature="save(T)"><tags>write</tags><return type="T"/></method>
+      <method name="saveAll" signature="saveAll(java.lang.Iterable)"><tags>write</tags><return type="java.lang.Iterable" elementType="T"/></method>
+    </class>
+    <class name="org.springframework.data.repository.PagingAndSortingRepository" supertypes="org.springframework.data.repository.CrudRepository" kind="interface"/>
+
+    <class name="org.springframework.data.repository.query.QueryByExampleExecutor" >
+      <method name="count" signature="count(org.springframework.data.domain.Example)"><return type="long"/></method>
+      <method name="exists" signature="exists(org.springframework.data.domain.Example)"><return type="boolean"/></method>
+      <method name="findAll" signature="findAll(org.springframework.data.domain.Example)" >
+        <tags>read</tags><return type="java.lang.Iterable" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="findAll" signature="findAll(org.springframework.data.domain.Example,org.springframework.data.domain.Pageable)" >
+        <tags>read</tags><return type="java.lang.Iterable" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="findAll" signature="findAll(org.springframework.data.domain.Example,org.springframework.data.domain.Sort)" >
+        <tags>read</tags><return type="java.lang.Iterable" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="findOne" signature="findOne(org.springframework.data.domain.Example)" >
+        <tags>read</tags><return type="java.lang.Iterable" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+    </class>
+  </module>
+
+  <module name="org.springframework.data.jdbc" standard="spring.data.jdbc">
+    <description url="https://docs.spring.io/spring-data/jdbc/docs/current/reference/html/#reference">Spring Data JDBC</description>
+
+  </module>
+
+  <module name="org.springframework.data.jpa" standard="spring.data.jpa">
+    <description url="https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#reference">Spring Data JPA</description>
+
+    <class name="org.springframework.data.jpa.repository.JpaRepository" supertypes="org.springframework.data.repository.CrudRepository, org.springframework.data.repository.query.QueryByExampleExecutor" >
+      <method name="getOne" signature="getOne()" >
+        <return type="java.lang.Object" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+    </class>
+
+    <class name="org.springframework.data.jpa.repository.support.SimpleJpaRepository" supertypes="org.springframework.data.jpa.repository.JpaRepository" />
+
+    <class name="org.springframework.data.jpa.repository.support.QuerydslJpaRepository" supertypes="org.springframework.data.jpa.repository.JpaRepository" >
+      <method name="createQuery" signature="createQuery(com.querydsl.core.types.Predicate...)" alias="createCountQuery">
+        <return type="com.querydsl.jpa.JPQLQuery" />
+      </method>
+      <method name="findAll" signature="findAll()" match="name" >
+        <return type="java.util.List" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="findOne" signature="findOne(com.querydsl.core.types.Predicate)" >
+        <return type="java.util.List" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+    </class>
+
+    <class name="org.springframework.data.jpa.repository.support.QuerydslJpaPredicateExecutor"
+           supertypes="org.springframework.data.querydsl.QuerydslPredicateExecutor" />
+  </module>
+
+  <class name="org.springframework.data.querydsl.QuerydslPredicateExecutor" kind="interface">
+    <method name="createQuery" signature="createQuery(com.querydsl.core.types.Predicate...)" alias="createCountQuery">
+      <return type="com.querydsl.jpa.JPQLQuery" />
+    </method>
+    <method name="findAll" signature="findAll()" match="name" >
+      <return type="java.util.List" />
+      <source argpos="-1" kind="database_input" resource="database" />
+    </method>
+    <method name="findOne" signature="findOne(com.querydsl.core.types.Predicate)" >
+      <return type="java.util.List" />
+      <source argpos="-1" kind="database_input" resource="database" />
+    </method>
+  </class>
+
+  <module name="org.springframework.data.domain" standard="spring.data.domain">
+    <class name="org.springframework.data.domain.Pageable">
+      <tags>non-spreadable</tags>
+    </class>
+  </module>
+
+  <module name="org.springframework.ldap" standard="spring.ldap">
+    <description url="https://docs.spring.io/spring-ldap/docs/current/reference/">Spring LDAP</description>
+
+    <class name="org.springframework.ldap.core.ContextSource" kind="interface">
+      <method name="getContext" signature="getContext(java.lang.String, java.lang.String)">
+        <tags>username:0, password:1</tags>
+        <return type="javax.naming.directory.DirContext"/>
+        <sink kind="hardcoded_credentials" argpos="0,1"/>
+      </method>
+      <method name="getReadOnlyContext" signature="getReadOnlyContext()" alias="getReadWriteContext">
+        <return type="javax.naming.directory.DirContext"/>
+      </method>
+    </class>
+    
+    <class name="org.springframework.ldap.core.support.AbstractContextSource" kind="abstract_class" supertypes="org.springframework.ldap.core.ContextSource">
+      <method name="getUserDn" signature="getUserDn()" alias="getPassword, getBaseLdapPathAsString, getUrls">
+        <source argpos="-1" kind="sensitive_info" resource="network"/>
+      </method>
+      <method name="setUserDn" signature="setUserDn(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="network"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="network"/>
+      </method>
+      <method name="setUrl" signature="setUrl(java.lang.String)">
+        <sink kind="ssrf" resource="network" argpos="0"/>
+      </method>
+      <method name="setUrls" signature="setUrls(java.lang.String[])">
+        <sink kind="ssrf" resource="network" argpos="0"/>
+      </method>
+    </class>
+    
+    <class name="org.springframework.ldap.core.support.DirContextSource" supertypes="org.springframework.ldap.core.support.AbstractContextSource"/>
+    <class name="org.springframework.ldap.core.support.LdapContextSource" supertypes="org.springframework.ldap.core.support.AbstractContextSource"/>
+    <class name="org.springframework.ldap.pool2.factory.PooledContextSource" supertypes="org.springframework.ldap.core.ContextSource"/>
+    <class name="org.springframework.ldap.pool2.factory.MutablePooledContextSource" supertypes="org.springframework.ldap.core.ContextSource"/>
+    <class name="org.springframework.ldap.pool.factory.PoolingContextSource" supertypes="org.springframework.ldap.core.ContextSource"/>
+    <class name="org.springframework.ldap.pool.factory.MutablePoolingContextSource" supertypes="org.springframework.ldap.core.ContextSource"/>
+    <class name="org.springframework.ldap.core.support.SingleContextSource" supertypes="org.springframework.ldap.core.ContextSource"/>
+    <class name="org.springframework.ldap.transaction.compensating.manager.TransactionAwareContextSourceProxy" supertypes="org.springframework.ldap.core.ContextSource"/>
+
+    <class name="org.springframework.ldap.filter.Filter" kind="interface">
+      <method name="encode" signature="encode()"><return type="java.lang.String"/></method>
+      <method name="encode" signature="encode(java.lang.StringBuffer)">
+        <return type="java.lang.StringBuffer"/>
+        <propagate from="-2" to="0, -1"/>
+      </method>
+    </class>
+    
+    <class name="org.springframework.ldap.filter.AbstractFilter" supertypes="org.springframework.ldap.filter.Filter"/>
+    
+    <class name="org.springframework.ldap.filter.HardcodedFilter" supertypes="org.springframework.ldap.filter.AbstractFilter">
+      <constructor name="HardcodedFilter" signature="HardcodedFilter(java.lang.String)">
+        <sink kind="ldap_injection" argpos="0"/>
+      </constructor>
+    </class>
+    <class name="org.springframework.ldap.filter.CompareFilter" kind="abstract_class"
+           supertypes="org.springframework.ldap.filter.AbstractFilter"
+           alias="org.springframework.ldap.filter.EqualsFilter, org.springframework.ldap.filter.LikeFilter, org.springframework.ldap.filter.WhitespaceWildcardsFilter, org.springframework.ldap.filter.GreaterThanOrEqualsFilter, org.springframework.ldap.filter.LessThanOrEqualsFilter">
+      <constructor name="CompareFilter" signature="CompareFilter(java.lang.String, java.lang.String)">
+        <neutralization argpos="-1" kind="ldap_injection"/>
+      </constructor>
+    </class>
+
+    <class name="org.springframework.ldap.query.SearchScope" kind="enum">
+      <field name="OBJECT_SCOPE" type="@self"/>
+      <field name="ONELEVEL_SCOPE" type="@self"/>
+      <field name="SUBTREE_SCOPE" type="@self"/>
+    </class>
+    
+    <class name="org.springframework.ldap.query.LdapQuery">
+      <method name="attributes" signature="attributes()"><return type="java.lang.String[]"/></method>
+      <method name="base" signature="base()"><return type="javax.naming.Name"/></method>
+      <method name="filter" signature="filter()"><return type="org.springframework.ldap.filter.Filter"/></method>
+      <method name="searchScope" signature="searchScope()"><return type="org.springframework.ldap.query.SearchScope"/></method>
+    </class>
+
+    <class name="org.springframework.ldap.query.LdapQueryBuilder">
+      <method name="query" signature="query()" instance="false">
+        <return type="@self"/>
+      </method>
+      <method name="attributes" signature="attributes(java.lang.String[])"><return type="@self"/></method>
+      <method name="base" signature="base(java.lang.String)">
+        <return type="@self"/>
+        <sink kind="ldap_injection" argpos="0"/>
+      </method>
+      <method name="filter" signature="filter(java.lang.String, java.lang.Object...)">
+        <return type="org.springframework.ldap.query.LdapQuery"/>
+        <sink kind="ldap_injection" argpos="0"/>
+        <neutralization argpos="1" kind="ldap_injection"/>
+      </method>
+
+      <method name="countLimit" signature="countLimit(int)" alias="timeLimit"><return type="@self"/></method>
+      <method name="searchScope" signature="searchScope(org.springframework.ldap.query.SearchScope)"><return type="@self"/></method>
+      <method name="attributes_get" signature="attributes()"><return type="java.lang.String[]"/></method>
+      <method name="filter_get" signature="filter()"><return type="org.springframework.ldap.filter.Filter"/></method>
+      <method name="base_get" signature="base()"><return type="javax.naming.Name"/></method>
+
+      <method name="where" signature="where(java.lang.String)">
+        <return type="org.springframework.ldap.query.ConditionCriteria"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.ldap.core.LdapOperations" kind="interface">
+      <method name="authenticate" signature="authenticate(org.springframework.ldap.query.LdapQuery, java.lang.String)">
+        <tags>password:1</tags>
+        <sink kind="hardcoded_credentials" argpos="1"/>
+        <sink kind="ldap_injection" argpos="0"/>
+      </method>
+      <method name="authenticate" signature="authenticate(org.springframework.ldap.query.LdapQuery, java.lang.String, org.springframework.ldap.core.AuthenticatedLdapEntryContextMapper)">
+        <tags>password:1</tags>
+        <sink kind="hardcoded_credentials" argpos="1"/>
+        <sink kind="ldap_injection" argpos="0"/>
+      </method>
+      <method name="authenticate" signature="authenticate(java.lang.String, java.lang.String, java.lang.String)">
+        <tags>username:0,password:2</tags>
+        <return type="boolean"/>
+        <sink kind="hardcoded_credentials" argpos="0,2"/>
+        <sink kind="ldap_injection" argpos="1"/>
+      </method>
+      <method name="authenticate" signature="authenticate(java.lang.String, java.lang.String, java.lang.String, org.springframework.ldap.core.AuthenticatedLdapEntryContextCallback)">
+        <tags>username:0,password:2</tags>
+        <return type="boolean"/>
+        <sink kind="hardcoded_credentials" argpos="0,2"/>
+        <sink kind="ldap_injection" argpos="1"/>
+      </method>
+      <method name="authenticate" signature="authenticate(java.lang.String, java.lang.String, java.lang.String, org.springframework.ldap.core.AuthenticatedLdapEntryContextCallback, org.springframework.ldap.core.AuthenticationErrorCallback)">
+        <tags>username:0,password:2</tags>
+        <return type="boolean"/>
+        <sink kind="hardcoded_credentials" argpos="0,2"/>
+        <sink kind="ldap_injection" argpos="1"/>
+      </method>
+      <method name="search" signature="search(java.lang.String, java.lang.String, org.springframework.ldap.core.AttributesMapper)">
+        <return type="java.util.List"/>
+        <sink kind="ldap_injection" argpos="0,1"/>
+      </method>
+      <method name="search" signature="search(java.lang.String, java.lang.String, int, org.springframework.ldap.core.AttributesMapper)">
+        <return type="java.util.List"/> 
+        <sink kind="ldap_injection" argpos="0,1"/>
+      </method>
+      <method name="search" signature="search(java.lang.String, java.lang.String, int, boolean, org.springframework.ldap.core.NameClassPairCallbackHandler)">
+        <sink kind="ldap_injection" argpos="0,1"/>
+      </method>
+      <method name="search" signature="search(java.lang.String, java.lang.String, int, java.lang.String[], org.springframework.ldap.core.AttributesMapper)">
+        <return type="java.util.List"/>
+        <sink kind="ldap_injection" argpos="0,1"/>
+      </method>
+      <method name="search" signature="search(java.lang.String, java.lang.String, javax.naming.directory.SearchControls, org.springframework.ldap.core.AttributesMapper)">
+        <return type="java.util.List"/>
+        <sink kind="ldap_injection" argpos="0,1"/>
+      </method>
+      <method name="search" signature="search(java.lang.String, java.lang.String, javax.naming.directory.SearchControls, org.springframework.ldap.core.AttributesMapper, org.springframework.ldap.core.DirContextProcessor)">
+        <return type="java.util.List"/>
+        <sink kind="ldap_injection" argpos="0,1"/>
+      </method>
+      <method name="searchForContext" signature="searchForContext(org.springframework.ldap.query.LdapQuery)">
+        <return type="org.springframework.ldap.core.DirContextOperations"/>
+      </method>
+      <method name="searchForObject" signature="searchForObject(org.springframework.ldap.query.LdapQuery, org.springframework.ldap.core.ContextMapper)">
+        <return type="java.lang.Object"/>
+      </method>
+      <method name="searchForObject" signature="searchForObject(java.lang.String, java.lang.String, org.springframework.ldap.core.ContextMapper)">
+        <return type="java.lang.Object"/>
+        <sink kind="ldap_injection" argpos="0,1"/>
+      </method>
+      <method name="searchForObject" signature="searchForObject(java.lang.String, java.lang.String, javax.naming.directory.SearchControls, org.springframework.ldap.core.ContextMapper)">
+        <return type="java.lang.Object"/>
+        <sink kind="ldap_injection" argpos="0,1"/>
+      </method>
+    </class>
+    
+    <class name="org.springframework.ldap.core.LdapTemplate" supertypes="org.springframework.ldap.core.LdapOperations"></class>
+    
+    <class name="org.springframework.ldap.support.LdapNameBuilder">
+      <method name="newInstance" signature="newInstance(java.lang.String)" instance="false">
+        <return type="@self"/>
+        <!--sink kind="ldap_injection" argpos="0"/-->
+        <propagate from="0" to="-2"/>
+      </method>
+      <method name="add" signature="add(java.lang.String)">
+        <return type="@self"/>
+        <propagate from="0" to="-2"/>
+        <!--sink kind="ldap_injection" argpos="0"/-->
+      </method>
+      <method name="add" signature="add(java.lang.String, java.lang.Object)">
+        <return type="@self"/>
+        <!--sink kind="ldap_injection" argpos="0,1"/-->
+        <propagate from="0,1" to="-2"/>
+      </method>
+      <method name="build" signature="build()">
+        <return type="javax.naming.ldap.LdapName"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.ldap.support.LdapUtils">
+      <method name="newLdapName" signature="newLdapName(java.lang.String)" instance="false">
+        <return type="javax.naming.ldap.LdapName"/>
+        <!--sink kind="ldap_injection" argpos="0"/-->
+        <propagate from="0" to="-1"/>
+      </method>
+    </class>
+    
+    <class name="org.springframework.ldap.support.LdapEncoder">
+      <method name="filterEncode" signature="filterEncode(java.lang.String)" instance="false">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="ldap_injection"/>
+      </method>
+      <method name="nameEncode" signature="nameEncode(java.lang.String)" instance="false">
+        <return type="java.lang.String"/>
+        <neutralization argpos="-1" kind="ldap_injection"/>
+      </method>
+      <method name="nameDecode" signature="nameDecode(java.lang.String)" instance="false"><return type="java.lang.String"/></method>
+      <method name="parseBase64Binary" signature="parseBase64Binary(java.lang.String)" instance="false"><return type="byte[]"/></method>
+      <method name="printBase64Binary" signature="printBase64Binary(byte[])" instance="false"><return type="java.lang.String"/></method>
+    </class>
+  </module>
+
+  <!-- ui -->
+  <class name="org.springframework.ui.Model" >
+    <method name="addAllAttributes" signature="addAllAttributes(java.util.Collection)" >
+      <return type="org.springframework.ui.ExtendedModelMap" />
+    </method>
+    <method name="addAttribute" signature="addAttribute(java.lang.Object)" >
+      <return type="org.springframework.ui.ExtendedModelMap" />
+    </method>
+    <method name="addAttribute" signature="addAttribute(java.lang.String,java.lang.Object)" >
+      <return type="org.springframework.ui.ExtendedModelMap" />
+    </method>
+    <method name="asMap" signature="asMap()" >
+      <return type="java.util.Map" />
+    </method>
+    <method name="mergeAttributes" signature="mergeAttributes(java.util.Map)" >
+      <return type="org.springframework.ui.ExtendedModelMap" />
+    </method>
+  </class>
+  <class name="org.springframework.ui.ExtendedModelMap" supertypes="org.springframework.ui.Model" />
+  <class name="org.springframework.validation.support.BindingAwareConcurrentModel" supertypes="org.springframework.ui.Model" >
+    <method name="put" signature="put(java.lang.String,java.lang.Object)" >
+      <return type="java.lang.Object" />
+    </method>
+  </class>
+  <class name="org.springframework.validation.support.BindingAwareModelMap" supertypes="org.springframework.ui.Model" >
+    <method name="put" signature="put(java.lang.String,java.lang.Object)" >
+      <return type="java.lang.Object" />
+    </method>
+    <method name="putAll" signature="putAll(java.util.Map)" />
+  </class>
+  <class name="org.springframework.ui.ConcurrentModel" supertypes="org.springframework.ui.Model" >
+    <method name="put" signature="put(java.lang.String,java.lang.Object)" >
+      <return type="java.lang.Object" />
+    </method>
+    <method name="putAll" signature="putAll(java.util.Map)" />
+  </class>
+  <class name="org.springframework.web.servlet.mvc.support.RedirectAttributes" kind="interface" supertypes="org.springframework.ui.Model">
+    <method name="addFlashAttribute" signature="addFlashAttribute(java.lang.Object)" >
+      <return type="org.springframework.web.servlet.mvc.support.RedirectAttributes" />
+    </method>
+    <method name="addFlashAttribute" signature="addFlashAttribute(java.lang.String,java.lang.Object)" >
+      <return type="org.springframework.web.servlet.mvc.support.RedirectAttributes" />
+    </method>
+  </class>
+  <class name="org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap" supertypes="org.springframework.ui.Model,org.springframework.web.servlet.mvc.support.RedirectAttributes" >
+    <method name="put" signature="put(java.lang.String,java.lang.Object)" >
+      <return type="java.lang.Object" />
+    </method>
+    <method name="putAll" signature="putAll(java.util.Map)" />
+  </class>
+
+  <!-- mail, usually underlying javax.mail vulnerable library is used for SMTP transport -->
+
+  <module name="org.springframework.mail" standard="spring.mail">
+    <!-- Either in org.springframework:spring-context-support or org.springframework.boot:spring-boot-starter-mail -->
+    <description url="https://www.javadoc.io/doc/org.springframework/spring-context-support/latest/index.html">Spring Email API</description>
+
+    <class name="org.springframework.mail.MailMessage" kind="interface">
+      <method name="setSubject" signature="setSubject(java.lang.String)">
+        <sink argpos="0" kind="mail_command_injection" resource="network"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.mail.javamail.MimeMailMessage" supertypes="org.springframework.mail.MailMessage">
+    </class>
+
+    <class name="org.springframework.mail.SimpleMailMessage" supertypes="org.springframework.mail.MailMessage">
+    </class>
+
+    <class name="org.springframework.mail.javamail.MimeMessageHelper">
+      <method name="setSubject" signature="setSubject(java.lang.String)">
+        <sink argpos="0" kind="mail_command_injection" resource="network"/>
+      </method>
+    </class>
+
+    <class name="org.springframework.mail.MailSender" kind="interface">
+      <method name="send" signature="send(org.springframework.mail.SimpleMailMessage)">
+        <tags>write,mail</tags>
+      </method>
+    </class>
+
+    <class name="org.springframework.mail.javamail.JavaMailSender" supertypes="org.springframework.mail.MailSender">
+      <method name="createMimeMessage" signature="createMimeMessage(java.io.InputStream)" match="name">
+        <return type="javax.mail.internet.MimeMessage"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="send" signature="send(javax.mail.internet.MimeMessage)">
+        <tags>write,mail</tags>
+      </method>
+    </class>
+  </module>
+
+  <class name="org.springframework.expression.ExpressionParser" kind="interface">
+    <method name="parseExpression" signature="parseExpression(java.lang.String)" match="name">
+      <return type="org.springframework.expression.Expression"/>
+      <sink argpos="0" kind="code_injection" resource="environment"/>
+    </method>
+  </class>
+
+  <class name="org.springframework.expression.common.TemplateAwareExpressionParser" kind="abstract_class" supertypes="org.springframework.expression.ExpressionParser">
+  </class>
+
+  <class name="org.springframework.expression.spel.standard.SpelExpressionParser" supertypes="org.springframework.expression.common.TemplateAwareExpressionParser">
+    <method name="parseRaw" signature="parseRaw(java.lang.String)">
+      <return type="org.springframework.expression.spel.standard.SpelExpression"/>
+      <sink argpos="0" kind="code_injection" resource="environment"/>
+    </method>
+  </class>
+
+  <!-- Resource loader -->
+  <class name="org.springframework.core.io.ResourceLoader" kind="interface">
+    <method name="getResource()" signature="getResource(java.lang.String)" >
+      <return type="org.springframework.core.io.Resource" />
+    </method>
+  </class>
+  <class name="org.springframework.core.io.InputStreamSource" kind="interface" >
+    <method name="getInputStream" signature="getInputStream()" >
+      <return type="java.io.InputStream" />
+    </method>
+  </class>
+
+  <class name="org.springframework.core.io.Resource" kind="interface" supertypes="org.springframework.core.io.InputStreamSource" />
+</library>

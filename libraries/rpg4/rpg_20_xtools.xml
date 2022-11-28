@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="iseries.web" technology="rpg4">
+
+  <description>xTools libraries</description>
+
+  <module name="xtools.cgilib">
+    <description url="http://www.rpgworld.com/handouts/prodev/My%20First%20CGI%20Pgm%20part%202.pdf">xTools CGILIB</description>
+    <function name="cgiGetVar" alias="cgiGetVarU, cgiGetVarL, cgiGetVarUp, cgiGetVarLow">
+      <source kind="user_input" resource="web" argpos="-1"/>
+    </function>
+    <function name="cgiGetVarDec" alias="cgiGetVarInt">
+      <!-- assume not injectable -->
+      <!-- source kind="user_input" resource="web" argpos="-1"/-->
+    </function>
+    <function name="cgiLoadHtml" alias="cgiLoadHtmlSrc">
+      <sink kind="resource_injection" resource="filesystem" argpos="0,1"/>
+    </function>
+    <function name="cgiLoadHtmlIFS">
+      <sink kind="path_traversal" resource="filesystem" argpos="0"/>
+    </function>
+    <function name="cgiWrtSection"></function>
+    <function name="cgiFlushBuffer"></function>
+    <function name="cgiStdOut">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </function>
+    <function name="unEscape">
+      <description>Unescape URL-encoded data</description>
+      <neutralization argpos="-1" kind="encoding" resource="web"/>
+    </function>
+  </module>
+
+</library>

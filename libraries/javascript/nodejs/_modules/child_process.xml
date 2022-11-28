@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/child_process" standard="nodejs">
+
+  <module name="nodejs/child_process" standard="child_process">
+    <description url="https://nodejs.org/api/child_process.html">child_process module, provides the ability to spawn child processes</description>
+    <class name="nodejs/child_process">
+      <function name="spawn" alias="spawnSync">
+        <return type="nodejs/ChildProcess"/>
+        <!-- does not execute shell, unless shell:true or shell:'/path/to/shell'
+        (or shell like cmd.exe or /bin/sh executed and commands in second arg)  -->
+        <sink kind="command_injection" argpos="0" resource="os"/>
+      </function>
+      <function name="exec" alias="execSync">
+        <!-- executes shell -->
+        <return type="nodejs/ChildProcess"/>
+        <sink kind="command_injection" argpos="0,1" resource="os"/>
+      </function>
+      <function name="execFile" alias="execFileSync">
+        <return type="nodejs/ChildProcess"/>
+        <sink kind="command_injection" argpos="0" resource="os"/>
+      </function>
+      <function name="fork">
+        <!-- spawns a Node.js module in a separate process, enabling IPC communications between current process and child process -->
+        <return type="nodejs/ChildProcess"/>
+        <sink kind="process_control" argpos="0" resource="os"/>
+      </function>
+    </class>
+
+    <class name="nodejs/ChildProcess">
+      <field name="pid" type="Number"/>
+      <field name="stdout" type="nodejs/stream.Readable"/>
+      <field name="stderr" type="nodejs/stream.Readable"/>
+      <field name="stdin" type="nodejs/stream.Writable"/>
+      <field name="stdio" type="Array"/>
+      <function name="send"/>
+      <function name="kill"/>
+      <function name="disconnect"/>
+    </class>
+  </module>
+</library>

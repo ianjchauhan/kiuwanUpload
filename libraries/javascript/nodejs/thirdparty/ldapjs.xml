@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs.ldap" standard="nodejs.ldap">
+
+  <description>LDAP modules for Node.js</description>
+
+  <module name="nodejs/ldapjs" standard="ldapjs">
+    <description url="http://ldapjs.org/">LDAP module</description>
+
+    <class name="nodejs/ldapjs.Filter"/>
+    <class name="nodejs/ldapjs.Server">
+      <function name="listen">
+        <sink kind="resource_injection" resource="network" argpos="0,1"/>
+      </function>
+      <function name="bind">
+        <sink kind="resource_injection" resource="network" argpos="0"/>
+      </function>
+      <function name="add" alias="del,modify,modifyDN">
+        <sink kind="ldap_injection" resource="network" argpos="0"/>
+      </function>
+      <function name="exop">
+        <sink kind="resource_injection" resource="network" argpos="0"/>
+      </function>
+      <function name="search">
+        <sink kind="resource_injection" resource="network" argpos="0"/>
+      </function>
+    </class>
+
+    <class name="nodejs/ldapjs.Client">
+      <function name="bind">
+        <sink kind="resource_injection" resource="network" argpos="0"/>
+        <sink kind="sensitive_data" resource="network" argpos="1"/>
+      </function>
+      <function name="add" alias="del,modify,modifyDN">
+        <sink kind="ldap_injection" resource="network" argpos="0"/>
+      </function>
+      <function name="exop">
+        <sink kind="resource_injection" resource="network" argpos="0"/>
+      </function>
+      <function name="search">
+        <sink kind="resource_injection" resource="network" argpos="0"/>
+        <sink kind="ldap_injection" resource="network">
+          <arg pos="1"/>
+          <arg pos="1" field="filter"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/ldapjs">
+      <function name="createClient">
+        <return type="nodejs/ldapjs.Client"/>
+        <sink kind="resource_injection" resource="network"><arg pos="0" field="url,socketPath"/></sink>
+      </function>
+      <function name="createServer">
+        <return type="nodejs/ldapjs.Server"/>
+        <sink kind="sensitive_data" resource="network"><arg pos="0" field="certificate,key"/></sink>
+      </function>
+
+      <function name="parseFilter">
+        <return type="nodejs/ldapjs.Filter"/>
+        <sink kind="ldap_injection" resource="network" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/ldap-client" standard="ldap-client">
+    <description url="https://www.npmjs.com/package/ldap-client">OpenLDAP client module</description>
+    <class name="nodejs/ldap-client.Client">
+      <function name="bind">
+        <sink kind="resource_injection" resource="network"><arg pos="0" field="binddn"/></sink>
+        <sink kind="sensitive_data"><arg pos="0" field="password"/></sink>
+      </function>
+      <function name="saslbind">
+        <sink kind="resource_injection" resource="network"><arg pos="0" field="realm"/></sink>
+        <sink kind="sensitive_data"><arg pos="0" field="user,password,proxyuser"/></sink>
+      </function>
+      <function name="search" alias="findandbind">
+        <sink kind="resource_injection" resource="network"><arg pos="0" field="base"/></sink>
+        <sink kind="ldap_injection" resource="network"><arg pos="0" field="filter,attrs"/></sink>
+        <sink kind="sensitive_data" resource="network"><arg pos="0" field="password"/></sink>
+      </function>
+      <function name="add" alias="modify,remove">
+        <sink kind="ldap_injection" resource="network" argpos="0"/>
+      </function>
+      <function name="rename">
+        <sink kind="ldap_injection" resource="network" argpos="0,1"/>
+      </function>
+    </class>
+
+    <class name="nodejs/ldap-client">
+      <function name="#module#">
+        <return type="nodejs/ldap-client.Client"/>
+        <sink kind="resource_injection" resource="network"><arg pos="0" field="uri,base,attrs,filter"/></sink>
+      </function>
+      <function name="escapefn">
+        <neutralization kind="ldap_injection" resource="network" argpos="-1">
+          <checker id="factoryChecker"/>
+        </neutralization>
+      </function>
+      <function name="stringEscapeFilter">
+        <neutralization kind="ldap_injection" resource="network" argpos="0,-1"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/activedirectory" standard="activedirectory">
+    <description url="https://github.com/gheeres/node-activedirectory">Client for Microsoft Active Directory</description>
+
+    <class name="nodejs/activedirectory.Client">
+      <function name="find" alias="findDeletedObjects,findUser,findGroup,findGroups">
+        <sink kind="ldap_injection" resource="network">
+          <arg pos="0"/>
+          <arg pos="0" field="filter"/>
+        </sink>
+        <sink kind="resource_injection" resource="network">
+          <arg pos="0" field="url,host,port,secure,socketPath,baseDN,bindDN,attributes"/>
+        </sink>
+        <sink kind="sensitive_data" resource="network">
+        <arg pos="0" field="bindCredentials"/>
+        </sink>
+      </function>
+    </class>
+
+    <function name="#module#">
+      <return type="nodejs/activedirectory.Client"/>
+      <sink kind="resource_injection" resource="network"><arg pos="0" field="url,baseDN"/></sink>
+      <sink kind="sensitive_data" resource="network"><arg pos="0" field="username,password"/></sink>
+    </function>
+  </module>
+
+  <module name="nodejs/activedirectory2" standard="activedirectory2">
+    <description url="https://www.npmjs.com/package/activedirectory2">Client for Microsoft Active Directory</description>
+    <function name="#module#">
+      <return type="nodejs/activedirectory.Client"/>
+      <sink kind="resource_injection" resource="network"><arg pos="0" field="url,baseDN"/></sink>
+      <sink kind="sensitive_data" resource="network"><arg pos="0" field="username,password"/></sink>
+    </function>
+  </module>
+  
+  <module name="nodejs/simple-ldap-search" standard="simple-ldap-search">
+    <description url="https://github.com/jxjj/simple-ldap-search#readme">Simple LDAP Search</description>
+
+    <class name="nodejs/simple-ldap-search.Client">
+      <function name="search">
+        <sink kind="ldap_injection" resource="network" argpos="0,1"/>
+      </function>
+    </class>
+    <function name="#module#">
+      <return type="nodejs/simple-ldap-search.Client"/>
+      <sink kind="resource_injection" resource="network"><arg pos="0" field="url,base"/></sink>
+      <sink kind="sensitive_data" resource="network"><arg pos="0" field="dn,password"/></sink>
+    </function>
+  </module>
+
+  <module name="nodejs/simple-ldap-get" standard="simple-ldap-get">
+    <description url="https://www.npmjs.com/package/simple-ldap-get">Get data from a LDAP</description>
+
+    <class name="nodejs/simple-ldap-get.Client">
+      <function name="get" alias="getPromise,getStream">
+        <sink kind="ldap_injection" resource="network" argpos="0,1"/>
+      </function>
+    </class>
+    <function name="#module#">
+      <return type="nodejs/simple-ldap-get.Client"/>
+      <sink kind="resource_injection" resource="network"><arg pos="0" field="url,base"/></sink>
+      <sink kind="sensitive_data" resource="network"><arg pos="0" field="bind.dn,bind.password"/></sink>
+    </function>
+  </module>
+
+</library>

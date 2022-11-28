@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="scala" name="sql" standard="Scala_database">
+
+  <description>Scala-specific database access libraries</description>
+
+  <module name="slick" standard="">
+    <description url="https://scala-slick.org/">Functional-Relational Mapping for Scala</description>
+
+    <!-- https://scala-slick.org/doc/3.3.1/ -->
+    <class name="slick.basic.DatabaseConfig" kind="trait" >
+      <field name="db" type="slick.basic.BasicBackend.DatabaseDef" />
+    </class>
+    <class name="slick.basic.JdbcDatabaseConfig" kind="trait" >
+      <field name="db" type="slick.jdbc.JdbcBackend.SessionDef" />
+    </class>
+    <class name="slick.basic.SqlDatabaseConfig" kind="trait" >
+      <field name="db" type="slick.basic.BasicBackend.DatabaseDef" />
+    </class>
+    <class name="slick.basic.RelationalDatabaseConfig" kind="trait" >
+      <field name="db" type="slick.basic.BasicBackend.DatabaseDef" />
+    </class>
+
+    <class name="slick.basic.BasicProfile" kind="trait" />
+    <class name="slick.basic.BasicBackend" kind="trait" />
+    <class name="slick.jdbc.JdbcBackend" kind="trait" supertypes="slick.basic.BasicBackend"/>
+    <class name="slick.relationalRelationalBackend" kind="trait" supertypes="slick.basic.BasicBackend"/>
+    <class name="slick.memory.HeapBackend" kind="trait" supertypes="slick.relationalRelationalBackend"/>
+    <class name="slick.memory.DistributedBackend" kind="trait" supertypes="slick.relationalRelationalBackend"/>
+
+    <class name="slick.basic.BasicBackend.DatabaseDef" kind="trait" >
+      <method name="createSession" signature="createSession()" >
+        <return type="slick.basic.BasicBackend.SessionDef" />
+      </method>
+    </class>
+    <class name="slick.jdbc.JdbcBackend.SessionDef" kind="trait" >
+      <method name="createSession" signature="createSession()" >
+        <return type="slick.jdbc.JdbcBackend.BaseSession" />
+      </method>
+    </class>
+    <class name="slick.jdbc.JdbcBackend.BaseSession" supertypes="slick.basic.BasicBackend.DatabaseDef" >
+      <field name="conn" type="java.sql.Connection" />
+    </class>
+
+    <class name="scala.slick.jdbc.StaticQuery">
+      <method name="u" signature="u()" />
+    </class>
+  </module>
+
+</library>

@@ -1,0 +1,199 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='dotnet' subtech='dotnet' descriptor='dotnet/aim.dotnet.xml' label='Process .Net code'>
+  <description>
+    Process .Net sources (currently c# and vb.net languages) and resolve language dependencies.
+  </description>
+
+  <properties>
+
+    <property id='aim.dotnet.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>Enable processing for .Net source code.</description>
+    </property>
+
+    <property id='aim.csharp.filter' type='string'>
+      <name>csharpfilter</name>
+      <example>default</example>
+      <description>Filtering strategy for selecting C# files to process.</description>
+      <possible>
+        <enumval name="default">Use default extensions configured for csharp technology.</enumval>
+        <enumval name="pattern">Use patterns in the <code>csharpPatterns</code> property for selecting which files should be processed.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.csharp.filter.pattern' type='list' subtype='antPattern'>
+      <name>csharpPatterns</name>
+      <example>*.cs,**/*.cs</example>
+      <description>
+        Ant patterns for C# source files (used when <code>csharpfilter=pattern</code>).
+      </description>
+    </property>
+
+    <property id='aim.vbnet.filter' type='string'>
+      <name>vbnetFilter</name>
+      <example>default</example>
+      <description>Filtering strategy for selecting VB.Net files to process.</description>
+      <possible>
+        <enumval name="default">Use default extensions configured for vbnet technology.</enumval>
+        <enumval name="pattern">Use patterns in the <code>vbnetPatterns</code> property for selecting which files should be processed.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.vbnet.filter.pattern' type='list' subtype='antPattern'>
+      <name>vbnetPatterns</name>
+      <example>*.vb,**/*.vb</example>
+      <description>
+        Ant patterns for C# source files (used when <code>vbnetFilter=pattern</code>).
+      </description>
+    </property>
+
+    <property id='aim.dotnet.software' type='string'>
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>
+        Default software name to use as fallback, when no (global) software resolver found container software
+        for analyzed artifacts and their dependencies.
+      </description>
+    </property>
+
+    <property id='aim.dotnet.rule.resolveCalls' type='bool'>
+      <name>resolveCalls</name>
+      <example>true</example>
+      <description>Process method calls.</description>
+    </property>
+
+    <property id='aim.dotnet.rule.resolveFieldReferences' type='bool'>
+      <name>resolveFieldReferences</name>
+      <example>true</example>
+      <description>Process field references.</description>
+    </property>
+
+    <property id='aim.dotnet.rule.resolveInheritance' type='bool'>
+      <name>resolveInheritance</name>
+      <example>true</example>
+      <description>Process class inheritance.</description>
+    </property>
+
+    <property id='aim.dotnet.rule.resolveInstantiations' type='bool'>
+      <name>resolveInstantiations</name>
+      <example>true</example>
+      <description>Process object instantiations.</description>
+    </property>
+
+    <property id='aim.dotnet.rule.resolveTypeReferences' type='bool'>
+      <name>resolveTypeReferences</name>
+      <example>true</example>
+      <description>Process type references.</description>
+    </property>
+
+    <property id='aim.dotnet.rule.addCodeToRelations' type='string'>
+      <name>addCodeToRelations</name>
+      <example>${aim.common.addCodeToRelations}</example>
+      <description>If true, code for a dependency is added as property to the generated relation.</description>
+    </property>
+
+    <property id='aim.dotnet.rule.resolveArtifacts' type='string'>
+      <name>resolveArtifacts</name>
+      <example>${aim.common.resolveArtifacts}</example>
+      <description>If true, location of target entities is looked for and added as <i>artifacts</i> property.</description>
+    </property>
+
+    <property id='aim.dotnet.resolver' type='enum'>
+      <name>resolver</name>
+      <example>existing</example>
+      <description>
+        The software resolver to use for resolving .Net code artefacts to containing software.
+      </description>
+      <possible>
+        <enumval name="existing">Only outgoing dependencies against existing entities will be registered.</enumval>
+        <enumval name="matching">Only outgoing dependencies against entities matching classname patterns in <code>packagePatterns</code> will be registered.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.dotnet.resolver.matching.packagePatterns' type='list' subtype='regexp'>
+      <name>packagePatterns</name>
+      <example>.+</example>
+      <description>
+        When <code>resolver=matching</code>, comma-separated list of regexp patterns with the classes to match
+        (ASP.Net standard types will be ignored).
+      </description>
+    </property>
+
+    <property id='aim.dotnet.typeResolver.indexFile' type='string'>
+      <name>indexFile</name>
+      <example>${CHECKING_DATA}/config/plugins/APPMAP/typeIndex.idx</example>
+      <description>
+        Index file with the base framework types to ignore.
+        .Net types that belong to the base framework are registered in an indexFile.
+        References to such types are excluded from the model, to limit the number of components.
+      </description>
+    </property>
+
+    <property id='aim.dotnet.resolveMethodsFilter' type='enum'>
+      <name>resolveMethodsFilter</name>
+      <example>none</example>
+      <description>
+        The strategy to follow for modeling class dependencies with method-level granularity.
+      </description>
+      <possible>
+        <enumval name="none">Dependencies will be modeled with class-level granularity.</enumval>
+        <enumval name="patterns">The list of patterns in <code>methodPatterns</code> will be used to decide which methods to include in AIM model.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.dotnet.resolveMethodsFilter.patterns' type='list' subtype='regexp'>
+      <name>methodPatterns</name>
+      <example>.+</example>
+      <description>
+        Comma-separated list of (regexp) patterns on fully-qualified types that, when matched, will be registered with method granularity.
+        <br/>
+        If you use ".*" (match any), methods will be shown as components for every type found.
+        <br/>
+        If empty, entities and dependencies will be represented at the type granularity.
+      </description>
+    </property>
+
+    <property id='aim.dotnet.methodsPredicate' type='enum'>
+      <name>methodsPredicate</name>
+      <example>none</example>
+      <description>
+        Dotnet rules (either csharp or vbnet) may register class methods as model entities.
+        This is the strategy to follow for deciding which method declarations to model.
+      </description>
+      <possible>
+        <enumval name="none">No method declaration will be modeled (but methods with dependencies for classes matching aim.dotnet.resolveMethodsFilter will be registered).</enumval>
+        <enumval name="nonPrivateMethods">Any method with access scope higher than 'private' will be modeled.</enumval>
+        <enumval name="patterns">methods with signatures matching aim.dotnet.methodsPredicate.patterns property will be registered.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.dotnet.methodsPredicate.patterns' type='list' subtype='regexp' separator='|'>
+      <name>patterns</name>
+      <example>.+</example>
+      <description>
+        List of regular expressions (separated by |) that will be used to match method signatures when methodsPredicate=patterns.
+        <br/>
+        Note: Method signatures to check are in the form: methodName(arg1Type,...,argNType), where each type is fully-qualified.
+      </description>
+    </property>
+    
+  </properties>
+
+  <createdEntities>
+    <values>class</values>
+    <description>
+      Creates class components.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>class-inherits|calls|uses|instantiates|references->class</values>
+    <description>
+      Resoves inheritance, method calls, variable references, object instantiations and type references, between classes.
+    </description>
+  </createdRelations>
+  
+  <importantConfigurations activation="aim.dotnet.rule.active" />
+  
+</block>

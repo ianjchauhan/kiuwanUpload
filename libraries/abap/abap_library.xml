@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="abap_library" standard="ABAP_library" technology="abap">
+
+  <description url="https://help.sap.com/viewer/22fbc70d27da411d931e34984a88e728/7.51.10/en-US">ABAP language libraries</description>
+
+  <function name="FILE_VALIDATE_NAME" signature="FILE_VALIDATE_NAME" kind="function">
+    <neutralization paramNames="physical_filename" kind="path_traversal" resource="filesystem"/>
+  </function>
+
+  <function name="GUI_DOWNLOAD" signature="GUI_DOWNLOAD" kind="function">
+    <tags>client,fileDownload</tags>
+    <sink paramNames="filename" kind="path_traversal" resource="filesystem"/>
+  </function>
+  <function name="GUI_UPLOAD" signature="GUI_UPLOAD" kind="function">
+    <tags>client,fileUpload</tags>
+    <sink paramNames="filename" kind="path_traversal" resource="filesystem"/>
+  </function>
+
+  <function name="GUI_EXEC" signature="GUI_EXEC" kind="function">
+    <sink paramNames="command,parameter" kind="command_injection" resource="os"/>
+  </function>
+  <function name="GUI_RUN" signature="GUI_RUN" kind="function">
+    <sink paramNames="command,parameter" kind="command_injection" resource="os"/>
+  </function>
+
+  <function name="GUI_GET_REGVALUE" signature="GUI_GET_REGVALUE" kind="function">
+    <tags>registry</tags>
+    <source paramNames="string" kind="system_information" resource="environment"/>
+    <sink paramNames="root,key,value_name" kind="resource_manipulation" resource="environment"/>
+  </function>
+  <function name="PROFILE_GET" signature="PROFILE_GET" kind="function">
+    <tags>registry</tags>
+    <source paramNames="value" kind="system_information" resource="environment"/>
+    <sink paramNames="filename,key,section" kind="resource_manipulation" resource="environment"/>
+  </function>
+  <function name="REGISTRY_GET" signature="REGISTRY_GET" kind="function">
+    <tags>registry</tags>
+    <source paramNames="value" kind="system_information" resource="environment"/>
+    <sink paramNames="key,section" kind="resource_manipulation" resource="environment"/>
+  </function>
+
+  <function name="RFC_REMOTE_EXEC" signature="RFC_REMOTE_EXEC" kind="function">
+    <sink paramNames="command" kind="command_injection" resource="os"/>
+  </function
+>  <function name="RFC_REMOTE_PIPE" signature="RFC_REMOTE_PIPE" kind="function">
+    <sink paramNames="command" kind="command_injection" resource="os"/>
+  </function>
+  <function name="RFC_REMOTE_FILE" signature="RFC_REMOTE_FILE" kind="function">
+    <sink paramNames="file" kind="path_traversal" resource="filesystem"/>
+  </function>
+
+  <function name="SXPG_CALL_SYSTEM" signature="SXPG_COMMAND_EXECUTE" kind="function">
+    <!-- commandname is white-listed -->
+    <sink paramNames="commandname,additional_parameters" kind="command_injection" resource="os"/>
+  </function>
+  <function name="SXPG_COMMAND_EXECUTE" signature="SXPG_COMMAND_EXECUTE" kind="function" alias="SXPG_COMMAND_EXECUTE_LONG">
+    <!-- commandname is white-listed, but should not be choesn from untrusted -->
+    <sink paramNames="commandname,additional_parameters" kind="command_injection" resource="os"/>
+    <sink paramNames="targetsystem" kind="resource_manipulation" resource="environment"/>
+  </function>
+
+  <function name="UPLOAD" signature="UPLOAD" kind="function">
+    <tags>client,fileUpload</tags>
+    <sink paramNames="filename" kind="path_traversal" resource="filesystem"/>
+  </function>
+  <function name="UPLOAD_FILES" signature="UPLOAD_FILES" kind="function">
+    <tags>client,fileUpload</tags>
+    <sink paramNames="tab_file" kind="path_traversal" resource="filesystem"/>
+    <source paramNames="file_all,file_xls" kind="user_input" resource="filesystem"/>
+  </function>
+  <function name="UPLOAD_XLS_FILE_2_ITAB" signature="UPLOAD_XLS_FILE_2_ITAB" kind="function">
+    <tags>client,fileUpload</tags>
+  </function>
+
+  <function name="DOWNLOAD" signature="DOWNLOAD" kind="function">
+    <tags>client,fileDownload</tags>
+    <sink paramNames="filename" kind="path_traversal" resource="filesystem"/>
+  </function>
+
+  <function name="WS_EXECUTE" signature="WS_EXECUTE" kind="function">
+    <tags>client</tags>
+    <sink paramNames="commandline,program,document" kind="command_injection" resource="os"/>
+  </function>
+  <function name="WS_DOWNLOAD" signature="WS_DOWNLOAD" kind="function">
+    <tags>client,fileDownload</tags>
+    <sink paramNames="filename" kind="path_traversal" resource="filesystem"/>
+  </function>
+  <function name="WS_UPLOAD" signature="WS_UPLOAD" kind="function">
+    <tags>client,fileUpload</tags>
+    <sink paramNames="filename" kind="path_traversal" resource="filesystem"/>
+  </function>
+
+  <function name="TH_GREP" signature="TH_GREP" kind="function">
+    <tags>THFB</tags>
+    <sink paramNames="string" kind="command_injection" resource="os"/>
+  </function>
+
+  <class name="CL_GUI_FRONTEND_SERVICES">
+    <description>CL_GUI_FRONTEND_SERVICES</description>
+    <function name="DIRECTORY_CREATE" signature="DIRECTORY_CREATE" kind="method">
+      <sink paramNames="directory" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="DIRECTORY_DELETE" signature="DIRECTORY_DELETE" kind="method">
+      <sink paramNames="directory" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="DIRECTORY_SET_CURRENT" signature="DIRECTORY_SET_CURRENT" kind="method">
+      <sink paramNames="current_directory" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="FILE_COPY" signature="FILE_COPY" kind="method">
+      <sink paramNames="source,destination" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="FILE_DELETE" signature="FILE_DELETE" kind="method">
+      <sink paramNames="filename" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="FILE_OPEN_DIALOG" signature="FILE_OPEN_DIALOG" kind="method">
+      <source paramNames="file_table" kind="user_input" resource="filesystem"/>
+    </function>
+    <function name="FILE_SAVE_DIALOG" signature="FILE_SAVE_DIALOG" kind="method">
+      <source paramNames="filename,path,fullpath" kind="user_input" resource="filesystem"/>
+    </function>
+    <!--function name="DIRECTORY_EXISTS" signature="DIRECTORY_EXISTS" kind="method">
+      <sink paramNames="directory" kind="path_traversal" resource="filesystem"/>
+    </function-->
+    <function name="GUI_DOWNLOAD" signature="GUI_DOWNLOAD" kind="method">
+      <tags>client,fileDownload</tags>
+      <sink paramNames="filename" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="GUI_UPLOAD" signature="GUI_UPLOAD" kind="method">
+      <tags>client,fileUpload</tags>
+      <sink paramNames="filename" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="EXECUTE" signature="EXECUTE" kind="method">
+      <sink paramNames="document,application,parameter,operation" kind="command_injection" resource="os"/>
+      <sink paramNames="default_directory" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="REGISTRY_GET_VALUE" signature="REGISTRY_GET_VALUE" kind="method">
+      <tags>registry</tags>
+      <source paramNames="reg_value" kind="system_information" resource="environment"/>
+      <sink paramNames="key,value" kind="resource_manipulation" resource="environment"/>
+    </function>
+    <function name="REGISTRY_GET_DWORD_VALUE" signature="REGISTRY_GET_DWORD_VALUE" kind="method">
+      <tags>registry</tags>
+      <source paramNames="reg_value" kind="system_information" resource="environment"/>
+      <sink paramNames="key,value" kind="resource_manipulation" resource="environment"/>
+    </function>
+    <function name="REGISTRY_SET_VALUE" signature="REGISTRY_SET_VALUE" kind="method">
+      <tags>registry</tags>
+      <sink paramNames="key,value_name,value,dword_value" kind="resource_manipulation" resource="environment"/>
+    </function>
+    <function name="REGISTRY_SET_DWORD_VALUE" signature="REGISTRY_SET_DWORD_VALUE" kind="method">
+      <tags>registry</tags>
+      <sink paramNames="key,value_name,value,dword_value" kind="resource_manipulation" resource="environment"/>
+    </function>
+    <function name="GET_IP_ADDRESS" signature="GET_IP_ADDRESS" kind="method">
+      <source paramNames="ip_address" kind="system_information" resource="environment"/>
+    </function>
+    <function name="GET_COMPUTER_NAME" signature="GET_COMPUTER_NAME" kind="method">
+      <source paramNames="computer_name" kind="system_information" resource="environment"/>
+    </function>
+    <function name="GET_PLATFORM" signature="GET_PLATFORM" kind="method">
+      <source paramNames="platform" kind="system_information" resource="environment"/>
+    </function>
+    <function name="GET_USERNAME" signature="GET_USERNAME" kind="method">
+      <source paramNames="user_name" kind="system_information" resource="environment"/>
+    </function>
+    <function name="ENVIRONMENT_GET_VARIABLE" signature="ENVIRONMENT_GET_VARIABLE" kind="method">
+      <source paramNames="value" kind="system_information" resource="environment"/>
+      <source paramNames="value" kind="user_input" resource="environment"/>
+      <sink paramNames="variable" kind="resource_manipulation" resource="environment"/>
+    </function>
+    <function name="ENVIRONMENT_SET_VARIABLE" signature="ENVIRONMENT_SET_VARIABLE" kind="method">
+      <sink paramNames="variable,value" kind="resource_manipulation" resource="environment"/>
+    </function>
+  </class>
+
+  <class name="CL_ABAP_DYN_PRG">
+    <description>CL_ABAP_DYN_PRG</description>
+    <function name="QUOTE" signature="QUOTE">
+      <neutralization argpos="1" kind="sql_injection" resource="database"/>
+    </function>
+    <function name="QUOTE_STR" signature="QUOTE_STR">
+      <neutralization argpos="1" kind="sql_injection" resource="database"/>
+    </function>
+  </class>
+
+</library>

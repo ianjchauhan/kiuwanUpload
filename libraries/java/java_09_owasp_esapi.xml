@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.owasp.esapi" standard="OWASP_ESAPI" technology="java">
+
+  <description url="https://github.com/ESAPI/esapi-java-legacy">OWASP Enterprise Security API</description>
+
+  <!-- But read https://owasp.org/www-project-enterprise-security-api/#div-shouldiuseesapi -->
+
+  <class name="org.owasp.esapi.ESAPI">
+    <description>OWASP ESAPI facade</description>
+    <method name="currentRequest" signature="currentRequest()">
+      <return type="javax.servlet.http.HttpServletRequest"/>
+    </method>
+    <method name="currentResponse" signature="currentResponse()">
+      <return type="javax.servlet.http.HttpServletResponse"/>
+    </method>
+    <method name="accessController" signature="accessController()">
+      <return type="org.owasp.esapi.AccessController"/>
+    </method>
+    <method name="authenticator" signature="authenticator()">
+      <return type="org.owasp.esapi.Authenticator"/>
+    </method>
+    <method name="validator" signature="validator()">
+      <return type="org.owasp.esapi.Validator"/>
+    </method>
+    <method name="encoder" signature="encoder()">
+      <return type="org.owasp.esapi.Encoder"/>
+    </method>
+    <method name="encryptor" signature="encryptor()">
+      <return type="org.owasp.esapi.Encryptor"/>
+    </method>
+    <method name="executor" signature="executor()">
+      <return type="org.owasp.esapi.Executor"/>
+    </method>
+    <method name="httpUtilities" signature="httpUtilities()">
+      <return type="org.owasp.esapi.HTTPUtilities"/>
+    </method>
+    <method name="intrusionDetector" signature="intrusionDetector()">
+      <return type="org.owasp.esapi.IntrusionDetector"/>
+    </method>
+    <method name="randomizer" signature="randomizer()">
+      <return type="org.owasp.esapi.Randomizer"/>
+    </method>
+  </class>
+
+  <class name="org.owasp.esapi.AccessController" kind="interface"></class>
+
+  <class name="org.owasp.esapi.reference.DefaultAccessController" supertypes="org.owasp.esapi.AccessController">
+    <method name="getInstance" signature="getInstance()">
+      <return type="org.owasp.esapi.AccessController"/>
+    </method>
+  </class>
+
+  <class name="org.owasp.esapi.Authenticator" kind="interface"></class>
+
+  <class name="org.owasp.esapi.Encoder" kind="interface">
+    <description>Encoding function</description>
+    <method name="encodeForBase64" signature="encodeForBase64(java.lang.String)">
+      <neutralization argpos="-1" kind="string"/>
+      <neutralization argpos="-1" kind="encoding" resource="web"/>
+    </method>
+    <method name="encodeForCSS" signature="encodeForCSS(java.lang.String)">
+      <neutralization argpos="-1" kind="xss" resource="web"/>
+    </method>
+    <method name="encodeForHTML" signature="encodeForHTML(java.lang.String)">
+      <neutralization argpos="-1" kind="xss" resource="web"/>
+      <neutralization argpos="-1" kind="header_manipulation" resource="web"/>
+      <neutralization argpos="-1" kind="http_parameter_pollution" resource="web"/>
+    </method>
+    <method name="encodeForHTMLAttribute" signature="encodeForHTMLAttribute(java.lang.String)">
+      <neutralization argpos="-1" kind="xss" resource="web"/>
+    </method>
+    <method name="encodeForJavaScript" signature="encodeForJavaScript(java.lang.String)">
+      <neutralization argpos="-1" kind="xss" resource="web"/>
+    </method>
+    <method name="encodeForVBScript" signature="encodeForVBScript(java.lang.String)">
+      <neutralization argpos="-1" kind="xss" resource="web"/>
+    </method>
+    <method name="encodeForSQL" signature="encodeForSQL(org.owasp.esapi.codecs.Codec,java.lang.String)">
+      <neutralization argpos="-1" kind="sql_injection" resource="database"/>
+    </method>
+    <method name="encodeForOS" signature="encodeForOS(org.owasp.esapi.codecs.Codec,java.lang.String)">
+      <neutralization argpos="-1" kind="command_injection" resource="environment"/>
+    </method>
+    <method name="encodeForLDAP" signature="encodeForLDAP(java.lang.String)">
+      <neutralization argpos="-1" kind="ldap_injection" resource="other"/>
+    </method>
+    <method name="encodeForDN" signature="encodeForDN(java.lang.String)">
+      <neutralization argpos="-1" kind="ldap_injection" resource="other"/>
+    </method>
+    <method name="encodeForURL" signature="encodeForURL(java.lang.String)">
+      <neutralization argpos="-1" kind="header_manipulation" resource="web"/>
+      <neutralization argpos="-1" kind="http_parameter_pollution" resource="web"/>
+    </method>
+    <method name="encodeForXPath" signature="encodeForXPath(java.lang.String)">
+      <neutralization argpos="-1" kind="xpath_injection" resource="other"/>
+    </method>
+    <method name="encodeForXML" signature="encodeForXML(java.lang.String)" alias="encodeForXMLAttribute">
+      <neutralization argpos="-1" kind="xml_injection" resource="other"/>
+      <neutralization argpos="-1" kind="xss" resource="other"/>
+    </method>
+  </class>
+
+  <class name="org.owasp.esapi.reference.DefaultEncoder" supertypes="org.owasp.esapi.Encoder">
+    <method name="getInstance" signature="getInstance()">
+      <return type="org.owasp.esapi.Encoder"/>
+    </method>
+  </class>
+
+  <class name="org.owasp.esapi.Encryptor" kind="interface">
+    <method name="hash" signature="hash(java.lang.String, java.lang.String, int)" match="name">
+      <tags>hash,data:0,salt:1,iterations:2</tags>
+      <return type="java.lang.String"/>
+      <sink argpos="1" kind="hardcoded_salt" resource="crypto"/>
+      <neutralization argpos="0" kind="hash" resource="crypto"/>
+    </method>
+
+    <method name="encrypt" signature="encrypt(java.lang.String)">
+      <tags>encrypt,data:0</tags>
+      <return type="java.lang.String"/>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </method>
+    <method name="encrypt_1" signature="encrypt(org.owasp.esapi.crypto.PlainText)">
+      <tags>encrypt,data:0</tags>
+      <return type="org.owasp.esapi.crypto.CipherText"/>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </method>
+    <method name="encrypt_2" signature="encrypt(javax.crypto.SecretKey,org.owasp.esapi.crypto.PlainText)">
+      <tags>encrypt,data:1</tags>
+      <return type="org.owasp.esapi.crypto.CipherText"/>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+      <neutralization argpos="1" kind="encryption" resource="crypto"/>
+    </method>
+    <method name="seal" signature="seal(java.lang.String,long)">
+      <tags>encrypt,data:0</tags>
+      <return type="java.lang.String"/>
+      <neutralization argpos="0" kind="encryption" resource="crypto"/>
+    </method>
+
+    <method name="decrypt" signature="decrypt(org.owasp.esapi.crypto.CipherText)">
+      <tags>decrypt,data:0</tags>
+      <return type="org.owasp.esapi.crypto.PlainText"/>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </method>
+    <method name="decrypt_2" signature="decrypt(java.lang.String)">
+      <tags>decrypt,data:0</tags>
+      <return type="java.lang.String"/>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </method>
+    <method name="decrypt_3" signature="decrypt(javax.crypto.SecretKey,org.owasp.esapi.crypto.CipherText)">
+      <tags>decrypt,data:0</tags>
+      <return type="org.owasp.esapi.crypto.PlainText"/>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto" />
+      <neutralization argpos="1" kind="decryption" resource="crypto"/>
+    </method>
+    <method name="unseal" signature="unseal(java.lang.String)">
+      <tags>encrypt,data:0</tags>
+      <return type="java.lang.String"/>
+      <neutralization argpos="0" kind="decryption" resource="crypto"/>
+    </method>
+  </class>
+
+  <class name="org.owasp.esapi.Executor" kind="interface">
+    <method name="executeSystemCommand" signature="executeSystemCommand(java.io.File,java.util.List)" match="name">
+      <neutralization argpos="0,1" kind="command_injection" resource="environment"/>
+      <neutralization argpos="0" kind="path_traversal" resource="filesystem"/>
+    </method>
+  </class>
+
+  <class name="org.owasp.esapi.reference.DefaultExecutor" supertypes="org.owasp.esapi.Executor">
+    <method name="getInstance" signature="getInstance()">
+      <return type="org.owasp.esapi.Executor"/>
+    </method>
+  </class>
+
+  <class name="org.owasp.esapi.HTTPUtilities" kind="interface">
+    <method name="getCurrentRequest" signature="getCurrentRequest()">
+      <return type="javax.servlet.http.HttpServletRequest"/>
+    </method>
+    <method name="getCurrentResponse" signature="getCurrentResponse()">
+      <return type="javax.servlet.http.HttpServletResponse"/>
+    </method>
+    <!--
+    These method replacements for HttpServletRequest perform data validation on the (header, parameter)
+    so they could be considered "untainted"
+    -->
+
+    <method name="getHeader" signature="getHeader(java.lang.String)">
+      <neutralization argpos="-1" kind="input_validation" resource="web"/>
+    </method>
+    <method name="getHeader_2" signature="getHeader(javax.servlet.http.HttpServletRequest,java.lang.String)">
+      <neutralization argpos="-1" kind="input_validation" resource="web"/>
+    </method>
+    <method name="setHeader" signature="setHeader(java.lang.String,java.lang.String)">
+      <neutralization argpos="0,1" kind="input_validation" resource="web"/>
+    </method>
+    <method name="setHeader_2" signature="setHeader(javax.servlet.http.HttpServletResponse,java.lang.String,java.lang.String)">
+      <neutralization argpos="1,2" kind="input_validation" resource="web"/>
+    </method>
+    <method name="getParameter" signature="getParameter(java.lang.String)">
+      <neutralization argpos="-1" kind="input_validation" resource="web"/>
+    </method>
+    <method name="getParameter_2" signature="getParameter(javax.servlet.http.HttpServletRequest,java.lang.String)">
+      <neutralization argpos="-1" kind="input_validation" resource="web"/>
+    </method>
+    <method name="addCookie" signature="addCookie(javax.servlet.http.Cookie)">
+      <neutralization argpos="0" kind="input_validation" resource="web"/>
+      <neutralization argpos="0" kind="cookie_security" resource="web"/>
+    </method>
+    <method name="addCookie_2" signature="addCookie(javax.servlet.http.HttpServletResponse,javax.servlet.http.Cookie)">
+      <neutralization argpos="1" kind="input_validation" resource="web"/>
+      <neutralization argpos="1" kind="cookie_security" resource="web"/>
+    </method>
+    <method name="getCookie" signature="getCookie(java.lang.String)" match="name">
+      <return type="java.lang.String"/>
+      <neutralization argpos="-1" kind="input_validation" resource="web"/>
+    </method>
+    <method name="getFirstCookie" signature="getFirstCookie(javax.servlet.http.HttpServletRequest, java.lang.String)">
+      <return type="javax.servlet.http.Cookie"/>
+    </method>
+    <method name="sendForward" signature="sendForward(java.lang.String)">
+      <neutralization argpos="0" kind="open_redirect" resource="web"/>
+      <sink kind="execution_after_redirect" resource="web" argpos="-1"/>
+    </method>
+    <method name="sendForward_2" signature="sendForward(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String)">
+      <neutralization argpos="2" kind="open_redirect" resource="web"/>
+      <sink kind="execution_after_redirect" argpos="-1" resource="web"/>
+    </method>
+    <method name="sendRedirect" signature="sendRedirect(java.lang.String)">
+      <neutralization argpos="0" kind="open_redirect" resource="web"/>
+      <sink kind="execution_after_redirect" argpos="-1" resource="web"/>
+    </method>
+    <method name="sendRedirect_2" signature="sendRedirect(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String)">
+      <neutralization argpos="2" kind="open_redirect" resource="web"/>
+      <sink kind="execution_after_redirect" argpos="-1" resource="web"/>
+    </method>
+
+    <method name="verifyCSRFToken" signature="verifyCSRFToken()" match="name">
+      <neutralization argpos="-2" kind="csrf" resource="web"/>
+    </method>
+  </class>
+
+  <class name="org.owasp.esapi.IntrusionDetector" kind="interface"></class>
+  <class name="org.owasp.esapi.Randomizer" kind="interface"></class>
+  <class name="org.owasp.esapi.SecurityConfiguration" kind="interface"></class>
+
+  <class name="org.owasp.esapi.Validator" kind="interface">
+    <description>OWASP ESAPI input validation</description>
+    <method name="assertValidFileUpload" signature="assertValidFileUpload()" match="name">
+      <neutralization argpos="1,2,4" kind="file_upload"/>
+    </method>
+    <method name="isValidX" signature="isValidX(java.lang.String,java.lang.String)" match="other">
+      <matcher kind="method" function="isValid.+" args="2"/>
+      <neutralization argpos="1" kind="input_validation"/>
+    </method>
+    <method name="getValidX" signature="getValidX(java.lang.String,java.lang.String)" match="other">
+      <matcher kind="method" function="getValid.+" args="2"/>
+      <neutralization argpos="1" kind="input_validation"/>
+      <propagate from="2" to="-1"/>
+    </method>
+  </class>
+
+  <class name="org.owasp.esapi.reference.DefaultValidator" supertypes="org.owasp.esapi.Validator">
+    <method name="getInstance" signature="getInstance()">
+      <return type="org.owasp.esapi.Validator"/>
+    </method>
+  </class>
+
+</library>

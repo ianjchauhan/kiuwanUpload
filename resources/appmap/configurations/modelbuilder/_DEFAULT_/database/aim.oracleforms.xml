@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+
+  <description>AIM rules for OracleForms.</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <!-- import resource="classpath:resources/qaking-tech-sql.xml"/>
+  <import resource="classpath:resources/qaking-tech-sql-properties.xml"/-->
+  <import resource="classpath:resources/qaking-tech-plsql.xml"/>
+  <import resource="classpath:resources/qaking-tech-oracleforms.xml"/>
+  
+  <bean id="aim.oracleforms.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>oracleforms parser</description>
+    <property name="filter" ref="aim.oracleforms.filter"/>
+    <property name="languageSupport" ref="ls_oracleforms"/>
+  </bean>
+
+  <!-- Rules --> 
+
+  <bean id="aim.oracleforms.rule" class="com.optimyth.apm.builder.rules.oracleforms.OracleFormsRule">
+    <description>Resolves OracleForms elements</description>
+    <property name="active" value="${aim.oracleforms.rule.active}"/>
+    <property name="oracleFormsCallback" ref="aim.oracleforms.rule.callback"/>
+    <property name="filter" ref="aim.oracleforms.rule.filter"/>
+    <property name="plsqlProcessor" ref="aim.oracleforms.codeProcessor"/>
+    <property name="typeResolver" ref="aim.oracleforms.typeResolver"/>
+  </bean>
+  
+  <bean name="aim.oracleforms.codeProcessor" class="com.optimyth.apm.builder.rules.plsql.PlsqlCodeProcessor">
+    <property name="createInternalObjects" value="${aim.oracleforms.rule.createInternalObjects}"/>
+    <property name="acceptUnresolvedResources" value="${aim.common.acceptUnresolved}"/>
+    <property name="sqlCallback" ref="aim.oracleforms.rule.callback" />
+    <property name="sqlProcessor" ref="aim.oracleforms.sqlProcessor"/>
+    <property name="typeResolver" ref="aim.oracleforms.typeResolver"/>
+  </bean>
+  
+  <bean name="aim.oracleforms.sqlProcessor" class="com.optimyth.apm.builder.rules.sql.BasicPlSqlProcessor">
+    <property name="addSqlToModel" value="${aim.oracleforms.addSqlCode}"/>
+    <property name="parseSqlColumns" value="true"/>
+    <property name="sqlParser" ref="ls_plsql_parser" />
+    <property name="sqlCallback" ref="aim.oracleforms.sqlCallback"/>
+  </bean>
+  
+  <bean name="aim.oracleforms.typeResolver" class="com.optimyth.apm.builder.rules.plsql.PlsqlTypeResolver">
+    <property name="plsqlCallback" ref="aim.oracleforms.rule.callback" />
+  </bean>
+
+  <bean id="aim.oracleforms.rule.callback" class="com.optimyth.apm.builder.rules.oracleforms.BasicOracleFormsCallback">
+    <!-- property name="application" value="${aim.oracleforms.rule.software}"/ --> 
+    <property name="softwareName" value="${aim.oracleforms.rule.software}"/>
+    <property name="schemaResolver" ref="aim.oracleforms.schemaResolver"/>
+    <property name="typeResolver" ref="aim.oracleforms.typeResolver"/>
+    <property name="ignoreCase" value="${aim.oracleforms.rule.ignoreCase}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+    <property name="sqlCallback" ref="aim.oracleforms.sqlCallback"/>
+  </bean>
+  
+  <bean id="aim.oracleforms.sqlCallback" class="com.optimyth.apm.builder.rules.sql.BasicPlSqlCallback">
+    <property name="dbType" value="${aim.oracleforms.rule.dbsystem}"/>
+    <property name="dbInstance" value="${aim.oracleforms.rule.dbname}"/>
+    <property name="ignoreCase" value="${aim.oracleforms.rule.ignoreCase}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+  
+  <!-- Schema resolvers -->
+
+  <bean id="aim.oracleforms.schemaResolver" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.oracleforms.schemaResolver.default"/>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.plsql.SchemaResolver"/>
+    <property name="key" value="${aim.oracleforms.schemaResolver}"/>
+    <property name="map"><map>
+      <entry key="multi" value-ref="aim.oracleforms.schemaResolver.multi"/>
+      <entry key="directories" value-ref="aim.oracleforms.schemaResolver.directories"/>
+    </map></property>
+
+  </bean>
+  
+  <bean id="aim.oracleforms.schemaResolver.default" class="com.optimyth.apm.builder.rules.plsql.BasicSchemaResolver">
+    <constructor-arg value="${aim.oracleforms.rule.dbname}"/>
+  </bean>
+
+  <bean id="aim.oracleforms.schemaResolver.multi" class="com.optimyth.apm.builder.rules.plsql.MultiSchemaResolver">
+    <property name="schemaDefault" value="${aim.oracleforms.rule.dbname}"/>
+    <property name="schemas" value="${aim.oracleforms.schemaResolver.multi.schemas}"/>
+  </bean>
+
+  <bean id="aim.oracleforms.schemaResolver.directories" class="com.optimyth.apm.builder.rules.plsql.DirectoriesSchemaResolver">
+    <property name="schemaName" value="${aim.oracleforms.rule.dbname}"/>
+    <property name="schemasDirectory" value="${aim.oracleforms.schemaResolver.directories.schemasDirectory}"/>
+  </bean>
+  
+  <!-- Filters -->
+  <bean id="aim.oracleforms.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.oracleforms.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.oracleforms.filter}"/>
+    <property name="map">
+      <map>
+        <entry key="pattern" value-ref="aim.oracleforms.rule.filter"/>
+      </map>
+    </property>
+  </bean>
+
+  <bean id="aim.oracleforms.filter.default" parent="ls_oracleforms_matcher"/>
+
+  <bean id="aim.oracleforms.rule.filter" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.oracleforms.rule.filter}"/>
+  </bean>
+
+</beans>

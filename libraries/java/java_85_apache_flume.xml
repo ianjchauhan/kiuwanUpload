@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="apache.flume" standard="Apache_Flume" technology="java">
+  <description url="https://flume.apache.org">Streaming processor for log data</description>
+
+  <!-- https://flume.apache.org/releases/content/1.9.0/apidocs/index.html -->
+
+  <module name="flume" >
+    <class name="org.apache.flume.api.RpcClientFactory" >
+      <method name="getDefaultInstance" signature="getDefaultInstance(java.lang.String,java.lang.Integer)" match="fullsignature" >
+        <return type="org.apache.flume.api.RpcClient" />
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </method>
+      <method name="getDefaultInstance" signature="getDefaultInstance(java.lang.String,java.lang.Integer,java.lang.Integer)" match="fullsignature" >
+        <return type="org.apache.flume.api.RpcClient" />
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="network" />
+      </method>
+      <method name="getInstance" signature="getInstance(java.io.File)" match="fullsignature" >
+        <return type="org.apache.flume.api.RpcClient" />
+        <sink kind="path_traversal" argpos="0" resource="filesystem" />
+      </method>
+      <method name="getInstance" signature="getInstance(java.util.Properties)" match="fullsignature" >
+        <return type="org.apache.flume.api.RpcClient" />
+        <sink kind="resource_injection" argpos="0" resource="filesystem" />
+      </method>
+      <method name="getInstance" signature="getInstance(java.lang.String,java.lang.Integer)" match="fullsignature" >
+        <return type="org.apache.flume.api.RpcClient" />
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="filesystem" />
+      </method>
+      <method name="getInstance" signature="getInstance(java.lang.String,java.lang.Integer,java.lang.Integer)" match="fullsignature" >
+        <return type="org.apache.flume.api.RpcClient" />
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="filesystem" />
+      </method>
+      <method name="getThriftInstance" signature="getThriftInstance(java.util.Properties)" match="fullsignature" >
+        <return type="org.apache.flume.api.RpcClient" />
+        <sink kind="resource_injection" argpos="0" resource="filesystem" />
+      </method>
+      <method name="getThriftInstance" signature="getThriftInstance(java.lang.String,java.lang.Integer)" match="fullsignature" >
+        <return type="org.apache.flume.api.RpcClient" />
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="filesystem" />
+      </method>
+      <method name="getThriftInstance" signature="getThriftInstance(java.lang.String,java.lang.Integer,java.lang.Integer)" match="fullsignature" >
+        <return type="org.apache.flume.api.RpcClient" />
+        <sink argpos="0" kind="ssrf" resource="network"/>
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+        <sink kind="resource_injection" argpos="1" resource="filesystem" />
+      </method>
+    </class>
+    <class name="org.apache.flume.api.SecureRpcClientFactory" >
+      <method name="getThriftInstance" signature="getThriftInstance(java.util.Properties)" match="fullsignature" >
+        <return type="org.apache.flume.api.RpcClient" />
+        <sink kind="resource_injection" argpos="0" resource="filesystem" />
+      </method>
+    </class>
+    <class name="org.apache.flume.api.AbstractRpcClient" />
+    <class name="org.apache.flume.api.FailoverRpcClient" supertypes="org.apache.flume.api.AbstractRpcClient" >
+      <method name="getLastConnectedServerAddress" signature="getLastConnectedServerAddress()" >
+        <return type="java.net.InetSocketAddress" />
+      </method>
+    </class>
+  </module>
+</library>

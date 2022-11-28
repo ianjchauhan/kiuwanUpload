@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.jaxrs" standard="JAX-RS" technology="java">
+  <description url="https://eclipse-ee4j.github.io/jersey/">Standard RESTful Web Services API</description>
+
+  <class name="javax.ws.rs.core.UriInfo" kind="interface" standard="jax-rs">
+    <method name="getAbsolutePath" signature="getAbsolutePath()" alias="getRequestUri">
+      <return type="java.net.URI"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getAbsolutePathBuilder" signature="getAbsolutePathBuilder()" alias="getRequestUriBuilder">
+      <return type="javax.ws.rs.core.UriBuilder"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getPath" signature="getPath()" match="name">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getPathParameters" signature="getPathParameters()" match="name">
+      <return type="javax.ws.rs.core.MultiValuedMap"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getPathSegments" signature="getPathSegments()" match="name">
+      <return type="java.util.List"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getQueryParameters" signature="getQueryParameters()" match="name">
+      <return type="javax.ws.rs.core.MultiValuedMap"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+  
+  <class name="javax.ws.rs.core.UriBuilder" kind="abstract_class">
+    <method name="fromPath" signature="fromPath(java.lang.String)" instance="false"
+            alias="fromUri">
+      <return type="@self"/>
+      <sink kind="insecure_transport" resource="web" argpos="0"/>
+      <sink kind="ssrf" resource="web" argpos="0"/>
+      <sink kind="http_parameter_pollution" resource="web" argpos="0"/>
+    </method>
+    <method name="fromLink" signature="fromLink(javax.ws.rs.core.Link)" instance="false"><return type="@self"/></method>
+    <method name="fromMethod" signature="fromMethod(java.lang.Class, java.lang.String)">
+      <return type="@self"/>
+      <sink kind="resource_manipulation" argpos="1" resource="web"/>
+    </method>
+    <method name="fromResource" signature="fromResource(java.lang.Class)" instance="false"><return type="@self"/></method>
+
+    <method name="clone" signature="clone()"><return type="@self"/></method>
+    <method name="fragment" signature="fragment(java.lang.String)"><return type="@self"/></method>
+    <method name="host" signature="host(java.lang.String)">
+      <return type="@self"/>
+      <sink kind="ssrf" argpos="0" resource="web"/>
+    </method>
+    <method name="port" signature="port(int)">
+      <return type="@self"/>
+      <sink kind="ssrf" argpos="0" resource="web"/>
+    </method>
+    <method name="queryParam" signature="queryParam(java.lang.String, java.lang.Object...)" match="name"
+            alias="replaceMatrix, replaceMatrixParam,replacePath,replaceQuery,replaceQueryParam">
+      <return type="@self"/>
+      <sink kind="http_parameter_pollution" argpos="0" resource="web"/>
+    </method>
+    <method name="uri" signature="uri(java.lang.String)">
+      <return type="@self"/>
+      <sink kind="insecure_transport" resource="web" argpos="0"/>
+      <sink kind="ssrf" resource="web" argpos="0"/>
+      <sink kind="http_parameter_pollution" argpos="0" resource="web"/>
+    </method>
+  </class>
+
+  <class name="javax.ws.rs.core.HttpHeaders" kind="interface" standard="jax-rs">
+    <method name="getCookies" signature="getCookies()">
+      <tags>CWE:784</tags>
+      <return type="java.util.Map"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getHeaderString" signature="getHeaderString(java.lang.String)">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getRequestHeader" signature="getRequestHeader(java.lang.String)">
+      <return type="java.lang.String"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getRequestHeaders" signature="getRequestHeaders()">
+      <return type="javax.ws.rs.core.MultiValuedMap"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="javax.ws.rs.core.Response" standard="jax-rs">
+    <method name="ok" signature="ok()" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="ok" signature="ok(entity)" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="ok" signature="ok(entity,type)" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="noContent" signature="noContent()" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="notModified" signature="notModified()" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="notModified" signature="notModified(tag)" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="serverError" signature="serverError" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="status" signature="status(status)" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="temporaryRedirect" signature="temporaryRedirect(location)" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="notAcceptable" signature="notAcceptable(variants)" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="accepted" signature="accepted()" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="close" signature="close()" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="fromResponse" signature="fromResponse()" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+  </class>
+
+  <class name="javax.ws.rs.core.Response.ResponseBuilder" standard="jax-rs">
+    <method name="build" signature="build()" match="name" >
+      <return type="javax.ws.rs.core.Response"/>
+    </method>
+    <method name="cacheControl" signature="cacheControl(CacheControl)" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="expires" signature="expires(expires)" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="clone" signature="clone()" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="cookie" signature="cookie(cookie)" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="encoding" signature="encoding(encoding)" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="status" signature="status(status)" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+    <method name="type" signature="type(type)" match="name" >
+      <return type="javax.ws.rs.core.Response.ResponseBuilder"/>
+    </method>
+  </class>
+
+  <class name="javax.ws.rs.container.ContainerRequestContext" kind="interface" >
+    <method name="getCookies" signature="getCookies()" >
+      <return type="java.util.Map" elementType="javax.ws.rs.core.Cookie" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getHeaders" signature="getHeaders()" >
+      <tags>header:-2</tags>
+      <return type="javax.ws.rs.core.MultivaluedMap" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getHeaderString" signature="getHeaderString()" >
+      <return type="java.lang.String" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="setProperty" signature="setProperty(java.lang.String, java.lang.Object)" >
+      <sink argpos="0,1" kind="user_output" resource="network"/>
+    </method>
+  </class>
+
+  <class name="javax.ws.rs.container.ContainerResponseContext" kind="interface" >
+    <method name="getCookies" signature="getCookies()" >
+      <return type="java.util.Map" elementType="javax.ws.rs.core.Cookie" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getHeaders" signature="getHeaders()" >
+      <tags>header:-2</tags>
+      <return type="javax.ws.rs.core.MultivaluedMap" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getHeaderString" signature="getHeaderString()" >
+      <return type="java.lang.String" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="javax.ws.rs.core.Cookie" >
+    <constructor name="Cookie" signature="Cookie(java.lang.String,java.lang.String)">
+      <tags>cookie.create,cookie.name:0,cookie.value:1</tags>
+      <propagate from="0,1" to="-1"/>
+      <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      <sink argpos="1" kind="header_manipulation"  resource="web"/>
+    </constructor>
+    <constructor name="Cookie" signature="Cookie(java.lang.String,java.lang.String,java.lang.String,java.lang.String)">
+      <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.path:2,cookie.domain:3</tags>
+      <propagate from="0,1" to="-1"/>
+      <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      <sink argpos="1" kind="header_manipulation"  resource="web"/>
+    </constructor>
+    <constructor name="Cookie" signature="Cookie(java.lang.String,java.lang.String,java.lang.String,java.lang.String,int)">
+      <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.path:2,cookie.domain:3</tags>
+      <propagate from="0,1" to="-1"/>
+      <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      <sink argpos="1" kind="header_manipulation"  resource="web"/>
+    </constructor>
+    <method name="getValue" signature="getValue()"  match="name">
+      <return type="java.lang.String" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getPath" signature="getPath()" match="name">
+      <return type="java.lang.String" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getDomain" signature="getDomain()"  match="name">
+      <return type="java.lang.String" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getName" signature="getName()"  match="name">
+      <return type="java.lang.String" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getVersion" signature="getVersion()"  match="name">
+      <return type="int" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="javax.ws.rs.core.NewCookie" supertypes="javax.ws.rs.core.Cookie" standard="servlet">
+    <constructor name="NewCookie" signature="NewCookie(javax.ws.rs.core.Cookie)">
+      <tags>cookie.create</tags>
+      <propagate from="0,1" to="-1"/>
+    </constructor>
+    <constructor name="NewCookie" signature="NewCookie(javax.ws.rs.core.Cookie,java.lang.String,int,boolean)">
+      <tags>cookie.create,cookie.maxAge:2,cookie.secure:3</tags>
+      <propagate from="0,1" to="-1"/>
+    </constructor>
+    <constructor name="NewCookie" signature="NewCookie(javax.ws.rs.core.Cookie,java.lang.String,int,java.util.Date,boolean,boolean)">
+      <tags>cookie.create,cookie.maxAge:2,cookie.secure:4,cookie.httpOnly:5</tags>
+      <propagate from="0,1" to="-1"/>
+    </constructor>
+    <constructor name="NewCookie" signature="NewCookie(java.lang.String,java.lang.String)">
+      <tags>cookie.create,cookie.name:0,cookie.value:1</tags>
+      <propagate from="0,1" to="-1"/>
+      <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      <sink argpos="1" kind="header_manipulation"  resource="web"/>
+    </constructor>
+    <constructor name="NewCookie" signature="NewCookie(java.lang.String,java.lang.String,java.lang.String,java.lang.String,int,java.lang.String,int,boolean)" >
+      <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.path:2,cookie.domain:3,cookie.maxAge:6,cookie.secure:7</tags>
+      <propagate from="0,1" to="-1"/>
+      <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      <sink argpos="1" kind="header_manipulation"  resource="web"/>
+    </constructor>
+    <constructor name="NewCookie" signature="NewCookie(java.lang.String,java.lang.String,java.lang.String,java.lang.String,int,java.lang.String,int,java.util.Date,boolean,boolean)">
+      <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.path:2,cookie.domain:3,cookie.maxAge:6,cookie.secure:8,cookie.httpOnly:9</tags>
+      <propagate from="0,1" to="-1"/>
+      <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      <sink argpos="1" kind="header_manipulation"  resource="web"/>
+    </constructor>
+    <constructor name="NewCookie" signature="NewCookie(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,int,boolean)">
+      <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.path:2,cookie.domain:3,cookie.maxAge:5,cookie.secure:6</tags>
+      <propagate from="0,1" to="-1"/>
+      <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      <sink argpos="1" kind="header_manipulation"  resource="web"/>
+    </constructor>
+    <constructor name="NewCookie" signature="NewCookie(java.lang.String,java.lang.String,java.lang.String,java.lang.String,int,boolean,boolean)" match="fullsignature" >
+      <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.path:2,cookie.domain:3,cookie.maxAge:5,cookie.secure:6,cookie.httpOnly:7</tags>
+      <propagate from="0,1" to="-1"/>
+      <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+      <sink argpos="1" kind="header_manipulation"  resource="web"/>
+    </constructor>
+    <method name="getComment" signature="getComment()"  match="name">
+      <return type="java.lang.String" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getExpiry" signature="getExpiry()"  match="name">
+      <return type="java.util.Date" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getMaxAge" signature="getMaxAge()"  match="name">
+      <return type="int" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="isHttpOnly" signature="isHttpOnly()"  match="name">
+      <return type="boolean" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="isSecure" signature="isSecure()"  match="name">
+      <return type="boolean" />
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="toCookie" signature="toCookie()"  match="name">
+      <return type="javax.servlet.http.Cookie" />
+    </method>
+    <method name="valueOf" signature="valueOf()"  match="name">
+      <return type="javax.ws.rs.core.NewCookie" />
+    </method>
+  </class>
+
+  <annotation name="javax.ws.rs.Path"/>
+  <annotation name="javax.ws.rs.Produces"/>
+  <annotation name="javax.ws.rs.Consumes"/>
+  <annotation name="javax.ws.rs.ApplicationPath"/>
+  <annotation name="javax.ws.rs.HttpMethod"/>
+  <annotation name="javax.ws.rs.GET"/>
+  <annotation name="javax.ws.rs.POST"/>
+  <annotation name="javax.ws.rs.PUT"/>
+  <annotation name="javax.ws.rs.DELETE"/>
+  <annotation name="javax.ws.rs.HEAD"/>
+  <annotation name="javax.ws.rs.OPTIONS"/>
+
+  <annotation name="javax.ws.rs.BeanParam">
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </annotation>
+  <annotation name="javax.ws.rs.CookieParam">
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </annotation>
+  <annotation name="javax.ws.rs.FormParam">
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </annotation>
+  <annotation name="javax.ws.rs.BeanParam">
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </annotation>
+  <annotation name="javax.ws.rs.HeaderParam">
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </annotation>
+  <annotation name="javax.ws.rs.MatrixParam">
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </annotation>
+  <annotation name="javax.ws.rs.PathParam">
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </annotation>
+  <annotation name="javax.ws.rs.QueryParam">
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </annotation>
+
+
+</library>

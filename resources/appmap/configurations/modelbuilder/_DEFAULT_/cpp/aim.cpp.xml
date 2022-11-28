@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for cpp language</description>
+
+  <import resource="../common/aim.common.xml"/>
+
+  <import resource="classpath:resources/qaking-tech-cpp.xml"/>
+  <import resource="classpath:resources/qaking-tech-plsql.xml"/>
+
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="cpp/aim.cpp.properties"/>
+  </bean-->
+
+  <bean id="aim.cpp.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>cpp parser</description>
+    <property name="filter" ref="aim.cpp.filter"/>
+    <property name="languageSupport">
+      <bean parent="ls_cpp">
+        <property name="includeHeaders" value="true"/>
+      </bean>
+    </property>
+  </bean>
+
+  <!-- Rules -->
+
+  <bean id="aim.cpp.rule" class="com.optimyth.apm.builder.rules.cpp.ExtendedCppClassRule">
+    <description>C++ extended rule</description>
+    <property name="active" value="${aim.cpp.rule.active}"/>
+    <property name="filter" ref="aim.cpp.filter"/>
+    <property name="cppCallback" ref="aim.cpp.callback"/>
+    <property name="headerResolver" ref="ls_cpp_fileResolver"/>
+    <property name="resolveCalls" value="${aim.cpp.rule.resolveCalls}"/>
+    <property name="resolveInheritance" value="${aim.cpp.rule.resolveInheritance}"/>
+    <property name="resolveTypeReferences" value="${aim.cpp.rule.resolveTypeReferences}"/>
+    <!--property name="resolveFieldReferences" value="${aim.cpp.rule.resolveFieldReferences}"/-->
+    <property name="resolver" ref="aim.cpp.resolver"/>
+    <property name="ignoredCallsSameClass" value="${aim.cpp.ignored.calls.same.object}"/>
+  </bean>
+
+  <bean id="aim.cpp.proc.rule" class="com.optimyth.apm.builder.rules.cpp.ProcDatabaseRule">
+    <description>Relations between C++ elements and database objects</description>
+    <property name="active" value="${aim.cpp.proc.rule.active}"/>
+    <property name="filter" ref="aim.cpp.filter"/>
+    <property name="cppCallback" ref="aim.cpp.callback"/>
+    <property name="plsqlProcessor" ref="aim.cpp.plsql.codeProcessor"/>
+    <property name="allClasses" value="${aim.cpp.proc.allclasses}"/>
+    <property name="sqlLanguageSupport" ref="ls_plsql"/>
+    <property name="createSqlComponents" value="${aim.cpp.proc.createSqlComponents}"/>
+  </bean>
+
+  <bean id="aim.cpp.plsql.codeProcessor" class="com.optimyth.apm.builder.rules.plsql.PlsqlCodeProcessor">
+    <property name="createInternalObjects" value="true"/>
+    <property name="acceptUnresolvedResources" value="${aim.common.acceptUnresolved}"/>
+    <property name="sqlCallback" ref="aim.cpp.plsql.callback" />
+    <property name="sqlProcessor" ref="aim.cpp.sqlProcessor"/>
+    <property name="typeResolver" ref="aim.cpp.plsql.typeResolver"/>
+  </bean>
+
+  <bean id="aim.cpp.sqlProcessor" class="com.optimyth.apm.builder.rules.sql.BasicPlSqlProcessor">
+    <property name="addSqlToModel" value="false"/>
+    <property name="parseSqlColumns" value="false"/>
+    <property name="sqlCallback" ref="aim.cpp.sqlCallback"/>
+    <property name="sqlParser" ref="ls_plsql_parser" />
+  </bean>
+  
+  <!-- Callbacks -->
+
+  <bean id="aim.cpp.callback" class="com.optimyth.apm.builder.rules.cpp.ExtendedCppCallback">
+    <property name="level" value="${aim.cpp.level}"/>
+    <property name="softwareResolver" ref="aim.global.applicationResolver"/>
+    <property name="application" value="${aim.cpp.software}"/>
+    <property name="headerExtensions" value="${cpp.header.extensions}"/>
+  </bean>
+
+  <bean id="aim.cpp.proc.callback" class="com.optimyth.apm.builder.rules.cpp.BasicCppCallback">
+    <property name="level" value="${aim.cpp.proc.level}"/>
+    <property name="softwareResolver" ref="aim.global.applicationResolver"/>
+    <property name="softwareName" value="${aim.cpp.software}"/>
+  </bean>
+
+  <bean id="aim.cpp.plsql.callback" class="com.optimyth.apm.builder.rules.plsql.BasicPlsqlCallback">
+    <property name="schemaResolver" ref="aim.cpp.plsql.schemaResolver.default"/>
+    <property name="typeResolver" ref="aim.cpp.plsql.typeResolver"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+    <property name="sqlCallback" ref="aim.cpp.sqlCallback"/>
+  </bean>
+
+  <bean id="aim.cpp.sqlCallback" class="com.optimyth.apm.builder.rules.sql.BasicPlSqlCallback">
+    <property name="dbType" value="${aim.common.database.dbsystem}"/>
+    <property name="dbInstance" value="${aim.common.database.dbname}"/>
+    <property name="ignoreCase" value="${aim.common.ignoreCase}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+  
+  <bean id="aim.cpp.plsql.typeResolver" class="com.optimyth.apm.builder.rules.plsql.PlsqlTypeResolver">
+    <property name="plsqlCallback" ref="aim.cpp.plsql.callback" />
+  </bean>
+
+  <!-- Resolvers -->
+  <bean id="aim.cpp.resolver.abstract" abstract="true">
+    <property name="callback" ref="aim.cpp.callback"/>
+    <property name="classnameFilter">
+      <util:constant static-field="com.optimyth.apm.builder.rules.common.Predicate.CPP_FILTER"/>
+    </property>
+  </bean>
+
+  <bean id="aim.cpp.resolver.existing" parent="aim.cpp.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.ExistingClassDepsResolver">
+    <property name="cache"><bean class="com.optimyth.apm.builder.rules.oo.ExistingComponentCache">
+      <constructor-arg value="aim.cpp.resolver.existing.cache"/>
+      <constructor-arg value="512"/>
+    </bean></property>
+    <property name="cacheNon"><bean class="com.optimyth.apm.builder.rules.oo.NonExistingComponentCache">
+      <constructor-arg value="1024"/>
+    </bean></property>
+  </bean>
+
+  <bean id="aim.cpp.resolver.matching" parent="aim.cpp.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.MatchingPkgClassDepsResolver">
+    <property name="predicate"><bean class="com.optimyth.apm.builder.rules.common.PatternsPredicate">
+      <property name="partialMatch" value="true"/>
+      <property name="regexpPatterns" value="${aim.cpp.matching.packagePatterns}"/>
+    </bean></property>
+    <property name="typePackageResolution" value="${aim.cpp.package.resolver}"/>
+    <property name="customPackage" value="${aim.cpp.custom.package}"/>
+  </bean>
+
+  <bean id="aim.cpp.resolver" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="key" value="${aim.cpp.resolver}"/>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.oo.ClassDepsResolver"/>
+    <property name="defaultValue" ref="aim.cpp.resolver.existing"/>
+    <property name="map">
+    <map>
+      <entry key="existing" value-ref="aim.cpp.resolver.existing"/>
+      <entry key="matching" value-ref="aim.cpp.resolver.matching"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.cpp.plsql.schemaResolver.default" class="com.optimyth.apm.builder.rules.plsql.BasicSchemaResolver">
+    <constructor-arg value="${aim.common.database.dbname}"/>
+  </bean>
+
+  <!-- Filters -->
+  <bean id="aim.cpp.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.cpp.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.cpp.filter}"/>
+    <property name="map">
+      <map>
+        <entry key="pattern" value-ref="aim.cpp.filter.pattern"/>
+      </map>
+    </property>
+  </bean>
+
+  <bean id="aim.cpp.filter.default" parent="ls_cpp_matcher"/>
+
+  <bean id="aim.cpp.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.cpp.filter.pattern}"/>
+  </bean>
+
+</beans>

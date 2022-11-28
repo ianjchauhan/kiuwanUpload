@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="aspnet.webapi" standard="aspnet.webapi" technology="csharp">
+
+  <description url="https://docs.microsoft.com/previous-versions/aspnet/mt174857(v=vs.118)">ASP.NET Web API 2 framework</description>
+
+  <class name="System.Web.Http.Controllers.IHttpController" kind="interface">
+    <tags>WebApi.controller</tags>
+  </class>
+
+  <class name="System.Web.Http.ApiController" supertypes="System.Web.Http.Controllers.IHttpController">
+    <tags>WebApi.controller</tags>
+    <field name="ActionContext" type="System.Web.Http.Controllers.HttpActionContext"/>
+    <field name="Configuration" type="System.Web.Http.HttpConfiguration"/>
+    <field name="ControllerContext" type="System.Web.Http.HttpControllerContext"/>
+    <field name="User" type="System.Security.Principal.IPrincipal"/>
+    <field name="ModelState" type="System.Web.Http.ModelBinding.ModelStateDictionary"/>
+    <field name="Request" type="System.Net.Http.HttpRequestMessage"/>
+    <field name="RequestContext" type="System.Web.Http.Controllers.HttpRequestContext"/>
+
+    <method name="Redirect" signature="Redirect(string)" match="name">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="RedirectToRoute" signature="RedirectToRoute(string,object)" match="name">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+  </class>
+
+  <class name="System.Web.Http.Controllers.HttpActionContext">
+    <field name="ActionArguments" type="System.Collections.Generic.Dictionary"/>
+    <field name="ActionDescriptor" type="System.Web.Http.Controllers.HttpActionDescriptor"/>
+    <field name="ControllerContext" type=""></field>
+    <field name="ModelState" type=""></field>
+    <field name="Request" type="System.Net.Http.HttpRequestMessage"></field>
+    <field name="RequestContext" type="System.Web.Http.Controllers.HttpRequestContext"></field>
+    <field name="Response" type=""></field>
+  </class>
+
+  <class name="System.Net.Http.HttpRequestMessage">
+    <field name="Content" type="System.Net.Http.HttpContent">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="Headers" type="System.Net.Http.Headers.HttpRequestHeaders">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="Method" type="System.Net.Http.HttpMethod"></field>
+    <field name="Properties" type="System.Collections.Generic.IDictionary">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="RequestUri" type="System.Uri">
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="Version" type="System.Version"/>
+  </class>
+  
+  <class name="System.Web.Http.Controllers.HttpRequestContext">
+    <field name="ClientCertificate" type="System.Security.Cryptography.X509Certificates.X509Certificate2"/>
+    <field name="Configuration" type="System.Web.Http.HttpConfiguration"/>
+    <field name="IncludeErrorDetail" type="bool"/>
+    <field name="IsLocal" type="bool"/>
+    <field name="Principal" type="System.Security.Principal.IPrincipal"/>
+    <field name="RouteData" type="System.Web.Http.Routing.IHttpRouteData"/>
+    <field name="Url" type="System.Web.Http.Routing.UrlHelper"/>
+  </class>
+
+  <class name="System.Web.Http.Routing.UrlHelper">
+    <field name="Request" type="System.Net.Http.HttpRequestMessage"/>
+    <method name="IsLocalUrl" signature="IsLocalUrl(string)">
+      <return type="bool"/>
+      <neutralization argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+  </class>
+
+  <!--class name="System.Web.Mvc.Url" kind="class" supertypes="System.Web.Http.Routing.UrlHelper"/-->
+
+  <class name="System.Net.Http.Headers.CookieHeaderValue" supertypes="System.ICloneable">
+    <constructor name="CookieHeaderValue" signature="CookieHeaderValue()"><tags>cookie.create</tags></constructor>
+    <constructor name="CookieHeaderValue_2" signature="CookieHeaderValue(string,string)" match="numargs">
+      <tags>cookie.create,cookie.name:0,cookie.value:1</tags>
+      <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+    </constructor>
+    <method name="TryParse" signature="TryParse(string,System.Net.Http.Headers.CookieHeaderValue)" instance="false">
+      <tags>cookie.create,cookie.name:0,cookie.value:0</tags>
+      <parameters><param type="string"/><param type="System.Net.Http.Headers.CookieHeaderValue" set="true"/></parameters>
+      <return type="bool"/>
+      <sink argpos="0" kind="header_manipulation" resource="web"/>
+    </method>
+
+    <field name="Cookies" type="System.Collections.ObjectModel.Collection" elementType="System.Net.Http.Headers.CookieState"/>
+    <field name="Domain" type="string"><tags>cookie.domain</tags></field>
+    <field name="Expires" type="System.DateTimeOffset"><tags>cookie.persistent</tags></field>
+    <field name="HttpOnly" type="bool"><tags>cookie.httpOnly</tags></field>
+    <field name="Item" type="array" elementType="System.Net.Http.Headers.CookieState"><tags>cookie.value</tags></field>
+    <field name="MaxAge" type="System.TimeSpan"><tags>cookie.persistent</tags></field>
+    <field name="Path" type="string"><tags>cookie.path</tags></field>
+    <field name="Secure" type="bool"><tags>cookie.secure</tags></field>
+  </class>
+  
+  <class name="System.Web.Http.Cors.EnableCorsAttribute">
+    <constructor name="EnableCorsAttribute" signature="EnableCorsAttribute(string,string,string,string)" match="name">
+      <tags>cors.origins:0</tags>
+    </constructor>
+  </class>
+
+  <class name="System.Web.MimeMapping">
+    <method name="GetMimeMapping" signature="GetMimeMapping(string)">
+      <return type="string"/>
+    </method>
+  </class>
+  
+</library>

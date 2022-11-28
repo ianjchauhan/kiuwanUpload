@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="sqlite3" technology="python">
+
+  <description url="https://docs.python.org/3/library/sqlite3.html">sqlite3 - DBAPI interface for SQLite databases</description>
+
+  <module name="sqlite3">
+    <function name="connect" signature="connect(database[, timeout, detect_types, isolation_level, check_same_thread, factory, cached_statements, uri])">
+      <return type="sqlite3.Connection"/>
+      <sink argpos="0" paramNames="dsn" kind="connection_string_injection"/>
+    </function>
+
+    <class name="Connection" supertypes="pep249.Connection">
+      <method name="cursor" signature="cursor(factory=Cursor)">
+        <return type="sqlite3.Cursor"/>
+      </method>
+      <!-- shortcuts not present in DBAPI Connection -->
+      <method name="execute" signature="execute(sql[, parameters])">
+        <return type="iter" />
+        <return type="object" />
+        <sink argpos="0" kind="sql_injection"/>
+      </method>
+      <method name="executemany" signature="executemany(sql[, parameters])">
+        <return type="iter" />
+        <return type="object" />
+        <sink argpos="0" kind="sql_injection"/>
+      </method>
+      <method name="executescript" signature="executescript(sql_script)">
+        <return type="iter" />
+        <return type="object" />
+        <sink argpos="0" kind="sql_injection"/>
+      </method>
+    </class>
+
+    <class name="Cursor" supertypes="pep249.Cursor">
+      <field name="connection" type="sqlite3.Connection"/>
+      <!-- non standard methods not present in DB-API Cursor -->
+      <method name="executescript" signature="executescript(sql_script)">
+        <return type="iter" />
+        <return type="object" />
+        <sink argpos="0" kind="sql_injection"/>
+      </method>
+    </class>
+
+    <member name="version" type="str"/>
+
+  </module>
+
+</library>

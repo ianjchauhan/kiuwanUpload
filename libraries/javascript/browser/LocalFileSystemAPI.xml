@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="browser/LocalFileSystemAPI" standard="javascript" technology="javascript">
+  <!-- Note: only implemented in chrome, the spec has not struck browser devs -->
+
+  <module name="browser/LocalFileSystemAPI" standard="LocalFileSystem">
+    <description url="https://developer.mozilla.org/en-US/docs/Web/API/LocalFileSystem">LocalFileSystem API</description>
+    <class name="LocalFileSystem/FileSystem">
+      <field name="name" type="String"/>
+      <field name="root" type="LocalFileSystem/FileSystemDirectoryEntry"/>
+    </class>
+
+    <class name="LocalFileSystem/FileSystemEntry">
+      <field name="filesystem" type="LocalFileSystem/FileSystem"/>
+      <field name="fullPath" type="String"/>
+      <field name="isDirectory" type="Boolean" alias="isFile"/>
+      <field name="name" type="String"/>
+      <function name="copyTo" alias="moveTo"><sink kind="path_traversal" argpos="1"/></function>
+      <function name="getParent"><return type="LocalFileSystem/FileSystemDirectoryEntry"/></function>
+    </class>
+
+    <class name="LocalFileSystem/FileSystemDirectoryEntry" supertypes="LocalFileSystem/FileSystemEntry">
+      <function name="createReader"><return type="LocalFileSystem/FileSystemDirectoryReader" /></function>
+      <function name="getDirectory">
+        <parameters>
+          <param type="String"/>
+          <param type="Object"/>
+          <param type="function(LocalFileSystem/FileSystemDirectoryEntry)"/>
+        </parameters>
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+        <source argpos="2" kind="external_input" resource="filesystem" />
+      </function>
+      <function name="getFile">
+        <parameters>
+          <param type="String"/>
+          <param type="Object"/>
+          <param type="function(LocalFileSystem/FileSystemFileEntry)"/>
+        </parameters>
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+        <source argpos="2" kind="file_input" resource="filesystem" />
+      </function>
+      <function name="file"><source kind="file_input" argpos="0"/></function>
+    </class>
+
+    <class name="LocalFileSystem/FileSystemFileEntry" supertypes="LocalFileSystem/FileSystemEntry">
+      <function name="createWriter"/>
+    </class>
+
+    <class name="LocalFileSystem/FileSystemDirectoryReader">
+      <function name="readEntries">
+        <parameters>
+          <param type="function(Array:LocalFileSystem/FileSystemDirectoryEntry)" callback="true"/>
+          <param type="function(Error)" callback="true"/>
+        </parameters>
+        <source argpos="0" kind="file_input" resource="filesystem" />
+      </function>
+    </class>
+  </module>
+
+</library>

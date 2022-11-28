@@ -1,0 +1,150 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='legacy' subtech='natural' descriptor='legacy/aim.natural.xml' label='Process Software AG Natural / Adabas technology'>
+  <description>
+    Process Software AG Natural / Adabas technology (Natural code and references to Adabas entities).
+  </description>
+
+  <properties>
+
+    <property id='aim.natural.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>Enable for processing Natural code.</description>
+    </property>
+
+    <property id='aim.natural.rule.view.active' type='bool'>
+      <name>nslActive</name>
+      <example>false</example>
+      <description>
+        Enable for processing Local Data Area descriptors (e.g. NSL files) and process references to Adabas views.
+        Often, NSL files are the unique resource available to infer relations between Natural code and Adabas entities.
+      </description>
+    </property>
+
+    <property id='aim.natural.software' type='string'>
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>Application/module name for Natural code, if no global sofware resolver.</description>
+    </property>
+
+    <property id='aim.natural.dbsystem' type='string'>
+      <name>dbsystem</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>Database system (e.g. Adabas).</description>
+    </property>
+
+    <property id='aim.natural.dbname' type='string'>
+      <name>dbname</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>Database name.</description>
+    </property>
+
+    <property id='aim.natural.ignoreCase' type='string'>
+      <name>ignoreCase</name>
+      <example>${aim.common.ignoreCase}</example>
+      <description>If true, case is ignored in entity names found in Natural code items.</description>
+    </property>
+
+    <property id='aim.natural.rule.processDatabaseOperations' type='bool'>
+      <name>processDatabaseOperations</name>
+      <example>true</example>
+      <description>If set to true, database operations (e.g. Adabas) will be processed.</description>
+    </property>
+
+    <property id='aim.natural.filter' type='enum'>
+      <name>filter</name>
+      <example>default</example>
+      <description>Strategy to use for selecting Natural files to process.</description>
+      <possible>
+        <enumval name='default'>Accept Natural files with extensions from natural technology.</enumval>
+        <enumval name='pattern'>Process Natural files matching patterns in the <code>patterns</code> property.</enumval>
+      </possible>
+
+    </property>
+
+    <property id='aim.natural.filter.pattern' type='list' subtype='antPattern'>
+      <name>patterns</name>
+      <example>**/*.nsp,**/*.nsn,**/*.nss,**/*.nsh,**/*.nsc</example>
+      <description>If <code>filter</code> set to pattern, select the following comma-separated Ant patterns.</description>
+    </property>
+
+    <property id='aim.natural.resolver.file.basedir' type='string'>
+      <name>resolveBasedir</name>
+      <example>${aim.common.srcdir}</example>
+      <description>
+        Directories under <code>resolveBasedir</code> matching <code>resolvePatterns</code>
+        will be examined for Natural code when resolving program dependencies.
+      </description>
+    </property>
+
+    <property id='aim.natural.resolver.file.patterns' type='list' subtype='antPattern'>
+      <name>resolvePatterns</name>
+      <example>**</example>
+      <description>
+        Ant patterns for matching subdirectories (relative to <code>resolveBasedir</code>)
+        where program dependencies will be resolved.
+      </description>
+    </property>
+
+    <property id='aim.natural.rule.view.pattern' type='string'>
+      <name>viewNamePattern</name>
+      <example>\\s*\\d+\\s+V\\s\\d+\\s+(\\S+)\\s+(\\S+)\\s*</example>
+      <description>
+        Regular expression for extracting view names from local data area descriptors.
+        <br/>
+        First capturing group is the alias for the view, second capturing group is the view name.
+      </description>
+    </property>
+
+    <property id='aim.natural.rule.view.include' type='list' subtype='antPattern'>
+      <name>localDataAreaPatterns</name>
+      <example>*.NSL,**/*.NSL</example>
+      <description>Patterns for local data area descriptors.</description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>
+      program(program|subprogram|subroutine|helproutine|copy),
+      resource(data area),
+      page(map),
+      window,
+      databaseItem(Adabas db),
+      sql(Adabas operation),
+      table(Adabas view)
+    </values>
+    <description>
+      Natural code elements (program, subprogram, subroutine, helproutine, copy) are modeled as <i>program</i>.
+      Data areas (local, global, parameter) are modeled as <i>resource</i>.
+      Maps ("screen layout") are modeled as <i>page</i>, while Natural Windows are modeled as <i>window</i>.
+      <br/>
+      Adabas entities ("views") are modeled as <i>table</i>, and placed in a <i>databaseItem</i>
+      representing an Adabas database.
+      <br/>
+      Each database operation (READ, FIND, HISTOGRAM, GET, STORE, UPDATE, DELETE) is modeled as sql.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      program-calls->program,
+      program-includes->program(copy),
+      program-contains->window,
+      program-uses->page(map),
+      program-calls->sql(Natural operation),
+      sql-uses->table(Adabas view)
+    </values>
+    <description>
+      For each Natural element (program, subprogram, subroutine, helproutine, copy), outgoing dependencies
+      (calls, includes), and references to windows and maps ("screen layout")  are modeled.
+      <br/>
+      Dependencies between Natural and Adabas are modeled this way: <i>program -calls -> sql(Natural operation) -uses-> table(Adabas view)</i>.
+    </description>
+  </createdRelations>
+
+  <importantConfigurations activation="aim.natural.rule.active">
+    <alternative><value>aim.natural.rule.view.active=true</value></alternative>
+  </importantConfigurations>
+
+</block>

@@ -1,0 +1,3371 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_kotlin" updated="">
+  <description>EdcastModel</description>
+  <rule name="OPT.KOTLIN.ANDROID.AndroidStickyBroadcast" message="AndroidStickyBroadcast: Avoid Sticky Broadcasts" class="com.kiuwan.qaking.kotlin.rules.android.AndroidStickyBroadcast" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,CWEScope:Integrity,Framework:Android,essential,infoleak]]></tags>
+    <description><![CDATA[Sticky broadcasts are usually informational and designed to tell other processes some fact about
+the system state (like "battery low"). Sticky broadcasts receipt cannot be secured with a permission,
+and therefore are accessible to any receiver.
+
+A normal broacasted Intent reaches receiver(s) configured for that intents, and ends. With sticky broadcasts,
+the Intent continues in system (so other apps could be notified if they need the same information). Additionally,
+a malicious app could overwrite sticky Intent data.
+
+If these broadcasts contain sensitive data or reach a malicious receiver, an information leakage may happend.
+
+Note: Sticky broadcasts are deprecated since API level 21 ("lollipop").
+
+The rule looks for any call of the deprecated methods related to sticky broadcasts, and any <uses-permission> element
+in AndroidManifest.xml requesting android.permission.BROADCAST_STICKY permission to send or remove such broadcast type.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid potential security issues, like sensitive information disclosure.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+import android.app.Activity
+import android.content.Intent
+import android.os.UserHandle
+
+class AndroidStickyBroadcast : Activity() {
+  fun sendBroadcast() {
+    val intent = Intent("some.custom.action")
+    intent.putExtra("some_boolean", true)
+    val user = android.os.Process.myUserHandle()
+    sendStickyBroadcastAsUser(intent, user) // VIOLATION
+  }
+}
+
+In AndroidManifest.xml, app must request the BROADCAST_STICKY
+to send sticky broadcasts:
+<!-- VIOLATION -->
+<uses-permission android:name="android.permission.BROADCAST_STICKY"/>]]></example>
+    <repair><![CDATA[// Do not perform sticky broadcasts operations.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/927.html,http://www.jssec.org/dl/android_securecoding_en.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:927,OWASP:2021:A4,PCI-DSS:7.1.2]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.ANDROID.DynamicallyLoadingCode" message="DynamicallyLoadingCode: Discourage dynamically loading code" class="com.kiuwan.qaking.kotlin.rules.android.DynamicallyLoadingCode" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,Framework:Android,code-injection]]></tags>
+    <description><![CDATA[It is strongly discouraged to load code outside of the application APK. Doing so significantly increases the likelihood
+of application compromise due to code injection or code tampering.
+
+It also adds complexity around version management and application testing.
+Finally, it can make it impossible to verify the behavior of an application, so it may be prohibited in some environments.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package com.seila.kotlinForAndroid
+
+import android.R
+import dalvik.system.DexFile
+import android.app.Activity
+import android.os.Bundle
+import dalvik.system.PathClassLoader
+import java.io.IOException
+import com.sun.beans.finder.FieldFinder.findField
+import android.app.Application
+
+class MyActivity : Activity() {
+
+  fun loadClass(context: Context, path: String): Any? {
+    try {
+      val dexPath = context.getApplicationInfo().sourceDir
+      val pathClassLoader = PathClassLoader(dexPath, context.getClassLoader()) //VIOLATION
+      val c = Class.forName(path, true, pathClassLoader)
+      return c.newInstance()
+    } catch (ex1: InstantiationException) {
+      ex1.printStackTrace()
+    } catch (ex2: IllegalAccessException) {
+      ex2.printStackTrace()
+    } catch (ex3: ClassNotFoundException) {
+      ex3.printStackTrace()
+    }
+
+    return null
+  }
+
+}]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[http://www.symantec.com/connect/blogs/android-class-loading-hijacking,Android Developers - http://developer.android.com/intl/es/training/articles/security-tips.html#DynamicCode]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:SEC03,CWE:114,OWASP:2021:A1,PCI-DSS:6.5.8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.ANDROID.IntentManipulation" message="IntentManipulation: Intent Manipulation" class="com.kiuwan.qaking.kotlin.rules.android.IntentManipulation" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,CWEScope:Integrity,Framework:Android]]></tags>
+    <description><![CDATA[If untrusted input is inserted into certain parts of an Android Intent, without proper sanitization, a malicious user or app
+could force, via the tainted Intent, the execution of unintended code or inject malicious data in the vulnerable app.
+
+Certain Intent properties could change the expected semantics of the Intent, like setAction(), setClass(), setClassName(),
+or setComponent(). If the Intent is used to start an Activity or Service, for example, the attacker may change the
+expected element launched, with potential nefarious consequences.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid Intent Manipulation attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package com.kiuwan.android
+
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+
+class IntentManipulation : Activity() {
+  override fun onCreate(savedInstanceState: Bundle?) {
+    // ...
+    val request = intent // possibly coming from a malicious app
+    val action = request.action
+    val type = request.type
+    val component = request.component
+
+    val targetService = Intent()
+    targetService.action = action // VIOLATION
+    targetService.component = component // VIOLATION
+    targetService.type = type
+
+    startService(targetService) // probably not the intended service
+
+
+    if (isOnline()) {
+      val goToMarket = Intent(Intent.ACTION_VIEW)
+        .setData(Uri.parse("http://apkpure.com/apkpure/com.apkpure.aegon/download?from=home"))    // OK
+
+      goToMarket.data = request.data   // VIOLATION
+      startActivity(goToMarket)
+    }
+  }
+}]]></example>
+    <repair><![CDATA[package com.kiuwan.android
+
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+
+class IntentManipulation : Activity() {
+  override fun onCreate(savedInstanceState: Bundle?) {
+    // ...
+    val request = intent // possibly coming from a malicious app
+    val action = request.action
+    val type = request.type
+    val component = request.component
+
+    val targetService = Intent()
+    if( isValidAction(action) && isValidComponent(component) ) { // FIXED, custom validation
+      // ... rest of logic
+
+      targetService.action = action
+      targetService.component = component
+      targetService.type = type
+
+      startService(targetService) // probably not the intended service
+
+      //...
+    }
+  }
+}]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/99.html,http://oasam.org/en/oasam/oasam-dv-data-validation/oasam-dv-007-intent-injection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:99,OWASP-M:2016:M7,OWASP:2021:A3,PCI-DSS:6.5.8,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.ANDROID.PreventBackupVulnerability" message="PreventBackupVulnerability: Inadecuate backup configuration" class="com.optimyth.qaking.android.rules.security.PreventBackupVulnerability" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,ASVS-v4.0.2:10.3.1,ASVS-v4.0.2:14.1.3,ASVS-v4.0.2:2.5.4,ASVS-v4.0.2:3.4.3,ASVS-v4.0.2:3.4.4,ASVS-v4.0.2:3.4.5,CWEScope:Confidentiality,Framework:Android,infoleak]]></tags>
+    <description><![CDATA[The android:allowBackup attribute determines if an application's data can be backed-up and restored.
+
+If the attribute is not specified, backup is enabled by default; if developer forgets to write this attribute,
+sensitive app data may be leaked.
+
+Note: Backup may have security consequences for an application. End-users may copy app data off of the device.
+Once backed up, all application data can be read by the user. As backup services may use the cloud for storage,
+backup for sensitive data threatens information confidentiality.
+
+A malicious user may also change the data so after restore, unintended data, configurations and permissions could
+be enabled, with data integrity loss.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid unauthorized access to sensitive application data.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<!-- VIOLACION, active backup without fullBackupContent
+     (when permitBackup=true) -->
+<application
+  android:name=".app"
+  android:icon="@drawable/icon"
+  android:label="@string/app_name"
+  android:allowBackup="true">
+  ...
+</application>]]></example>
+    <repair><![CDATA[<!-- FIXED, data to backup made explicit -->
+<application
+  android:name=".app"
+  android:icon="@drawable/icon"
+  android:label="@string/app_name"
+  android:allowBackup="true" android:fullBackupContent="@xml/backupscheme">
+  ...
+</application>]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/359.html,http://developer.android.com/training/backup/autosyncapi.html#configuring,https://cwe.mitre.org/data/definitions/16.html]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:FIO52-J,CWE:16,CWE:359,OWASP-M:2016:M2,OWASP:2021:A5,WASC:13]]></security>
+    </normatives>
+    <properties>
+      <property name="permitBackup" descname="When true, allowBackup=true is permitted. When false, a violation is reported when backup is active." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.AccessibilitySubversion" message="AccessibilitySubversionRule: Java access restriction subverted (Reflection)" class="com.kiuwan.qaking.kotlin.rules.security.AccessibilitySubversion" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.10.1,ASVS-v4.0.2:1.4.2,ASVS-v4.0.2:1.4.4,essential]]></tags>
+    <description><![CDATA[Java imposes access restrictions for code in one class to access fields, methods and constructors in objects of
+different classes (the access level specifiers with public, protected and private keywords enforce in code such restrictions).
+
+Using reflection, Java allows a programmer to get around the access control checks provided by these specifiers.
+For example, a programmer may use setAccessible(true) on a reflected field, method or constructor and bypass
+the access limitations (if the SecurityManager allows it), so a private field could be read or changed, and
+a private method or constructor could be called, from any class.
+
+The rule emits a security flaw when setAccessible(true) is used on any java.lang.reflect.AccessibleObject subtype,
+like Field, Method or Constructor.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid unintended accesses to elements that should be protected.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[class ABC() {
+  private var _mySensitiveData: String = "Very sensitive data here"
+
+  val mySensitiveData: String
+    get() {
+      if(isAllowed()) return _mySensitiveData
+      throw IllegalAccessException("Access to sensitive info ")
+    }
+
+  fun isAllowed() : Boolean {
+    // in real world, a complex access control check here...
+    return false;
+  }
+}
+
+fun ABC.skipAccessControl() : String? {
+  val field = javaClass.getDeclaredField("_mySensitiveData")
+  field.isAccessible = true // VIOLATION
+  return field.get(this) as String?
+}]]></example>
+    <repair><![CDATA[// Do not use reflection to increase accessibility of methods, constructors or fields]]></repair>
+    <reference><![CDATA[https://www.securecoding.cert.org/confluence/display/java/SEC05-J.+Do+not+use+reflection+to+increase+accessibility+of+classes%2C+methods%2C+or+fields,http://cwe.mitre.org/data/definitions/284.html]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:SEC05-J,CWE:284,CWETOP25:2020:30,OWASP:2021:A1,PCI-DSS:6.5.8,WASC:02]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.AnonymousLdapBind" message="AnonymousLdapBindRule: Access Control - Anonymous LDAP Bind" class="com.kiuwan.qaking.kotlin.rules.security.AnonymousLdapBind" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.4,ASVS-v4.0.2:13.4.2,ASVS-v4.0.2:4.1.3,ASVS-v4.0.2:4.1.5,ASVS-v4.0.2:7.2.2,ASVS-v4.0.2:8.3.3,ASVS-v4.0.2:8.3.8,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Without proper access control, executing an LDAP statement that contains a user-controlled value can allow an attacker to access unauthorized records.
+Executing LDAP queries under an anonymous bind, effectively without authentication, can allow an attacker to abuse a poorly configured LDAP environment.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+import java.util.Hashtable
+import javax.naming.Context
+import javax.naming.directory.InitialDirContext
+import javax.naming.directory.DirContext
+
+class MyLdapOperations() {
+
+  fun getAnonymousContext(): DirContext {
+    val env: Hashtable<String,String> = Hashtable(mapOf(
+      Context.SECURITY_AUTHENTICATION to "none" // VIOLATION
+    ))
+
+    return InitialDirContext(env)
+  }
+
+}]]></example>
+    <repair><![CDATA[// Use authenticated binds for directory-based operations]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/285.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:285,OWASP:2021:A1,PCI-DSS:6.5.8]]></security>
+    </normatives>
+    <properties>
+      <property name="ldapContextClasses" descname="ldapContextClasses" value="javax.naming.InitialContext, InitialContext, javax.naming.directory.InitialDirContext,InitialDirContext,javax.naming.ldap.InitialLdapContext,InitialLdapContext"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.CodeInjection" message="CodeInjectionRule: Dynamic code injection in scripting API" class="com.kiuwan.qaking.kotlin.rules.security.CodeInjection" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.4,ASVS-v4.0.2:5.5.4,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,code-injection,scripting]]></tags>
+    <description><![CDATA[Scripting engines in Java allow execution of source code written in different languages.
+
+When the application uses a scripting engine to execute source code that could be altered by an external, untrusted input,
+a potential attacker may force the execution of unintended code (local or even remote code injection). Some scripting
+engines allow execution of system commands or call Java, which makes this flaw more dangerous, even allowing arbitrary
+system command execution.
+
+Code and data in compiled languages are quite different, but under scripting languages this boundary is much more fuzzy.
+External untrusted input should be passed to the script in the form of "parameters" or "binding variables" so any
+source code injected by a potential attacker will NOT be considered source code by the scripting engine.
+
+This rule supports the standard scripting API (javax.script) and other frameworks like JEXL, Groovy, Mozilla Rhino,
+or Jython.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid local / remote code injection attacks on scripting engines.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import javax.servlet.http.HttpServletRequest
+import javax.script.ScriptEngine
+import javax.script.ScriptEngineManager
+import groovy.lang.GroovyShell
+import org.python.util.PythonInterpreter
+import org.mozilla.javascript.ContextFactory
+import org.mozilla.javascript.Context
+import org.mozilla.javascript.Scriptable
+import org.apache.commons.jexl2.JexlEngine
+import org.apache.commons.jexl2.UnifiedJEXL
+import org.apache.commons.jexl2.MapContext
+import kotlin.js.eval
+
+class CodeInjection {
+
+  companion object {
+    @JvmStatic fun main(args: Array<String>) {
+      val code = args[0]
+      val ci = CodeInjection()
+
+      ci.runSE(code)
+      ci.runGroovy(code)
+      ci.runPython(code)
+      ci.runRhino(code)
+      ci.runUnifiedJexl(code)
+      ci.runJexl(code)
+      ci.runKotlinJS(code)
+    }
+  }
+
+  fun runSE(code : String) {
+    val se = ScriptEngineManager().getEngineByExtension("js")
+    return se.eval(code)    // VIOLATION
+  }
+
+  fun runGroovy(code : String) {
+    return GroovyShell()
+      .evaluate(code);   //VIOLATION
+  }
+
+  fun runPython(code : String) {
+    return PythonInterpreter().eval(code)   // VIOLATION
+  }
+
+  fun runRhino(code : String) {
+    val ctx = ContextFactory().enterContext();
+    val scope = ctx.initStandardObjects()
+    return ctx.evaluateReader(scope, code, "", null)  // VIOLATION
+  }
+
+  fun runUnifiedJexl(code : String) {
+    return UnifiedJEXL(JexlEngine())
+      .parse(code)   // VIOLATION
+      .evaluate(MapContext());
+  }
+
+  fun runJexl(code : String) {
+    return JexlEngine()
+      .createScript(code)   // VIOLATION
+      .execute(MapContext());
+  }
+
+  fun runKotlinJS(code : String) {
+    return eval(code)   // VIOLATION
+  }
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before evaluating it]]></repair>
+    <reference><![CDATA[https://www.securecoding.cert.org/confluence/display/java/IDS52-J.+Prevent+code+injection,http://cwe.mitre.org/data/definitions/95.html,https://www.owasp.org/index.php/Code_injection_in_Java]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:IDS52-J,CWE:95,OWASP:2021:A3,PCI-DSS:6.5.6,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.CommandInjection" message="CommandInjectionRule: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')" class="com.kiuwan.qaking.kotlin.rules.security.CommandInjection" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.5,ASVS-v4.0.2:5.3.8,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[The software constructs all or part of an operating system command using externally-controlled input, but it does not neutralize
+properly that input that could modify the intended command when it is sent to a method that executes the command
+(e.g. java.lang.Runtime.exec()).
+
+The rule detects a path in code between an user-input statement (source) and a command execution call (sink),
+with command depending on non neutralized input. This allows for an attacker to change the intended command to execute
+or to add a malicious extra command, executed with the application rights.
+
+A neutralization function either validates inputs and report an (neutral) error without allowing command execution,
+or replaces sensitive shell characters in the input to avoid that the resulting command has different semantics.
+If possible, use "accept known good" input validation strategy (whitelist).
+
+It is recommended either: to use API calls instead of external commands, when possible; or to ensure that the application (e.g.
+deployed in a J2EE container) runs under a non-privileged account with rights for the intended commands.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[class CommandInjection {
+
+  companion object {
+    @JvmStatic fun main(args: Array<String>) {
+      val code = args[0]
+      val ci = CommandInjection()
+
+      ci.runRuntimeExec(code)
+      ci.runProcessBuilder(code)
+      ci.runKotlinNative(code)
+    }
+  }
+
+  fun runRuntimeExec(cmd: String) {
+    Runtime.getRuntime().exec(cmd); // VIOLATION
+  }
+
+  fun runProcessBuilder(cmd: String) {
+    val pb = ProcessBuilder()
+		pb.command(cmd) // VIOLATION
+  }
+
+  fun runKotlinNative(cmd: String) {
+    platform.posix.system(cmd) // VIOLATION
+  }
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before executing a command with it]]></repair>
+    <reference><![CDATA[https://www.securecoding.cert.org/confluence/display/java/IDS07-J.+Sanitize+untrusted+data+passed+to+the+Runtime.exec()+method,http://cwe.mitre.org/data/definitions/78.html]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:IDS07-J,CWE:77,CWE:78,CWETOP25:2021:5,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:31]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input, hardcoded_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.ConnectionStringParameterPollution" message="ConnectionStringParameterPollution: Connection string polluted with untrusted input" class="com.kiuwan.qaking.kotlin.rules.security.ConnectionStringParameterPollution" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.7,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When the connection string for an application resource (like database, remote server, persistence entity manager...) could
+be affected by an untrusted source, not properly neutralized, the application is vulnerable to a Connection String Parameter Pollution attack.
+
+An attack targeted at this vulnerability may use special characters (like ';' or ':') to add unexpected parts to the connection string,
+for example to gain extra privileges, or to deactivate security features.
+
+"Untrusted input" means, in this context, a user-controlled application input, an environment variable, or data fetched
+from an external web source.
+
+It should be suspicious that a connection string depends on untrusted input. Normally the application configuration uses
+a fixed connection string, but other attacks, depending on where the connection string is stored (like an SQL injection or
+path traversal attack) may affect the configuration item. This rule only checks for connection strings that are constructed
+programmatically with untrusted input.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import javax.servlet.http.HttpServletRequest
+import java.sql.DriverManager
+import java.sql.Connection
+import java.text.MessageFormat
+import org.jetbrains.exposed.sql.Database
+
+class ConnectionStringParameterPollution {
+  val URL: String = "jdbc:hsqldb:mem:{0}"
+
+  fun test(req: HttpServletRequest) {
+    val uname: String = req.getParameter("username")
+    val jdbcUrl: String = MessageFormat.format(URL, uname)
+
+    getDriverManagerConnection(jdbcUrl)
+    getExposedConnection(jdbcUrl)
+  }
+
+  fun getDriverManagerConnection(jdbcUrl: String) : Connection {
+    return DriverManager.getConnection(jdbcUrl, userPrefix + "_" + user, password) // VIOLATION
+  }
+
+  fun getExposedConnection(jdbcUrl: String) : Connection {
+    return Database.connect(jdbcUrl, driver = "org.h2.Driver") // VIOLATION
+  }
+}]]></example>
+    <repair><![CDATA[// Validate (white-list approach) the untrusted input combined into the connection string.]]></repair>
+    <reference><![CDATA[https://www.blackhat.com/presentations/bh-dc-10/Alonso_Chema/Blackhat-DC-2010-Alonso-Connection-String-Parameter-Pollution-wp.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:15,OWASP:2021:A5,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.CrossSiteRequestForgery" message="CrossSiteRequestForgeryRule: Cross-site request forgery (CSRF)" class="com.kiuwan.qaking.kotlin.rules.security.CrossSiteRequestForgery" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.3,ASVS-v4.0.2:4.2.2,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,csrf]]></tags>
+    <description><![CDATA[A sensitive operation associated with an web URL (servlet, JSP, WebUI, Struts Action ...) may be invoked from
+a request coming from a legitimate, authenticated user (with identity typically encoded in a session ID cookie)
+but where an attacker was able to force the user agent to submit the request.
+
+For an CSRF attack to succeed, various elements must occur together:
+1. Trusted user is logged in the vulnerable webapp
+2. Trusted user agent is tricked by the attacker (e.g. in a web app he controls) to send an HTTP request to the
+   vulnerable URL
+3. The server-side logic under that URL accepts the request as if it was really initiated by the legitimate user,
+   without explicit verification that the user really intended to perform the operation, simply because the
+   session ID cookie for the logged-in user appears in the HTTP request.
+
+The result is that the vulnerable application accepts the operation (controlled by attacker) as if it was submitted
+by the trusted, logged-in, user. This is an abuse of the trust the web application puts on HTTP requests coming from
+logged-in users.
+
+A CSRF vulnerability is a design flaw, where certain web operations (sensitive, as an attacker may gain benefit
+from the legitimate user) are not protected by a control that avoids this kind of attack to succeed. Essentially,
+a CSRF flaw occurs when a web resource performing sensitive operations do not check that the request came from
+from same webapp + same user (the application, at server side, needs to explicitely check the request provenance somehow).
+
+NOTE: Other attacks, like Cross-site WebSocket hijacking (https://www.christian-schneider.net/CrossSiteWebSocketHijacking.html)
+follow the same path and are prevented along the very same techniques.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid CSRF attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/CSRF_Prevention_Cheat_Sheet,http://cwe.mitre.org/data/definitions/352.html,https://en.wikipedia.org/wiki/Cross-site_request_forgery]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:352,CWETOP25:2021:9,OWASP:2013:A8,PCI-DSS:6.5.1,WASC:9]]></security>
+    </normatives>
+    <properties>
+      <property name="checkStateChange" descname="When true, potential vulnerable sources not performing any state-change operation are not reported." value="true"/>
+      <property name="patterns" descname="ANT patterns, comma-separated, for source files to process. Try to select sensitive operations that need CSRF protection." value=""/>
+      <property name="checkers" descname="Comma-separated names of CSRF protection frameworks (CSRFGuard, ESAPI, JSF, HDIV, Struts1, Struts2 or SpringSecurity; or empty for all of them)." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.CrossSiteScripting" message="CrossSiteScriptingRule: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')" class="com.kiuwan.qaking.kotlin.rules.security.CrossSiteScripting" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,essential]]></tags>
+    <description><![CDATA[Software places user-controlled input in page content. An attacker could inject browser script code that is executed
+in the client browser. The end-user is the attacked subject, and the software is the vehicle for the attack.
+There are two main kinds of XSS:
+
+* Reflected XSS: Attacker causes victim to supply malicious content to a vulnerable web application, which
+  renders HTML content embedding a malicious script executed in victim's browser. A variation of this is named
+  DOM-based XSS, where the vulnerable software does not generate content depending on user input but include
+  script code that use user-controlled input.
+
+* Persisted XSS: Attacker provides malicious content to vulnerable application. When other user access to
+  vulnerable pages that embed without proper neutralization the attacker content, script code is executed in the
+  victim's browser.
+
+The script executed in the victim's browser could perform malicious activities.
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but user browsers
+generally allow scripting languages (e.g. JavaScript) in their browsers (disabling JavaScript severely limits
+a web site).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import javax.servlet.ServletException
+import javax.servlet.annotation.WebServlet
+import javax.servlet.http.HttpServlet
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
+class CrossSiteScripting : javax.servlet.http.HttpServlet {
+
+  fun doGet(request: HttpServletRequest, response: HttpServletResponse) {
+    doPost(request, response)
+  }
+
+  fun doPost(request: HttpServletRequest, response: HttpServletResponse) {
+    response.contentType = "text/html"
+
+    val map: java.util.Map = request.parameterMap
+    val param: String = ""
+    if (!map.isEmpty()) {
+      val values = map.get("vector")
+      if (values != null) param = values[0]
+    }
+
+    val obj = "something"
+    response.getWriter().printf(param, obj)    // VIOLATION
+  }
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before using it into a server response]]></repair>
+    <reference><![CDATA[https://www.google.es/about/appsecurity/learning/xss/,http://cwe.mitre.org/data/definitions/79.html,https://www.securecoding.cert.org/confluence/display/java/IDS51-J.+Properly+encode+or+escape+output,https://www.owasp.org/index.php/XSS_(Cross_Site_Scripting)_Prevention_Cheat_Sheet]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:IDS51-J,CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.7,WASC:08]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input, database_input, file_input"/>
+      <property name="checkXssProtectionHeaderDisabled" descname="When true rule reports violation if X-XSS-Protection filter is disabled" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.FormatStringInjection" message="FormatStringInjectionRule: Exclude unsanitized user input from format strings" class="com.kiuwan.qaking.kotlin.rules.security.FormatStringInjection" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.4.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Java JDK contains formatting methods, named format() or printf(), that format a sequence of values according to a format string.
+Classes with formatting methods: PrintStream/PrintWriter, Formatter, MessageFormat, and String.
+Except MessageFormat, format string is loosely similar to C printf() format string.
+
+If the format string is constructed with untrusted input, an attacker may produce unexpected application behaviour.
+It may cause an exception such as java.util.MissingFormatArgumentException to be thrown (which, if not catched, may lead
+to a denial-of-service condition), or information leak.
+
+Consequently, unsanitized input from untrusted source should never be incorporated into format strings.
+
+Note: The risks here are much lower that the equivalent vulnerability in C/C++ and the %n format modifier, anyway.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid denial of service.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+fun main(args: Array<String>) {
+  System.out.format("${args[0]} did not match! HINT: It was issued on %1$terd of some month", c) // VIOLATION
+}]]></example>
+    <repair><![CDATA[fun main(args: Array<String>) {
+  System.out.format("%s did not match! HINT: It was issued on %terd of some month", args[0], c)
+}]]></repair>
+    <reference><![CDATA[https://www.securecoding.cert.org/confluence/display/java/IDS06-J.+Exclude+unsanitized+user+input+from+format+strings,http://cwe.mitre.org/data/definitions/134.html]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:IDS06-J,CWE:134,CWETOP25:2011:23,OWASP:2004:A5,PCI-DSS:6.5.1,WASC:10]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input, hardcoded_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.HardcodedCryptoKey" message="HardcodedCryptoKey: Hardcoded cryptographic keys" class="com.kiuwan.qaking.kotlin.rules.security.HardcodedCryptoKey" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,crypto,essential]]></tags>
+    <description><![CDATA[Never hard-code cryptographic keys (or passwords used to generate them) in your program.
+
+Crypto keys are used for encryption/decryption, for generation of message authentication codes (MAC), during generation
+of password-based encryption keys (the password is the "crypto key" that generates key material for the cipher), and other usages.
+Source code is the worst place for key storage, as any change in keys needs recompilation, and it is easy to reverse-engineer
+an application binary to learn any keys or secrets that may be embedded in it.
+
+Some data used in cryptographic operations (like initial vector for block ciphers, salt for password hashes, etc.)
+are not "private", and it is recommended to generate a good random instance at the origin, and add it to the message
+in plaintext, so the destination may use it. The security depends on properly protecting the "secret" thing
+(private key in a public/private keypair, encryption key in a symmetric cipher, key in an HMAC, etc.).
+
+Long-term cryptographic keys (in contrast with ephemeral ones), are better stored in a safe key storage.
+Private keys in a public/private keypair should NEVER be unprotected (in raw form) and they should be stored in an even
+safer key storage (the impact for a compromise of a private key is typically huge and brutal).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+import javax.crypto.spec.PBEKeySpec
+
+fun encrypt() {
+	val pass : String = "this.is.my.hardcoded.pass"
+  val pbeKeySpec = PBEKeySpec(password.toCharArray(pass))   // VIOLATION
+}]]></example>
+    <repair><![CDATA[import javax.crypto.spec.PBEKeySpec
+
+fun encrypt() {
+	val pass : String = loadKeyFromSafeInput()
+  val pbeKeySpec = PBEKeySpec(password.toCharArray(pass))   // OK
+}]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/321.html,https://wiki.sei.cmu.edu/confluence/display/java/MSC03-J.+Never+hard+code+sensitive+information]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:MSC03-J,CWE:321,OWASP-M:2016:M5,OWASP:2021:A2,PCI-DSS:6.3.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.HardcodedIp" message="HardcodedIp: Do not write IP address in source code" class="com.kiuwan.qaking.kotlin.rules.security.HardcodedIp" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality,infoleak]]></tags>
+    <description><![CDATA[Hardcoding an IP address can create a potential security breach if it is discovered by a
+malicious attacker who successfully decompiles the code.
+
+Also maintainability and portability is deteriorated because the IP address must be directly modified into the code.
+
+The customizable parameter ipPattern contains the pattern used to identify the hardcoded IP.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid potential security breaches.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+
+class HardcodedIp {
+
+  fun testKO() {
+    val baseUrl = "98.139.180.149"   // VIOLATION
+
+    return test(baseUrl)
+  }
+
+  fun testKO() {
+    val baseUrl = "127.0.0.1"
+
+    return test(baseUrl)
+  }
+
+  fun test(baseUrl: String) : ApiServiceInterface {
+    val httpClient = OkHttpClient.Builder()
+
+    val retrofit = Retrofit.Builder()
+      .baseUrl(baseUrl)
+      .client(httpClient.build())
+      .build()
+
+    return retrofit.create<ApiServiceInterface>(ApiServiceInterface::class.java)
+  }
+}]]></example>
+    <repair><![CDATA[// get IP address from environment or a project configuration file]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/200.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:200,CWETOP25:2021:20]]></security>
+    </normatives>
+    <properties>
+      <property name="ipPattern" descname="Pattern used to recognize hardcoded IP addresses." value="(.*(^|\s|\\|//)(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\s|:|$).*|^(\p{XDigit}{1,4}(?:\:\p{XDigit}{1,4}){3,7}))"/>
+      <property name="strictMode" descname="When enabled only fully matched strings will be reported." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.HardcodedSalt" message="HardcodedSaltRule: A hardcoded salt can compromise system security" class="com.kiuwan.qaking.kotlin.rules.security.HardcodedSalt" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,crypto,deprecated]]></tags>
+    <description><![CDATA[A hardcoded salt can compromise system security in a way that cannot be easily remedied.
+
+It is never a good idea to hardcode a salt. Not only does a hardcoded salt allow all of the project's developers to view
+the salt, it also makes fixing the problem extremely difficult.
+
+Once the code is in production, the salt cannot be easily changed. If attackers know the salt value, they can precompute
+rainbow tables for the application, and more easily reverse hashed values.
+
+For example:
+...
+Encryptor instance = ESAPI.encryptor();
+String hash1 = instance.hash(input, "HereComesTheSalt...");
+...
+This code will run successfully, but anyone who has access to it will have access to the salt. Once the program has shipped,
+there is no going back from the salt "HereComesTheSalt...".
+A devious employee with access to this information can use it to break into the system.
+
+Even worse, if attackers have access to the bytecode for application, they can use the javap -c command to access the disassembled code,
+which will contain the values of the used salt.
+
+NOTE: This rule is deprecated by the OPT.JAVA.SEC_JAVA.WeakPasswordHashing, which performs more checks on the password hashing logic.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+import org.owasp.esapi.ESAPI
+import org.owasp.esapi.Encryptor
+
+class HardcodedSalt {
+  private val encryptor: Encryptor = ESAPI.encryptor()
+  private val SALT: String = "MySalt"
+
+  fun getPasswordHash(password: String): String {
+    return encryptor.hash(password, SALT, 1000) // VIOLATION
+  }
+}]]></example>
+    <repair><![CDATA[import org.owasp.esapi.ESAPI
+import org.owasp.esapi.Encryptor
+import org.owasp.esapi.Randomizer
+import java.nio.charset.Charset
+
+class HardcodedSalt() {
+  private val encryptor: Encryptor = ESAPI.encryptor()
+  private val randomizer: Randomizer = ESAPI.randomizer()
+
+  fun getPasswordHash(password: String): String {
+    val randomSalt = randomizer.getRandomBytes(12).toString(Charset.forName("UTF-8")) // FIXED
+    return encryptor.hash(password, randomSalt, 1000)
+  }
+}]]></repair>
+    <reference><![CDATA[https://www.securecoding.cert.org/confluence/display/java/MSC03-J.+Never+hard+code+sensitive+information,http://cwe.mitre.org/data/definitions/760.html]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:MSC03-J,CWE:760,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="encryptorClasses" descname="Comma-separated list of encryptor classes" value="org.owasp.esapi.Encryptor, Encryptor"/>
+      <property name="hashSignatures" descname="Comma-separated list of hash methods signatures" value="hash/2"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.HardcodedUsernamePassword" message="HardcodedUsernamePassword: Use of Hard-coded Credentials" class="com.kiuwan.qaking.kotlin.rules.security.HardcodedUsernamePassword" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.4,ASVS-v4.0.2:3.5.2,ASVS-v4.0.2:6.4.1,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,credentials,essential]]></tags>
+    <description><![CDATA[Hardcoded credentials (username / password) are visible to any person reading the source code.
+If the resource protected by such hardcoded credentials is important, this may compromise system security.
+
+With hardcoded credentials, change is difficult. If the target account is compromised, and the software
+is deployed in production, a code change is needed, which forces a redeployment.
+
+Please note that source code access is not always necessary: if an attacker has access to the JAR file,
+he/she may dis-assembly it to recover the password in clear.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credential leakage.
+If an account is compromised, changing credentials in an external repository does not need changes in code
+plus software deployment]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import android.app.Activity
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.webkit.HttpAuthHandler
+
+internal class MyWebView : Activity() {
+  private var webView: WebView? = null
+
+  fun onCreate(savedInstanceState: Bundle) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.main)
+
+    webView = findViewById(R.id.webview01) as WebView
+    webView!!.setWebViewClient(object : WebViewClient() {
+      fun onReceivedHttpAuthRequest(view: WebView, handler: HttpAuthHandler, host: String, realm: String) {
+        // VIOLATION, hardcoded username and password
+        handler.proceed("guest", "allow")
+      }
+    })
+    webView!!.getSettings().setJavaScriptEnabled(true)
+    webView!!.loadUrl("http://www.myserver.com")
+  }
+}]]></example>
+    <repair><![CDATA[// Do not hardcode credentials, Instead, fetch credentials from an external, trusted source.]]></repair>
+    <reference><![CDATA[https://www.kiuwan.com/docs/display/K5/Avoid+hard-coded+or+in-comment+passwords+in+code,http://cwe.mitre.org/data/definitions/798.html,https://www.securecoding.cert.org/confluence/display/java/MSC03-J.+Never+hard+code+sensitive+information,https://security.web.cern.ch/security/recommendations/en/password_alternatives.shtml]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:MSC03-J,CWE:798,CWETOP25:2021:16,OWASP-M:2016:M2,OWASP:2021:A7,PCI-DSS:6.5.3,WASC:01]]></security>
+    </normatives>
+    <properties>
+      <property name="passwordPattern" descname="Regular expression for matching field names containing passwords." value=""/>
+      <property name="usernamePattern" descname="Regular expression for matching field names containing user ids." value=".*(user|username).*|(^|.*_)id(_.*|$)"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.HttpParameterPollution" message="HttpParameterPollutionRule: HTTP parameter pollution (HPP)" class="com.kiuwan.qaking.kotlin.rules.security.HttpParameterPollution" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.1,CWEScope:Integrity,http-parameter-pollution]]></tags>
+    <description><![CDATA[Concatenating untrusted input into path, query string, or parameters for HTTP message (in the URL or in the request body)
+may allow an attacker to override/add unexpected request parameters. Attacker may change the intended
+HTTP request semantics, and may give him/her access to unauthorized data or bypass web application
+firewall validations.
+
+Note: Do not confuse HPP with Server-Side Request Forgery (SSRF), where the attacker has control over the
+full request URL, including host and port. For HPP attack, attacker has control over other parts like the query string
+part of the URL. Remember the format of an HTTP URL: scheme://user:password@host:port/path?query#fragment
+where query is typically param=value&param2=value. HPP is about attackers controlling path, query or fragment,
+while SSRF means controlling scheme, user, password, host or port.
+
+Like other injection issues, with HPP attackers play with "&" to inject additional parameter (similar to the quote
+in SQL injection), "../" to change the path, ";" (to add matrix parameters to URL at different path segments), or "#"
+to remove ending URL characers (like "--" comment delimiter in SQL injection).
+
+Controlling the path typically changes the semantics of the action represented by the HTTP resource.
+Some REST services use request parameter like _method for selecting the HTTP method, which may be subverted by an HPP attack
+(an HTTP header manipulation flaw could also be leveraged with X-HTTP-Method-Override or similar headers in certain frameworks).
+
+For example, imagine a web application that calls to a remote home-banking REST API. The webapp emits
+a (GET) url https://mybank.com/show-balance/account/X/monetaryUnit?date=now to show the balance for the user account X,
+where X is taken from a trusted source, but where monetaryUnit is taken from a cookie, and concatenated without
+any validation or encoding into the URL. An attacker could pass a Cookie request header set to "../../../transfer/X/to/Y?_method=POST#",
+so the vulnerable web application will create https://mybank.com/show-balance/account/X/../../../transfer/X/to/Y?_method=POST#?date=now
+which is equivalent to a POST https://mybank.com/transfer/X/to/Y.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid unexpected behaviour for HTTP parameter pollution attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import java.net.URL
+import com.bumptech.glide.GlideApp
+import com.squareup.picasso.Picasso
+import retrofit2.Retrofit
+import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.core.FuelManager
+import java.io.InputStream
+import java.net.HttpURLConnection
+
+class HttpParameterPollution {
+
+  companion object {
+    @JvmStatic
+    fun main(args: Array<String>) {
+      val input = args[0]
+
+      val hpp = HttpParameterPollution()
+      hpp.javaURLSink(input)
+      hpp.picasso(input)
+      hpp.glide(input)
+      hpp.retrofit(input)
+      hpp.testKhttp(input)
+      hpp.fuel(input)
+      hpp.fuelStringExtension(input)
+      hpp.fuelManager(input)
+    }
+  }
+
+  fun javaURLSink(input: String): InputStream? {
+    val u = URL("http://some.your.url/params?start&" + input)   // VIOLATION
+    val conn = u.openConnection() as HttpURLConnection
+    HttpURLConnection.setFollowRedirects(false)
+    conn.setConnectTimeout(100)
+    conn.setReadTimeout(100)
+    conn.setRequestMethod("GET")
+    conn.connect()
+    return conn.getInputStream()
+  }
+
+  fun picasso(input: String) {
+    Picasso.get().load("http://some.your.url/params?start&${input}").into(imageView)   // VIOLATION
+  }
+
+  fun glide(myUrl: String) {
+    GlideApp.with(fragment)
+      .load(myUrl)    // VIOLATION
+      .placeholder(R.drawable.placeholder)
+      .fitCenter()
+      .into(imageView);
+  }
+
+  fun retrofit(baseUrl: String) {
+    val retrofit = Retrofit.Builder()
+      .baseUrl(baseUrl)    // VIOLATION
+      .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+      .addConverterFactory(GsonConverterFactory.create(gson))
+      .client(httpClient.build())
+      .build()
+  }
+
+  fun testKhttp(input: String) {
+    khttp.get(    // VIOLATION
+      url = "http://some.your.url/params?start&${input}",
+      params = mapOf("key1" to "value1", "keyn" to "valuen"))
+  }
+
+  fun fuel(input: String) {
+    Fuel.get("http://some.your.url/params?start&${input}")   // VIOLATION
+      .response { request, response, result ->
+        println(request)
+        println(response)
+        val (bytes, error) = result
+        if (bytes != null) {
+          println("[response bytes] ${String(bytes)}")
+        }
+      }
+  }
+
+  fun fuelStringExtension(input: String) {
+    "http://some.your.url/params?start&${input}"
+      .httpGet()   // VIOLATION
+      .responseString { request, response, result ->
+        when (result) {
+          is Result.Failure -> {
+            val ex = result.getException()
+          }
+          is Result.Success -> {
+            val data = result.get()
+          }
+        }
+      }
+  }
+
+  fun fuelManager(input: String) {
+    FuelManager.instance.basePath = "http://some.your.url/params?start&${input}"    // VIOLATION
+  }
+
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before building and URL with it]]></repair>
+    <reference><![CDATA[RESTing On Your Laurels will Get YOu Pwned,http://cwe.mitre.org/data/definitions/235.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:235,OWASP:2021:A3,PCI-DSS:6.5.6,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.HttpSplitting" message="HttpSplittingRule: Improper Neutralization of CRLF Sequences in HTTP Headers ('HTTP Response Splitting')" class="com.kiuwan.qaking.kotlin.rules.security.HttpSplitting" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in HTTP headers. An attacker could inject line separators (CR/LF sequences)
+    that could split the response message generated by the software into two messages. The second response is completely
+    under the control of the attacker (intermediate web proxies may cache it), with could produce multiple conditions
+    (web defacement, cache poisoning, cross-site scripting or page hijacking, see CWE-113 for full details).
+
+    If software needs to generate HTTP headers depending on user-controlled input, such input should be properly
+    neutralized (a white-list validation excluding CR/LF is recommended). Please note that cookies are received and
+    sent in 'Cookie' header in HTTP messages, so if the software generates a Cookie from user input, the input should
+    be properly validated as well.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+package testsamples.security.HttpSplitting
+
+
+import javax.servlet.ServletException
+import javax.servlet.http.Cookie
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import java.io.*
+
+class HttpSplittingRuleExample {
+
+  constructor(req: HttpServletRequest, res: HttpServletResponse) {
+    val author: String = req.getParameter ("author")
+    val cookie: Cookie = Cookie("author", author)
+    res.addCookie(cookie) // VIOLATION, cookie is encoded as 'Cookie' header field in HTTP response message
+  }
+}]]></example>
+    <repair><![CDATA[package testsamples.security.HttpSplitting
+
+
+import javax.servlet.ServletException
+import javax.servlet.http.Cookie
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import java.io.*
+
+class HttpSplittingRuleExample {
+
+  constructor(req: HttpServletRequest, res: HttpServletResponse) {
+    var author: String = req.getParameter ("author")
+    // This could emit an exception for white-list validation, or at least remove CR/LF sequences from the input
+    // Neutralize function must be registered into the metadata to be considered by the rule.
+    author = neutralize(author) // NEUTRALIZATION
+    val cookie: Cookie = Cookie("author", author)
+    res.addCookie(cookie) // OK
+  }
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/113.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:113,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:25]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.InadequatePadding" message="InadequatePaddingRule: Inadequate padding" class="com.kiuwan.qaking.kotlin.rules.security.InadequatePadding" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[When used in practice, encryption algorithms are generally combined with some padding scheme. 
+The goal of the padding scheme is to prevent a number of attacks that potentially work against the encryption algorithm without padding.
+
+The rule can be parameterized to specified which methods of which classes have to be checked:
+- allowedPaddings: comma-separated list of allowed paddings.
+- encryptionMethodsSignature: comma-separated list of encryption methods signatures. It should be specified in a certain way: ClassName.methodName/parameterPosition (where 'parameterPosition' is a number that indicates the position that the 'transformation' string parameter occupies between the encryption method arguments: Class1.encryptMethod/2,Class2.otherEncryptMethod/1, ... )
+
+NOTE: do not mistake the position of the 'transformation' string parameter in the method arguments with the 'padding' part of the transformation string for encryption calls such as Cipher.getInstance(). For example:
+Cipher.getInstance/1 corresponds to Cipher.getInstance("RSA/NONE/PKCS5Padding", provider) where "RSA/NONE/PKCS5Padding" (first argument) is encoded with the number '1' in the list of signatures although the padding is encoded in the third place of the transformation string.
+
+CGM mode doesn't require a padding.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import javax.crypto.Cipher
+
+val cipher = Cipher.getInstance("AES/CBC/NoPadding") // VIOLATION
+
+// RSA encryption is typically used for exchanging a symetric key in hybrid schemes
+// VIOLATION, PKCS#1 padding for encryption with RSA not allowed
+// OAEP is safe against "padding oracles", but PKCS#1 is not
+// NoPadding should NEVER be used, unless your are using a key encapsulation mechanism
+val asymCipher = Cipher.getInstance("RSA/ECB/PKCS1PADDING")
+
+// Does not violate the rule (if PKCS5Padding allowed)
+// defaults to AES/ECB/PKCS5Padding for providers bundled with Oracle JVM.
+// ECB mode should not be used, and for block ciphers both mode and padding should be explicit
+val cipher = Cipher.getInstance("AES")]]></example>
+    <repair><![CDATA[import javax.crypto.Cipher
+
+val cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING")
+
+val asymCipher = Cipher.getInstance("RSA/ECB/OAEPWITHSHA-256ANDMGF1PADDING")]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/325.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:325,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="encryptionMethodsSignature" descname="Comma-separated list of encryption methods signatures" value="Cipher.getInstance/1"/>
+      <property name="allowedPaddings" descname="Comma-separated list of allowed algorithms" value="PKCS5Padding,OAEPPadding"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.InsecureRandomness" message="InsecureRandomnessRule: Standard pseudo-random number generators cannot withstand cryptographic attacks" class="com.kiuwan.qaking.kotlin.rules.security.InsecureRandomness" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.3.1,ASVS-v4.0.2:2.6.2,ASVS-v4.0.2:2.9.2,ASVS-v4.0.2:6.3.1,ASVS-v4.0.2:6.3.2,ASVS-v4.0.2:6.3.3,CWEScope:Access-Control,CWEScope:Confidentiality,crypto,prng]]></tags>
+    <description><![CDATA[Insecure randomness errors occur when a function that can produce predictable values is used as a source of randomness
+in a security-sensitive context: security tokens (like anti-CSRF or password-reset tokens), values used in cryptographic
+operations (session key material, initialization vector in block or stream ciphers), or password seeds.
+
+Computers are deterministic machines, and as such are unable to produce true randomness. Pseudo-Random Number Generators
+(PRNGs) approximate randomness algorithmically, starting with a seed from which subsequent values are calculated.
+
+There are two types of PRNGs: statistical and cryptographic. Statistical PRNGs provide useful statistical properties,
+but their output is highly predictable and forms an easy to reproduce numeric stream that is unsuitable for use
+in cases where security depends on generated values being unpredictable.
+
+Cryptographic PRNGs address this problem by generating output that is more difficult to predict. For a value to be
+cryptographically secure, it must be impossible or highly improbable for an attacker to distinguish between it
+and a truly random value.
+
+In general, if a PRNG algorithm is not advertised as being cryptographically secure, then it is probably a
+statistical PRNG and should not be used in security-sensitive contexts, where its use can lead to serious vulnerabilities
+such as easy-to-guess temporary passwords, predictable cryptographic keys, or session hijacking, among others.
+
+The rule also checks that the standard java.security.SecureRandom is initialized properly, which basically means that
+its setSeed() method is not called with any seed generated by custom code, except SecureRandom.getSeed(int) or
+SecureRandom.generateSeed(int), which are accepted as a proper seed with "adequate entropy".]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import kotlin.random.Random
+
+fun randomToken(): String {
+  val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+  return (1..20)
+    .map { Random.nextInt(0, charPool.size) } // VIOLATION
+    .map(charPool::get)
+    .joinToString("")
+}]]></example>
+    <repair><![CDATA[import java.security.SecureRandom
+
+fun randomToken(): String {
+  val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+  val prng = SecureRandom.getInstance("SHA1PRNG")
+
+  return (1..20)
+    .map { prng.nextInt(charPool.size) } // FIXED
+    .map(charPool::get)
+    .joinToString("")
+}]]></repair>
+    <reference><![CDATA[https://www.securecoding.cert.org/confluence/display/java/MSC02-J.+Generate+strong+random+numbers,https://www.securecoding.cert.org/confluence/display/java/MSC63-J.+Ensure+that+SecureRandom+is+properly+seeded,https://www.cigital.com/blog/proper-use-of-javas-securerandom/,https://cwe.mitre.org/data/definitions/330.html/,http://cwe.mitre.org]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:MSC02-J,CERT-J:MSC63-J,CWE:330,CWE:338,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="checkSecurityContext" descname="When this property is enabled only the usages under a security context will be reported. Else every usage will be reported." value="true"/>
+      <property name="pattern" descname="Regular expression for sensitive methods where non secure PRNG generation is not allowed" value="password|passwd|session|user|key|csrf|token|hash|digest|uuid|guid"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.InsecureSSL" message="InsecureSSL: Insecure SSL configuration" class="com.kiuwan.qaking.kotlin.rules.security.InsecureSSL" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:9.2.4,CWEScope:Access-Control,CWEScope:Authentication,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,essential,ssl]]></tags>
+    <description><![CDATA[The SSL standard provides guidelines on how to perform proper SSL validation checks on the client side.
+They are not part of the standard, anyway. The implementation of the validation logic is left to the application developer,
+that should setup SSL-related classes adequately.
+
+Creating or configuring proper SSL validation checks is complex, and developers may fail providing a secure
+SSL configuration. No certificate validity checks, no certificate chain signature verification, no or improper
+server hostname validation (with respect to the identity contained in the server certificate) are common flaws
+that this rule tries to discover.
+
+Often, developers provide trust managers for accepting self-signed certificates, or even ignore certificate
+state to allow expired or revoked certificates. Alternatively, the hostname validation is disabled to avoid
+errors when the name in the certificate does not match the target hostname. Android apps often present such flaws.
+
+The problem with flawed SSL configuration is that it may allow man-in-the-middle attacks and other issues,
+see references for full details.
+
+The rule checks for SSL flaw patterns: non-default custom SSL socket factories, and too permissive TrustManagers /
+SSLSocketFactories, or HostnameVerifiers with permissive verification strategies.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid main-in-the-middle and other attacks that proper SSL configuration should avoid.]]></benefits>
+    <inconvenients><![CDATA[Closing the gaps opened by a flawed SSL configuration may produce connection errors with certain hosts.]]></inconvenients>
+    <example><![CDATA[import java.security.cert.X509Certificate
+import javax.net.ssl.SSLContext
+import javax.net.ssl.X509TrustManager
+import javax.net.ssl.HttpsURLConnection
+
+val trustAnything = object : X509TrustManager {
+  override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
+  // VIOLATION, too permissive, accepts any server-side certificate
+  override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
+  override fun getAcceptedIssuers(): Array<X509Certificate?> = arrayOfNulls(0)
+}
+
+val ctx : SSLContext = SSLContext.getInstance("TLSv1.2")
+
+// VIOLATION, flawed customized SSL verification
+ctx.init(null, arrayOf<TrustManager>(trustAnything), SecureRandom.getInstance("SHA1PRNG"))
+
+HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory())
+val url = URL("https://spoofable.mybank.com/online-banking")
+return url.openConnection().getInputStream()]]></example>
+    <repair><![CDATA[import java.security.cert.X509Certificate
+import javax.net.ssl.SSLContext
+import javax.net.ssl.X509TrustManager
+import javax.net.ssl.HttpsURLConnection
+
+val ctx : SSLContext = SSLContext.getInstance("TLSv1.2")
+
+// FIXED, null here means to use the default (with proper validations) implementation
+ctx.init(null, null, SecureRandom.getInstance("SHA1PRNG"))
+
+HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory())
+val url = URL("https://spoofable.mybank.com/online-banking")
+return url.openConnection().getInputStream()]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/297.html,https://www.securecoding.cert.org/confluence/display/java/MSC00-J.+Use+SSLSocket+rather+than+Socket+for+secure+data+exchange,https://cwe.mitre.org/data/definitions/296.html,An Analysis of Android SSL (In)Security - http://android-ssl.org/files/p50-fahl.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:MSC00-J,CWE:296,CWE:297,CWE:298,CWE:299,OWASP:2021:A2,OWASP:2021:A7,PCI-DSS:6.5.4,WASC:04]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.InsecureTransport" message="InsecureTransport: Insecure transport" class="com.kiuwan.qaking.kotlin.rules.security.InsecureTransport" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.8.3,ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,ASVS-v4.0.2:6.2.3,ASVS-v4.0.2:6.2.4,ASVS-v4.0.2:6.2.5,ASVS-v4.0.2:6.2.6,ASVS-v4.0.2:6.2.7,ASVS-v4.0.2:9.1.2,ASVS-v4.0.2:9.1.3,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Communications sent over HTTP (Hypertext Transfer Protocol) protocol are in plain text, so
+they are fully exposed to attacks such as man in the middle. This situation is not acceptable when sensible information
+is being communicated.
+
+Using HTTPS (Hypertext Transfer Protocol Secure) allows to perform encrypted connections between the user and the server
+using SSL (Secure Sockets Layer) or TLS (Transport Layer Security) certificates. These certificates use an asymmetric
+public key infrastructure (PKI) system, which consists in two keys, one of them public distributed to the users, and the
+other private stored into the server.
+
+When a connection to a web page is started the server sends a SSL/ TSL certificate to the user's browser, and then they
+establish a secure connection.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve security at transport layer, avoiding sensible data (like bank details) interception.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import java.net.URL
+
+val myURL = "http://myorg.com/myapi"
+val res = URL(myURL).readText()]]></example>
+    <repair><![CDATA[import java.net.URL
+
+// Use HTTPS protocol
+val myURL = "https://myorg.com/myapi"
+val res = URL(myURL).readText()]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/326.html,http://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,CWE:326,OWASP:2021:A2,PCI-DSS:6.5.4,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="checkFtpConn" descname="When true then insecure FTP connections are checked too." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.InsufficientKeySize" message="InsufficientKeySizeRule: Weak cryptography, insufficient key length" class="com.kiuwan.qaking.kotlin.rules.security.InsufficientKeySize" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.6.1,ASVS-v4.0.2:1.6.2,ASVS-v4.0.2:1.6.3,ASVS-v4.0.2:1.6.4,ASVS-v4.0.2:2.6.3,ASVS-v4.0.2:2.7.6,ASVS-v4.0.2:2.8.2,ASVS-v4.0.2:2.8.3,ASVS-v4.0.2:2.9.1,ASVS-v4.0.2:6.2.1,ASVS-v4.0.2:6.2.3,ASVS-v4.0.2:6.2.4,ASVS-v4.0.2:6.2.5,ASVS-v4.0.2:6.2.6,ASVS-v4.0.2:6.2.7,ASVS-v4.0.2:6.4.2,ASVS-v4.0.2:9.1.2,ASVS-v4.0.2:9.1.3,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[A robust cryptographic algorithm (like RSA or AES) with a small key length could be vulnerable to brute-force type attacks.
+
+For symmetric ciphers, AES-CBC (FIPS 197) is the most often recommended algorithm nowadays, with a block size of at least
+64 bits (128 bits for the better). Recommended minimum key length for AES is 128 bits for most usages, but for long-range
+security, 192 bits or even 256 bits are often recommended.
+
+DES and DESede (or "triple-DES") are, nowadays, not robust enough for most applications. Many algorithms used in the past,
+like Blowfish or RC2, are now deemed insecure.
+
+For asymetric cryptography ("public key"), the algorithm most often used is RSA. Most experts consider 2048 as the
+most adequate key length for common needs, as its usage in digital signature and other applications demand cryptographic
+robustness for a long period of time. Experts now consider 1024 bits for RSA keys (modulus) not enough secure.
+
+Algoritms based on elliptic curves cryptography (like EC-DSA) typically require smaller key sizes, around 200 bits.
+
+See http://www.keylength.com for an interactive site showing current recommendations in cryptographic algorithms,
+key length and other issues to take into account.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+import javax.crypto.KeyGenerator
+import java.security.KeyPairGenerator
+
+val kg = KeyGenerator.getInstance("AES")
+kg.init(64) // VIOLATION
+val key = kg.generateKey()
+
+val kpg = KeyPairGenerator.getInstance("RSA")
+kpg.initialize(1024) // VIOLATION
+val keyPair = kpg.generateKeyPair()]]></example>
+    <repair><![CDATA[import javax.crypto.KeyGenerator
+import java.security.KeyPairGenerator
+
+val kg = KeyGenerator.getInstance("AES")
+// FIXED, if minimum size configured for AES is not greater than 256 bits
+kg.init(256)
+val key = kg.generateKey()
+
+val kpg = KeyPairGenerator.getInstance("RSA")
+// FIXED, if minimum size configured for RSA is not greater than 2048 bits
+kpg.initialize(2048)
+val keyPair = kpg.generateKeyPair()]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/320.html,http://www.keylength.com/,http://cwe.mitre.org/data/definitions/326.html,http://cwe.mitre.org/data/definitions/310.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:310,CWE:320,CWE:326,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="minKeySize" descname="Comma-separated list of minimum key size per algorithms" value="RSA/2048, DSA/2048, EC/256, AES/128, DiffieHellman/2048"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.InsufficientSessionExpiration" message="InsufficientSessionExpirationRule: Checks that session expiration interval is positive and does not exceed a limit" class="com.kiuwan.qaking.kotlin.rules.security.InsufficientSessionExpiration" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.8.1,ASVS-v4.0.2:2.8.6,ASVS-v4.0.2:3.3.1,ASVS-v4.0.2:3.3.2,ASVS-v4.0.2:3.3.3,ASVS-v4.0.2:3.3.4,ASVS-v4.0.2:3.6.1,ASVS-v4.0.2:3.6.2,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Checks that when setting in code (HttpSession.setMaxInactiveInterval()) a session
+expiration interval, interval is not negative or zero (no expiration) and does not exceed a maximum interval.
+
+If a negative interval is set, session never expires. If exceeds the maxExpiration parameter, session lives too much
+time and it is considered a security issue.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Controlling session expiration interval improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package testclasses
+
+import javax.servlet.http.HttpSession
+
+class InsufficientSessionExpiration {
+
+  fun bad(session: HttpSession) {
+    session.setMaxInactiveInterval(-1) // VIOLATION, does not expire
+  }
+
+  fun bad2(session: HttpSession) {
+    session.setMaxInactiveInterval(4 * SECONDS_PER_HOUR) // VIOLATION, too high expiration
+  }
+
+  companion object {
+
+    private val SECONDS_PER_HOUR = 60 * 60
+  }
+
+}]]></example>
+    <repair><![CDATA[package testclasses
+
+import javax.servlet.http.HttpSession
+
+class InsufficientSessionExpiration {
+
+  fun ok(session: HttpSession) {
+    session.setMaxInactiveInterval(SECONDS_PER_HOUR) // OK, in range
+  }
+
+  companion object {
+
+    private val SECONDS_PER_HOUR = 60 * 60
+  }
+
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/613.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:613,OWASP:2021:A7]]></security>
+    </normatives>
+    <properties>
+      <property name="maxExpiration" descname="Max time expiration allowed (seconds)" value="7200"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.JSONInjection" message="JSONInjection: Avoid using non-neutralized user-controlled input into JSON entities - JSON Injection" class="com.kiuwan.qaking.kotlin.rules.security.JSONInjection" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.6,ASVS-v4.0.2:13.3.2,ASVS-v4.0.2:3.5.3,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Unvalidated untrusted input is concatenated to a JSON stream, which is sent as request to a potentially service.
+This allows an attacker to inject tailored content that change the semantics of the original JSON message.
+
+Depending on how the JSON-formatted data is later used, the attacker could execute unexpected dynamic code, or
+escape from authentication or authorization controls. If the resulting JSON string is evaluated in JavaScript
+(JavaScript may eval a string and treat it as an array or JavaScript object), the attacker may add additional
+code (for example, an attack payload like "'}; while(1); //" that could produce a denial-of-service condition.
+
+Note: Do not confuse this issue with JSON (or JavaScript) hijacking, which is a browser-side vulnerability
+where an attacker can steal sensitive information sent as JSON to victim's browser.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid JSON Injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Moshi.Builder
+import com.google.protobuf.util.JsonFormat
+
+fun main(args: Array<String>) {
+  val input : String = args[0]
+  val jsoni = JSONInjection()
+
+  jsoni.testGSON(input)
+  jsoni.testMoshi(input)
+  jsoni.testProtobuf(input)
+}
+
+class JSONInjection {
+
+  fun testGSON(input: String) {
+    val gson = GsonBuilder()
+      .setLenient()
+      .create()
+
+    gson.fromJson(input)    // VIOLATION
+  }
+
+  fun testMoshi(input: String) {
+    val moshi: Moshi = Moshi.Builder().build()
+    val jsonAdapter = moshi.adapter(MyClass::class.java)
+
+    jsonAdapter.fromJson(input)    // VIOLATION
+  }
+
+  fun testProtobuf(input: String) {
+    JsonFormat.Parser().merge(input, builder);    // VIOLATION
+  }
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before parsing it to a JSON]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/345.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.JSONPHijacking" message="JSONPHijacking: Sensitive information exposed through JSONP" class="com.kiuwan.qaking.kotlin.rules.security.JSONPHijacking" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[JSONP is popular useful technology as it allows to perform cross-domain requests but it
+lacks any mechanism to restrict and verify requests origins.
+
+A malicious site might perform a JSONP request in user's behalf and process the JSON response.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import com.fasterxml.jackson.databind.JsonNode
+import play.libs.Jsonp
+import play.mvc.Controller
+import play.mvc.Http
+import play.mvc.Result
+import play.mvc.Results
+
+open class JSONPHijacking : Controller() {
+  companion object {
+
+    fun ok(content: JsonNode): Result {
+
+      ctx().args.put("api_reply", content)
+
+      val user = "user: Jhon, ssn:ASDIUMFK48955"
+
+      val callback = Http.Context.current().request().getQueryString("callback")
+      return Results.ok(Jsonp(callback, user))   // VIOLATION
+    }
+  }
+}]]></example>
+    <repair><![CDATA[// Do not send sensitive information through JSONP]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/Information-Leakage,http://cwe.mitre.org/data/definitions/359.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP-M:2016:M2,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.LdapInjection" message="LdapInjectionRule: Avoid non-neutralized user-controlled input in LDAP search filters" class="com.kiuwan.qaking.kotlin.rules.security.LdapInjection" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.7,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software constructs all or part of an LDAP query using externally-influenced input, but it does not neutralize or
+    incorrectly neutralizes special elements that could modify the intended LDAP query when sent to LDAP server.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import javax.naming.directory.DirContext
+import javax.naming.directory.InitialDirContext
+import javax.servlet.http.HttpServletRequest
+
+class LdapInjection {
+
+  fun ldapInjectionJava(req: HttpServletRequest, env: Properties) {
+    val base = "cn=root"
+    val address = req.getParameter("input")
+    val context = InitialDirContext(env)
+    val query = "MyAttribute=" + address
+    context.search(base, query, null)   // VIOLATION
+  }
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before using it as a LDAP filter]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/90.html,https://www.securecoding.cert.org/confluence/display/java/IDS54-J.+Prevent+LDAP+injection]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:IDS54-J,CWE:90,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:29]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.LogForging" message="LogForging: Improper Output Neutralization for Logs" class="com.kiuwan.qaking.kotlin.rules.security.LogForging" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:7.3.1,ASVS-v4.0.2:7.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[When the application writes untrusted input to a log destination (using any Java logging API),
+a "log forging" attack could be launched to inject false log entries, corrupt log entries,
+or even exploit a vulnerability in an external "log viewer" application.
+
+Corrupted log entries could hinder detection for malicious activity, or implicate another party
+in the commission of a malicious act.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+package testsamples.security.LogForging
+
+import timber.log.Timber
+import kotlin.js.Console.error
+import org.jetbrains.anko.AnkoLogger
+
+fun main(args: Array<String>) {
+  val arg = args[0]
+
+  testAndroid(arg)
+  testTimber(arg)
+  testKotlinLogging(arg)
+  testJava(arg)
+  testKotlinJS(arg)
+  testAnko(arg)
+}
+
+fun testAndroid(input: String) {
+  android.util.Log.v("MyActivity", "hello $input" )   // VIOLATION
+}
+
+fun testTimber(input: String) {
+  Timber.d("Clicked item $input")   // VIOLATION
+}
+
+fun testKotlinLogging(input: String) {
+  val logger = KotlinLogging.logger {}
+  logger.debug { "hello $input" }   // VIOLATION
+}
+
+fun testJava(input: String) {
+  val logger = org.apache.log4j.Logger.getLogger(X::class.java)
+  logger.info { "hello $input" }   // VIOLATION
+}
+
+fun testKotlinJS(input: String) {
+  kotlin.js.Console.error { "hello $input" }   // VIOLATION
+}
+
+fun testAnko(input: String) {
+  val logger = AnkoLogger()
+  logger.wtf ( "hello $input" )   // VIOLATION
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before logging it]]></repair>
+    <reference><![CDATA[http://www.jtmelton.com/2010/09/21/preventing-log-forging-in-java/,https://cwe.mitre.org/data/definitions/117.html,IDS03-J - Do not log unsanitized user input (CERT-J),https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:IDS03-J,CWE:117,OWASP-M:2016:M7,OWASP:2021:A9,PCI-DSS:10.5.2,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.MailCommandInjection" message="MailCommandInjection: Mail Command Injection" class="com.kiuwan.qaking.kotlin.rules.security.MailCommandInjection" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Integrity]]></tags>
+    <description><![CDATA[Mail command injection vulnerabilities occur when an attacker can influence the commands sent to an SMTP, POP3, or IMAP mail server.
+If the library or the developer fails to safely encode the line breaks, an attacker controlling any of the arguments for these commands
+will be able to inject line breaks and new commands after them.
+
+As line breaks are the usual mechanism that attackers use to change the expected behaviour, this vulnerability
+is considered a special CRLF Injection attack.
+
+What the attacker may launch by exploting a Mail Command Injection vulnerability include:
+- Generate spam (SMTP). The application acts as a "mail proxy" that attackers may use to create spam messages.
+- Read messages from other users (POP3/IMAP).
+- Abusing a trusted server to send HTML emails with malicious contents.
+- Change authentication or security options, to skip security controls in mail servers.
+
+See "MX Injection: Capturing and Exploiting Hidden Mail Servers", from Vicente Aguilera, for a full description on
+the benefits that an attacker may gain.
+
+The rule checks when vulnerable mail libraries are called with untrusted input, without validation, which might be vulnerable
+to Mail Command Injection attacks.
+
+Note: Many common java libraries, for example JavaMail, Apache Commons-Net, or Spring Mail support, are still vulnerable.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid Mail Command Injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+package testsamples.security.MailCommandInjection
+
+import com.sun.mail.iap.ProtocolException
+import com.sun.mail.imap.IMAPFolder
+import com.sun.mail.imap.IMAPStore
+import com.sun.mail.imap.protocol.IMAPProtocol
+import org.apache.commons.net.pop3.POP3SClient
+import org.springframework.mail.MailSender
+import org.springframework.mail.SimpleMailMessage
+
+import javax.mail.*
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeMessage
+import javax.servlet.http.HttpServletRequest
+import java.io.IOException
+import java.util.Date
+import java.util.Properties
+
+class MailCommandInjectionTest (host: String, port: int, userName: String, password: String, toAddress: String) {
+
+
+  fun sendEmail(subject: String, message: String) {
+    // sets SMTP server properties
+    val properties: Properties = Properties()
+    properties.put("mail.smtp.host", host)
+    properties.put("mail.smtp.port", port)
+    properties.put("mail.smtp.auth", "true")
+    properties.put("mail.smtp.starttls.enable", "true")
+    properties.put("mail.user", userName)
+    properties.put("mail.password", password)
+
+    // creates a new session with an authenticator
+    val auth: Authenticator = object: Authenticator() {
+      override fun getPasswordAuthentication(): PasswordAuthentication {
+        return PasswordAuthentication(userName, password)
+      }
+    }
+    val session: Sessionn = Session.getInstance(properties, auth)
+
+    // creates a new e-mail message
+    val msg: Message = MimeMessage(session)
+    with(msg) {
+      setFrom(InternetAddress(userName))
+      addRecipient(Message.RecipientType.TO, InternetAddress(toAddress))
+      setSubject(subject) // VIOLATION
+      setSentDate(Date())
+      setText(message)
+    }
+    Transport.send(msg)
+  }
+  fun sendEmail(req: HttpServletRequest ) {
+  	val subject: String = req.getParameter("subject") /* source */
+  	val message: String = req.getParameter("message")
+  	sendEmail(subject, message) // indirect sink
+  }
+}]]></example>
+    <repair><![CDATA[// validate untrusted subject input with a white-list strategy,
+// or at least ensure that line breaks (CR/LF) are removed from subject.]]></repair>
+    <reference><![CDATA[OWASP Testing for IMAP/SMTP injection: https://www.owasp.org/index.php/Testing_for_IMAP/SMTP_Injection_(OTG-INPVAL-011),http://www.webappsec.org/projects/articles/121106.pdf,http://projects.webappsec.org/w/page/13246948/Mail%20Command%20Injection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:93,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:30]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.NonRandomIVWithCBCMode" message="NonRandomIVWithCBCMode: Not using a Random IV with CBC Mode" class="com.kiuwan.qaking.kotlin.rules.security.NonRandomIVWithCBCMode" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity,crypto,essential]]></tags>
+    <description><![CDATA[Not using a random initialization Vector (IV) with Cipher Block Chaining (CBC) Mode causes encryption to be susceptible to dictionary attacks.
+
+CBC mode with predictable IV allows a well-known chosen plaintext attack, and is definitely unsecure.
+
+Note: For other feedback modes, NIST recommends unpredictable IVs for CFB, and unique (non-repeating, like an increasing counter or message number) IVs
+for OFB, CTR or PCBC, and for GCM plus other authenticated encryption modes, but certainly the IV should not be eligible by an attacker.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+import javax.crypto.Cipher
+import javax.crypto.SecretKey
+import javax.crypto.spec.IvParameterSpec
+
+val key : SecretKey = loadCipherKey();
+val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+
+// zero IV, obviously predictable
+val predictableIV = byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+cipher.init(Cipher.ENCRYPT_MODE, key, IvParameterSpec(predictableIV)) // VIOLATION]]></example>
+    <repair><![CDATA[import javax.crypto.Cipher
+import javax.crypto.SecretKey
+import javax.crypto.spec.IvParameterSpec
+
+val key : SecretKey = loadCipherKey();
+val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+
+val randomIV = ByteArray(16)
+// FIXED, random IV for each encrypted message
+SecureRandom().nextBytes(randomIV)
+
+cipher.init(Cipher.ENCRYPT_MODE, key, IvParameterSpec(randomIV))]]></repair>
+    <reference><![CDATA[http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf,https://crypto.stackexchange.com/questions/3515/is-using-a-predictable-iv-with-cfb-mode-safe-or-not]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:329,OWASP:2021:A2,PCI-DSS:3.6.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.NoSQLInjection" message="NoSQLInjection: Improper neutralization of special elements in data query logic (NoSQL injection)" class="com.kiuwan.qaking.kotlin.rules.security.NoSQLInjection" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,NoSQL]]></tags>
+    <description><![CDATA[The application generates a query intended to access or manipulate data in a data store such as a NoSQL database,
+but it does not neutralize or incorrectly neutralizes special elements that can modify the intended logic of the query.
+
+Depending on the capabilities of the query language, an attacker could inject additional login into the query to:
+- Modify the intended selection criteria, thus changing which data entities (e.g., records) are returned, modified, or otherwise manipulated.
+- Append additional commands to the query.
+- Return more or fewer entities than intended.
+- Cause entities to be sorted in an unexpected way.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent NoSQL injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+import com.mongodb.*
+import com.mongodb.util.JSON
+
+class LoginController {
+  val users : DBCollection = fetchUsersCollection()
+
+  fun authenticate(req : javax.servlet.http.HttpServletRequest) : User  {
+    val user = req.getParameter("user") // attacker-controlled
+    val pass = req.getParameter("pass") // attacker-controlled
+
+    // The query object is tainted with non-neutralized untrusted input (user)
+    val json = "{ 'username' : '$user', 'password' : '$pass' }"
+    // We parse here whatever JSON the attacker wishes to create...
+    // $or operator is a common way to change query semantics
+    // Attackers may even encode arbitrary JavaScript code in $where operator, if enabled
+    val dbQuery = JSON.parse(json) as DBObject
+
+    val matched = users.findOne(dbQuery) as DBObject // VIOLATION, NoSQL injection
+
+    return User.from(matched)
+  }
+}]]></example>
+    <repair><![CDATA[import com.mongodb.*
+import com.mongodb.util.JSON
+
+class LoginController {
+  val users : DBCollection = fetchUsersCollection()
+
+  fun authenticate(req : javax.servlet.http.HttpServletRequest) : User  {
+    val user = req.getParameter("user") // attacker-controlled
+    val pass = req.getParameter("pass") // attacker-controlled
+    val passHash = computePasswordHash(user, pass)
+
+    // FIXED, each key/value appended to BasicDBObject are encoded properly
+    val dbQuery = BasicDBObject("username", user).append("password", passHash)
+
+    val matched = users.findOne(dbQuery) as DBObject // safe
+
+    return User.from(matched)
+  }
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/943.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:943,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.OpenRedirect" message="OpenRedirectRule: URL Redirection to Untrusted Site ('Open Redirect')" class="com.kiuwan.qaking.kotlin.rules.security.OpenRedirect" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.5,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[A web application accepts a user-controlled input that specifies a link to an external site, and uses that link in a redirect.
+This is client-side redirect, either by setting the Location header or by calling HttpServletResponse sendRedirect() method.
+
+If the redirect URL is user-controlled (e.g. fetched from HTTP request parameter), an attacker may force an user to
+provide a malicious URL encoded in a link to the vulnerable resource. The browser will redirect to the malicious URL,
+and the attacker may deceive the victim user for phising or other malicious activities.
+
+The rule checks for client-side redirections in server-side code, using servlet API. Redirections based on HTTP
+headers "Location" and "Refresh" are also checked.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Limits phising attacks, and unintended client-side redirections.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import javax.servlet.http.*
+
+class OpenRedirect
+{
+  fun bad(request: HttpServletRequest, response: HttpServletResponse)
+  {
+    val input = request.getParameter("url")
+
+    System.out.println("Hello")
+    response.sendRedirect(input)    // VIOLATION
+
+  }
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before using it into a redirection]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Unvalidated_Redirects_and_Forwards_Cheat_Sheet,http://cwe.mitre.org/data/definitions/601.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:601,CWETOP25:2021:37,OWASP:2013:A10,PCI-DSS:6.5.1,WASC:38]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.PasswordInConfigurationFile" message="PasswordInConfigurationFile: Use of credentials into configuration file" class="com.kiuwan.qaking.kotlin.rules.security.PasswordInConfigurationFile" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Passwords written into a configuration file which is distributed along with the code are
+visible to any person reading the source code. If the resource protected by such hardcoded credentials is important, this
+may compromise system security.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credential leakage.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[[sample.properties]
+my.secret.password=abcdefgh]]></example>
+    <repair><![CDATA[Properties configuration file should not be distributed along with the project.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/260.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:260,OWASP:2021:A5]]></security>
+    </normatives>
+    <properties>
+      <property name="pattern" descname="Regular expression for matching field names containing credentials." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.PasswordInRedirect" message="PasswordInRedirect: Password Management - Password in Redirect" class="com.kiuwan.qaking.kotlin.rules.security.PasswordInRedirect" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.3,ASVS-v4.0.2:3.1.1,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Sending a password as part of an HTTP redirect will cause the password to be displayed,
+logged, or stored in a cache.
+
+An HTTP redirect causes the user's web browser to issue an HTTP GET request. By convention, the parameters associated
+with an HTTP GET are not treated as sensitive data,  so web servers log them, proxies cache them, and web browsers do
+not make an effort to conceal them.
+
+Sending a password or other sensitive data as part of a redirect will likely cause the data to be mishandled and
+potentially revealed to an attacker.
+
+The rule checks if there are parts of the redirect chain that contain expressions that match with the pattern, so it can
+lead to several false positives and/or false negatives.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoids sensitive data leakage]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import play.mvc.Action
+import play.mvc.results.Result
+import play.mvc.Controller
+import play.mvc.results.Redirect
+
+class PasswordInRedirectRuleController() : Controller() {
+  val user = "John"
+  val password = "_secret_:O"
+
+  fun doRedirect(url:String) : Action {
+    redirect(url + "?user=" + user + "&pass=" + password) // VIOLATION
+  }
+}]]></example>
+    <repair><![CDATA[// Do not send passwords as part of an HTTP redirect.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/359.html,https://wiki.sei.cmu.edu/confluence/display/java/FIO52-J.+Do+not+store+unencrypted+sensitive+information+on+the+client+side]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:FIO52-J,CWE:598,OWASP:2021:A7,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.PathTraversal" message="PathTraversalRule: Avoid non-neutralized user-controlled input composed in a pathname to a resource" class="com.kiuwan.qaking.kotlin.rules.security.PathTraversal" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.1,ASVS-v4.0.2:12.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software uses external input to construct a pathname that is intended to identify a file or directory
+that is located underneath a restricted parent directory, but the software does not properly neutralize
+special elements within the pathname that can cause the pathname to resolve to a location outside the
+restricted directory.
+
+Under an application server, if the application server configuration does not restrict access to files outside
+certain restricted directories, the attacker may fetch sensitive files, and if the file is written with contents
+controlled by user input, the attacker may change configuration files (like web.xml among others), web contents
+('web defacement'), or libraries (for more insidious code injection attacks). Access to system files
+(the customary /etc/password in Unix/Linux systems) could also allowed with the app server account permissions.
+
+It is recommended, besides ensuring that files depending on user-controlled input do not exit the intended directories,
+that the OS account does have the minimal permissions, to reduce the impact of a successful path traversal attack.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+
+class PathTraversalJava {
+
+  val SAFE_DIR: File = File("/tmp/basedir")
+
+  fun directPathTraversal(req: HttpServletRequest) {
+    val userControlledFile: File = File(SAFE_DIR, req.getParameter("file")) // VIOLATION
+    return IOUtils.slurp(userControlledFile)
+  }
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before using it as a path]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/22.html,http://cwe.mitre.org/data/definitions/73.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:22,CWE:73,CWETOP25:2021:8,OWASP:2021:A4,OWASP:2021:A5,PCI-DSS:6.5.8,WASC:33]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.PlaintextStorageOfPassword" message="PlaintextStorageOfPassword: Plaintext Storage of a Password" class="com.kiuwan.qaking.kotlin.rules.security.PlaintextStorageOfPassword" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.7.5,CWEScope:Access-Control,credentials]]></tags>
+    <description><![CDATA[Storing a password in plaintext may result in a system compromise.
+
+Password management issues occur when a password is stored in plaintext in an application's properties or configuration file.
+Storing a plaintext password in a configuration file allows anyone who can read the file access to the password-protected resource.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import java.io.FileInputStream
+import java.sql.DriverManager
+import java.util.Properties
+
+class PlaintextStorageOfPassword {
+  fun getConnectionJava() {
+    val s = FileInputStream(CONFIG_FILE)
+    val config = Properties(s)
+
+    val dbHost = config.getProperty("db.host")
+    val dbUser = config.getProperty("db.user")
+    val dbPass = config.getProperty("db.pass")
+
+    val dbConn = DriverManager.getConnection(dbHost, dbUser, dbPass)  // VIOLATION
+  }
+}]]></example>
+    <repair><![CDATA[import java.io.FileInputStream
+import java.sql.DriverManager
+import java.util.Properties
+
+class PlaintextStorageOfPassword {
+  fun getConnectionJava() {
+    val s = FileInputStream(CONFIG_FILE)
+    val config = Properties(s)
+
+    val dbHost = config.getProperty("db.host")
+    val dbUser = config.getProperty("db.user")
+    val encryptedDbPass = config.getProperty("db.pass");
+    val dbPass = decrypt(encryptedDbPass);  // Use here a proper encryption / decryption routine
+
+    val dbConn = DriverManager.getConnection(dbHost, dbUser, dbPass)  // FIXED
+  }
+}]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/256.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:256,OWASP:2021:A4,PCI-DSS:6.3.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.PrivacyViolation" message="PrivacyViolation: Exposure of Private Information ('Privacy Violation')" class="com.kiuwan.qaking.kotlin.rules.security.PrivacyViolation" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[Managing private user information can compromise user privacy.
+
+Privacy violations occur when private user data are stored in an external location or when they are sent as plain-text.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import android.webkit.WebView
+import android.content.Intent
+
+class PrivacyViolation {
+
+  fun test(webview : WebView) {
+
+    webview.setWebViewClient(WebViewClient() {
+      fun onReceivedHttpAuthRequest(view : WebView, handler : HttpAuthHandler, host : String, realm : String) {
+        val credentials = view.getHttpAuthUsernamePassword(host, realm)
+        val username = credentials[0]
+        val password = credentials[1]
+        val i = Intent()
+        i.setAction("SEND_CREDENTIALS")
+        i.putExtra("username", username)
+        i.putExtra("password", password)
+        view.getContext().sendBroadcast(i)    // VIOLATION
+      }
+    });
+  }
+}]]></example>
+    <repair><![CDATA[// Avoid exposing sensitive data]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/359.html,http://projects.webappsec.org/Information-Leakage,https://www.owasp.org/index.php/Privacy_Violation]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP-M:2016:M2,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.ProcessControl" message="ProcessControlRule: Library loaded from untrusted source" class="com.kiuwan.qaking.kotlin.rules.security.ProcessControl" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.14.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,code-injection,scripting]]></tags>
+    <description><![CDATA[Under Java, load() and loadLibrary() methods, in java.lang.System or java.lang.Runtime, load a native library.
+For load(), the path to the library is specified, while for loadLibrary() the library name is specified and
+a system-dependant search path is used (for example, java.library.path property, or LD_LIBRARY_PATH environmente variable).
+
+If the argument depends on untrusted input (including in this category system environment or Java system properties),
+a violation is emitted.
+
+Additionally, any call to loadLibrary() (if rule property 'avoidLoadLibrary' is true) will produce a violation
+of the rule, as according to the method documentation:
+
+"Loads the dynamic library with the specified library name. A file containing native code is loaded from the
+local file system from a place where library files are conventionally obtained. The details of this process are
+implementation-dependent. The mapping from a library name to a specific filename is done in a system-specific manner",
+
+so an attacker could place a malicious library with same name as the loaded library upper in the search path,
+which may run with elevated privileges.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid native code injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import java.io.File
+
+class ProcessControl {
+  var PATH : String = System.getProperty("my.library.path")
+
+  fun m() {
+    Runtime.getRuntime().loadLibrary("supposedlySafeLibInSearchPath")   // VIOLATION
+  }
+
+  fun m2() {
+    var f : File = File(PATH, "cannotSpoofMe.dll")
+    System.load(f.getAbsolutePath())  // VIOLATION
+  }
+}]]></example>
+    <repair><![CDATA[import java.io.File
+
+class ProcessControl {
+  var PATH : String = System.getProperty("my.library.path")
+
+  fun m() {
+  // add a suppression or set avoidLoadLibrary=false
+    Runtime.getRuntime().loadLibrary("supposedlySafeLibInSearchPath")   /* CONSIDERED SAFE */
+  }
+
+  // Set allowSystemConfiguration=true, or set allowSystemConfiguration=true
+  fun m2() {
+    var f : File = File(PATH, "cannotSpoofMe.dll")
+    System.load(f.getAbsolutePath())  /* CONSIDERED SAFE */
+  }
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/114.html,http://cwe.mitre.org/data/definitions/676.html,http://security.stackexchange.com/questions/35724/security-implications-of-javas-system-load-vs-system-loadlibrary]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:114,CWE:494,CWE:676,OWASP:2021:A1,OWASP:2021:A8,PCI-DSS:6.5.8,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="allowSystemConfiguration" descname="If false, any kind of input is considered untrusted; if true, only user input is considered untrusted" value="false"/>
+      <property name="avoidLoadLibrary" descname="If true, loadLibrary() method is always considered unsafe" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.RegexInjection" message="RegexInjectionRule: Prevent denial of service attack through malicious regular expression ('Regex Injection')" class="com.kiuwan.qaking.kotlin.rules.security.RegexInjection" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.1.1,CWEScope:Access-Control,ReDoS]]></tags>
+    <description><![CDATA[If the software creates a regular expression ("pattern", "regex") from untrusted input, an attacker may supply
+malicious input that produces a denial-of-service (DoS) condition during regular expression matching.
+
+Alternatively, if the regular expression is used for input validation, the attacker-controlled regular expression
+may fail to neutralize undesired input, which may bypass the intended restrictions or render useless
+a security control.
+
+In Java, the java.util.regex.Pattern class, and a few methods in java.lang.String class, provide
+an API to regular expressions. The regular expression engine uses backtracking to match input strings,
+and there are certain regular expressions (named "evil regexes") that take exponential time (relative to input size)
+to match in the worst case.
+
+If the attacker controls also the input to be matched, he/she could craft an input for the evil regex that
+takes an inordinate amount of time to match, consuming resources (like CPU).
+Evil regex typically has a group with repetition, and the repeated group has repetition or alternation with overlapping.
+For example: "(a+)+", "([a-z]+)*", "(a|aa)+" or "(aa|aab?)*".
+
+For example, a "(a+)+" regex will take long computing time when matching "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"
+takes many seconds to complete, and longer strings (with exponential time increase) may lead to DoS conditions.
+
+Please note that regular expressions are often used for security controls and input validation.
+Even OWASP validation regex repository contained some known evil regular expressions.
+Note: Attackers may use tools like Google CodeSearch to find evil regex in open-source code ('CodeSearch hacking').
+
+The rule checks for potential injection of untrusted input into regex APIs.
+
+Note: Attacks like ReDoS are named "directed/intelligent/application" DoS, as an attacker with few resources
+could render unavailable a web application, in contrast with brute-force DoS.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid DoS conditions produced by regular expression injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import kotlin.text.Regex
+import kotlin.js.RegExp
+
+fun main(args: Array<String>) {
+  val regex = args[0]
+  val ro = RegexInjection()
+
+  ro.testRegexFromLiteral(regex)
+  ro.testRegexFromConstructor(regex)
+  ro.testRegexStaticFactory(regex)
+  ro.testKotlinJsRegex(regex)
+
+  ro.testBadRegex()
+}
+
+class RegexInjection {
+
+  fun testRegexFromLiteral(regexString: String) {
+    val regex = regexString.toRegex()   //     VIOLATION
+    regex.matches("lol")
+  }
+
+  fun testRegexFromConstructor(regexString: String) {
+    val regex = Regex(regexString)   //     VIOLATION
+    regex.matches("lol")
+  }
+
+  fun testRegexStaticFactory(regexString: String) {
+    val regex = Regex.fromLiteral(regexString)   //     VIOLATION
+    regex.matches("lol")
+  }
+
+  fun testKotlinJsRegex(regexString: String) {
+    val regex = RegExp(regexString)   //     VIOLATION
+  }
+
+  fun testBadRegex() {
+    val regex = "(^([^']*(['][^']*['])?)*)\\\\s+".toRegex()   //     VIOLATION
+  }
+}]]></example>
+    <repair><![CDATA[// Never permit regular expressions to be affected by untrusted input. Use safe regular expressions defined in source code,
+// or in a trusted configuration file.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/400.html,https://www.securecoding.cert.org/confluence/display/java/IDS08-J.+Sanitize+untrusted+data+included+in+a+regular+expression,https://en.wikipedia.org/wiki/ReDoS,https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:IDS08-J,CWE:400,CWETOP25:2021:27,OWASP:2004:A9,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.ResourceInjection" message="ResourceInjection: Improper control of resource identifiers (&quot;Resource Injection&quot;)" class="com.kiuwan.qaking.kotlin.rules.security.ResourceInjection" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software takes from an untrusted source the identifier for a system resource (like a port number),
+and allows access to a non-expected resource. Attackers may use the flaw for malicious behaviour,
+for example a port scan, change software configuration, transmit sensitive information to a third-party server,
+etc.
+
+OWASP project uses the term "Insecure Direct Object Reference" instead of "Resource Injection".
+
+Note: Please note that other rules may check injection flaws for specific resources (like Path Traversal rule for filesytem resources,
+or SSRF for network addresses). This rule reports injection flaws on resource identifiers not covered by other rules.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+package testsamples.security.ResourceInjection
+
+import io.ktor.server.netty.*
+import io.ktor.routing.*
+import io.ktor.application.*
+import io.ktor.http.*
+import io.ktor.response.*
+import io.ktor.server.engine.*
+
+fun main(args: Array<String>) {
+  val input = args[0]
+  val port = args[1]
+
+  embeddedServer(Netty, port) {// VIOLATION
+    routing {
+      get("/") {
+        call.respondText(input, ContentType.Text.Html)
+      }
+    }
+  }.start(wait = true)
+}]]></example>
+    <repair><![CDATA[package testsamples.security.ResourceInjection
+
+import io.ktor.server.netty.*
+import io.ktor.routing.*
+import io.ktor.application.*
+import io.ktor.http.*
+import io.ktor.response.*
+import io.ktor.server.engine.*
+
+fun main(args: Array<String>) {
+  val input = args[0]
+  val port = args[1]
+
+  val rPort = validatePort(port); // FIXED, whitelist, custom neutralization
+
+  embeddedServer(Netty, rPort) {
+    routing {
+      get("/") {
+        call.respondText(input, ContentType.Text.Html)
+      }
+    }
+  }.start(wait = true)
+}]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Resource_Injection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:99,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.SameOriginMethodExecution" message="SameOriginMethodExecution: Same Origin Method Execution (SOME)" class="com.kiuwan.qaking.kotlin.rules.security.SameOriginMethodExecution" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[SOME is a web application attack which abuses callback endpoints by forcing a victim into
+executing arbitrary scripting methods of any page on the endpoint’s domain.
+
+In example, while JSONP is popular useful technology but it can make a website vulnerable as it uses a callback function
+to get data from third-party services. By manipulating the callback parameter, attacker could execute arbitrary methods
+on the affected website.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import com.fasterxml.jackson.databind.JsonNode
+import play.libs.Jsonp
+import play.mvc.Controller
+import play.mvc.Http
+import play.mvc.Result
+import play.mvc.Results
+
+open class JSONPHijacking : Controller() {
+  companion object {
+
+    fun ok(content: JsonNode): Result {
+
+      ctx().args.put("api_reply", content)
+
+      val callback = Http.Context.current().request().getQueryString("callback")
+      return Results.ok(Jsonp(callback, content))   // VIOLATION
+    }
+  }
+}]]></example>
+    <repair><![CDATA[// Do not allow user to select the jsonp callback]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/79.html,http://www.benhayak.com/2015/06/same-origin-method-execution-some.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.7,WASC:08]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input, hardcoded_input)" value="user_input, database_input, file_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.SecurityCheckInOverridableMethod" message="SecurityCheckInOverridableMethodRule: Methods that perform a security check must be declared private or final" class="com.kiuwan.qaking.kotlin.rules.security.SecurityCheckInOverridableMethod" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Nonfinal member methods that perform security checks can be compromised when a malicious subclass overrides the methods
+and omits the checks. Consequently, such methods must be declared private or final to prevent overriding.
+
+Failure to declare a class's method private or final affords the opportunity for a malicious subclass
+to bypass the security checks performed in the method.
+
+The rule looks for calls to AccessController.checkPermission(), SecurityManager.checkXXX() or using of the classes configured in the parameter <securityClasses>, and
+then checks that the containing method cannot be overridden (should be final or private, or belong to
+a final class). If method could be overridden, a violation is emitted.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Security checks cannot be bypassed by subclassing and overriding the method with checks.]]></benefits>
+    <inconvenients><![CDATA[Need to change class or method access modifiers, which may impact other classes.]]></inconvenients>
+    <example><![CDATA[import java.security.AccessController.checkPermission
+
+open class SecurityCheckInOverridableMethod {
+  open protected fun doSecurityCheck() {  //VIOLACION
+    val sm = System.getSecurityManager()
+    sm?.checkPermission(SomePermission("SomeAction"))
+  }
+
+  open fun method(secManager: SecurityManager, host: String, port: Int) {  //VIOLACION
+    try {
+      secManager.checkAccept(host, port)
+    } catch (e: SecurityException) {
+      doSomething()
+    }
+
+  }
+
+  open protected fun doSecurityCheck2() {  //VIOLACION
+    val sm = System.getSecurityManager()
+    if (sm != null) {
+      sm!!.checkPermission(SomePermission("SomeAction"))
+    }
+  }
+
+  fun doSecurityCheckFinal() {  // OK, not overridable
+    val sm = System.getSecurityManager()
+    sm?.checkPermission(SomePermission("SomeAction"))
+  }
+}]]></example>
+    <repair><![CDATA[import java.security.AccessController.checkPermission
+
+open class SecurityCheckInOverridableMethod {
+  // Make sure that all methods performing security checks are not overridable
+
+  protected fun doSecurityCheck() {
+    val sm = System.getSecurityManager()
+    sm?.checkPermission(SomePermission("SomeAction"))
+  }
+
+  fun method(secManager: SecurityManager, host: String, port: Int) {
+    try {
+      secManager.checkAccept(host, port)
+    } catch (e: SecurityException) {
+      doSomething()
+    }
+  }
+
+  protected fun doSecurityCheck2() {
+    val sm = System.getSecurityManager()
+    if (sm != null) {
+      sm!!.checkPermission(SomePermission("SomeAction"))
+    }
+  }
+
+  fun doSecurityCheckFinal() {
+    val sm = System.getSecurityManager()
+    sm?.checkPermission(SomePermission("SomeAction"))
+  }
+}]]></repair>
+    <reference><![CDATA[CERT-J/MET03-J: https://www.securecoding.cert.org/confluence/x/6AAMAg]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:MET03-J,CWE:358,OWASP:2021:A1,PCI-DSS:6.5.6]]></security>
+    </normatives>
+    <properties>
+      <property name="securityClasses" descname="Comma-separated list of security custom classes." value="java.lang.SecurityManager, SecurityManager"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.SerializationInjection" message="SerializationInjection: Deserialization of untrusted data" class="com.kiuwan.qaking.kotlin.rules.security.SerializationInjection" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.5.2,ASVS-v4.0.2:5.5.1,ASVS-v4.0.2:5.5.3,CWEScope:Availability,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Certain serialization frameworks (like JDKs XmlEncoder/XmlDecoder or XStream library) provide a framework
+for arbitrary object persistence (without mapping information), serializing objects to XML documents.
+Such frameworks allow to serialize constructor and method calls, to reconstruct object instances properly
+(to call the object constructors or setter methods) during deserialization.
+
+If the application deserializes XML documents from untrusted sources (e.g. in a REST framework), and if an attacker
+can provide the XML document to be deserialized, he/she may be able to execute arbitrary code on the server, including
+opening a reverse shell to launch commands.
+
+If you think that this does not affect you, think twice. A top-level service framework (REST, XML-RPC...) could
+transfer Java objects using an underlying XML persistence framework like XmlEncoder or XStream. A REST framework
+typically process (HTTP) request messages, and marshals/unmarshals a resource representation (JSON, XML...),
+potentially to Java objects. The underlying unmarshalling library could allow code injection if it does not limit
+which objects could be unmarshalled and which code could be executed during deserialization.
+
+As XStream is used in other frameworks (for example, XStreamMarshaller class in Spring OXM), the vulnerability could
+be found in other places.
+
+In other words, any application that allows a user to pass content that will be deserialized by XMLDecoder or XStream
+is exposing a remote code execution flaw..]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid deserializing untrusted data inputs.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import javax.servlet.http.HttpServletRequest
+import java.beans.XMLDecoder
+import java.io.*
+import com.thoughtworks.xstream.XStream
+import jdk.internal.org.xml.sax.InputSource
+import org.xml.sax.InputSource
+
+fun main(args: Array<String>) {
+  val code = args(0)
+
+  X.deserialize(code)
+  X.deserialize2(code)
+  X.deserialize3(code)
+}
+  
+object X {
+
+  fun deserialize(code: String) {
+    val src = InputSource(InputStreamReader(code, "UTF-8"))
+    val decoder = XMLDecoder(src) // VIOLATION
+    val `object` = decoder.readObject()
+    decoder.close()
+  }
+
+  fun deserialize2(code: String) {
+    val `object` = XStream().fromXML(code).asInstanceOf[X] // VIOLATION
+  }
+
+  fun deserialize3(code: String) {
+    try {
+      val serializationInputStream = ObjectInputStream(ByteArrayInputStream(code))
+      val `object` = serializationInputStream.readObject() // VIOLATION
+    } finally {}
+  }
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before deserialization]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/502.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:502,CWETOP25:2021:13,OWASP-M:2016:M8,OWASP:2021:A8,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.ServerSideRequestForgery" message="ServerSideRequestForgeryRule: Server-Side Request Forgery (SSRF)" class="com.kiuwan.qaking.kotlin.rules.security.ServerSideRequestForgery" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.6.1,ASVS-v4.0.2:5.2.6,CWEScope:Confidentiality,CWEScope:Integrity,http-parameter-pollution]]></tags>
+    <description><![CDATA[The software builds an URL using untrusted input, and retrieves the contents of this URL (e.g. a webservice),
+without ensuring that the target (scheme, host, port ...) is the intended one.
+
+This is an instance of the 'confused deputy' weakness, where the vulnerable application acts as a proxy
+or relay for connections totally or partially controlled by an attacker.
+
+As the connection originates from the host of the vulnerable application, that may hide the attacker origin,
+and bypass network controls.
+
+Attackers may leverage this flaw to use the application as a network proxy to:
+* conduct port scanning in internal networks,
+* access to local sensitive files using file:// scheme,
+* use unintended protocols like tftp to gain unintended connections to internal or external hosts,
+* bypass firewalls (the application host may be allowed to perform connections controlled by the attacker),
+* attack web applications using injection attacks
+and other malicious activity.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import org.apache.http.client.methods.HttpGet
+import org.apache.http.impl.client.DefaultHttpClient
+import java.net.URL
+import io.ktor.server.engine.embeddedServer
+import io.ktor.client.HttpClient
+import com.github.kittinunf.fuel.Fuel
+
+class Sample {
+
+  companion object {
+    @JvmStatic fun main(args: Array<String>): Unit {
+    val url = args(0)
+
+    testApacheHTTPGet(url)
+    testOpenURLConnection(url)
+    testKtor(url)
+    testFuel(url)
+    testFuel2(url)
+    }
+  }
+
+  fun testApacheHTTPGet(url : String): Unit {
+    val httpClient = buildHttpClient(connectionTimeout, socketTimeout)
+    val httpResponse = httpClient.execute(HttpGet(url))    // VIOLATION
+  }
+
+  private fun buildHttpClient(connectionTimeout: Int, socketTimeout: Int): DefaultHttpClient {
+    val httpClient = DefaultHttpClient()
+    val httpParams = httpClient.getParams()
+    HttpConnectionParams.setConnectionTimeout(httpParams, connectionTimeout)
+    HttpConnectionParams.setSoTimeout(httpParams, socketTimeout)
+    httpClient.setParams(httpParams)
+    return httpClient
+  }
+
+  fun testOpenURLConnection(url : String): Unit {
+    val u = URL(url)    // VIOLATION
+    val conn = u.openConnection.asInstanceOf[HttpURLConnection]
+  }
+
+  fun testKtor(urlString : String) {
+    val server = embeddedServer(
+      Netty,
+      port = 8080,
+      module = Application::mymodule
+    ).apply {
+      start(wait = false)
+    }
+
+    runBlocking {
+      val client = HttpClient(Apache) {
+        install(JsonFeature) {
+          serializer = GsonSerializer {
+            // .GsonBuilder
+            serializeNulls()
+            disableHtmlEscaping()
+          }
+        }
+      }
+
+      val message = client.post<HelloWorld> {    // VIOLATION
+        url(urlString)
+        contentType(ContentType.Application.Json)
+        body = HelloWorld(hello = "world")
+      }
+
+      println("CLIENT: Message from the server: $message")
+
+      client.close()
+      server.stop(1L, 1L, TimeUnit.SECONDS)
+    }
+  }
+
+  fun testFuel(url : String) {
+    url.httpGet().response {    // VIOLATION
+      request, response, result ->
+      //response handling
+    }
+  }
+
+  fun testFuel2(url : String) {
+    val (request, response, result) = Fuel.post(url)    // VIOLATION
+      .body(bodyJson)
+      .response()
+  }
+}]]></example>
+    <repair><![CDATA[// perform a white-list validation ensuring, for example,
+// that the all URL parts are in expected sets]]></repair>
+    <reference><![CDATA[SSRF bible. Cheat-sheet ONSec Labs,http://cwe.mitre.org/data/definitions/918.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:918,CWETOP25:2021:24,OWASP:2021:A10,PCI-DSS:6.5.8,WASC:42]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.SpringNoAntiXssConfiguration" message="SpringNoAntiXssConfiguration: Use defaultHtmlEscape=true with SpringMVC for better cross-site scripting prevention" class="com.optimyth.qaking.spring.rules.SpringNoAntiXssConfiguration" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.3.1,ASVS-v4.0.2:14.1.3,ASVS-v4.0.2:2.5.4,ASVS-v4.0.2:3.4.3,ASVS-v4.0.2:3.4.4,ASVS-v4.0.2:3.4.5,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,Framework:Spring-MVC,essential]]></tags>
+    <description><![CDATA[The rule checks that, for a J2EE web application using Spring MVC, the default cross-site scripting (XSS) control is explicitly enabled.
+
+Please note that defaultHtmlEscape only transforms potential XSS attack payloads during HTTP output construction,
+for Spring tags in JSP pages. The default behavior, when no defaultHtmlEscape context parameter is defined, is to apply HTML escaping
+to all Spring tags in the form tag library (that render values), but not to the other tags that merely expose values
+but don’t render the values themselves.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Adds a simple XSS countermeasure to Spring MVC application.]]></benefits>
+    <inconvenients><![CDATA[Automatic output encoding may interfere with application's current behaviour.]]></inconvenients>
+    <example><![CDATA[<!-- web.xml does not contain defaultHtmlEscape context param, or sets it to false -->
+<context-param>
+  <param-name>defaultHtmlEscape</param-name>
+  <param-value>false</param-value>
+</context-param>]]></example>
+    <repair><![CDATA[<!-- web.xml with explicit default HTML output-escaping configuration -->
+<context-param>
+  <param-name>defaultHtmlEscape</param-name>
+  <param-value>true</param-value>
+</context-param>]]></repair>
+    <reference><![CDATA[Spring Security Cross-site Scripting - https://defensivecode.wordpress.com/2013/09/03/spring-security-xss/,Java/Spring web app security XSS - https://sgaur.wordpress.com/tag/spring/,OWASP XSS - https://www.owasp.org/index.php/XSS_(Cross_Site_Scripting)_Prevention_Cheat_Sheet]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:16,CWE:80,OWASP:2021:A5,PCI-DSS:6.5.7,WASC:08]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.SqlInjection" message="SqlInjectionRule: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')" class="com.kiuwan.qaking.kotlin.rules.security.SqlInjection" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The software constructs all or part of an SQL command using externally-controlled input, but it does not neutralize
+properly that input that could modify the intended SQL command when it is sent to a database interaction method
+(e.g. JDBC).
+
+The rule detects a path in code between an user-input statement (source) and a database call (sink), with SQL sentence depending on
+non neutralized input.
+
+It must be known that if SQL does not depend on user-controlled input (e.g. Parametrized SQL), there is no possibility for an SQL injection.
+
+Note: Using stored procedures in database operations does NOT prevent SQL injection if, for example, the SQL to send
+to the database for execution of the stored procedure is composed by concatenating non properly neutralized user input.
+The ways to avoid SQL injection are:
+
+1) Use parametrized SQL, so SQL code and parameters are not mixed (no parameter could change the semantic of the SQL)
+
+2) If SQL code must depend on user input (e.g. to build 'dynamic' WHERE clauses), even with prepared statements,
+   all user-controlled inputs used to compose such "dynamic" SQL should be neutralized.
+
+A neutralization function either validates inputs and report an (neutral) error without allowing SQL execution, or
+replaces sensitive SQL characters in the input to avoid that the resulting SQL has different semantics.
+
+It is recommended to use parametrized SQL (when possible).
+
+The rule supports different database persistence libraries/frameworks, like JDBC, Hibernate, Java Persistence API (JPA),
+JDO, or Spring.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.dao.*
+import org.jetbrains.exposed.sql.transactions.TransactionManager
+
+fun main(args: Array<String>) {
+  val code = args[0]
+
+  Database.connect("jdbc:h2:mem:test", driver = "org.h2.Driver")
+
+  transaction {
+    TransactionManager.current().exec("select * from Users where name =" + code) //VIOLATION
+  }
+
+}]]></example>
+    <repair><![CDATA[import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.dao.*
+import org.jetbrains.exposed.sql.transactions.TransactionManager
+
+fun main(args: Array<String>) {
+  val code = args[0]
+
+  Database.connect("jdbc:h2:mem:test", driver = "org.h2.Driver")
+
+  transaction {
+    TransactionManager.current().exec("select * from Users where name = " + validate(code))
+  }
+
+}
+fun validate (text: String): String {
+    /* add a neutralization here */
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/89.html,https://cwe.mitre.org/data/definitions/564.html,https://www.securecoding.cert.org/confluence/display/java/IDS00-J.+Prevent+SQL+injection]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:IDS00-J,CWE:564,CWE:89,CWETOP25:2021:6,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input, hardcoded_input)" value="user_input"/>
+      <property name="parametersAsSources" descname="Assume that method parameters are untrusted inputs" value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.TooMuchOriginsAllowed" message="TooMuchOriginsAllowedRule: CORS policy (Cross-origin resource sharing) too broad" class="com.kiuwan.qaking.kotlin.rules.security.TooMuchOriginsAllowed" technology="KOTLIN" active="true">
+    <tags><![CDATA[CORS,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Too much allowed origins in HTML5 Access-Control-Allow-Origin header.
+
+Traditionally, web browsers enforced the Same Origin Policy (SOP) to avoid cross-domain JavaScript to access
+certain contents in web page. This policy prevents a malicious script on one page from obtaining
+access to sensitive data on another web page ("victim") with a different origin. A strict separation between content
+from unrelated sites must be maintained on the browser to prevent loss of data confidentiality or integrity.
+
+Cross-Origin Resource Sharing (CORS) relaxes the SOP. To do this, essentially two HTTP headers (Origin, emitted by client,
+and Access-Control-Allow-Origin, emitted by server). This allows, for example, to Ajax requests (XMLHttpRequest) for
+accessing content from different origin that should be forbidden by the SOP.
+
+With Access-Control-Allow-Origin header, server defines which other domains are allowed to access content in its domain
+using cross-origin requests. A too much permissive value (like '*') will allow a malicious application to communicate
+with the vulnerable application in unexpected ways, leading to different security problems.
+
+NOTE: CORS is intended to avoid data read from pages coming from other origins, and it is enforced by modern browsers.
+Remember that an attacker has full control over an HTTP request message, so do not rely on CORS Origin header for
+validating the source of a request, or for CSRF protection.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Limits read application data from content coming from hostile origins.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import javax.servlet.http.HttpServletResponse
+
+class TooMuchOriginsAllowed {
+  val CORS_HEADER : String = "Access-Control-Allow-Origin";
+  val CORS_ORIGINS_ALLOWED : String = "*";
+
+  fun m(res: HttpServletResponse) {
+    res.setHeader(CORS_HEADER, CORS_ORIGINS_ALLOWED);   // VIOLATION
+  }
+}]]></example>
+    <repair><![CDATA[import javax.servlet.http.HttpServletResponse
+
+class TooMuchOriginsAllowed {
+  val CORS_HEADER : String = "Access-Control-Allow-Origin";
+  val CORS_ORIGINS_ALLOWED : String = "https://www.allowed.com";
+
+  fun m(res: HttpServletResponse) {
+    res.setHeader(CORS_HEADER, CORS_ORIGINS_ALLOWED);   // OK
+  }
+}]]></repair>
+    <reference><![CDATA[https://w3c.github.io/webappsec-cors-for-developers,http://cwe.mitre.org/data/definitions/942.html,https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties,https://www.baeldung.com/spring-cors]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:942,OWASP:2021:A5,PCI-DSS:6.5.10,WASC:15]]></security>
+    </normatives>
+    <properties>
+      <property name="disallowedOriginPattern" descname="Regular expression for CORS origins do not considered valid" value="\*|null"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.TrustBoundaryViolation" message="TrustBoundaryViolationRule: Trust boundary violation" class="com.kiuwan.qaking.kotlin.rules.security.TrustBoundaryViolation" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,trust-boundary]]></tags>
+    <description><![CDATA[The product mixes trusted and untrusted data in the same data structure or structured message.
+
+A trust boundary violation occurs when a program blurs the line between what is trusted and what is untrusted.
+By combining trusted and untrusted data in the same data structure, it becomes easier for programmers
+to mistakenly trust unvalidated data. This violation may open attack avenues, like injection attacks,
+when the application takes untrusted data from the trusted domain without validation.
+
+When untrusted external input (e.g. input HTTP message contents) is set as session or web application attributes,
+without proper validation / neutralization, the check emits a violation.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid security issues when data passed to trusted domain is used without specific validation from other places
+in the application.]]></benefits>
+    <inconvenients><![CDATA[Need explicit input validation before data movement.]]></inconvenients>
+    <example><![CDATA[import javax.servlet.http.HttpServlet
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import org.owasp.esapi.ESAPI
+
+class TrustBoundaryViolation_Java: HttpServlet {
+
+  fun doPostKO(req: HttpServletRequest, res: HttpServletResponse) {
+    val param : String = req.getParameter("input")
+    req.getSession().setAttribute("trusted", param)   // VIOLATION
+    res.getWriter().println(ESAPI.encoder().encodeForHTML(param))
+  }
+
+  fun doGet1(req: HttpServletRequest, res: HttpServletResponse) {
+    val trusted : String = req.getSession().getAttribute("trusted")
+    res.getWriter().println("pawned: " + trusted)
+  }
+
+  fun doPostOK(req: HttpServletRequest, res: HttpServletResponse) {
+    val param : String = req.getParameter("input")
+    if(param != null && param.matches("[a-zA-Z0-9 ]")) { /* FIXED, validation */
+      req.getSession().setAttribute("trusted", param)
+    }
+    res.getWriter().println(ESAPI.encoder().encodeForHTML(param))
+  }
+
+  fun doGet2(req: HttpServletRequest, res: HttpServletResponse) {
+    val trusted : String = req.getSession().getAttribute("trusted")
+    res.getWriter().println("pawned: " + trusted)
+  }
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before storing it into the session]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/501.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:501,OWASP:2021:A4,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.UnsafeCookie" message="UnsafeCookie: Generate server-side cookies with adequate security properties" class="com.kiuwan.qaking.kotlin.rules.security.UnsafeCookie" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:3.2.3,ASVS-v4.0.2:3.4.1,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Checks that cookies generated server-side have the following security properties:
+
+* Non persistent - Cookie is not stored persistently by the browser (it is hold in memory)
+* Secure - Cookie is sent in HTTP/SSL communications only (more difficult to capture on the net)
+* HttpOnly - Cookie is not accessible by client-side scripts (not all browsers support this)
+* Path - Path should not match a certain patterns that allow transmission to unintended web applications.
+* Domain - Domain should not be too wide so the cookie is sent to unintended servers.
+
+Additionally, the name of any session cookie should be chosen to avoid providing common names that may give clues
+to the attacker about how are sessions handled in the server.
+
+Other rules (like HeaderManipulation) check other conditions, like HTTP Splitting, that could be
+produced when the cookie value depends on user-controlled input non properly neutralized.
+
+NOTE: Not setting domain or path forces browser to send the cookie to the originator's domain and
+application path, so this is considered secure.]]></description>
+    <priority>3</priority>
+    <effort>4</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[// Example using Spark library (your web framework may be different, of course)
+import spark.Spark.*
+import spark.Response
+
+data class User(val name: String, val password: String, val email: String, val id: Int)
+
+fun main(args: Array<String>) {
+
+  post("/login") { req: Request, res: Response ->
+    var loggedUser: User? = null
+    val uname = req.queryParams("username")
+    val pass = req.queryParams("password")
+
+    if(userDao.authenticate(uname, pass)) {
+      loggedUser = userDao.load(uname)
+      // VIOLATION, probably bad domain/path, cookie name, persistence, secure and httpOnly flags
+      res.cookie(".com", "/", "sessionid", uname, 3600, false, false)
+      val session = req.session(true)
+      session.attribute("user", loggedUser!!)
+    }
+    createLoginOutput(req, res, loggedUser)
+  }
+
+}]]></example>
+    <repair><![CDATA[// Example using Spark library (your web framework may be different, of course)
+import spark.Spark.*
+
+data class User(val name: String, val password: String, val email: String, val id: Int)
+
+fun main(args: Array<String>) {
+
+  post("/login") { req: Request, res: Response ->
+    var loggedUser: User? = null
+    val uname = req.queryParams("username")
+    val pass = req.queryParams("password")
+
+    if(userDao.authenticate(uname, pass)) {
+      loggedUser = userDao.load(uname)
+      // FIXED
+      res.cookie(".myorg.com", "/myapp", "user", uname, -1, true, true)
+      val session = req.session(true)
+      session.attribute("user", loggedUser!!)
+    }
+    createLoginOutput(req, res, loggedUser)
+  }
+
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/200.html,http://projects.webappsec.org/w/page/13246936/Information%20Leakage,http://cwe.mitre.org/data/definitions/539.html,http://cwe.mitre.org/data/definitions/614.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:1004,CWE:200,CWE:539,CWE:614,CWETOP25:2021:20,PCI-DSS:6.5.3,WASC:13]]></security>
+    </normatives>
+    <properties>
+      <property name="domainPatternToAvoid" descname="Pattern on cookie domains to avoid" value="\.[^\.]+"/>
+      <property name="avoidPersistentCookies" descname="Avoid persistent cookies" value="true"/>
+      <property name="cookieNamePatternToAvoid" descname="Pattern on cookie names to avoid" value=".*SESS(ION)?ID.*"/>
+      <property name="avoidUnsecureCookies" descname="Avoid unsecure cookies" value="false"/>
+      <property name="pathPatternToAvoid" descname="Pattern on cookie paths to avoid" value="/"/>
+      <property name="forceHttpOnly" descname="Set HttpOnly" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.UnsafeReflection" message="UnsafeReflection: Use of Externally-Controlled Input to Select Classes or Code ('Unsafe Reflection')" class="com.kiuwan.qaking.kotlin.rules.security.UnsafeReflection" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,reflection]]></tags>
+    <description><![CDATA[The software uses external input with reflection to select which classes or code to use, but it does not prevent
+the input from selecting improper classes or code.
+
+If the application uses external inputs to determine which class to instantiate or which method to invoke, then an attacker
+could supply values to select unexpected classes or methods. If this occurs, then the attacker could execute code that
+was not intended by the developer. It may bypass authentication or access control checks, or otherwise cause unexpected behaviour.
+
+It the attacker is able to upload files in a location that appears in the classpath, or add new entries to the classpath,
+this flaw could lead to execution of arbitrary code, chosen by the attacker.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Limit potential unexpected code execution, or uncontrolled access to sensitive information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[fun main(args: Array<String>) {
+  val arg = args[0]
+
+  testJava(arg)
+  testKotlin(arg)
+}
+
+fun testJava(clazz: String) {
+  val clazz = Class.forName(clazz) // VIOLATION
+}]]></example>
+    <repair><![CDATA[// Validate externally-controlled parameters affecting targets of reflexion code]]></repair>
+    <reference><![CDATA[https://www.securecoding.cert.org/confluence/display/java/SEC05-J.+Do+not+use+reflection+to+increase+accessibility+of+classes%2C+methods%2C+or+fields,https://cwe.mitre.org/data/definitions/470.html,Secure Coding Guidelines for the Java Programming Language, guideline 9,OWASP Unsafe Reflection: https://www.owasp.org/index.php/Unsafe_Reflect]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:SEC05-J,CWE:470,OWASP:2021:A3,PCI-DSS:6.5.8,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.WeakCryptographicHash" message="WeakCryptographicHashRule: Weak cryptographic hash" class="com.kiuwan.qaking.kotlin.rules.security.WeakCryptographicHash" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,crypto,hash]]></tags>
+    <description><![CDATA[Weak cryptographic hashes cannot guarantee data integrity and should not be used in security-critical contexts.
+MD5 and SHA-1 are popular cryptographic hash algorithms often used to verify the integrity of messages and other data.
+
+Recent advances in cryptanalysis have discovered weaknesses in both algorithms. Consequently, MD5 and SHA-1 should
+no longer be used to verify data integrity in security-critical contexts.
+
+Techniques for breaking MD5 hashes are advanced and widely available enough that the algorithm must not be used
+in any security context.
+
+In the case of SHA-1, current techniques still require a significant amount of computational power and
+are more difficult to implement. However, attackers have found the Achilles' heel for the algorithm, and techniques
+for breaking it will likely lead to the discovery of even faster attacks.
+
+Note: SHA-1 is not a recommended algorithm for password hashing, for digital signature generation/verification, and other uses (NIST).
+
+
+The rule checks if the cryptographic hash algorithm used is one of the allowed ones; the rule can lead to false negatives
+if the algorithm value argument cannot be inferred statically.
+
+In addition, a violation is emitted for every custom implementation of java.security.MessageDigest. Such custom implementations
+probably do not have the security level that standard implementations provide.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+import java.security.MessageDigest
+
+class MessageDigestExample {
+  fun hash(input: String): ByteArray {
+     val md = MessageDigest.getInstance("MD5") // VIOLATION
+     md.update( input.toByteArray() )
+     return md.digest()
+  }
+}]]></example>
+    <repair><![CDATA[import java.security.MessageDigest
+
+class MessageDigestExample {
+  fun hash(input: String): ByteArray {
+     val md = MessageDigest.getInstance("SHA-256") // FIXED
+     md.update( input.toByteArray() )
+     return md.digest()
+  }
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/328.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:328,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:50]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="Allowed cryptographic hash algorithms" value="SHA224, SHA256, SHA384, SHA512, HashSHA224, HashSHA256, HashSHA384, HashSHA512"/>
+      <property name="forbiddenAlgorithms" descname="List of weak hash functions" value="MD2, MD5, SHA1, HashMD5, HashSHA1"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.WeakEncryption" message="WeakEncryptionRule: Weak symmetric encryption algorithm" class="com.kiuwan.qaking.kotlin.rules.security.WeakEncryption" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.9.3,ASVS-v4.0.2:6.2.2,ASVS-v4.0.2:8.3.7,CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,cipher,crypto]]></tags>
+    <description><![CDATA[The program uses a weak encryption algorithm that cannot guarantee the confidentiality of sensitive data.
+
+Old encryption algorithms such as DES no longer provide sufficient protection for use with sensitive data.
+Encryption algorithms rely on key size as one of the primary mechanism to ensure cryptographic strength.
+Cryptographic strength is often measured by the time and computational power needed to generate a valid key.
+Advances in computing power have made it possible to obtain small encryption keys in a reasonable amount of time.
+
+For example, the 56-bit key used in DES posed a significant computational hurdle in the 1970's when the algorithm
+was first developed, but today DES can be cracked in less than a day using commonly available equipment.
+
+Encryption-related classes considered by the rule are Cipher, Mac, KeyGenerator or SecretKeyGenerator in javax.crypto
+package.
+
+The rule also considers a violation of this rule any custom implementation of the aforementioned classes (or the
+corresponding Spi classes), as correct implementation for encryption/decryption algorithms is difficult,
+and need deep analysis from the cryptographic community.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    
+import javax.crypto.*
+
+class WeakEncryption {
+  // VIOLATION, DES is too weak for sensible encryption
+  val desFactory = SecretKeyFactory.getInstance("DES")
+}]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[https://www.securecoding.cert.org/confluence/display/java/MSC61-J.+Do+not+use+insecure+or+weak+cryptographic+algorithms,http://projects.webappsec.org/w/page/13246936/Information%20Leakage,http://cwe.mitre.org/data/definitions/327.html]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:MSC61-J,CWE:327,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="Comma-separated list of allowed algorithms" value="DESEDE, AES, IDEA"/>
+      <property name="forbiddenAlgorithms" descname="Comma-separated list of ciphers that should NOT be used." value="DES, RC2, RC4, RC5"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.WebXmlSecurityMisconfigurations" message="WebXmlSecurityMisconfigurationsRule: Avoid misconfiguring security properties in web.xml descriptor" class="com.optimyth.qaking.security.rules.java.WebXmlSecurityMisconfigurationsRule" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.3.1,ASVS-v4.0.2:14.1.3,ASVS-v4.0.2:2.5.4,ASVS-v4.0.2:2.8.1,ASVS-v4.0.2:2.8.6,ASVS-v4.0.2:3.2.1,ASVS-v4.0.2:3.3.1,ASVS-v4.0.2:3.3.2,ASVS-v4.0.2:3.3.3,ASVS-v4.0.2:3.3.4,ASVS-v4.0.2:3.4.3,ASVS-v4.0.2:3.4.4,ASVS-v4.0.2:3.4.5,ASVS-v4.0.2:3.6.1,ASVS-v4.0.2:3.6.2,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity,essential]]></tags>
+    <description><![CDATA[The rule checks 7 common misconfigurations in web.xml descriptors:
+
+    * No default error pages for 404/500 error codes and for uncaught exceptions.
+    By default Java web applications display detailed error messages that disclose the server version and detailed stack trace information
+    that can, in some situations, wind up displaying snippets of Java code. This information is a boon to hackers who are looking for as much
+    information about their victims as possible.
+
+    To avoid, set neutral error pages for 404 and 500 HTTP error codes, and for java.lang.Throwable uncaught exceptions
+    (which means ALL uncaught exceptions)
+
+    * No methods in security constraints.
+    In security-constraint, do not list any http-method. Any non-listed method will be
+    unprotected, so attackers may use an uncommon method (HEAD, TRACE, DELETE...) to access
+    the protected resources.
+
+    * Configure SSL for protected areas.
+    SSL should be used to protect sensitive data in transit (protected resources)
+    This check could be deactivated by setting checkSSLForProtectedAreas to false.
+
+    * Send session ID under SSL only.
+    Many web sites use SSL for authentication but then either revert back to non-SSL for subsequent communication
+    or have parts of the site that can still be accessed via non-SSL. This leaves the session coookie (i.e. JSESSIONID)
+    vulnerable to session hijacking attacks. To prevent this, session cookies can be created with the "Secure" flag,
+    which ensures that the browser will never transmit the specified cookie over non-SSL.
+
+    * Send session cookies with the HttpOnly flag set.
+    Cookies can be created with the "HttpOnly" flag, which ensures that the cookie cannot be accessed via client side scripts.
+    This helps mitigate some of the most common XSS attacks. Must be specified for Servlet 3.0+
+
+    * Use cookies, not URL rewriting, to exchange session IDs with browsers.
+    The tracking-mode element in the Servlet 3.0 specification allows you to define whether the JSESSIONID should be
+    stored in a cookie or in a URL parameter. If the session id is stored in a URL parameter it could be inadvertently
+    saved in a number of locations including the browser history, proxy server logs, referrer logs, web logs, etc.
+    Accidental disclosure of the session id makes the application more vulnerable to session hijacking attacks.
+    Instead, make sure the JSESSIONID is stored in a cookie (and has the Secure flag set).
+
+    * Expire sessions with no too large timeouts.
+    Users like long lived sessions because they are convenient. Hackers like long lived sessions because it gives them
+    more time to conduct attacks like session hijacking and CSRF. Security vs usability will always be a dilemma.
+    But never specify 0 or negative value, as this makes the session cookie to live forever.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    <!-- Some of the security properties are not available below Servlet 3.0 -->
+    <security-constraint>
+      <web-resource-collection>
+        <web-resource-name>Protected Area</web-resource-name>
+        <url-pattern>/private/*</url-pattern>
+        <!-- This means that other HTTP methods can access resources with no protection! -->
+        <http-method>GET</http-method>
+        <http-method>POST</http-method>
+      </web-resource-collection>
+      <auth-constraint>...</auth-constraint>
+      <!-- No user-data-constraint/transport-guarantee -->
+    </security-constraint>
+
+    <session-config>
+      <session-timeout>-1</session-timeout>               <!-- VIOLATION: session does not expire -->
+      <!-- not secure cookie, no httpOnly, tracking mode not fixed to COOKIE -->
+    </session-config>
+
+    <!-- No error pages for 404/500 or java.lang.Throwable -->]]></example>
+    <repair><![CDATA[    <security-constraint>
+      <web-resource-collection>
+        <web-resource-name>Protected Area</web-resource-name>
+        <url-pattern>/private/*</url-pattern>
+      </web-resource-collection>
+      <auth-constraint>...</auth-constraint>
+      <!-- No user-data-constraint/transport-guarantee -->
+    </security-constraint>
+
+    <session-config>
+      <session-timeout>60</session-timeout>
+      <cookie-config>
+        <http-only>true</http-only>
+        <secure>true</secure>
+      </cookie-config>
+      <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+
+    <!-- Redirect uncaught errors to neutral error message pages -->
+    <error-page>
+      <error-code>500</error-code>
+      <location>/error500.jsp</location>
+    </error-page>
+    <error-page>
+      <exception-type>java.lang.Throwable</exception-type>
+      <location>/error500.jsp</location>
+    </error-page>
+    <error-page>
+      <error-code>404</error-code>
+      <location>/error404.jsp</location>
+    </error-page>]]></repair>
+    <reference><![CDATA[ERR01-J: https://www.securecoding.cert.org/confluence/display/java/ERR01-J.+Do+not+allow+exceptions+to+expose+sensitive+information,http://software-security.sans.org/blog/2010/08/11/security-misconfigurations-java-webxml-files]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:ERR01-J,CWE:16,CWE:384,CWE:5,CWE:613,CWE:7,OWASP:2021:A5,OWASP:2021:A7,WASC:47]]></security>
+    </normatives>
+    <properties>
+      <property name="checkSessionTimeoutExists" descname="If true, report violation when &lt;session-timeout&gt; element doesn't exist." value="true"/>
+      <property name="checkSessionIdInCookieOnly" descname="If true, configure session ID to be sent only in cookies" value="true"/>
+      <property name="checkSessionTimeout" descname="If true, configure a (finite) session timeout" value="true"/>
+      <property name="checkErrorPages" descname="If true, default error pages must be configured" value="true"/>
+      <property name="checkSSLForProtectedAreas" descname="If true, SSL must be set for protected areas" value="false"/>
+      <property name="checkSecureSession" descname="If true, session ID should be configured as secure (sent only under SSL)" value="false"/>
+      <property name="checkNoHttpMethodInSecurityContraints" descname="If true, security constraints should NOT specify http methods" value="true"/>
+      <property name="checkHttpOnly" descname="If true, session cookie must use httpOnly flag (not accessible from client-side scripts)" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.XmlEntityInjection" message="XmlEntityInjectionRule: XML entity injection" class="com.kiuwan.qaking.kotlin.rules.security.XmlEntityInjection" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.5.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[In XML parsers, when XML document to parse could be altered by untrusted input, and the untrusted input may
+alter the Document Type Definition (DTD, embedded or external), the parser should be configured to avoid
+two kinds of potential attacks:
+
+* XML entity expansion DoS (XML bomb or "billion laughs attack"), CWE-776, where well-formed DTD with
+  internal entities are expanded exponentially until they exhaust memory.
+
+* XML external entity injection (XXE), CWE-611, where an external entity controlled by the attacker refers to the URL
+  of a resource that gives unauthorized access to sensitive files on the server machine, or to a resource
+  like /dev/random in Unix systems that, when entity is expanded, leads to a denial-of-service condition.
+  A variant of this attack is the server-side request forgery (SSRF), where the URL for external DTD or XML-Schema
+  is processed by the URL handler used by the XML parser, allowing the attacker access to an unexpected
+  network resource (for cross-site request forgery attacks or port-scanning enumeration).
+
+Please note that Java parsers are particularly vulnerable to XML entity injection attacks because their
+default settings have both entity expansion and external entity resolution enabled. Disabling validations
+does not help, as entity expansion / external entity loading is done even when validation is disabled.
+
+DTD is not the unique element that an attacker could use for injection: XML-Schema attributes could be specified
+on any tag, so SSRF injection may happen at any place in the XML document, not only at the start where DTD should
+be placed, but fortunately common Java XML parsers do not seem to fetch schema URLs by default.
+
+XML parsing could be hidden in other frameworks and libraries. For example, with REST, when a resource has an XML
+representation, the REST framework typically use an underlying XML parser for processing the request message, which
+obviusly is fully under control of a potential attacker.
+
+To be safe during XML processing coming from untrusted sources, a number of XML features should be disabled
+when configuring the parser:
+* DTD interpretation - Ensure DOCTYPE tags are ignored, or documents containing them are rejected.
+* Ignore or reject external entities.
+* schemaLocation and noNamespaceSchemaLocation should not fetch URLs.
+* XIncludes - Should be disabled or left disabled.
+
+The rule checks that there is a path between an untrusted input and the XML document to parse,
+then verifies that the XML parser is configured to avoid both external entity and entity expansion attacks.
+
+Secure configuration againts entity expansion or external entity injection attacks depends on the API used.
+The following libraries are analyzed: JAXP, SAX, StAX, DOM4J, JDOM2, JAXB, TRAX.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XML entity attacks that could cause denial-of-service and information leakage.]]></benefits>
+    <inconvenients><![CDATA[Dependencies on certain features related to DTD or entity expansion may render runtime errors.]]></inconvenients>
+    <example><![CDATA[import javax.xml.parsers.DocumentBuilderFactory
+
+fun parse(externalInput : String): Document {
+  val dbf = DocumentBuilderFactory.newInstance()
+
+  // VIOLATION - The parser is not configured, default configuration is
+  // unsafe againts XML External Entity injections
+  return dbf.newDocumentBuilder().parse(StreamReader(externalInput))
+}]]></example>
+    <repair><![CDATA[fun doc(externalInput : String) {
+  val dbf = safeFactory()
+
+  dbf.newDocumentBuilder().parse(req.getInputStream())
+
+  val builder = dbf.newDocumentBuilder()
+  builder.parse(req.getInputStream())
+}
+
+// FIXED - Proper configuration agains XML injections
+
+val DOCTYPE_DECL = "http://apache.org/xml/features/disallow-doctype-decl"
+val EXTERNAL_ENTITITES = "http://xml.org/sax/features/external-parameter-entities"
+val GENERAL_ENTITIES = "http://xml.org/sax/features/external-general-entities"
+
+fun safeFactory(): DocumentBuilderFactory {
+  val dbf = DocumentBuilderFactory.newInstance()
+
+  dbf.setFeature(DOCTYPE_DECL, true)
+  dbf.setFeature(EXTERNAL_ENTITITES, false)
+  dbf.setFeature(GENERAL_ENTITIES, false)
+  dbf.isXIncludeAware = false
+  dbf.isExpandEntityReferences = false
+
+  return dbf
+}]]></repair>
+    <reference><![CDATA[https://www.securecoding.cert.org/confluence/display/java/IDS17-J.+Prevent+XML+External+Entity+Attacks,XML Schema, DTD, and Entity Attacks: http://www.vsecurity.com/download/papers/XMLDTDEntityAttacks.pdf,http://cwe.mitre.org/data/definitions/611.html,https://www.securecoding.cert.org/confluence/display/java/IDS16-J.+Prevent+XML+Injection,]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:IDS16-J,CERT-J:IDS17-J,CWE:611,CWE:776,CWETOP25:2021:23,OWASP:2021:A5,PCI-DSS:6.5.1,WASC:43,WASC:44]]></security>
+    </normatives>
+    <properties>
+      <property name="parametersAsSources" descname="Assume that method parameters are untrusted inputs" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.XPathInjection" message="XPathInjectionRule: Improper Neutralization of Data within XPath Expressions ('XPath Injection')" class="com.kiuwan.qaking.kotlin.rules.security.XPathInjection" technology="KOTLIN" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.10,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[The software uses external input to dynamically construct an XPath expression used to
+retrieve data from an XML database, but it does not neutralize or incorrectly neutralizes that input.
+This allows an attacker to control the structure of the query.
+
+Effect: the attacker will have control over the information selected from the XML database and may use that ability
+to control application flow, modify logic, retrieve unauthorized data, or bypass important checks (e.g. authentication).
+
+This check looks for calls that create or execute an XPath expression, and detects if an untrusted input could
+change the XPath code used at that call.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XPath injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import javax.xml.xpath.XPath
+import javax.xml.xpath.XPathExpressionException
+import javax.xml.xpath.XPathFactory
+import javax.xml.xpath.XPathExpression
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.parsers.DocumentBuilder
+import org.xml.sax.SAXException
+import org.w3c.dom.Document
+import org.w3c.dom.NodeList
+import org.w3c.dom.Node
+
+class XPathInjection {
+  fun test() {
+    val password = readLine()
+
+    var domFactory : DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
+    domFactory.setNamespaceAware(true)
+    var builder: DocumentBuilder = domFactory.newDocumentBuilder()
+    var doc : Document = builder.parse("users.xml")
+    var pwd : String = hashPassword( password)
+
+    var factory : XPathFactory = XPathFactory.newInstance();
+    var xpath : XPath = factory.newXPath();
+    var expr : XPathExpression = xpath.compile("/users/user[login/text()='" + loginID + "' and password/text()='" + pwd + "'");   // VIOLATION
+    var result = expr.evaluate(doc, XPathConstants.NODESET);
+  }
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before evaluating it as an XPath expression]]></repair>
+    <reference><![CDATA[https://www.securecoding.cert.org/confluence/display/java/IDS53-J.+Prevent+XPath+Injection,http://cwe.mitre.org/data/definitions/643.html]]></reference>
+    <normatives>
+      <security><![CDATA[CERT-J:IDS53-J,CWE:643,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:39]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+      <property name="parametersAsSources" descname="Assume that method parameters are untrusted inputs" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.KOTLIN.SEC.XsltInjection" message="XsltInjection: XML Injection (aka Blind XPath Injection)" class="com.kiuwan.qaking.kotlin.rules.security.XsltInjection" technology="KOTLIN" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[If the software allows untrusted inputs to control part or all of an XSLT stylesheet,
+an attacker may change the structure and content of resulting XML.
+
+If the resulting XML ends in a browser, the attacker may choose contents to launch cross-site scripting
+attacks, or execute operations at server with victim's identity allowed by the browser's same-origin policy
+(a variantof the cross-site request forgery attack).
+
+The attacker may also use this flaw to launch attacks targeted at the server, like fetching content
+from arbitrary files, running arbitrary Java code, or executing OS commands, when certain XSLT functions
+are not disabled.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XSLT Injection flaws allowing server-side and client-side attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import java.io.InputStream
+import javax.xml.transform.*
+import javax.xml.transform.stream.StreamResult
+import javax.xml.transform.stream.StreamSource
+import java.net.URL
+
+class XsltInjection {
+  fun test() {
+    val xmlUrl = readLine()
+    val xsltUrl = readLine()
+
+    val transFact = TransformerFactory.newInstance()
+
+    val xsltSource = StreamSource(xsltUrl)
+    val trans = transFact.newTransformer(xsltSource) // VIOLATION, XSLT stylesheet is attacker-controlled
+
+    val xmlSource = StreamSource(xmlUrl)
+    // XML injection here, but this is another story
+    val result = StreamResult(res.getOutputStream) // "send to browser"
+
+    trans.transform(xmlSource, result)
+
+  }
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before using it to dynamically choosing the XSLT stylesheet]]></repair>
+    <reference><![CDATA[https://blog.csnc.ch/2015/06/xslt-security-and-server-side-request-forgery/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="KOTLIN" technology="KOTLIN" active="true" weight="1.0">
+      <description><![CDATA[KOTLIN rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="KOTLIN" active="true" weight="8.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="KOTLIN" active="true" weight="10.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="KOTLIN" active="true" weight="5.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="KOTLIN" active="true" weight="10.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="KOTLIN" active="true" weight="4.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

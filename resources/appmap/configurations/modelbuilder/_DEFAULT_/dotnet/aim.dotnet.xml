@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>
+    Process .Net sources (currently c# and vb.net languages) and resolve language dependencies.
+  </description>
+
+  <import resource="../common/aim.common.xml"/>
+
+  <import resource="classpath:resources/qaking-tech-aspnet.xml"/>
+  <import resource="classpath:resources/qaking-tech-csharp.xml"/>
+  <import resource="classpath:resources/qaking-tech-vbnet.xml"/>
+
+  <!-- Parsers -->
+
+  <bean id="aim.csharp.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>C# parser</description>
+    <property name="filter" ref="aim.csharp.filter"/>
+    <property name="languageSupport" ref="ls_csharp"/>
+  </bean>
+
+  <bean id="aim.vbnet.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>VB.Net parser</description>
+    <property name="filter" ref="aim.vbnet.filter"/>
+    <property name="languageSupport" ref="ls_vbnet"/>
+  </bean>
+
+  <!-- Rules -->
+
+  <bean id="aim.dotnet.rule.abstract" class="com.optimyth.apm.builder.rules.oo.AbstractTypeResolverRule" abstract="true">
+    <description>Abstract rule for .Net languages</description>
+    <property name="resolveCalls" value="${aim.dotnet.rule.resolveCalls}"/>
+    <property name="resolveFieldReferences" value="${aim.dotnet.rule.resolveFieldReferences}"/>
+    <property name="resolveInheritance" value="${aim.dotnet.rule.resolveInheritance}"/>
+    <property name="resolveInstantiations" value="${aim.dotnet.rule.resolveInstantiations}"/>
+    <property name="resolveTypeReferences" value="${aim.dotnet.rule.resolveTypeReferences}"/>
+
+    <property name="resolver" ref="aim.dotnet.resolver"/>
+    <property name="typeResolver" ref="aim.dotnet.typeResolver"/>
+    <property name="callback" ref="aim.dotnet.callback"/>
+  </bean>
+
+  <bean id="aim.dotnet.rule" class="com.optimyth.apm.builder.rules.dotnet.DotnetClassRule" parent="aim.dotnet.rule.abstract">
+    <description>Generic rule for .Net languages</description>
+    <property name="active" value="${aim.dotnet.rule.active}"/>
+    <property name="rules"><map>
+      <entry key="csharp" value-ref="aim.dotnet.rule.csharp"/>
+      <entry key="vbnet" value-ref="aim.dotnet.rule.vbnet"/>
+    </map></property>
+    <property name="filter" ref="aim.dotnet.filter"/>
+  </bean>
+
+  <bean id="aim.dotnet.rule.csharp" class="com.optimyth.apm.builder.rules.dotnet.CSharpClassMethodRule" parent="aim.dotnet.rule.abstract">
+    <property name="active" value="false"/>
+    <property name="filter" ref="aim.csharp.filter"/>
+    <property name="resolveMethodsFilter" ref="aim.dotnet.rule.resolveMethodsFilter"/>
+    <property name="methodPredicate" ref="aim.dotnet.rule.methodsPredicate"/>
+  </bean>
+
+  <bean id="aim.dotnet.rule.vbnet" class="com.optimyth.apm.builder.rules.dotnet.VbNetClassMethodRule" parent="aim.dotnet.rule.abstract">
+    <property name="active" value="false"/>
+    <property name="filter" ref="aim.vbnet.filter"/>
+    <property name="resolveMethodsFilter" ref="aim.dotnet.rule.resolveMethodsFilter"/>
+    <property name="methodPredicate" ref="aim.dotnet.rule.methodsPredicate"/>
+  </bean>
+
+  <!-- Callbacks -->
+
+  <bean id="aim.dotnet.callback" class="com.optimyth.apm.builder.rules.dotnet.DotnetClassCallback">
+    <property name="softwareResolver" ref="aim.global.applicationResolver"/>
+    <property name="application" value="${aim.dotnet.software}"/><!-- fallback value -->
+    <property name="addCodeToRelations" value="${aim.dotnet.rule.addCodeToRelations}"/>
+    <property name="resolveArtifacts" value="${aim.dotnet.rule.resolveArtifacts}"/>
+  </bean>
+
+  <!-- resolvers -->
+
+  <bean id="aim.dotnet.resolver.abstract" abstract="true">
+    <property name="callback" ref="aim.dotnet.callback"/>
+    <property name="classnameFilter"><util:constant static-field="com.optimyth.apm.builder.rules.common.Predicate.CSHARP_OR_VBNET_FILTER"/></property>
+  </bean>
+
+  <bean id="aim.dotnet.resolver.matching" parent="aim.dotnet.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.MatchingPkgClassDepsResolver">
+    <property name="predicate"><bean class="com.optimyth.apm.builder.rules.common.PatternsPredicate">
+      <property name="partialMatch" value="true"/>
+      <property name="regexpPatterns" value="${aim.dotnet.resolver.matching.packagePatterns}"/>
+    </bean></property>
+  </bean>
+
+  <bean id="aim.dotnet.resolver.existing" parent="aim.dotnet.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.ExistingClassDepsResolver">
+    <property name="cache"><bean class="com.optimyth.apm.builder.rules.oo.ExistingComponentCache">
+      <constructor-arg value="aim.dotnet.resolver.existing.cache"/>
+      <constructor-arg value="512"/>
+    </bean></property>
+  </bean>
+
+  <bean id="aim.dotnet.resolver" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="key" value="${aim.dotnet.resolver}"/>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.oo.ClassDepsResolver"/>
+    <property name="defaultValue" ref="aim.dotnet.resolver.existing"/>
+    <property name="map"><map>
+      <entry key="existing" value-ref="aim.dotnet.resolver.existing"/>
+      <entry key="matching" value-ref="aim.dotnet.resolver.matching"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.dotnet.typeResolver" class="com.optimyth.apm.builder.rules.oo.TypeResolverObjects">
+    <description>Resolve .Net types</description>
+  </bean>
+
+  <bean id="aim.dotnet.rule.resolveMethodsFilter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>This filter decides which classes will have dependencies resolved at the method level. Default: no class matched</description>
+    <property name="key" value="${aim.dotnet.resolveMethodsFilter}"/>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.Predicate"/>
+    <property name="defaultValue"><util:constant static-field="com.optimyth.apm.builder.rules.common.Predicate.MATCH_NONE"/></property>
+    <property name="map"><map>
+      <entry key="patterns"><bean class="com.optimyth.apm.builder.rules.common.PatternsPredicate">
+        <description>Use regexp patterns on fully qualified class name</description>
+        <property name="regexpPatterns" value="${aim.dotnet.resolveMethodsFilter.patterns}"/>
+      </bean></entry>
+    </map></property>
+  </bean>
+
+  <bean id="aim.dotnet.rule.methodsPredicate" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>This filter decides which method declarations will be modeled for classes matching aim.dotnet.resolveMethodsFilter. Default: no method declaration will be modeled by default</description>
+    <property name="key" value="${aim.dotnet.methodsPredicate}"/>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.Predicate"/>
+    <property name="defaultValue"><bean class="com.optimyth.apm.builder.rules.common.Predicate$None" /></property>
+    <property name="map"><map>
+      <entry key="nonPrivateMethods"><bean class="com.optimyth.apm.builder.rules.dotnet.predicates.NonPrivateMethodsPredicate"/></entry>
+      <entry key="patterns"><bean class="com.optimyth.apm.builder.rules.dotnet.predicates.RegexpMethodsPredicate">
+        <property name="predicate"><bean class="com.optimyth.apm.builder.rules.common.PatternsPredicate">
+          <property name="regexpPatterns" value="${aim.dotnet.methodsPredicate.patterns}"/>
+          <property name="partialMatch" value="true"/>
+        </bean></property>
+      </bean></entry>
+    </map></property>
+  </bean>
+  
+  <!-- Filters -->
+
+  <bean id="aim.dotnet.filter" class="com.optimyth.apm.builder.file.OrFileFilter">
+    <constructor-arg><list>
+      <ref local="aim.csharp.filter"/>
+      <ref local="aim.vbnet.filter"/>
+    </list></constructor-arg>
+  </bean>
+
+  <bean id="aim.csharp.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.csharp.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.csharp.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.csharp.filter.pattern"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.vbnet.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.vbnet.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.vbnet.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.vbnet.filter.pattern"/>
+    </map>
+    </property>
+  </bean>
+
+  <bean id="aim.dotnet.filter.default" class="com.optimyth.apm.builder.file.OrFileFilter">
+    <constructor-arg><list>
+      <ref local="aim.csharp.filter.default"/>
+      <ref local="aim.vbnet.filter.default"/>
+    </list></constructor-arg>
+  </bean>
+
+  <bean id="aim.csharp.filter.default" parent="ls_csharp_matcher"/>
+  <bean id="aim.vbnet.filter.default" parent="ls_vbnet_matcher"/>
+
+  <bean id="aim.dotnet.filter.pattern" class="com.optimyth.apm.builder.file.OrFileFilter">
+    <constructor-arg><list>
+      <ref local="aim.csharp.filter.pattern"/>
+      <ref local="aim.vbnet.filter.pattern"/>
+    </list></constructor-arg>
+  </bean>
+
+  <bean id="aim.csharp.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.csharp.filter.pattern}"/>
+  </bean>
+
+  <bean id="aim.vbnet.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.vbnet.filter.pattern}"/>
+  </bean>
+
+</beans>

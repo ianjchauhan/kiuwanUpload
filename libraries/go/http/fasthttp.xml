@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="Fasthttp">
+
+  <description url="https://pkg.go.dev/github.com/valyala/fasthttp">Fast HTTP implementation (client and server)</description>
+
+  <module name="github.com.valyala.fasthttp" >
+    <class name="github.com.valyala.fasthttp.Args" >
+      <method name="GetBool" signature="GetBool(go.string)" >
+        <return type="go.bool" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetUFloat" signature="GetUFloat(go.string)" >
+        <return type="go.float64,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetUFloatOrZero" signature="GetUFloatGetUFloatOrZero(go.string)" >
+        <return type="go.float64" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetUInt" signature="GetUInt(go.string)" alias="GetInt16,GetInt32,GetInt64,GetInt8,GetUInt16,GetUInt32,GetUInt64,GetUInt8">
+        <return type="go.int,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="GetUIntOrZero" signature="GetUIntOrZero(go.string)" >
+        <return type="go.int" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Peek" signature="Peek(go.string)" alias="PeekMulti" >
+        <return type="go.slice" elementType="go.byte" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="PeekBytes" signature="PeekBytes(go.slice)" alias="PeekMultiBytes" >
+        <return type="go.slice" elementType="go.byte" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="QueryString" signature="QueryString()" >
+        <return type="go.slice" elementType="go.byte" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="String" signature="String()" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <class name="github.com.valyala.fasthttp.Cookie" >
+      <method name="Parse" signature="Parse(go.string)" alias="ParseBytes" >
+        <return type="github.com.valyala.fasthttp.Cookie" />
+      </method>
+      <method name="SetDomain" signature="SetDomain(go.string)">
+        <tags>cookie.domain:0</tags>
+      </method>
+      <method name="SetDomainBytes" signature="SetDomainBytes(go.slice)">
+        <tags>cookie.domain:0</tags>
+      </method>
+      <method name="SetPath" signature="SetPath(go.string)">
+        <tags>cookie.path:0</tags>
+      </method>
+      <method name="SetPathBytes" signature="SetPathBytes(go.slice)">
+        <tags>cookie.path:0</tags>
+      </method>
+      <method name="SetHttpOnly" signature="SetHttpOnly(go.bool)">
+        <tags>cookie.httpOnly:0</tags>
+      </method>
+      <method name="SetExpire" signature="SetExpire(time.Time)">
+        <tags>cookie.persistent:0</tags>
+      </method>
+      <method name="SetMaxAge" signature="SetMaxAge(go.int)">
+        <tags>cookie.persistent:0</tags>
+      </method>
+      <method name="SetSecure" signature="SetSecure(go.bool)">
+        <tags>cookie.secure:0</tags>
+      </method>
+      <method name="SetValue" signature="SetValue(go.string)">
+        <tags>cookie.value:0</tags>
+        <sink argpos="0" kind="cookie_plaintext_storage" resource="web" />
+      </method>
+      <method name="SetValueBytes" signature="SetValueBytes(go.slice)">
+        <tags>cookie.value:0</tags>
+        <sink argpos="0" kind="cookie_plaintext_storage" resource="web" />
+      </method>
+    </class>
+
+    <class name="github.com.valyala.fasthttp.Server" >
+      <method name="ListenAndServe" signature="ListenAndServe(go.string)" >
+        <return type="go.error" />
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+        <sink argpos="0" kind="resource_injection" resource="network" />
+      </method>
+      <method name="ListenAndServeUNIX" signature="ListenAndServeUNIX(go.string,os.FileMode)" >
+        <return type="go.error" />
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+        <sink argpos="0" kind="resource_injection" resource="network" />
+      </method>
+    </class>
+
+    <class name="github.com.valyala.fasthttp.TCPDialer" >
+      <method name="Dial" signature="Dial(go.string)" >
+        <return type="net.Conn,go.error" />
+        <sink argpos="0" kind="ssrf" resource="web" />
+        <sink argpos="0" kind="insecure_transport" resource="web" />
+      </method>
+      <method name="DialDualstack" signature="DialDualstack(go.string)" >
+        <return type="net.Conn,go.error" />
+        <sink argpos="0" kind="ssrf" resource="web" />
+        <sink argpos="0" kind="insecure_transport" resource="web" />
+      </method>
+      <method name="DialDualstackTimeout" signature="DialDualstackTimeout(go.string,time.Duration)" >
+        <return type="net.Conn,go.error" />
+        <sink argpos="0" kind="ssrf" resource="web" />
+        <sink argpos="0" kind="insecure_transport" resource="web" />
+        <sink argpos="1" kind="resource_injection" resource="web" />
+      </method>
+      <method name="DialTimeout" signature="DialTimeout(go.string,time.Duration)" >
+        <return type="net.Conn,go.error" />
+        <sink argpos="1" kind="resource_injection" resource="web" />
+        <sink argpos="0" kind="ssrf" resource="web" />
+        <sink argpos="0" kind="insecure_transport" resource="web" />
+      </method>
+    </class>
+
+    <class name="github.com.valyala.fasthttp.RequestCtx" >
+      <field name="Request" type="github.com.valyala.fasthttp.Request" />
+      <field name="Response" type="github.com.valyala.fasthttp.Response" />
+
+      <method name="Conn" signature="Conn()" >
+        <return type="net.Conn" />
+      </method>
+      <method name="FormFile" signature="FormFile(go.string)" >
+        <return type="mime.multipart.FileHeader,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="FormValue" signature="FormValue(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Host" signature="Host()" >
+        <return type="go.slice" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="LocalAddr" signature="LocalAddr()" >
+        <return type="net.Addr" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="LocalIP" signature="LocalIP()" >
+        <return type="net.IP" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Logger" signature="Logger()" >
+        <return type="github.com.valyala.fasthttp.Logger" />
+      </method>
+      <method name="MultipartForm" signature="MultipartForm(go.string)" >
+        <return type="mime.multipart.Form,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Path" signature="Path()" >
+        <return type="mgo.slice" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="PostArgs" signature="PostArgs()" >
+        <return type="github.com.valyala.fasthttp.Args" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="PostBody" signature="PostBody()" >
+        <return type="go.slice" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="QueryArgs" signature="QueryArgs()" >
+        <return type="github.com.valyala.fasthttp.Args" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Redirect" signature="Redirect(go.string,go.int)" >
+        <sink argpos="0" kind="open_redirect" resource="web" />
+        <sink kind="execution_after_redirect" argpos="0" resource="web"/>
+      </method>
+      <method name="RedirectBytes" signature="RedirectBytes(go.slice,go.int)" >
+        <sink argpos="0" kind="open_redirect" resource="web" />
+        <sink kind="execution_after_redirect" argpos="0" resource="web"/>
+      </method>
+      <method name="RemoteAddr" signature="RemoteAddr()" >
+        <return type="net.Addr" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="RemoteIP" signature="RemoteIP()" >
+        <return type="net.IP" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="SendFile" signature="SendFile(go.string)" >
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+      <method name="Success" signature="Success(go.string,go.slice)" alias="SuccessString" >
+        <sink argpos="1" kind="xss" resource="web" />
+      </method>
+      <method name="Time" signature="Time()" >
+        <return type="time.Time" />
+      </method>
+      <method name="SetUserValue" signature="SetUserValue(go.string,go.interface)" >
+        <sink argpos="1" kind="trust_boundary" resource="web" />
+      </method>
+      <method name="Write" signature="Write(go.slice)" alias="WriteString" >
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+    </class>
+    <class name="github.com.valyala.fasthttp.Response" >
+      <field name="Header" type="github.com.valyala.fasthttp.ResponseHeader" />
+
+      <method name="LocalAddr" signature="LocalAddr()" >
+        <return type="net.Addr" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="SendFile" signature="SendFile(go.string)" >
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+    </class>
+    <class name="github.com.valyala.fasthttp.Request" >
+      <field name="Header" type="github.com.valyala.fasthttp.ResponseHeader" />
+    </class>
+    <class name="github.com.valyala.fasthttp.ResponseHeader" >
+      <method name="Add" signature="Add(go.string,go.string)" alias="AddBytesK,AddBytesKV,AddBytesV" >
+        <sink argpos="0" kind="header_manipulation" resource="web" />
+      </method>
+      <method name="Cookie" signature="Cookie(github.com.valyala.fasthttp.Cookie)" >
+        <return type="go.bool" />
+        <sink argpos="0" kind="header_manipulation" resource="web" />
+      </method>
+    </class>
+    <class name="github.com.fasthttp.router.Router" >
+      <method name="GET" signature="GET(go.string,github.com.valyala.fasthttp.RequestHandler)"
+              alias="HEAD,OPTIONS,PATCH,POST,PUT,DELETE" >
+        <tags>route:1</tags>
+      </method>
+      <method name="Handle" signature="Handle(go.string,go.string,github.com.valyala.fasthttp.RequestHandler)">
+        <tags>route:2,routeMethod:0</tags>
+      </method>
+    </class>
+
+    <function name="github.com.valyala.fasthttp.New" signature="github.com.valyala.fasthttp.New()" >
+      <return type="github.com.valyala.fasthttp.router.Router" />
+    </function>
+    <function name="github.com.valyala.fasthttp.Serve" signature="github.com.valyala.fasthttp.Serve(net.Listener,github.com.valyala.fasthttp.Requesthandler)" >
+      <return type="go.error" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+    <function name="github.com.valyala.fasthttp.Serve" signature="github.com.valyala.fasthttp.Serve(net.Listener,github.com.valyala.fasthttp.Requesthandler)" >
+      <return type="go.error" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+    <function name="github.com.valyala.fasthttp.ServeConn" signature="github.com.valyala.fasthttp.ServeConn(net.Conn,github.com.valyala.fasthttp.Requesthandler)" >
+      <return type="go.error" />
+      <sink argpos="1" kind="path_traversal" resource="network" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+    <function name="github.com.valyala.fasthttp.ServeFile" signature="github.com.valyala.fasthttp.ServeFile(github.com.valyala.fasthttp.RequestCtx,go.string)" >
+      <return type="go.error" />
+      <sink argpos="1" kind="path_traversal" resource="network" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+    <function name="github.com.valyala.fasthttp.ServeFileBytes" signature="github.com.valyala.fasthttp.ServeFileBytes(github.com.valyala.fasthttp.RequestCtx,go.slice)"
+              alias="github.com.valyala.fasthttp.ServeFileBytesUncompressed,github.com.valyala.fasthttp.ServeFileUncompressed">
+      <return type="go.error" />
+      <sink argpos="1" kind="path_traversal" resource="network" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+    </function>
+    <function name="github.com.valyala.fasthttp.DialFunc" signature="github.com.valyala.fasthttp.DialFunc(go.string)" >
+      <return type="net.Conn,go.error" />
+      <sink argpos="0" kind="ssrf" resource="web" />
+      <sink argpos="0" kind="insecure_transport" resource="web" />
+    </function>
+    <function name="github.com.valyala.fasthttp.ListenAndServe" signature="github.com.valyala.fasthttp.ListenAndServe(go.string)" >
+      <return type="go.error" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+      <sink argpos="0" kind="resource_injection" resource="network" />
+    </function>
+    <function name="github.com.valyala.fasthttp.ListenAndServeUNIX" signature="github.com.valyala.fasthttp.ListenAndServeUNIX(go.string,os.FileMode)" >
+      <return type="go.error" />
+      <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+      <sink argpos="0" kind="resource_injection" resource="network" />
+    </function>
+  </module>
+</library>

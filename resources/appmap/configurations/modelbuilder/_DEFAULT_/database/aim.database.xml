@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+
+  <description>AIM rules for database schemas</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-sql.xml"/>
+  <import resource="classpath:resources/qaking-tech-plsql.xml"/>
+
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="database/aim.database.properties"/>
+  </bean-->
+
+  <!-- Rules -->
+
+  <bean id="aim.database.rule.default" class="com.optimyth.apm.builder.rules.database.schema.DatabaseSchemaRule">
+    <description>AIM rule for generic database schema (extracted from schemaExtract script in global plugin)</description>
+    <property name="active" value="${aim.database.rule.default.active}"/>
+    <property name="schemaDirectory" value="${aim.database.schemaDir}"/>
+    <property name="schemaFilePatterns" value="${aim.database.schemaPattern}"/>
+    <property name="callback" ref="aim.database.callback"/>
+    <property name="jdbcSqlListener" ref="aim.database.listener"/>
+    <property name="databaseIndex" ref="aim.database.rule.databaseIndex"/>
+    <property name="priority" value="1"/>
+  </bean>
+
+  <bean id="aim.database.rule.databaseIndex" class="com.optimyth.apm.builder.rules.database.schema.DatabaseIndex">
+    <description>Resolver for unqualified references to database objects</description>
+  </bean>
+
+  <bean id="aim.database.rule.oracle" class="com.optimyth.apm.builder.rules.database.schema.OracleDatabaseSchemaRule" parent="aim.database.rule.default">
+    <description>AIM rule for Oracle database schema (extracted from schemaExtract script in global plugin)</description>
+    <property name="active" value="${aim.database.rule.oracle.active}"/>
+    <property name="extendedSchemaFilePatterns" value="${aim.database.extendedSchemaPattern}"/>
+    <property name="priority" value="1"/>
+  </bean>
+
+  <!-- Callbacks -->
+  <bean id="aim.database.callback" class="com.optimyth.apm.builder.rules.database.schema.DatabaseSchemaCallback">
+    <description>Callback for processing database entities discovered</description>
+    <property name="resolveArtifacts" value="${aim.common.resolveArtifacts}"/>
+    <property name="ignoreCase" value="${aim.database.ignoreCase}"/>
+  </bean>
+
+  <bean id="aim.database.callback.sql" class="com.optimyth.apm.builder.rules.j2ee.jdbc.BasicJdbcCallback">
+    <property name="application" value="${aim.common.software}"/>
+    <property name="dbType" value="${aim.database.dbsystem}"/>
+    <property name="dbName" value="${aim.database.dbname}"/>
+    <property name="addCodeToRelations" value="${aim.common.addCodeToRelations}"/>
+    <property name="ignoreCase" value="${aim.database.ignoreCase}"/>
+  </bean>
+
+  <!-- Database listeners -->
+  <bean id="aim.database.listener.sql" class="com.optimyth.apm.builder.rules.j2ee.jdbc.JdbcSqlListener">
+    <property name="callback" ref="aim.database.callback.sql"/>
+    <property name="sqlLanguageSupport" ref="ls_sql"/>
+    <property name="createSqlComponents" value="false"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+
+  <bean id="aim.database.listener.oracle" parent="aim.database.listener.sql" class="com.optimyth.apm.builder.rules.j2ee.jdbc.JdbcPlSqlListener">
+    <property name="sqlLanguageSupport" ref="ls_plsql"/>
+  </bean>
+
+  <bean id="aim.database.listener" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>Which listener to use for processing SQL code</description>
+    <property name="key" value="${aim.database.dbtype}"/>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.j2ee.jdbc.JdbcSqlListener"/>
+    <property name="defaultValue" ref="aim.database.listener.sql"/>
+    <property name="map"><map>
+      <entry key="oracle" value-ref="aim.database.listener.oracle"/>
+    </map></property>
+  </bean>
+
+</beans>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="swift" name="webkit" standard="swift">
+
+  <description url="https://developer.apple.com/documentation/webkit">Display web content in windows</description>
+
+  <module name="WebKit">
+    <class name="WKWebView">
+      <method name="evaluateJavaScript" signature="evaluateJavaScript(String, completionHandler: ((Any?, Error?) -> Void)? = nil)" >
+        <parameters>
+          <param type="String"/>
+          <param type="((Any?, Error?) -> Void)? = nil)" name="completionHandler"/>
+        </parameters>
+        <sink argpos="0" kind="code_injection" resource="gui"/>
+      </method>
+      <method name="loadHTMLString" signature="loadHTMLString(_ string: String, baseURL: URL?) -> WKNavigation?)">
+        <parameters>
+          <param type="String"/>
+          <param type="URL" name="baseURL"/>
+        </parameters>
+        <return type="WebKit.WKNavigation"/>
+        <sink argpos="0" kind="xss" resource="web"/>
+      </method>
+      <method name="loadFileURL" signature="loadFileURL(_ URL: URL, allowingReadAccessTo readAccessURL : URL?) -> WKNavigation?)">
+        <tags>hardcoded_path:URL</tags>
+        <parameters>
+          <param type="URL"/>
+          <param type="URL" name="allowingReadAccessTo"/>
+        </parameters>
+        <return type="WebKit.WKNavigation"/>
+        <sink argpos="0" kind="path_traversal" resource="web"/>
+      </method>
+    </class>
+
+    <class name="WebView">
+      <method name="stringByEvaluatingJavaScript" signature="stringByEvaluatingJavaScript(from: String)">
+        <parameters>
+          <param type="String" name="from"/>
+        </parameters>
+        <return type="String?"/>
+        <sink paramNames="from" kind="code_injection" resource="gui"/>
+      </method>
+    </class>
+  </module>
+</library>

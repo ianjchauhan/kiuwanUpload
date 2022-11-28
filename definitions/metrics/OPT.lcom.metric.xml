@@ -1,0 +1,602 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric"
+    version="1.0">
+
+  <metric id="OPT.lcom" unit="" aggregation="avg" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.TYPE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="2" included="true" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="1.00" meaning="good" />
+        <threshold from="1.00" to="2.00" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.LCOM" />
+        <java-class>com.als.cpp.metrics.LcomHSCppMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.LCOM" />
+        <java-class>com.optimyth.csharp.metrics.LcomHSCsharpMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.LCOM" />
+        <java-class>com.als.java.metrics.LcomHSJavaMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <internal-name id="OPT.PHP.LCOM" />
+        <java-class>com.optimyth.qaking.php.metrics.LcomHSMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.LCOM" />
+        <java-class>com.optimyth.vbnet.metrics.LcomHSVBnetMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <internal-name id="OPT.OBJECTIVEC.LCOM" />
+        <java-class>com.optimyth.qaking.objectivec.metrics.LcomObjectiveCMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+   <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <code-example name="metricCodeExampleCpp" result-value="0.86">
+<![CDATA[
+#ifndef ACTIVITYDATA_H
+#define ACTIVITIDATA_H
+
+#include "SimpleData.h"
+#include "InfoData.h"
+
+class ActivityData : public SimpleData {                   // CLASS
+
+  protected:
+    InfoData uml_condition;
+    InfoData cpp_condition;
+    InfoData java_condition;
+    bool read_only;
+    bool single_execution;
+
+		void ActivityData::edit() {
+		  setName(browser_node->get_name());
+
+		  (new ActivityDialog(this))->show();
+		}
+
+		void ActivityData::send_uml_def(ToolCom * com, BrowserNode * bn,
+						const QString & comment) {
+		  SimpleData::send_uml_def(com, bn, comment);
+		  uml_condition.send_def(com);
+		  com->write_bool(read_only);
+		  com->write_bool(single_execution);
+		}
+
+		void ActivityData::send_cpp_def(ToolCom * com) {
+		  cpp_condition.send_def(com);
+		}
+
+		void ActivityData::send_java_def(ToolCom * com) {
+		  java_condition.send_def(com);
+		}
+
+  public:
+    ActivityData();
+    ActivityData(ActivityData * model, BrowserNode * br);
+    virtual ~ActivityData();
+
+		QString ActivityData::get_precond(DrawingLanguage ln) const {
+		  switch (ln) {
+		  case CppView:
+		    return cpp_condition.first;
+		  case JavaView:
+		    return java_condition.first;
+		  default:
+		    return uml_condition.first;
+		  }
+		}
+
+		QString ActivityData::get_postcond(DrawingLanguage ln) const {
+		  switch (ln) {
+		  case CppView:
+		    return cpp_condition.second;
+		  case JavaView:
+		    return java_condition.second;
+		  default:
+		    return uml_condition.second;
+		  }
+		}
+    bool get_is_read_only() const { return read_only; }
+    bool get_is_single_execution() const { return single_execution; }
+
+
+    virtual bool tool_cmd(ToolCom * com, const char * args,
+			  BrowserNode * bn, const QString & comment);
+
+    void save(QTextStream &, QString & warning) const;
+    void read(char * & st, char * & k);
+};
+]]>
+       </code-example>
+      </language-parser>
+     <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="metricCodeExampleCsharp" result-value="1.33">
+<![CDATA[
+class MyClass {
+
+	private NodePredicate PREDICATE_NODE = new NodePredicate();
+	 public int i;
+	 public int j;
+
+	 public void method1(){
+		 j = doSomething();
+	 }
+	 public int method2(){
+		i = doSomething();
+		return i;
+	 }
+
+}
+]]>
+       </code-example>
+      </language-parser>
+     <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="metricCodeExampleJava" result-value="0.79">
+<![CDATA[
+public abstract class MyClass {
+
+  private final static NodePredicate PREDICATE_NODE = new NodePredicate(){
+    public boolean is(BaseNode node){
+      // ...
+    }
+  };
+  public int id1;
+  public int id2;
+  public String id3;
+
+  MyClass(int id1){
+    this.id1=1;
+    id2=id1;
+    id3="id3";
+  }
+
+ public void method1(){
+   PREDICATE_NODE.find();
+ }
+ public int method2(){
+   id3 = "id";
+ }
+ private String method3(){
+   id1=3;
+   id2 = id1;
+   return id3;
+ }
+ public final static void method4(){
+
+ }
+ public abstract void method4_2();
+
+ void method5(BaseNode root, final  RuleContext ctx){
+
+    TreeNode.on(root).accept(new NodeVisitor(){
+
+      public int id1, id2;
+
+      public void visit(BaseNode node){
+        id1=1;
+        super.id1=id1;
+      }
+
+      abstract void visit2(){
+        id2=2;
+      }
+    });
+ }
+
+
+}
+
+]]>
+       </code-example>
+      </language-parser>
+
+<language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <code-example name="metricCodeExampleObjectiveC" result-value="1">
+<![CDATA[
+[MYClass.h]
+
+@interface MYClass {
+
+  UITextField _textField;
+  BOOL _someBool;
+  NSObject _privateObject;
+}
+
+  - (NSObject)initWithDataProvider:(MYDataProvider *)provider;
+
+  - (UITextField)initWithDataProvider:(PAram1 *)provider;
+
+  + (BOOL *)trace:(MYClass *)subject;
+
+@end
+
+[MYClass.m]
+#import "MYClass.h"
+
+@implementation MYClass
+
+- (NSObject)initWithDataProvider:(MYDataProvider *)provider {
+
+  self = [super init];
+  if (self) {
+    // ...
+  }
+  return self._privateObject;
+}
+
+- (UITextField)initWithDataProvider:(PAram1 *)provider {
+  return self._textField;
+}
+
++ (BOOL *)trace:(MYClass *)subject {
+  return self._someBool;
+}
+
+@end
+]]>
+       </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <code-example name="metricCodeExamplePhp" result-value="0.79">
+<![CDATA[
+<?php
+
+abstract class PHPUnit_Runner_BaseTestRunner
+{
+    $i = 0;
+    $j = 1;
+    $k = 2;
+    $l = 3;
+    $m = 4;
+    $suite = 'suite';
+
+    /**
+     * Returns the loader to be used.
+     *
+     * @return PHPUnit_Runner_TestSuiteLoader
+     */
+    public function getLoader()
+    {
+		$this->i = $this->j;
+		$this->k = $this->l - $this->m;
+        return $this->suite;
+    }
+
+    /**
+     * Returns the Test corresponding to the given suite.
+     * This is a template method, subclasses override
+     * the runFailed() and clearStatus() methods.
+     *
+     * @param  string  $suiteClassName
+     * @param  string  $suiteClassFile
+     * @param  mixed   $suffixes
+     * @return PHPUnit_Framework_Test
+     */
+    public function getTest($suiteClassName, $suiteClassFile = '', $suffixes = '')
+    {
+        if (is_dir($suiteClassName) &&
+            !is_file($suiteClassName . '.php') && empty($suiteClassFile)) {
+            $facade = new File_Iterator_Facade;
+            $files  = $facade->getFilesAsArray(
+              $suiteClassName, $suffixes
+            );
+
+            $suite = new PHPUnit_Framework_TestSuite($suiteClassName);
+            $this->suite->addTestFiles($files);
+
+            return $this->suite;
+        }
+
+        try {
+            $testClass = $this->loadSuiteClass(
+              $suiteClassName, $suiteClassFile
+            );
+        }
+
+        catch (Exception $e) {
+            $this->runFailed($e->getMessage());
+            return NULL;
+        }
+
+        try {
+            $suiteMethod = $testClass->getMethod(self::SUITE_METHODNAME);
+
+            if (!$suiteMethod->isStatic()) {
+                $this->runFailed(
+                  'suite() method must be static.'
+                );
+
+                return NULL;
+            }
+
+            try {
+                $test = $suiteMethod->invoke(NULL, $testClass->getName());
+            }
+
+            catch (ReflectionException $e) {
+                $this->runFailed(
+                  sprintf(
+                    "Failed to invoke suite() method.\n%s",
+
+                    $e->getMessage()
+                  )
+                );
+
+                return NULL;
+            }
+        }
+
+        catch (ReflectionException $e) {
+            try {
+                $test = new PHPUnit_Framework_TestSuite($testClass);
+            }
+
+            catch (PHPUnit_Framework_Exception $e) {
+                $test = new PHPUnit_Framework_TestSuite;
+                $test->setName($suiteClassName);
+            }
+        }
+
+        $this->clearStatus();
+
+        return $suite;
+    }
+
+    /**
+     * Returns the loaded ReflectionClass for a suite name.
+     *
+     * @param  string  $suiteClassName
+     * @param  string  $suiteClassFile
+     * @return ReflectionClass
+     */
+    protected function loadSuiteClass($suiteClassName, $suiteClassFile = '')
+    {
+        $this->suite = $this->getLoader();
+
+        $this->i = $this->l+$this->k;
+    }
+
+    /**
+     * Clears the status message.
+     *
+     */
+    protected function clearStatus()
+    {
+    }
+
+    /**
+     * Override to define how to handle a failed loading of
+     * a test suite.
+     *
+     * @param  string  $message
+     */
+    abstract protected function runFailed($message);
+}
+
+?>
+]]>
+       </code-example>
+     </language-parser>
+     <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="metricCodeExampleVbnet" result-value="0">
+<![CDATA[
+Class MyClass
+
+	 Public i As Integer
+
+	 Public Sub Method1()
+	 	 doSomething(i)
+	 End Sub
+
+	 Public Function method2() As Integer
+	 		doSomething(i)
+	 End Function
+
+End Class
+]]>
+       </code-example>
+      </language-parser>
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Falta de cohesión de los métodos. Henderson-Sellers.]]></name>
+
+      <description>
+<![CDATA[
+Calcula para cada clase la falta de cohesión de sus métodos.
+
+LCOM HS = (M-(sum(MF)/F))/(M-1)
+Donde M es el número total de métodos (incluyendo constructores y destructores), F el número de campos de instancia, y MF el número de métodos de la clase que acceden a un campo de instancia concreto.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Calcula para cada clase la falta de cohesión de sus métodos.
+
+LCOM HS = (M-(sum(MF)/F))/(M-1)
+Donde M es el número total de métodos (incluyendo constructores y destructores), F el número de campos de instancia, y MF el número de métodos de la clase que acceden a un campo de instancia concreto.
+            ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Calcula para cada clase la falta de cohesión de sus métodos.
+
+LCOM HS = (M-(sum(MF)/F))/(M-1)
+Donde M es el número total de métodos (incluyendo constructores y destructores), F el número de campos de instancia, y MF el número de métodos de la clase que acceden a un campo de instancia concreto.
+            ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Calcula para cada clase la falta de cohesión de sus métodos.
+
+LCOM HS = (M-(sum(MF)/F))/(M-1)
+Donde M es el número total de métodos (incluyendo constructores y destructores), F el número de campos de instancia, y MF el número de métodos de la clase que acceden a un campo de instancia concreto.
+            ]]></implementation-description>
+
+            <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+<![CDATA[
+Calcula para cada clase la falta de cohesión de sus métodos.
+
+LCOM HS = (M-(sum(MF)/F))/(M-1)
+Donde M es el número total de métodos (incluyendo constructores y destructores), F el número de campos de instancia, y MF el número de métodos de la clase que acceden a un campo de instancia concreto.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+Calcula para cada clase la falta de cohesión de sus métodos.
+
+LCOM HS = (M-(sum(MF)/F))/(M-1)
+Donde M es el número total de métodos (incluyendo constructores y destructores), F el número de campos de instancia, y MF el número de métodos de la clase que acceden a un campo de instancia concreto.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Calcula para cada clase la falta de cohesión de sus métodos.
+
+LCOM HS = (M-(sum(MF)/F))/(M-1)
+Donde M es el número total de métodos (incluyendo constructores y destructores), F el número de campos de instancia, y MF el número de métodos de la clase que acceden a un campo de instancia concreto.
+            ]]></implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Lack of Cohesion Of Methods. Henderson-Sellers.]]></name>
+
+      <description>
+<![CDATA[
+Calculate for each class the lack of cohesion of methods.
+
+LCOM HS = (M-(sum(MF)/F))/(M-1)
+Where M is the total number of methods, F the number of instanced fields, and MF is the number of class methods that use an instanced field.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Calculate for each class the lack of cohesion of methods.
+
+LCOM HS = (M-(sum(MF)/F))/(M-1)
+Where M is the total number of methods, F the number of instanced fields, and MF is the number of class methods that use an instanced field.
+            ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Calculate for each class the lack of cohesion of methods.
+
+LCOM HS = (M-(sum(MF)/F))/(M-1)
+Where M is the total number of methods, F the number of instanced fields, and MF is the number of class methods that use an instanced field.
+            ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Calculate for each class the lack of cohesion of methods.
+
+LCOM HS = (M-(sum(MF)/F))/(M-1)
+Where M is the total number of methods, F the number of instanced fields, and MF is the number of class methods that use an instanced field.
+            ]]></implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+Calculate for each class the lack of cohesion of methods.
+
+LCOM HS = (M-(sum(MF)/F))/(M-1)
+Where M is the total number of methods, F the number of instanced fields, and MF is the number of class methods that use an instanced field.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+Calculate for each class the lack of cohesion of methods.
+
+LCOM HS = (M-(sum(MF)/F))/(M-1)
+Where M is the total number of methods, F the number of instanced fields, and MF is the number of class methods that use an instanced field.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Calculate for each class the lack of cohesion of methods.
+
+LCOM HS = (M-(sum(MF)/F))/(M-1)
+Where M is the total number of methods, F the number of instanced fields, and MF is the number of class methods that use an instanced field.
+            ]]></implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

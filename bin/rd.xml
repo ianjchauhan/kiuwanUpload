@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Rule Developer Runner" default="development" basedir=".">
+  <target name="development" description="Runs rule developer under kiuwan agent" depends="check.java.version">
+    <mkdir dir="${temp.dir}"/>
+    <property name="rd.log" location="${temp.dir}/rd.log"/>
+    <delete file="${rd.log}" failonerror="false"/>
+    <if>
+      <or>
+        <not><available file="${AGENT_HOME}/engine.version" type="file"/></not>
+        <not><available file="${AGENT_HOME}/lib.engine" type="dir"/></not>
+      </or>
+      <then>
+        <update.engine configurationFile="${agent.configuration}"/>
+      </then>
+    </if>
+    <if>
+      <isset property="debugPort"/>
+      <then>
+        <echo/>
+        <echo>-----------------------------------------------</echo>
+        <echo>   Initializing Rule Developer in debug mode</echo>
+        <echo>-----------------------------------------------</echo>
+        <echo/>
+        <echo>This console will be left available but Rule Developer</echo>
+        <echo>will be launched in background and will wait for</echo>
+        <echo>a remote debugger session to be attached.</echo>
+        <echo>Now you can start your debug session in your IDE.</echo>
+        <echo/>
+        <echo>Listening and waiting on port ${debugPort}...</echo>
+        <echo/>
+        <property name="debug_flag" value="-Xdebug"/>
+        <property name="debug_args" value="-Xrunjdwp:transport=dt_socket,address=${debugPort},suspend=y,server=y"/>
+      </then>
+      <else>
+        <property name="debug_flag" value="-Drdev.no.debug=rdev.no.debug"/>
+        <property name="debug_args" value="-Drdev.no.debug=rdev.no.debug"/>
+      </else>
+    </if>
+    <java classname="com.optimyth.qaking.agent.rd.gui.RuleDeveloperGUILauncher" classpathref="developer.classpath" fork="yes" spawn="yes">
+      <jvmarg value="-Xms128m"/>
+      <jvmarg value="-Xmx512m"/>
+      <jvmarg value="-Dlistener.diagnosis.active=false"/>
+      <jvmarg value="-Dlistener.diagnosis.outputFile="/>
+      <jvmarg value="-Dlistener.diagnosis.analysisTimeout=0"/>
+      <jvmarg value="${debug_flag}"/>
+      <jvmarg value="${debug_args}"/>
+      <sysproperty key="AGENT_HOME" value="${AGENT_HOME}"/>
+      <sysproperty key="JKQA_HOME" value="${AGENT_HOME}"/>
+      <sysproperty key="TASK.LOG" value="${rd.log}"/>
+    </java>
+  </target>
+</project>

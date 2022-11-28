@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="Aspnet.Razor" standard="aspnet.razor" technology="csharp">
+  <description url="https://docs.microsoft.com/en-us/dotnet/api/?view=aspnet-webpages-3.2">ASP.NET WebPages / Razor framework</description>
+
+  <!--
+  See:
+    - https://haacked.com/archive/2011/01/06/razor-syntax-quick-reference.aspx/
+    - https://www.w3schools.com/asp/razor_syntax.asp
+    - https://docs.microsoft.com/en-us/aspnet/core/mvc/views/razor?view=aspnetcore-2.1
+    - https://gist.github.com/jonlabelle/8738373
+  -->
+
+  <!-- ASP.NET standard -->
+
+  <class name="System.Web.WebPages.WebPageExecutingBase" kind="abstract_class">
+    <field name="App" type="object"></field>
+    <field name="AppState" type="System.Web.HttpApplicationStateBase"></field>
+    <field name="Context" type="System.Web.HttpContextBase"></field>
+    <field name="VirtualPath" type="string"></field>
+
+    <method name="WriteLiteral" signature="WriteLiteral(onject)"></method>
+    <method name="BeginContext" signature="BeginContext(string, int, int, bool)" match="name"></method>
+    <method name="EndContext" signature="EndContext(string, int, int, bool)" match="name"></method>
+    <method name="Execute" signature="Execute()"></method>
+    <method name="GetOutputWriter" signature="GetOutputWriter">
+      <return type="System.IO.TextWriter"/>
+    </method>
+    <method name="Href" signature="Href(string, object...)">
+      <return type="string"/>
+    </method>
+    <method name="NormalizePath" signature="NormalizePath(string)">
+      <return type="string"/>
+      <neutralization argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <!-- These methods HTML-encode the passed value, so relatively safe against XSS -->
+    <method name="Write" signature="Write(object)"></method>
+    <method name="Write_2" signature="Write(System.Web.WebPages.HelperResult)"></method>
+    <method name="WriteTo" signature="WriteTo(System.IO.TextWriter, object)"></method>
+    <method name="WriteTo_2" signature="WriteTo(System.IO.TextWriter, System.Web.WebPages.HelperResult)"></method>
+    <!-- These methods do not HTML-encode the passed value -->
+    <method name="WriteLiteral" signature="WriteLiteral(object)">
+      <sink argpos="0" kind="xss" resource="web"><checker id="no_string_literal"/></sink>
+    </method>
+    <method name="WriteLiteralTo" signature="WriteLiteralTo(System.IO.TextWriter, object)">
+      <sink argpos="1" kind="xss" resource="web"><checker id="no_string_literal"/></sink>
+    </method>
+  </class>
+
+  <class name="System.Web.WebPages.WebPageRenderingBase" supertypes="System.Web.WebPages.WebPageExecutingBase, System.Web.WebPages.ITemplateFile" kind="abstract_class">
+    <field name="Layout" type="string"></field>
+    <field name="Page" type="string"></field>
+    <field name="PageContext" type="System.Web.WebPages.WebPageContext"></field>
+    <field name="PageData" type="System.Collections.Generic.IDictionary"></field>
+    <field name="Request" type="System.Web.HttpRequestBase"></field>
+    <field name="Response" type="System.Web.HttpResponseBase"></field>
+    <field name="Server" type="System.Web.HttpServerUtilityBase"></field>
+    <field name="Session" type="System.Web.HttpSessionStateBase"></field>
+    <field name="User" type="System.Security.Principal.IPrincipal"></field>
+
+    <method name="ExecutePageHierarchy" signature="ExecutePageHierarchy()"/>
+    <method name="RenderPage" signature="RenderPage(string, object...)">
+      <return type="System.Web.WebPages.HelperResult"/>
+    </method>
+  </class>
+
+  <class name="System.Web.WebPages.StartPage" supertypes="System.Web.WebPages.WebPageRenderingBase" kind="abstract_class">
+    <field name="ChildPage" type="System.Web.WebPages.WebPageRenderingBase"/>
+  </class>
+  
+  <class name="System.Web.WebPages.WebPageBase" supertypes="System.Web.WebPages.WebPageRenderingBase" kind="abstract_class">
+    <field name="Output" type="System.IO.TextWriter"></field>
+    <field name="OutputStack" type="System.Collections.Generic.Stack" elementType="System.IO.TextWriter"></field>
+
+    <method name="ConfigurePage" signature="ConfigurePage(System.Web.WebPages.WebPageBase)"></method>
+    <method name="CreateInstanceFromVirtualPath" signature="CreateInstanceFromVirtualPath(string)" instance="false"></method>
+    <method name="DefineSection" signature="DefineSection(string, System.Web.WebPages.SectionWriter)"></method>
+    <method name="ExecutePageHierarchy_2" signature="ExecutePageHierarchy(System.Web.WebPages.WebPageContext, System.IO.TextWriter)"/>
+    <method name="ExecutePageHierarchy_3" signature="ExecutePageHierarchy(System.Web.WebPages.WebPageContext, System.IO.TextWriter, System.Web.WebPages.WebPageRenderingBase)"/>
+    <method name="InitializePage" signature="InitializePage()"></method>
+    <method name="RenderBody" signature="RenderBody()"><return type="System.Web.WebPages.HelperResult"/></method>
+    <method name="RenderSection" signature="RenderSection(string, bool)" match="name"></method>
+  </class>
+
+  <class name="System.Web.WebPages.WebPage" supertypes="System.Web.WebPages.WebPageBase" kind="abstract_class">
+    <field name="Html" type="System.Web.WebPages.Html.HtmlHelper"/>
+    <field name="Model" type="object"/>
+    <field name="ModelState" type="System.Web.WebPages.Html.ModelStateDictionary"/>
+    <field name="Validation" type="System.Web.WebPages.ValidationHelper"/>
+    <method name="RegisterPageExecutor" signature="RegisterPageExecutor(System.Web.WebPages.IWebPageRequestExecutor)" instance="false"/>
+  </class>
+
+  <class name="System.Web.Mvc.WebViewPage" supertypes="System.Web.WebPages.WebPageBase, System.Web.Mvc.IViewDataContainer" kind="abstract_class">
+    <field name="Ajax" type="System.Web.Mvc.AjaxHelper"></field>
+    <field name="Html" type="System.Web.Mvc.HtmlHelper"></field>
+    <field name="TempData" type="System.Web.Mvc.TempDataDictionary"></field>
+    <field name="Url" type="System.Web.Mvc.UrlHelper"></field>
+    <field name="ViewBag" type="object"></field>
+    <field name="ViewContext" type="System.Web.Mvc.ViewContext"></field>
+    <field name="ViewData" type="System.Web.Mvc.ViewDataDictionary"></field>
+
+    <method name="InitHelpers" signature="InitHelpers()"/>
+  </class>
+
+  <class name="System.Web.WebPages.WebPageContext">
+    <field name="Current" type="System.Web.WebPages.WebPageContext" instance="false"/>
+    <field name="Model" type="object"/>
+    <field name="Page" type="System.Web.WebPages.WebPageRenderingBase"/>
+    <field name="PageData" type="System.Collections.Generic.IDictionary"></field>
+  </class>
+
+  <class name="System.Web.WebPages.Html.HtmlHelper" supertypes="System.Web.Mvc.HtmlHelper">
+  </class>
+
+  <class name="System.Web.WebPages.ValidationHelper">
+    <method name="Validate" signature="Validate(string...)">
+      <tags>validation:0</tags>
+      <return type="System.Collections.Generic.IEnumerable" elementType="System.ComponentModel.DataAnnotations.ValidationResult"/>
+    </method>
+  </class>
+
+  <!-- ASP.NET Core -->
+  
+  <class name="Microsoft.AspNetCore.Html.IHtmlContent" kind="interface">
+    <method name="WriteTo" signature="WriteTo(System.IO.TextWriter, System.Text.Encodings.Web.HtmlEncoder)"></method>
+  </class>
+  
+  <class name="Microsoft.AspNetCore.Html.HtmlFormattableString" supertypes="Microsoft.AspNetCore.Html.IHtmlContent"></class>
+  <class name="Microsoft.AspNetCore.Html.HtmlString" supertypes="Microsoft.AspNetCore.Html.IHtmlContent">
+    <field name="Value" type="string"></field>
+  </class>
+  <class name="Microsoft.AspNetCore.Html.IHtmlContentContainer" supertypes="Microsoft.AspNetCore.Html.IHtmlContent" kind="interface">
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.Localization.LocalizedHtmlString" supertypes="Microsoft.AspNetCore.Html.IHtmlContent" kind="interface">
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.Razor.HelperResult" supertypes="Microsoft.AspNetCore.Html.IHtmlContent">
+  </class>
+  <class name="Microsoft.AspNetCore.Html.IHtmlContentBuilder" supertypes="Microsoft.AspNetCore.Html.IHtmlContent">
+    <method name="CopyTo" signature="CopyTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder)" alias="MoveTo"></method>
+  </class>
+  <class name="Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute" supertypes="Microsoft.AspNetCore.Html.IHtmlContentBuilder">
+  </class>
+  <class name="Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput" supertypes="Microsoft.AspNetCore.Html.IHtmlContentBuilder">
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.Rendering.TagBuilder" supertypes="Microsoft.AspNetCore.Html.IHtmlContent">
+    <field name="Attributes" type="Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary"></field>
+    <field name="InnerHtml" type="Microsoft.AspNetCore.Html.IHtmlContentBuilder"></field>
+    
+    <method name="AddCssClass" signature="AddCssClass(string)"></method>
+    <method name="MergeAttribute" signature="MergeAttribute(string,string)" match="name"></method>
+    <method name="MergeAttributes" signature="MergeAttributes(System.Collections.Generic.IDictionary)" match="name"></method>
+    <method name="RenderBody" signature="RenderBody()" alias="RenderStartTag,RenderSelfClosingTag,RenderEndTag"></method>
+  </class>
+  <class name="Microsoft.AspNetCore.Mvc.ViewFeatures.StringHtmlContent" supertypes="Microsoft.AspNetCore.Html.IHtmlContent">
+  </class>
+
+  <class name="System.Text.Encodings.Web.HtmlEncoder" supertypes="System.Text.Encodings.Web.TextEncoder">
+    <field name="Default" type="System.Text.Encodings.Web.HtmlEncoder"></field>
+    <method name="Create" signature="Create()" match="name" instance="false">
+      <return type="System.Text.Encodings.Web.HtmlEncoder"/>
+    </method>
+    <method name="Encode" signature="Encode(string)">
+      <return type="string"/>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="Encode_2" signature="Encode(System.IO.TextWriter,string)">
+      <return type="string"/>
+      <neutralization argpos="1" kind="xss" resource="web"/>
+    </method>
+    <method name="Encode_4" signature="Encode(System.IO.TextWriter,string,int,int)">
+      <return type="string"/>
+      <neutralization argpos="1" kind="xss" resource="web"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Mvc.Rendering.ViewContext" supertypes="Microsoft.AspNetCore.Mvc.ActionContext">
+    <field name="ClientValidationEnabled" type="bool" instance="false"></field>
+    <field name="ExecutingFilePath" type="string"/>
+    <field name="FormContext" type="Microsoft.AspNetCore.Mvc.ViewFeatures.FormContext"/>
+    <field name="Html5DateRenderingMode" type="Microsoft.AspNetCore.Mvc.Rendering.Html5DateRenderingMode"/>
+    <field name="TempData" type="Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary"/>
+    <field name="ValidationMessageElement" type="string" alias="ValidationSummaryMessageElement"/>
+    <field name="View" type="Microsoft.AspNetCore.Mvc.ViewEngines.IView"/>
+    <field name="ViewBag" type="object"/>
+    <field name="ViewData" type="Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary"/>
+    <field name="Writer" type="System.IO.TextWriter"/>
+    <method name="GetFormContextForClientValidation" signature="GetFormContextForClientValidation()">
+     <return type="Microsoft.AspNetCore.Mvc.ViewFeatures.FormContext"/>
+    </method>
+  </class>
+  
+  <class name="Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper" kind="interface">
+    <field name="Html5DateRenderingMode" type="Microsoft.AspNetCore.Mvc.Rendering.Html5DateRenderingMode"/>
+    <field name="IdAttributeDotReplacement" type="string"/>
+    <field name="MetadataProvider" type="Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider"/>
+    <field name="TempData" type="Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary"/>
+    <field name="UrlEncoder" type="System.Text.Encodings.Web.UrlEncoder"/>
+    <field name="ViewBag" type="object"/>
+    <field name="ViewContext" type="Microsoft.AspNetCore.Mvc.Rendering.ViewContext"/>
+    <field name="ViewData" type="Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary"/>
+
+    <method name="ActionLink" signature="ActionLink(string,string,string,string,sytring,string,object,object)">
+      <return type="Microsoft.AspNetCore.Html.IHtmlContent"/>
+    </method>
+    <method name="AntiForgeryToken" signature="AntiForgeryToken(string,string,string)" match="name"></method>
+    <method name="FormatValue" signature="FormatValue(object,string)">
+      <return type="string"/>
+      <propagate from="0,1" to="-1"/>
+    </method>
+    <method name="Raw" signature="Raw(object)">
+      <return type="Microsoft.AspNetCore.Html.IHtmlContent"/>
+      <sink argpos="0" kind="xss" resource="web"><checker id="no_string_literal"/></sink>
+    </method>
+    <method name="Value" signature="Value(string,string)">
+      <return type="string"/>
+    </method>
+    <!-- The extension methods for creating HTML elements are ignored, for now, they seem to HTML-encode values -->
+
+  </class>
+  
+  <class name="Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelper" supertypes="Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper, Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware">
+    <method name="AttributeEncode" signature="AttributeEncode(string)" alias="Encode">
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="EnableClientValidation" signature="EnableClientValidation()"></method>
+    <method name="EnableUnobtrusiveJavaScript" signature="EnableUnobtrusiveJavaScript()"></method>
+    <method name="EnableUnobtrusiveJavaScript_2" signature="EnableUnobtrusiveJavaScript(bool)"></method>
+    <method name="Encode" signature="Encode(string)">
+      <return type="string"/>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </method>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Mvc.Razor.RazorPageBase">
+    <field name="BodyContent" type="Microsoft.AspNetCore.Html.IHtmlContent"></field>
+    <field name="HtmlEncoder" type="System.Text.Encodings.Web.HtmlEncoder"></field>
+    <field name="Layout" type="string"></field>
+    <field name="Output" type="System.IO.TextWriter"></field>
+    <field name="Path" type="string"><sink argpos="-1" kind="open_redirect" resource="web"/></field>
+    <field name="TempData" type="Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary"></field>
+    <field name="User" type="System.Security.Claims.ClaimsPrincipal"></field>
+    <field name="ViewBag" type="object"></field>
+    <field name="ViewContext" type="Microsoft.AspNetCore.Mvc.Rendering.ViewContext"></field>
+
+    <method name="BeginContext" signature="BeginContext(int,int,bool)"></method>
+    <method name="CreateTagHelper" signature="CreateTagHelper()">
+      <return type="Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper"/>
+    </method>
+    <method name="DefineSection" signature="DefineSection(string,System.Func)"></method>
+    <method name="EndContext" signature="EndContext()"></method>
+    <method name="ExecuteAsync" signature="ExecuteAsync()">
+      <return type="System.Threading.Tasks.Task"/>
+    </method>
+    <method name="Href" signature="Href(string)"><return type="string"/></method>
+    <method name="SetAntiforgeryCookieAndHeader" signature="SetAntiforgeryCookieAndHeader()">
+      <return type="Microsoft.AspNetCore.Html.HtmlString"/>
+    </method>
+    <!-- Performs HTML encoding -->
+    <method name="Write" signature="Write(object)"></method>
+    <method name="WriteAttributeValue()" signature="WriteAttributeValue(string,int,object,int,int,bool)"></method>
+    <!-- No encoding, the developer may be calling it with a tainted value -->
+    <method name="WriteLiteral" signature="WriteLiteral(object)">
+      <sink argpos="0" kind="xss" resource="web"><checker id="no_string_literal"/></sink>
+    </method>
+  </class>
+
+  <class name="Microsoft.AspNetCore.Mvc.Razor.RazorPage" supertypes="Microsoft.AspNetCore.Mvc.Razor.RazorPageBase">
+    <field name="Context" type="Microsoft.AspNetCore.Http.HttpContext"></field>
+    <method name="RenderBody" signature="RenderBody()">
+      <return type="Microsoft.AspNetCore.Html.IHtmlContent"/>
+    </method>
+    <method name="RenderSection" signature="RenderSection(string,bool)" match="name">
+      <return type="Microsoft.AspNetCore.Html.HtmlString"/>
+    </method>
+    <method name="RenderSectionAsync" signature="RenderSectionAsync(string,bool)" match="name">
+      <return type="System.Threading.Tasks.Task" elementType="Microsoft.AspNetCore.Html.HtmlString"/>
+    </method>
+  </class>
+  
+  <class name="Microsoft.AspNetCore.Mvc.RazorPages.PageBase" supertypes="Microsoft.AspNetCore.Mvc.Razor.RazorPageBase">
+    <field name="HttpContext" type="Microsoft.AspNetCore.Http.HttpContext"></field>
+    <field name="ModelState" type="Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary"/>
+    <field name="PageContext" type="Microsoft.AspNetCore.Mvc.RazorPages.PageContext"/>
+    <field name="Request" type="Microsoft.AspNetCore.Http.HttpRequest"/>
+    <field name="Response" type="Microsoft.AspNetCore.Http.HttpResponse"/>
+    <field name="RouteData" type="Microsoft.AspNetCore.Routing.RouteData"/>
+
+    <method name="Content" signature="Content(string)" match="name">
+      <return type="Microsoft.AspNetCore.Mvc.ContentResult"/>
+      <sink argpos="0" kind="xss" resource="web"/>
+    </method>
+    <method name="LocalRedirect" signature="LocalRedirect(string)" 
+            alias="LocalRedirectPermanent,LocalRedirectPreserveMethod,LocalRedirectPermanentPreserveMethod">
+      <tags>httpStatus:302</tags>
+      <return type="Microsoft.AspNetCore.Mvc.LocalRedirectResult"/>
+      <sink argpos="0" kind="local_redirect" resource="web"/>
+    </method>
+    <method name="Page" signature="Page()">
+      <return type="Microsoft.AspNetCore.Mvc.RazorPages.PageResult"/>
+    </method>
+    <method name="PhysicalFile" signature="PhysicalFile(string,string,string)" match="name">
+      <return type="Microsoft.AspNetCore.Mvc.PhysicalFileResult"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </method>
+    <method name="Redirect" signature="Redirect(string)"
+            alias="RedirectPermanent,RedirectPreserveMethod,RedirectPermanentPreserveMethod">
+      <return type="Microsoft.AspNetCore.Mvc.RedirectResult"/>
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </method>
+    <method name="RedirectToAction" signature="RedirectToAction(string,string)" match="name">
+      <tags>httpStatus:302</tags>
+      <return type="Microsoft.AspNetCore.Mvc.RedirectToActionResult"/>
+      <sink argpos="0" kind="action_manipulation" resource="web"/>
+      <sink argpos="1" kind="controller_manipulation" resource="web"/>
+    </method>
+    <method name="RedirectToPage" signature="RedirectToPage(string,string,object,string)" match="name"
+            alias="RedirectToPagePermanent,RedirectToPagePreserve,RedirectToPagePreservePermanent">
+      <tags>httpStatus:302</tags>
+      <return type="Microsoft.AspNetCore.Mvc.RedirectToPageResult"/>
+      <sink argpos="0,1,2,3" kind="local_redirect" resource="web"/>
+    </method>
+    <method name="RedirectToRoute" signature="RedirectToRoute(string,string,object,string)" match="name"
+            alias="RedirectToRoutePermanent,RedirectToRoutePreserve,RedirectToRoutePreservePermanent">
+      <tags>httpStatus:302</tags>
+      <return type="Microsoft.AspNetCore.Mvc.RedirectToRouteResult"/>
+      <sink argpos="0,1,2,3" kind="local_redirect" resource="web"/>
+    </method>
+  </class>
+  
+  <class name="Microsoft.AspNetCore.Mvc.RazorPages.Page" supertypes="Microsoft.AspNetCore.Mvc.RazorPages.PageBase"></class>
+
+</library>

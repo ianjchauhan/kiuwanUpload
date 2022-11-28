@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for Hibernate descriptors</description>
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-sql.xml"/>
+  <import resource="classpath:resources/qaking-tech-plsql.xml"/>
+  <import resource="classpath:resources/qaking-tech-java.xml"/>
+  <import resource="classpath:resources/qaking-tech-hibernate.xml"/>
+  
+  <bean id="aim.hibernate.hqlsql.parser" parent="ls_hql_sql_parser">
+    <property name="nativeSqlParser">
+      <bean parent="ls_nativesql_parser">
+        <property name="parsers"><map>
+          <!--
+          <entry key="plsql" value="ls_plsql_parser"/>
+          <entry key="transactsql" value="ls_transactsql_parser"/>
+          -->
+          <entry key="sql" value="ls_sql_parser"/>
+        </map></property>
+      </bean>
+    </property>
+  </bean>
+
+  <!-- Rules -->
+
+  <bean id="aim.hibernate.rule" class="com.optimyth.apm.builder.rules.database.hibernate.HibernateMappingRule">
+    <description>Process Hibernate mapping descriptors .hbm.xml</description>
+    <property name="active" value="${aim.hibernate.rule.active}"/>
+    <property name="filter" ref="aim.hibernate.filter.mappings"/>
+    <property name="callback" ref="aim.hibernate.rule.callback"/>
+    <property name="processPhase" value="-1"/>
+  </bean>
+  
+  <bean id="aim.hibernate.java.rule" class="com.optimyth.apm.builder.rules.database.hibernate.HibernateJavaRule">
+    <property name="active" value="${aim.hibernate.java.rule.active}"/>
+    <property name="filter" ref="aim.hibernate.filter.code"/>
+    <property name="callback" ref="aim.hibernate.rule.callback"/>
+    <property name="sourceExtractor">
+      <bean class="com.optimyth.qaking.hibernate.extractor.SourceExtractor">
+        <property name="databaseMethods" value="${aim.hibernate.java.rule.databaseMethods}"/>
+        <property name="hqlMethods" value="${aim.hibernate.java.rule.hqlMethods}"/>
+        <property name="parser" ref="aim.hibernate.hqlsql.parser" />
+        <property name="strictSessionCheck" value="${aim.hibernate.java.rule.strictSessionCheck}"/>
+        <property name="sessionClasses" value="${aim.hibernate.java.rule.sessionClasses}"/>
+        <property name="sessionFactoryClasses" value="${aim.hibernate.java.rule.sessionFactoryClasses}"/>
+      </bean>
+    </property>
+    <property name="hibernatePackages" value="${aim.hibernate.java.rule.packages}"/>
+  </bean>
+  
+  <bean name="aim.hibernate.java.jpa.rule" class="com.optimyth.apm.builder.rules.database.hibernate.jpa.JpaJavaRule">
+    <description>AIM rule for discovering SQL usages (e.g. via JPA or specific method calls) in Java code</description>
+    <property name="active" value="${aim.hibernate.java.jpa.rule.active}"/>
+    <property name="filter" ref="aim.hibernate.filter.code"/>
+    <property name="extractor" ref="aim.hibernate.rule.jpa.extractor" />
+    <property name="callback" ref="aim.hibernate.rule.jpa.callback" />
+    <property name="priority" value="50"/>
+  </bean>  
+
+  <!-- Callback -->
+
+  <bean id="aim.hibernate.rule.callback" class="com.optimyth.apm.builder.rules.database.hibernate.BasicHibernateMappingCallback">
+    <description>Process Hibernate items and database mapping relations</description>
+    <property name="application" value="${aim.hibernate.software}"/>
+    <property name="dbType" value="${aim.j2ee.rule.hibernate.dbsystem}"/>
+    <property name="dbName" value="${aim.j2ee.rule.hibernate.dbname}"/>
+    <property name="ignoreCase" value="${aim.j2ee.rule.hibernate.ignoreCase}"/>
+    <property name="addSqlToModel" value="${aim.j2ee.rule.hibernate.addSqlToModel}"/>
+    <property name="parser" ref="aim.hibernate.hqlsql.parser"/>
+    <property name="queryProcessor" ref="aim.hibernate.queryProcessor"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+  
+  <bean name="aim.hibernate.rule.jpa.callback" class="com.optimyth.apm.builder.rules.database.hibernate.jpa.BasicJpaCallback">
+    <property name="application" value="${aim.hibernate.software}"/>
+    <property name="dbType" value="${aim.j2ee.rule.hibernate.dbsystem}"/>
+    <property name="dbName" value="${aim.j2ee.rule.hibernate.dbname}"/>
+    <property name="addCodeToRelations" value="${aim.j2ee.rule.hibernate.addCodeToRelations}"/>
+    <property name="ignoreCase" value="${aim.j2ee.rule.hibernate.ignoreCase}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+    <property name="databaseObjectResolver" ref="aim.global.databaseObjectResolver"/>
+  </bean>  
+  
+  <!-- SQL Extractor -->
+  
+  <bean name="aim.hibernate.rule.jpa.fallbackExtractor" class="com.optimyth.apm.builder.rules.j2ee.jdbc.TextFallbackSqlExtractor">
+    <property name="callback" ref="aim.hibernate.rule.jpa.callback" />
+    <property name="createSqlComponents" value="${aim.j2ee.rule.hibernate.createSqlComponents}"/>
+  </bean>  
+  
+  <bean name="aim.hibernate.rule.jpa.extractor" parent="java_sql_extractor"> <!-- 'java_sql_extractor' defined in qaking-tech-sql.xml -->
+    <description>Extracts SQL code embedded in Java</description>
+    <property name="listener" ref="aim.j2ee.rule.jpa.listener.multi" /> <!-- no configurable, only multi option -->
+    <property name="frameworkExtractors">
+      <list>
+        <bean class="com.als.sql.extractor.java.JpaCodeSqlExtractor">
+          <property name="databaseMethods" value="${aim.hibernate.java.rule.databaseMethods}"/>
+          <property name="fallbackSqlExtractor" ref="aim.hibernate.rule.jpa.fallbackExtractor" />
+          <property name="strictCheck" value="${aim.j2ee.rule.jpa.strictCheck}"/>
+          <property name="ignoreMethodCalls" value="${aim.j2ee.rule.jpa.ignoreMethodCalls}"/>
+          <property name="hqlMethods" value="${aim.hibernate.java.rule.hqlMethods}"/>
+          <property name="maxPaths" value="64"/>
+        </bean>      
+      </list>
+    </property>
+    <property name="frameworkExtractorNames">
+      <null />
+    </property>
+  </bean>  
+  
+  <!-- Database listeners -->
+
+  <bean id="aim.j2ee.rule.jpa.listener.multi" class="com.optimyth.apm.builder.rules.common.CompositeSqlListener">
+    <property name="callback" ref="aim.hibernate.rule.jpa.callback"/>
+    <property name="createSqlComponents" value="${aim.j2ee.rule.hibernate.createSqlComponents}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>  
+    <property name="sqlListeners"><list>
+      <ref bean="aim.j2ee.rule.jpa.listener.sql"/>
+      <ref bean="aim.j2ee.rule.jpa.listener.oracle"/>
+      <!-- transactsql ?? -->
+    </list></property>
+  </bean>   
+  
+  <bean id="aim.j2ee.rule.jpa.listener.sql" class="com.optimyth.apm.builder.rules.database.hibernate.jpa.JpaSqlListener">
+    <property name="callback" ref="aim.hibernate.rule.jpa.callback"/>
+    <property name="sqlLanguageSupport" ref="ls_sql"/>
+    <property name="languageSupportJava" ref="ls_java"/>
+    <property name="createSqlComponents" value="${aim.j2ee.rule.hibernate.createSqlComponents}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+
+  <bean id="aim.j2ee.rule.jpa.listener.oracle" parent="aim.j2ee.rule.jpa.listener.sql" class="com.optimyth.apm.builder.rules.j2ee.jdbc.JdbcPlSqlListener">
+    <property name="sqlLanguageSupport" ref="ls_plsql"/>
+  </bean>  
+
+  <!-- QueryProcessor -->
+
+  <bean id="aim.hibernate.queryProcessor.base" abstract="true" class="com.optimyth.apm.builder.rules.database.hibernate.BaseQueryProcessor">
+    <property name="addCodeToRelations" value="${aim.j2ee.rule.hibernate.addCodeToRelations}"/>
+    <property name="addSqlToModel" value="${aim.j2ee.rule.hibernate.addSqlToModel}"/>
+    <property name="ignoreCase" value="${aim.j2ee.rule.hibernate.ignoreCase}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+    <property name="callback" ref="aim.hibernate.rule.callback"/>
+  </bean>
+
+  <bean id="aim.hibernate.queryProcessor.hql" class="com.optimyth.apm.builder.rules.database.hibernate.HqlQueryProcessor" parent="aim.hibernate.queryProcessor.base" />
+  <!--
+  <bean id="aim.hibernate.queryProcessor.oracle" class="com.optimyth.apm.builder.rules.database.hibernate.OracleQueryProcessor" parent="aim.hibernate.queryProcessor.base"/>
+  <bean id="aim.hibernate.queryProcessor.sqlserver" class="com.optimyth.apm.builder.rules.database.hibernate.SqlServerQueryProcessor" parent="aim.hibernate.queryProcessor.base"/>
+  -->
+  <bean id="aim.hibernate.queryProcessor.sql92" class="com.optimyth.apm.builder.rules.database.hibernate.Sql92QueryProcessor" parent="aim.hibernate.queryProcessor.base"/>
+
+  <bean id="aim.hibernate.queryProcessor" class="com.optimyth.apm.builder.rules.database.hibernate.QueryProcessor">
+    <description>Utility bean for processing HQL/SQL queries</description>
+    <property name="processors"><map>
+      <entry key="hql" value-ref="aim.hibernate.queryProcessor.hql" />
+      <!--
+      <entry key="plsql" value-ref="aim.hibernate.queryProcessor.oracle"/>
+      <entry key="transactsql" value-ref="aim.hibernate.queryProcessor.sqlserver"/>
+      -->
+      <entry key="sql" value-ref="aim.hibernate.queryProcessor.sql92"/>
+    </map></property>
+  </bean>
+
+  <!-- Filters -->
+  <bean id="aim.hibernate.filter.mappings" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.hibernate.rule.hibernateMappingsPattern}"/>
+  </bean>
+
+  <bean id="aim.hibernate.filter.code" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.hibernate.filter.javaSource}"/>
+  </bean>
+
+</beans>

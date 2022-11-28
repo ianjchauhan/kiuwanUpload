@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for OS/400 Control Language (CL)</description>
+  
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-cl400.xml"/>
+  
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="legacy/aim.cl400.properties"/>
+  </bean-->
+  
+  <bean id="aim.cl400.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>cl400 parser</description>
+    <property name="filter" ref="aim.cl400.filter"/>
+    <property name="languageSupport" ref="ls_cl400"/>
+  </bean>
+  
+  <!-- Rules -->
+  <bean id="aim.cl400.rule" class="com.optimyth.apm.builder.rules.cl400.CLScriptRule">
+    <description>Rule for CL/400 scripts</description>
+    <property name="active" value="${aim.cl400.rule.active}"/>
+    <property name="callback" ref="aim.cl400.callback.default"/>
+    <property name="filter" ref="aim.cl400.filter"/>
+  </bean>
+
+  <bean id="aim.cl400.callback.default" class="com.optimyth.apm.builder.rules.cl400.DefaultCLScriptCallback">
+    <property name="scriptApplication" value="${aim.cl400.software.batch}"/>
+    <property name="backendApplication" value="${aim.cl400.software.backend}" />
+    <property name="softwareType" ref="aim.common.softwareType.application"/>
+    <property name="ignoreCase" value="${aim.cl400.ignoreCase}"/>
+    <property name="calledResolver" ref="aim.cl400.resolver.calls"/>
+    <property name="includeResolver" ref="aim.cl400.resolver.includes"/>
+  </bean>
+
+  <!-- Caller resolvers -->
+  <bean id="aim.cl400.resolver.calls" class="com.optimyth.apm.builder.rules.common.callresolution.CompositeCalledResolver">
+    <description>Resolver for program calls in CL scripts</description>
+    <property name="resolvers"><list>
+      <ref bean="aim.cl400.resolver.calls.file"/>
+      <ref bean="aim.cl400.resolver.calls.cobol"/>
+      <ref bean="aim.cl400.resolver.progcalls.fallback"/>
+    </list></property>
+  </bean>
+
+  <bean id="aim.cl400.resolver.includes" class="com.optimyth.apm.builder.rules.common.callresolution.CompositeCalledResolver">
+    <description>Resolver for program calls</description>
+    <property name="resolvers"><list>
+      <ref bean="aim.cl400.resolver.calls.file"/>
+    </list></property>
+  </bean>
+
+  <bean id="aim.cl400.resolver.calls.file" parent="aim.common.resolver.base">
+    <description>Resolver for calls to other CL/400 programs (in same software)</description>
+    <property name="extension" value="${aim.cl400.resolver.file.extensions}"/>
+    <property name="language" value="cl400"/>
+    <property name="fileResolver">
+      <bean class="com.optimyth.apm.builder.rules.common.fileresolution.InModelFileResolver"/>
+    </property>
+  </bean>
+
+  <bean id="aim.cl400.resolver.calls.cobol" parent="aim.common.resolver.base">
+    <description>Resolver for calls to other Cobol programs (in same software)</description>
+    <property name="extension" value="${aim.cl400.resolver.cobol.extensions}"/>
+    <property name="language" value="cobol"/>
+    <property name="fileResolver">
+      <bean class="com.optimyth.apm.builder.rules.common.fileresolution.InModelFileResolver"/>
+    </property>
+  </bean>
+
+  <bean id="aim.cl400.resolver.progcalls.fallback" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>
+      Use aim.cl00.resolver.progcalls.registerUnresolvedCalls to choose the right fallback resolver for program calls
+    </description>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.common.callresolution.CalledResolver"/>
+    <property name="key" value="${aim.cl400.resolver.progcalls.registerUnresolvedCalls}"/>
+    <property name="map"><map>
+      <entry key="true" value-ref="aim.common.resolver.fallback"/>
+      <entry key="false" value-ref="aim.common.resolver.null"/>
+    </map></property>
+  </bean>
+
+  <!-- Filters -->
+  <bean id="aim.cl400.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.cl400.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.cl400.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.cl400.filter.pattern"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.cl400.filter.default" parent="ls_cl400_matcher"/>
+
+  <bean id="aim.cl400.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.cl400.filter.pattern}"/>
+  </bean>
+
+</beans>

@@ -1,0 +1,72 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='j2ee' subtech='weblogic' descriptor='j2ee/aim.weblogic.xml' label='WebLogic module'>
+  <description>
+    Analyze controls defined in the WebLogic Workshop Development Environment framework.
+    <br/>
+    Process WebLogic (Oracle) JavaControls (.jcx or .ctrl) files, related to different J2EE resources.
+    Currently, the module supports SQL statements (encoded in @jc:sql annotations),
+    client proxies to Web Services (encoded in @jws:location or @js:location annotations),
+    and references to Enterprise Java Beans (EJB, encodedn in @jws:ejb or @jc:ejb annotations).
+  </description>
+
+  <dependencies>
+    <dependency>j2ee/java</dependency>
+    <dependency>database/plsql</dependency>
+  </dependencies>
+
+  <properties>
+    <property id='aim.j2ee.weblogic.javacontrol.rule.active' type='bool'>
+      <name>javaControlActive</name>
+      <example>false</example>
+      <description>If true, WebLogic JavaControls processing is enabled.</description>
+    </property>
+
+    <property id='aim.j2ee.weblogic.javacontrol.filter' type='list' subtype='antPattern'>
+      <name>filter</name>
+      <example>**/*.jcs,**/*.jcx,**/*.ctrl</example>
+      <description>Patterns for WebLogic JavaControl files</description>
+    </property>
+
+    <property id='aim.j2ee.weblogic.javacontrol.sqlProcessor.active' type='bool'>
+      <name>sqlActive</name>
+      <example>true</example>
+      <description>If true, database operations encoded in WebLogic JavaControl annotations will be processed.</description>
+    </property>
+
+    <property id='aim.j2ee.weblogic.javacontrol.webServiceProcessor.active' type='bool'>
+      <name>wsActive</name>
+      <example>true</example>
+      <description>If true, web service references encoded in WebLogic JavaControl annotations will be processed.</description>
+    </property>
+
+    <property id='aim.j2ee.weblogic.javacontrol.ejbProcessor.active' type='bool'>
+      <name>ejbActive</name>
+      <example>true</example>
+      <description>If true, EJB references encoded in WebLogic JavaControl annotations will be processed.</description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>class,table,view,webService,element(ejb)</values>
+    <description>
+      Creates class for each Java Control found, related to the target resource (database objects like table or view,
+      EJBs, web services).
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      class(control)-references->ejb,
+      class(control)-uses->webService,
+      class(control)-select|insert|update|delete->table|view
+    </values>
+    <description>
+      For target EJBs, creates a <i>references</i> relation. For target web services, creates a <i>uses</i> relation.
+      For target database tables/views, creates a <i>select, insert, update</i> or <i>delete</i> relation.
+    </description>
+  </createdRelations>
+
+  <importantConfigurations activation="aim.j2ee.weblogic.javacontrol.rule.active" />
+
+</block>

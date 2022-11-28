@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_vb6" updated="">
+  <description>EDCAST_MOBILE</description>
+  <rule name="OPT.VB6.VBFA.CUNF" message="CUNF: With 'Close' command, numbers must not be used to describe files" class="com.optimyth.qaking.vb6.rules.vbfa.Cunf" technology="VB6" active="true">
+    <description><![CDATA[To close a file wiht 'Close' command you have to use 'FreeFile' function to assign number to the file]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Other</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Code security, avoiding unexpected behavior.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Close 15 ' VIOLATION]]></example>
+    <repair><![CDATA[Dim nFic As Integer
+nFic = FreeFile
+Close nFic]]></repair>
+    <reference><![CDATA[]]></reference>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VB6.VBFA.EUNF" message="EUNF: With 'EOF' command, number must not be used to describe files" class="com.optimyth.qaking.vb6.rules.vbfa.Eunf" technology="VB6" active="true">
+    <description><![CDATA[Avoid using 'EOF' command with numbers to describe a file. Use 'FreeFile' function to assign numbers to files.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Other</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Code security, avoiding unexpected behavior.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Do While Not EOF(1) ' VIOLATION
+.
+.
+.
+Loop]]></example>
+    <repair><![CDATA[Dim nFic as Integer.
+.
+.
+nFic = FreeFile
+.
+.
+Do While Not EOF(nFic)
+.
+.
+.
+Loop]]></repair>
+    <reference><![CDATA[]]></reference>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VB6.VBFA.LUNF" message="LUNF: With 'LOF' command, number must not be used to describe files" class="com.optimyth.qaking.vb6.rules.vbfa.Lunf" technology="VB6" active="true">
+    <description><![CDATA[Avoid using 'LOF' command with numbers to describe a file. Use 'FreeFile' function to assign numbers to files.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Other</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Code security, avoiding unexpected behavior.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[    Dim tamFic As Long
+    tamFic = LOF(1)  ' VIOLATION]]></example>
+    <repair><![CDATA[    Dim tamFic As Long
+    Dim nFic As Integer
+    nFic = FreeFile
+      .
+      .
+      .
+    ' After open file with 'Open' command, obtain file lenght
+    tamFic = LOF(nFic)]]></repair>
+    <reference><![CDATA[]]></reference>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VB6.VBFA.NCAF" message="NCAF: With file access commands, number must not be used to describe files" class="com.optimyth.qaking.vb6.rules.vbfa.Ncaf" technology="VB6" active="true">
+    <description><![CDATA[Avoid using 'Input', 'Get', 'Put', 'Print' and 'Write' commands with numbers to describe a file. Use 'FreeFile' function to assign numbers to files.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Other</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Code security, avoiding unexpected behavior.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Input #1, Name ' VIOLATION]]></example>
+    <repair><![CDATA[Dim nFic As Integer
+nFic = FreeFile
+Input #nFic, Name]]></repair>
+    <reference><![CDATA[]]></reference>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VB6.VBFA.NCSF" message="NCSF: Do not use 'Close' command without file number" class="com.optimyth.qaking.vb6.rules.vbfa.Ncsf" technology="VB6" active="true">
+    <description><![CDATA[Avoid using 'Close' command without file number associated.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Other</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Ensures the elimination of the right file.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Close	' VIOLATION]]></example>
+    <repair><![CDATA[Close "ejemplo.txt"
+    'Also possible
+Close 143]]></repair>
+    <reference><![CDATA[]]></reference>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.VB6.VBFA.OUNF" message="OUNF: With 'Open' command, number must not be used to describe files" class="com.optimyth.qaking.vb6.rules.vbfa.Ounf" technology="VB6" active="true">
+    <description><![CDATA[To open a file wiht 'Open' command you have to use 'FreeFile' function to assign number to the file.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Other</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Code security, avoiding unexpected behavior.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[Dim sFic As String
+    sFic = "datos.dat"
+Open sFic For Binary As 15 ' VIOLATION]]></example>
+    <repair><![CDATA[Dim sFic as String
+    Dim nFic As Integer
+sFic = "datos.dat"
+nFic = FreeFile
+Open sFic For Binary As nFic]]></repair>
+    <reference><![CDATA[]]></reference>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="VB6" technology="VB6" active="true" weight="1.0">
+      <description><![CDATA[VB6 rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="VB6" active="true" weight="0.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="VB6" active="true" weight="0.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="VB6" active="true" weight="0.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="VB6" active="true" weight="0.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="VB6" active="true" weight="10.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

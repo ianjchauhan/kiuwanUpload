@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs.os" standard="nodejs.os">
+
+  <description>Operating System modules for Node.js</description>
+
+  <module name="nodejs/shelljs" standard="ShellJS" >
+    <description url="https://github.com/shelljs/shelljs">Portable Unix shell commands for Node.js</description>
+    <class name="nodejs/shelljs">
+      <field name="env">
+        <source argpos="-1" kind="external_input" resource="environment"/>
+      </field>
+      <function name="cat" alias="cp,find,head,ln,ls,mkdir,mv,rm,sort,tail,touch,uniq">
+        <sink kind="path_traversal" resource="filesystem">
+          <arg pos="0" varargs="true"/>
+        </sink>
+      </function>
+      <function name="cd">
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="chmod">
+        <sink kind="path_traversal" resource="filesystem">
+          <arg pos="last"/>
+        </sink>
+        <sink kind="file_permissions_manipulation" resource="filesystem" argpos="0"/>
+      </function>
+      <function name="exec">
+        <sink kind="command_injection" argpos="0" resource="os"/>
+      </function>
+      <function name="grep">
+        <sink kind="regex_dos" argpos="0"/>
+        <sink kind="path_traversal" resource="filesystem">
+          <arg pos="last"/>
+        </sink>
+      </function>
+      <function name="sed">
+        <sink kind="regex_dos" argpos="0"/>
+        <sink kind="path_traversal" resource="filesystem">
+          <arg pos="2" varargs="true"/>
+        </sink>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/node-cmd" standard="node-cmd" >
+    <description url="https://github.com/RIAEvangelist/node-cmd">Commandline / terminal interface</description>
+    <class name="nodejs/node-cmd">
+      <function name="run" alias="get">
+        <sink kind="command_injection" resource="os" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/exec" standard="nodejs-exec">
+    <description url="https://www.npmjs.com/package/nodejs-exec">Run processes from Node.js</description>
+    <class name="nodejs/exec">
+      <function name="exec">
+        <sink kind="command_injection" resource="os" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/system-commands" standard="system-commands">
+    <description url="https://github.com/kenmueller/system-commands-npm#readme">System commands for JavaScript</description>
+
+    <class name="nodejs/system-commands">
+      <function name="#module#">
+        <return type="Promise"/>
+        <sink kind="command_injection" argpos="0" resource="os"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/systeminformation" standard="systeminformation">
+    <description url="https://systeminformation.io/">Node.js system information package</description>
+
+    <class name="nodejs/systeminformation">
+      <function name="dockerImagesInspect" signature="dockerImagesInspect(all, cb)" alias="dockerContainerInspect,dockerContainerProcesses" match="name">
+        <tags></tags>
+        <return type="Promise"/>
+        <sink kind="command_injection" resource="os" argpos="0"/>
+      </function>
+      <function name="versions" signature="versions(apps, cb)" match="name">
+        <tags></tags>
+        <return type="Promise"/>
+        <sink kind="command_injection" resource="os" argpos="0"/>
+      </function>
+      <function name="inetChecksite" signature="inetChecksite(url, cb)" match="name">
+        <tags>CVE-2020-7752, CVE-2021-21388, CVE-2021-21315, CVE-2020-26274, CVE-2020-28448</tags>
+        <return type="Promise"/>
+        <sink kind="command_injection" resource="os" argpos="0"/>
+      </function>
+      <function name="inetLatency" signature="inetLatency(host, cb)" match="name">
+        <tags>CVE-2020-26274, CVE-2020-28448, CVE-2021-21388, CVE-2021-21315, CVE-2020-26274, CVE-2020-28448</tags>
+        <return type="Promise"/>
+        <sink kind="command_injection" resource="os" argpos="0"/>
+      </function>
+      <function name="services" signature="services(list, cb)" alias="processLoad" match="name">
+        <tags>CVE-2021-21388, CVE-2021-21315</tags>
+        <return type="Promise"/>
+        <sink kind="command_injection" resource="os" argpos="0"/>
+      </function>
+    </class>
+  </module>
+</library>

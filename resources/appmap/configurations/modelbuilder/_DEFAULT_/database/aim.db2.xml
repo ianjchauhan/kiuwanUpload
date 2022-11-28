@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+
+  <description>AIM rules for DB2 code</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-sql.xml"/>
+
+  <bean name="aim.db2.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>DB2 SQL parser</description>
+    <property name="filter" ref="aim.db2.filter"/>
+    <property name="languageSupport">
+      <!-- can't use ls_sql, could be configured for sql or informix... -->
+      <bean class="com.als.core.language.LanguageSupport">
+        <property name="parser" ref="ls_sqldb2_parser"/>
+        <property name="fileMatcher" ref="ls_sql_matcher"/>
+        <property name="technology" value="sql"/>
+      </bean>
+    </property>
+  </bean>
+
+
+  <bean name="aim.db2.ls" parent="ls_sql">
+    <property name="fileMatcher" ref="aim.db2.matcher"/>
+  </bean>  
+  
+  <!--  Rules -->
+  <bean id="aim.db2.rule" class="com.optimyth.apm.builder.rules.db2.Db2BuilderRule">
+    <property name="active" value="${aim.db2.rule.active}"/>
+    <property name="filter" ref="aim.db2.filter"/>
+    
+    <property name="callback" ref="aim.db2.callback"/>
+    <property name="sqlCallback" ref="aim.db2.sqlCallback"/>
+    <property name="dbResolver" ref="aim.db2.databaseRersolver"/>
+    <property name="schemaResolver" ref="aim.db2.schemaResolver"/>
+    <property name="sqlProcessor" ref="aim.db2.sqlProcessor"/>
+  </bean>
+  
+  <!-- Rule dependencies -->
+  <bean id="aim.db2.callback" class="com.optimyth.apm.builder.rules.sql.BasicDatabaseCallback">
+  <property name="databaseObjectResolver" ref="aim.db2.databaseObjectResolver"/>
+  </bean>
+  
+  <bean id="aim.db2.sqlCallback" class="com.optimyth.apm.builder.rules.sql.BasicSqlCallback">
+    <property name="dbType" value="${aim.db2.database}"/>
+    <property name="dbInstance" value="${aim.db2.schema}"/>
+    <property name="schemaResolver" ref="aim.db2.schemaResolver"/>
+    <property name="databaseObjectResolver" ref="aim.db2.databaseObjectResolver"/>
+    <property name="databaseDepsResolver" ref="aim.db2.databaseDepsResolver"/>
+  </bean>
+  
+  <bean id="aim.db2.databaseObjectResolver" class="com.optimyth.apm.builder.rules.database.resolver.FinderDatabaseObjectResolver">
+  </bean>
+  
+  <bean id="aim.db2.databaseRersolver" class="com.optimyth.apm.builder.rules.sql.BasicDatabaseResolver">
+    <property name="database" value="${aim.db2.database}"/>
+  </bean>
+  
+  <bean id="aim.db2.schemaResolver" class="com.optimyth.apm.builder.rules.plsql.BasicSchemaResolver">
+    <property name="schemaName" value="${aim.db2.schema}"/>
+  </bean>
+  
+  <bean id="aim.db2.databaseDepsResolver" class="com.optimyth.apm.builder.rules.sql.resolution.DefaultDatabaseDepsResolver"/>
+  
+  <bean id="aim.db2.sqlProcessor" class="com.optimyth.apm.builder.rules.sql.BasicSqlProcessor">
+    <property name="addSqlToModel" value="false"/>
+    <property name="parseSqlColumns" value="${aim.db2.modelStatements}"/>
+    <property name="sqlCallback" ref="aim.db2.sqlCallback"/>
+    <property name="databaseDepsResolver" ref="aim.db2.databaseDepsResolver"/>
+  </bean>
+  
+  <!-- Filters -->
+  <bean id="aim.db2.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.db2.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.db2.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.db2.filter.pattern"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.db2.filter.default" parent="ls_sql_matcher"/>
+
+  <bean id="aim.db2.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.db2.filter.pattern}"/>
+  </bean>
+
+  <bean id="aim.db2.matcher" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="ls_sql_matcher"/>
+    <property name="objectType" value="com.als.core.language.FileMatcher"/>
+    <property name="key" value="${aim.db2.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.db2.matcher.pattern"/>
+    </map></property>
+  </bean>
+  
+  <bean id="aim.db2.matcher.pattern" class="com.als.core.language.AntPatternFileMatcher">
+    <property name="pattern" value="${aim.db2.filter.pattern}"/>
+  </bean>
+
+</beans>

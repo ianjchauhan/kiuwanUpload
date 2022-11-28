@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="text">
+
+  <module name="text.template" >
+    <description url="https://pkg.go.dev/text/template">Implements data-driven templates for generating textual output</description>
+
+    <function name="text.template.HTMLEscape" signature="text.template.HTMLEscape(io.Writer, go.slice)" />
+    <function name="text.template.HTMLEscapeString" signature="text.template.HTMLEscapeString(go.string)" />
+    <function name="text.template.HTMLEscaper" signature="text.template.HTMLEscaper(go.interface)" >
+      <return type="go.string" />
+    </function>
+    <function name="text.template.JSEscape" signature="text.template.JSEscape(io.Writer, go.slice)" />
+    <function name="text.template.JSEscapeString" signature="text.template.JSEscapeString(go.string)" />
+    <function name="text.template.JSEscaper" signature="text.template.JSEscaper(go.interface)" >
+      <return type="go.string" />
+    </function>
+    <function name="text.template.URLQueryEscaper" signature="text.template.URLQueryEscaper(go.interface)" >
+      <return type="go.string" />
+    </function>
+
+    <class name="text.template.Template" kind="struct" supertypes="parse.Tree" >
+      <method name="AddParseTree" signature="AddParseTree(go.string, parse.Tree)" >
+        <return type="text.template.Template, go.error" />
+      </method>
+      <method name="Clone" signature="Clone()" >
+        <return type="text.template.Template, go.error" />
+      </method>
+      <method name="Delims" signature="Delims(go.string, go.string)" >
+        <return type="text.template.Template" />
+      </method>
+      <method name="Execute" signature="Execute(io.Writer, go.interface)" >
+        <return type="go.error" />
+        <sink argpos="1" kind="xss" resource="web" neutralizer="xss" >
+          <checker id="WriteStringSinkChecker" />
+        </sink>
+      </method>
+      <method name="ExecuteTemplate" signature="ExecuteTemplate(io.Writer, go.string, go.interface)" >
+        <return type="go.error" />
+        <sink argpos="2" kind="xss" resource="web" neutralizer="xss" >
+          <checker id="WriteStringSinkChecker" />
+        </sink>
+      </method>
+      <method name="Funcs" signature="Funcs(text.template.FuncMap)" >
+        <return type="text.template.Template" />
+      </method>
+      <method name="Lookup" signature="Lookup(go.string)" >
+        <return type="text.template.Template" />
+      </method>
+      <method name="Name" signature="Name()" >
+        <return type="go.string" />
+      </method>
+      <method name="New" signature="New()" >
+        <return type="text.template.Template" />
+      </method>
+      <method name="Option" signature="Option(...go.string)" >
+        <return type="text.template.Template" />
+        <sink argpos="0,1,2" kind="xss" resource="web" neutralizer="xss"  />
+      </method>
+      <function name="Parse" signature="Parse(go.string)" >
+        <return type="text.template.Template, go.error" />
+      </function>
+      <function name="ParseFiles" signature="ParseFiles(...go.string)" >
+        <return type="text.template.Template, go.error" />
+        <sink argpos="0,1,2" kind="path_traversal" resource="filesystem" />
+      </function>
+      <function name="ParseGlob" signature="ParseGlob(go.string)" >
+        <return type="text.template.Template, go.error" />
+        <sink argpos="0" kind="regex_dos" resource="filesystem" />
+      </function>
+      <function name="Templates" signature="Templates()" >
+        <return type="go.slice" elementType="text.template.Template" />
+      </function>
+    </class>
+
+    <function name="text.template.Must" signature="text.template.Must(text.template.Template, go.error)" >
+      <return type="text.template.Template" />
+    </function>
+    <function name="text.template.New" signature="text.template.New(go.string)" >
+      <return type="text.template.Template" />
+    </function>
+    <function name="text.template.ParseFiles" signature="text.template.ParseFiles(...go.string)" >
+      <return type="text.template.Template, go.error" />
+      <sink argpos="0,1,2" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="text.template.ParseGlob" signature="text.template.ParseGlob(go.string)" >
+      <return type="text.template.Template, go.error" />
+      <sink argpos="0" kind="regex_dos" resource="filesystem" />
+    </function>
+  </module>
+</library>

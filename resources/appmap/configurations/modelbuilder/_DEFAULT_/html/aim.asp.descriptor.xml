@@ -1,0 +1,80 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='html' subtech='asp' descriptor='html/aim.asp.xml' label='Process ASP3 (classic) web applications'>
+  <description>
+    Process presentation layer of web applications with ASP3 ('classic ASP') technology.
+    Process ASP pages and resolve page includes / redirects, references to COM objects,
+    and dependencies with other resources (images, forms, frames and other links, style sheets, browser-side scripts).
+  </description>
+
+  <dependencies>
+    <dependency>vb/vb</dependency>
+  </dependencies>
+
+  <properties>
+
+    <property id='aim.asp.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>Enable processing of ASP3 files.</description>
+    </property>
+
+    <property id='aim.asp.filter' type='enum'>
+      <name>filter</name>
+      <example>default</example>
+      <description>Filtering strategy for selecting ASP3 files to process.</description>
+      <possible>
+        <enumval name="default">Use default extensions configured for asp technology.</enumval>
+        <enumval name="pattern">Use patterns in the <code>patterns</code> property for selecting which files should be processed.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.asp.filter.pattern' type='list' subtype='antPattern'>
+      <name>patterns</name>
+      <example>**/*.asp,**/*.asa</example>
+      <description>Ant pattern(s) to use for selecting which ASP files to process. Used when <code>filter=pattern</code>.</description>
+    </property>
+
+    <property id='aim.asp.webapp' type='string'>
+      <name>webapp</name>
+      <example>${aim.common.software}</example>
+      <description>Default name for web application, used when no (global) software resolver returns software container.</description>
+    </property>
+
+    <property id='aim.asp.rule.acceptUnresolved' type='bool'>
+      <name>acceptUnresolved</name>
+      <example>${aim.common.acceptUnresolved}</example>
+      <description>
+        If true, accept any unresolved reference in ASP (to a file in analyzed software) and create a target entity.
+        If false, references to resources not found in analyzed software are ignored.
+      </description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>
+      page(asp|css),element(COM object),program(VBScript|JavaScript),resource
+    </values>
+    <description>
+      Each ASP (and CSS style sheet) is modeled as a <i>page</i>, while each ActiveX/COM object referenced is modeled
+      as an element. Each referenced web resources, like images or non-ASP resources referenced via URL, is modeled as <i>resource</i>.
+      Browser-side scripts (VBScript or JavaScript) are modeled as <i>program</i>.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      page-inclues|calls->page,
+      page-instantiates->element(COM object),
+      page-uses->page(css)|program(JavaScript|VBScript),
+      page-transition|uses->page|resource
+    </values>
+    <description>
+      For each <i>page</i> modelling an ASP page, outgoing relations with other pages or web resources are modeled.
+      If an ActiveX/COM object is used in anm ASP page, <code>page -instantiates-> element(COM object)</code> dependency is created.
+    </description>
+  </createdRelations>
+  
+  <importantConfigurations activation="aim.asp.rule.active" />
+
+</block>

@@ -1,0 +1,1188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_plsql" updated="">
+  <description>EdcastModel</description>
+  <rule name="OPT.PLSQL.SEC.CommandInjection" message="CommandInjection: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')" class="com.kiuwan.plsql.rules.security.CommandInjection" technology="PLSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.5,ASVS-v4.0.2:5.3.8,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[The software constructs all or part of an operating system (OS) command using externally-controlled input,
+but it does not neutralize properly that input that could modify the intended command when it is sent to a function
+that executes the command.
+
+The rule detects a path in code between an user-input statement (source) and a command execution call (sink),
+with command depending on non neutralized input. This allows for an attacker to change the intended command to execute or
+to add a malicious extra command, executed with the application rights.
+
+NOTE: Oracle historically have not provided facilities for OS command execution (via standard PL/SQL procedures),
+but it provided in the past sample code for that (either using C-based libraries or the new Java-based procedures).
+Additionally, there are popular third-party packages (OS_COMMAND, for example) that allow OS command execution,
+in a more or less controlled way.
+
+A neutralization function either validates inputs and report an (neutral) error without allowing command execution,
+or replaces sensitive shell characters in the input to avoid that the resulting command has different semantics.
+If possible, use "accept known good" input validation strategy (whitelist).]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid execution of malicious commands.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create or replace function isUp(ip_address varchar2) return boolean is
+  exitcode number;
+
+begin
+  exitcode := os_command.exec_clob('/bin/ping -c 1 -w 3 ' || ip_address); -- VIOLATION
+
+  if exitcode = 0 then
+    return true;
+  else
+    return false;
+  end if;
+end;
+/]]></example>
+    <repair><![CDATA[create or replace function isUp(ip_address varchar2) return boolean is
+  exitcode number;
+  sanitized varchar2(80);
+
+begin
+  -- FIXED - input validation (accept only good input)
+  select regexp_substr(
+    trim(both from ip_address),
+    '^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$' -- enough for avoiding command injection
+  ) into sanitized from dual;
+
+  exitcode := os_command.exec_clob('/bin/ping -c 1 -w 3 ' || sanitized);
+
+  if exitcode = 0 then
+    return true;
+  else
+    return false;
+  end if;
+end;
+/]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/78.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:77,CWE:78,CWETOP25:2021:5,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:31]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.CrossSiteScripting" message="CrossSiteScripting: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')" class="com.kiuwan.plsql.rules.security.CrossSiteScripting" technology="PLSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:AccessControl,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in page content. An attacker could inject browser script code that is executed in the client browser.
+The end-user is the attacked subject, and the software is the vehicle for the attack. This attack is known as Cross-Site Scripting (XSS).
+
+There are three kinds of XSS:
+* Reflected XSS: Attacker causes victim to supply malicious content to a vulnerable web application, which renders HTML content
+  embedding a malicious script executed in victim's browser.
+  A variation of this is named DOM-based XSS, where the vulnerable software does not generate content depending on user input
+  but include script code that use user-controlled input.
+
+* Persistent XSS: Attacker provides malicious content to the vulnerable application, which is stored somewhere.
+  When stored data is fetched and rendered, if not sanitized, an XSS attack may succeed.
+
+Note: This rule only considers the first case ("Reflected XSS").
+
+When other user access to vulnerable pages that embed without proper neutralization the attacker content,
+script code is executed in the victim's browser.
+
+The script executed in the victim's browser could perform malicious activities, like stealing active authentication tokens
+(sometimes in the form of cookies) and performing operations on a insecure webapp (on behalf of the victim) that trusts
+too much identity artifacts in browser and do not request additional authorization for operations ('Cross-Site Request Forgery attack', CSRF).
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but user browsers generally allow scripting languages
+(e.g. JavaScript) in their browsers (disabling JavaScript severely limits a web application).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XSS vulnerabilities.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create or replace procedure xss() is
+  idParam varchar2(128);
+
+begin
+  -- id=some_id
+  idParam := substr(owa_util.get_cgi_env('QUERY_STRING'), 4);
+
+  htp.htmlOpen;
+    htp.headOpen;
+      htp.title('Some header');
+    htp.headClose;
+    htp.bodyOpen;
+      -- VIOLATION, XSS injection here
+      htp.print('ID: ' || idParam);
+    htp.bodyClose;
+  htp.htmlClose;
+
+end;
+/]]></example>
+    <repair><![CDATA[create or replace procedure xss() is
+  idParam varchar2(128);
+
+begin
+  idParam := substr(owa_util.get_cgi_env('QUERY_STRING'), 4);
+
+  htp.htmlOpen;
+    htp.headOpen;
+      htp.title('Some header');
+    htp.headClose;
+    htp.bodyOpen;
+      -- FIXED, prints() escapes properly the output
+      htp.prints('ID: ' || idParam);
+    htp.bodyClose;
+  htp.htmlClose;
+
+end;
+/]]></repair>
+    <reference><![CDATA[Expert Oracle Application Express Security,http://cwe.mitre.org/data/definitions/79.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:08]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.DefaultAuthid" message="DefaultAuthid: No explicit AUTHID clause." class="com.kiuwan.plsql.rules.security.DefaultAuthid" technology="PLSQL" active="true">
+    <tags><![CDATA[CWEScope:AccessControl]]></tags>
+    <description><![CDATA[PL/SQL objects (packages, top-level procedures/functions, object types, or java sources) are executable units
+that execute either as the user that created the object (with definer privileges) or as the user that runs the unit
+(with invoker privileges). 
+
+The kind of execution privileges should be made explicit with an AUTHID DEFINER|CURRENT_USER clause. If not provided,
+Oracle uses the default for the unit (DEFINER for types, packages, top-level procedures/functions, or CURRENT_USER
+for java sources). To avoid unintended security issues, this rule demands that AUTHID clauses must be explicit.
+
+For example, if a package created by a DBA schema (like SYS) does not specify AUTHID, the default DEFINER means
+that code will run as that highly-privileged user, so any other user with permissions to execute its routines may
+leverage security flaws (SQL injection, for example) to perform unintended operations with high privileges.  
+
+Note: For procedures/functions in an object type or package, the container AUTHID clause is used, so no AUTHID clause
+is required for the procedure/function.]]></description>
+    <priority>5</priority>
+    <effort>2</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create package pkg1 as -- VIOLATION
+  procedure pkg1_proc1();
+end;
+/
+
+create type type1 as object ( -- VIOLATION
+   member procedure type1_proc1()
+);
+
+create procedure proc1 is -- VIOLATION
+begin
+  null;
+end;
+/
+
+create function func1 return varchar2 is -- VIOLATION
+begin
+  return 'Hello world';
+end;
+/
+
+create java source named "Wellcome" -- VIOLATION
+using bfile('dir', 'file');]]></example>
+    <repair><![CDATA[create package pkg1 authid definer as -- FIXED
+  procedure pkg1_proc1();
+end;
+/
+
+create type type1 authid current_user as object ( -- FIXED
+   member procedure type1_proc1()
+);
+
+create procedure proc1 authid current_user is -- FIXED
+begin
+  null;
+end;
+/
+
+create function func1 return varchar2 authid definer is -- FIXED
+begin
+  return 'Hello world';
+end;
+/
+
+create java source named "Wellcome" authid current_user as -- FIXED
+using bfile('dir', 'file');]]></repair>
+    <reference><![CDATA[Oracle PL/SQL Best Practices, by Steven Feuerstein]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:269,CWETOP25:2021:29]]></security>
+    </normatives>
+    <properties>
+      <property name="types" descname="Comma-separated list of objects to check for no AUTHID clause (package, procedure, type, java)." value="package, procedure, type, java"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.HardcodedCredential" message="HardcodedCredential: Use of Hard-coded Credentials" class="com.kiuwan.plsql.rules.security.HardcodedCredential" technology="PLSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.4,ASVS-v4.0.2:3.5.2,ASVS-v4.0.2:6.4.1,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,credentials,essential]]></tags>
+    <description><![CDATA[Hardcoded credentials (username / password) are visible to any person reading the source code.
+If the resource protected by such hardcoded credentials is important, this may compromise system security.
+
+With hardcoded credentials, change is difficult. If the target account is compromised, and the software
+is deployed in production, a code change is needed, which forces a redeployment.
+
+CONNECT SQL*Plus commands in scripts containing a password are also reported as violations of the rule.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credential leakage.
+If an account is compromised, changing credentials in an external repository does not need changes in code plus software deployment]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create or replace function fetch_product_info(host varchar2, productKey varchar2) return varchar2 is
+  BASE_URL  constant varchar2(128) := 'http://api.my.org/rest/';
+  USERNAME  constant varchar2(64) := 'my_user_name';
+  PASSWORD  constant varchar2(64) := 'not_so_secret';
+
+  url       varchar2(128);
+  prodValue varchar2(40);
+  req       utl_http.req;
+  resp      utl_http.resp;
+  my_scheme varchar2(256);
+  my_realm  varchar2(256);
+  prodInfo  varchar2(4096);
+
+begin
+  -- validate the productKey as a valid one
+  select regexp_substr(productKey, '^[A-Za-z0-0_]+$') into prodValue from dual;
+
+  if prodValue is null then
+    return null;
+  end if;
+
+  url := BASE_URL || 'product/' || prodValue;
+
+  utl_http.set_response_error_check(false);
+  req := utl_http.begin_request(url);
+  utl_http.set_authentication(req, USERNAME, PASSWORD); -- VIOLATION hardcoded creds
+  utl_http.set_header(req, 'User-Agent', 'api-client');
+  resp := utl_http.get_response(req);
+
+  if (resp.status_code = utl_http.http_unauthorized) then
+    utl_http.get_authentication(resp, my_scheme, my_realm, FALSE);
+    dbms_output.put_line('Service ' || BASE_URL || ' is protected.');
+    dbms_output.put('Please supplied the required ' || my_scheme || ' username/password for realm ' || my_realm);
+    utl_http.end_response(resp);
+    return null;
+
+  elsif (resp.status_code = utl_http.http_proxy_auth_required) then
+    utl_http.get_authentication(resp, my_scheme, my_realm, TRUE);
+    dbms_output.put_line('Service ' || BASE_URL || ' is protected.');
+    dbms_output.put('Please supplied the required ' || my_scheme || ' username/password for realm ' || my_realm);
+    utl_http.end_response(resp);
+    return null;
+
+  end if;
+
+  utl_http.read_text(resp, prodInfo, 4096);
+  utl_http.end_response(resp);
+  return prodInfo;
+
+end;
+/]]></example>
+    <repair><![CDATA[-- Fetch credentials from a trusted source, like a protected file or database table.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/798.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:798,CWETOP25:2021:16,OWASP:2021:A7,PCI-DSS:6.5.3,WASC:01]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.HeaderManipulation" message="HeaderManipulation: Unvalidated data in HTTP response header or in cookies ('HTTP Response Splitting')" class="com.kiuwan.plsql.rules.security.HeaderManipulation" technology="PLSQL" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in HTTP headers. An attacker could inject line separators (CR/LF sequences)
+that could split the response message generated by the software into two messages. The second response is completely
+under the control of the attacker (intermediate web proxies may cache it), with could produce multiple conditions
+(web defacement, cache poisoning, cross-site scripting or page hijacking, see CWE-113 for full details).
+
+If software needs to generate HTTP headers depending on user-controlled input, such input should be properly
+neutralized (a white-list validation excluding CR/LF is recommended). Please note that cookies are received and
+sent in 'Cookie' header in HTTP messages, so if the software generates a Cookie from user input, the input should
+be properly validated as well.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create or replace procedure login(username varchar2, password varchar2, rolename varchar2) as
+begin
+  if isValidUser(username, password) then
+    -- ...
+    owa_util.mime_header('text/html', false);
+    owa_cookie.send(name => 'role', value => rolename); -- VIOLATION
+    redirect_to_target();
+
+  else
+    redirect_to_login();
+  end if;
+end;]]></example>
+    <repair><![CDATA[create or replace procedure login(username varchar2, password varchar2, rolename varchar2) as
+  valid_role varchar2(16);
+
+begin
+  if isValidUser(username, password) then
+    -- ...
+    owa_util.mime_header('text/html', false);
+
+    -- fixed - validate role against a whitelist of valid values
+    select
+      nvl( regexp_substr(rolename, '^(admin|poweruser|customer|anonymous)$'), 'anonymous' )
+    into valid_role from dual;
+
+    owa_cookie.send(name => 'role', value => valid_role);
+    redirect_to_target();
+
+  else
+    redirect_to_login();
+  end if;
+end;]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/113.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:113,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:25]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.InsecureRandomness" message="InsecureRandomness: Standard pseudo-random number generators cannot withstand cryptographic attacks." class="com.kiuwan.plsql.rules.security.InsecureRandomness" technology="PLSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.3.1,ASVS-v4.0.2:2.6.2,ASVS-v4.0.2:2.9.2,ASVS-v4.0.2:6.3.1,ASVS-v4.0.2:6.3.2,ASVS-v4.0.2:6.3.3,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Insecure randomness errors occur when a function that can produce predictable values is used as a source of randomness
+in security-sensitive context.
+
+Computers are deterministic machines, and as such are unable to produce true randomness. Pseudo-Random Number Generators (PRNGs)
+approximate randomness algorithmically, starting with a seed from which subsequent values are calculated.
+
+There are two types of PRNGs: statistical and cryptographic. Statistical PRNGs provide useful statistical properties,
+but their output is highly predictable, and forms an easy to reproduce numeric stream that is unsuitable for use
+in cases where security depends on generated values being unpredictable.
+
+An example of a statistical generator in Oracle database are the functions in the DBMS_RANDOM package. Oracle says
+explicitely that DBMS_RANDOM is not inteded for cryptography.
+
+Cryptographic PRNGs address this problem by generating output that is more difficult to predict.
+For a value to be cryptographically secure, it must be impossible or highly improbable for an attacker to distinguish
+between it and a truly random value. Oracle provides RANDOMxxx functions under DBMS_CRYPTO package, which should be used for random number
+generation under cryptographic or other sensitive usages.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[CREATE OR REPLACE FUNCTION create_aes_key() RETURN RAW IS
+  str VARCHAR2(32); -- keylen = 256 bits
+
+BEGIN
+  // VIOLATION, weak random generator in a sensitive context (creation of cryptographic keys)
+  return UTL_RAW.CAST_TO_RAW( DBMS_RANDOM.STRING('P', 32) );
+END;]]></example>
+    <repair><![CDATA[CREATE OR REPLACE FUNCTION create_aes_key() RETURN RAW IS
+  str VARCHAR2(32); -- keylen = 256 bits
+
+BEGIN
+  // FIXED, 32 random bytes adequate for cryptographic purposes
+  return DBMS_CRYPTO.RANDOMBYTES(32);
+END;]]></repair>
+    <reference><![CDATA[https://docs.oracle.com/cd/B19306_01/appdev.102/b14258/d_crypto.htm#i1003214,http://cwe.mitre.org/data/definitions/330.html,http://cwe.mitre.org/data/definitions/338.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:330,CWE:338,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="pattern" descname="Regular expression for detecting when a non-cryptographic PRNG is used in a security context.
+When blank, any non-cryptographic PRNG usage is reported as a rule violation." value="password|passwd|receipt|session|user|key|csrf|token|hash|mac|digest|uuid|guid|crypto|encrypt|decrypt"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.OpenRedirect" message="OpenRedirect: Do not allow to control the URL used in a redirect by an unvalidated input" class="com.kiuwan.plsql.rules.security.OpenRedirect" technology="PLSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.5,CWEScope:Access-Control,CWEScope:Confidentiality,open-redirect]]></tags>
+    <description><![CDATA[Allowing unvalidated input to control the URL used in a redirect can aid phishing attacks.
+
+Through open redirects, malicious users may mislead other users to visit a URL to a trusted site and redirect them to a
+malicious site.
+
+By encoding the URL, a malicious user can make it difficult to realize the target of malicious redirect.
+
+The rule detects a path in code between an input statement (source) and a redirect statement (sink), to an URL depending
+on non neutralized input.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Limits phishing attacks, and unintended client-side redirections, improving security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create or replace procedure process_form() is
+  login_cookie owa_cookie.cookie;
+  login_url varchar2(256);
+
+begin
+  do_output();
+
+exception
+  when not_authenticated then
+    begin
+      -- cookie data not trusted, attackers have full control on the HTTP request...
+      login_cookie := owa_cookie.get('login_url');
+      if login_cookie.num_vals > 0 then
+        login_url := login_cookie.vals(1);
+        -- VIOLATION - Open redirect
+        owa_util.redirect_url(login_url, true);
+      else
+        owa_util.redirect_url(DEFAULT_LOGIN_URL, true);
+      end if;
+    end;
+end;
+/]]></example>
+    <repair><![CDATA[-- Use a whitelist of allowed redirect URLs, and never fetch the url directly from untrusted data
+-- (request parameters or request body, cookies, HTTP headers, etc.)]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/w/page/13246981/URL%20Redirector%20Abuse,http://cwe.mitre.org/data/definitions/601.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:601,CWETOP25:2021:37,OWASP:2013:A10,PCI-DSS:6.5.1,WASC:38]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.PathTraversal" message="PathTraversal: External Control of File Name or Path" class="com.kiuwan.plsql.rules.security.PathTraversal" technology="PLSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.1,ASVS-v4.0.2:12.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software uses external input to construct a pathname that is intended to identify a file or directory located underneath a restricted parent directory,
+but software does not properly neutralize elements within pathname, which may cause the pathname to resolve to a location outside the restricted directory.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Filesystem paths should not be controlled by user-controlled inputs.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create or replace function load_csv(league_id varchar2) return varchar2 is
+  basedir constant varchar2(80) := '/var/leagues/';
+  filepath varchar(128);
+  f file_type;
+
+begin
+  filepath := basedir || league_id || '.csv';
+  f := file_pkg.get_file(filepath); -- VIOLATION
+  if f.file_exists then
+    return f.read_string(32767, 'iso-8859-1');
+  else
+    return null;
+  end if;
+end;]]></example>
+    <repair><![CDATA[create or replace function load_csv(league_id varchar2) return varchar2 is
+  basedir constant varchar2(80) := '/var/leagues/';
+  filepath varchar(128);
+  f file_type;
+
+begin
+  -- FIXED - input validation (accept only good input)
+  select regexp_substr(
+    trim(both from ip_address),
+    '^\[A-Za-z0-0_\-]$' -- pattern that league IDs should match
+  ) into sanitized from dual;
+
+  filepath := basedir || sanitized || '.csv';
+  f := file_pkg.get_file(filepath);
+  if f.file_exists then
+    return f.read_string(32767, 'iso-8859-1');
+  else
+    return null;
+  end if;
+end;]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/22.html,http://cwe.mitre.org/data/definitions/73.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:22,CWE:73,CWETOP25:2021:8,OWASP:2021:A4,OWASP:2021:A5,PCI-DSS:6.5.8,WASC:33]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.PersistedCrossSiteScripting" message="PersistedCrossSiteScripting: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')" class="com.kiuwan.plsql.rules.security.PersistedCrossSiteScripting" technology="PLSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:AccessControl,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in page content. An attacker could inject browser script code that is executed in the client browser.
+The end-user is the attacked subject, and the software is the vehicle for the attack. This attack is known as Cross-Site Scripting (XSS).
+
+There are three kinds of XSS:
+* Reflected XSS: Attacker causes victim to supply malicious content to a vulnerable web application, which renders HTML content
+  embedding a malicious script executed in victim's browser.
+  A variation of this is named DOM-based XSS, where the vulnerable software does not generate content depending on user input
+  but include script code that use user-controlled input.
+
+* Persistent XSS: Attacker provides malicious content to the vulnerable application, which is stored somewhere.
+  When stored data is fetched and rendered, if not sanitized, an XSS attack may succeed.
+
+Note: This rule only considers the second case ("Persisted XSS").
+
+When other user access to vulnerable pages that embed without proper neutralization the attacker content,
+script code is executed in the victim's browser.
+
+The script executed in the victim's browser could perform malicious activities, like stealing active authentication tokens
+(sometimes in the form of cookies) and performing operations on a insecure webapp (on behalf of the victim) that trusts
+too much identity artifacts in browser and do not request additional authorization for operations ('Cross-Site Request Forgery attack', CSRF).
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but user browsers generally allow scripting languages
+(e.g. JavaScript) in their browsers (disabling JavaScript severely limits a web application).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XSS vulnerabilities.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create or replace procedure xss(prodId in integer) is
+  prodDetails varchar2(128);
+
+begin
+  -- the attacker may have managed to insert an XSS attack payload in a previous action
+  select product_details into prodDetails from product where product_id = prodId;
+
+  htp.htmlOpen;
+    htp.headOpen;
+      htp.title('Some header');
+    htp.headClose;
+    htp.bodyOpen;
+      -- VIOLATION, Persisted XSS injection here
+      htp.print('PRODUCT DETAILS: ' || prodDetails);
+    htp.bodyClose;
+  htp.htmlClose;
+
+end;
+/]]></example>
+    <repair><![CDATA[create or replace procedure xss(prodId in integer) is
+  prodDetails varchar2(128);
+
+begin
+  -- the attacker may have managed to insert an XSS attack payload in a previous action
+  select product_details into prodDetails from product where product_id = prodId;
+
+  htp.htmlOpen;
+    htp.headOpen;
+      htp.title('Some header');
+    htp.headClose;
+    htp.bodyOpen;
+      -- Fixed - output escaping
+      htp.print('PRODUCT DETAILS: ' || htf.escape_sc(prodDetails));
+    htp.bodyClose;
+  htp.htmlClose;
+
+end;
+/]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/79.html,Expert Oracle Application Express Security]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:08]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" value="database_input"/>
+      <property name="parametersAsSources" value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.SecondOrderSqlInjection" message="SecondOrderSqlInjection: SQL Injection (Second-Order)." class="com.kiuwan.plsql.rules.security.SecondOrderSqlInjection" technology="PLSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[SQL injection vulnerabilities arise when untrusted data is concatenated into dynamic SQL queries in an unsafe manner.
+
+An attacker can provide crafted input to break out of the data context in which their input appears, and interfere with
+the structure of the surrounding query.
+
+Second-order SQL injection arises when untrusted data, potentially under control of an attacker, is stored by the application
+and later incorporated into dynamic SQL queries without sanitization.
+
+The rule emits a violation when dynamic SQL is built from elements read from the database, and not sanitized.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[-- sort order is intended to be something simple like asc|desc
+-- but attacker may submit 'desc UNION SELECT secret, secret_date FROM SECRETDATA'
+-- to fetch all records from SECRETDATA, including those belonging to other users ;)
+create or replace procedure insertUserData(userName varchar2, sortOrder varchar2) is
+begin
+  update USERPREFERENCES
+    set sort_order = sortOrder
+    where user_name = userName;
+end insertUserData;
+
+create or replace procedure showResults(userName varchar2, prod_filter varchar2, pref_pattern varchar2) is
+  sortOrder varchar2(128) := 'asc';
+  filter varchar2(128);
+  dynsql varchar2(256);
+  secretCursor sys_refcursor;
+  secretRow SECRETDATA%rowtype;
+
+begin
+  -- indirect query, sort_order value is concatenated without further processing
+  select sort_order into sortOrder from USERPREFERENCES
+    where user_name = userName;
+
+  dynsql :=
+    'select secret, secret_date from SECRETDATA where ' ||
+    'user_name = :userName AND ' ||
+    'prod_name LIKE :filter ' ||
+    'order by secret_date ' || sortOrder;
+
+  open secretCursor for dynsql using userName, filter; -- VIOLATION - second order sql-i
+  loop
+    fetch secretCursor into secretRow;
+    exit when secretCursor%notfound;
+    -- Do processing on secretRow
+  end loop;
+
+end showResults;]]></example>
+    <repair><![CDATA[-- insertUserData same as before
+
+create or replace procedure showResults(userName varchar2, prod_filter varchar2, pref_pattern varchar2) is
+  sortOrder varchar2(128) := 'asc';
+  filter varchar2(128);
+  dynsql varchar2(256);
+  secretCursor sys_refcursor;
+  secretRow SECRETDATA%rowtype;
+
+begin
+  -- indirect query, sort_order is concatenated without further processing
+  select sort_order into sortOrder from USERPREFERENCES
+    where user_name = userName;
+
+  sortOrder := regexp_substr(sortOrder, 'asc|desc'); -- FIXED
+
+  dynsql :=
+    'select secret, secret_date from SECRETDATA where ' ||
+    'user_name = :userName AND ' ||
+    'prod_name LIKE :filter ' ||
+    'order by secret_date ' || sortOrder;
+
+  open secretCursor for dynsql using userName, filter;
+  loop
+    fetch secretCursor into secretRow;
+    exit when secretCursor%notfound;
+    -- Do processing on secretRow
+  end loop;
+
+end showResults;]]></repair>
+    <reference><![CDATA[SQL Injection Attacks and Defense - Syngress Publishing.,https://www.defcon.org/images/defcon-18/dc-18-presentations/Siddharth/DEFCON-18-Siddharth-Hacking-Oracle-From-Web.pdf,http://www.integrigy.com/files/Integrigy_Oracle_SQL_Injection_Attacks.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:89,CWETOP25:2021:6,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" value="database_input"/>
+      <property name="parametersAsSources" value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.ServerSideRequestForgery" message="ServerSideRequestForgery: Server-Side Request Forgery (SSRF)" class="com.kiuwan.plsql.rules.security.ServerSideRequestForgery" technology="PLSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.6.1,ASVS-v4.0.2:5.2.6,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[A server side request forgery vulnerability appears when an attacker can send requests from a vulnerable server to remote services.
+
+SSRF attacks allow accessing, through vulnerable server, internal systems located behind a firewall that normally would not be accessible.
+
+There are two kinds of SSRF attacks:
+
+- Trusted SSRF: we just can send requests to a list of predefined remote services.
+- Remote SSRF: we can send requests to any remote IP and port.
+
+SSRF attacks are commonly used for port scanning and attacking systems from the internal network.
+
+This rule checks if there are connections established using untrusted input data.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent SSRF attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create or replace function fetch_product_info(host varchar2, productKey varchar2) return varchar2 is
+  url varchar2(128);
+  prodValue varchar2(40);
+  req utl_http.req;
+  resp utl_http.resp;
+  prodInfo varchar2(4096);
+
+begin
+  -- validate the productKey as a valid one
+  select regexp_substr(productKey, '^[A-Za-z0-0_]+$') into prodValue from dual;
+
+  if prodValue is null then
+    return null;
+  end if;
+
+  url := 'http://' || host || '/rest/product/' || prodValue;
+
+  -- VIOLATION - attacker may use this as a proxy for uninteded network connections
+  req := utl_http.begin_request(url);
+
+  utl_http.set_header(req, 'User-Agent', 'api-client');
+  resp := utl_http.get_response(req);
+  utl_http.read_text(resp, prodInfo, 4096);
+
+  utl_http.end_response(resp);
+
+  return prodInfo;
+end;]]></example>
+    <repair><![CDATA[create or replace function fetch_product_info(host varchar2, productKey varchar2) return varchar2 is
+  -- Fixed: create a whitelist of allowed hosts somewhere...
+  type whitelist is table of varchar2(80);
+  allowed constant whitelist := whitelist('products.my.org', 'products_new.my.org');
+
+  url varchar2(128);
+  prodValue varchar2(40);
+  req utl_http.req;
+  resp utl_http.resp;
+  prodInfo varchar2(4096);
+
+begin
+  -- ... and validate the host against the whitelist
+  if not allowed.exists(host) then
+    raise_application_error(-20001, 'not allowed host');
+  end if;
+
+  -- validate the productKey as a valid one
+  select regexp_substr(productKey, '^[A-Za-z0-0_]+$') into prodValue from dual;
+
+  if prodValue is null then
+    raise_application_error(-20001, 'illegal product key');
+  end if;
+
+  url := 'http://' || host || '/rest/product/' || prodValue;
+
+  req := utl_http.begin_request(url);
+
+  utl_http.set_header(req, 'User-Agent', 'api-client');
+  resp := utl_http.get_response(req);
+  utl_http.read_text(resp, prodInfo, 4096);
+
+  utl_http.end_response(resp);
+
+  return prodInfo;
+end;]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/918.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:918,CWETOP25:2021:24,OWASP:2021:A10,PCI-DSS:6.5.8,WASC:45]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.SleepInjection" message="SleepInjection: Denial of Service by externally controlled sleep time" class="com.kiuwan.plsql.rules.security.SleepInjection" technology="PLSQL" active="true">
+    <tags><![CDATA[CWEScope:Availability]]></tags>
+    <description><![CDATA[Denial of Service attacks are targeted at causing the software to crash or become irresponsive to its users.
+
+If a PL/SQL procedure or function have a wait operation (for example DBMS_LOCK.SLEEP) controlled by an input parameter,
+which is not limited in value, an attacker may specify a large delay and hang up the database.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid potential Denial-of-Service conditions.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create or replace procedure do_process(task in out Task, wait_time number) is
+begin
+  while task.is_not_complete()
+  loop
+    task.run_step();
+    dbms_lock.sleep(wait_time); -- VIOLATION
+  end loop;
+end;
+/]]></example>
+    <repair><![CDATA[create or replace procedure do_process(task in out Task, wait_time number) is
+  MAX_WAIT_TIME constant number := 3.0;
+  sleep number;
+
+begin
+  sleep := wait_time;
+
+  -- fixed - check bounds
+  if sleep < 0 or sleep > MAX_WAIT_TIME then
+    sleep := MAX_WAIT_TIME;
+  end if;
+
+  while task.is_not_complete()
+  loop
+    task.run_step();
+    dbms_lock.sleep(sleep);
+  end loop;
+end;
+/]]></repair>
+    <reference><![CDATA[]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:730,OWASP:2004:A9,WASC:10]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.SqlInjection" message="SqlInjection: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')" class="com.kiuwan.plsql.rules.security.SqlInjection" technology="PLSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[SQL Injection (sql-i) attacks occur where the attacker changes the SQL commands to be eecuted from vulnerable software
+by acting on external input. This happens typically when the software concatenates untrusted external input, without proper
+sanitization, into the sql command that is dynamicall executed.
+
+PL/SQL is not totally protected against errors that lead to sql-i vulnerabilities.
+
+Static SQL (in cursors or SQL statements) is safe, as data passed thru binding variables is considered by the SQL engine as data and
+never as part of the SQL code. So no SQL injection attack may succeed into changing the SQL statement executed.
+
+But dynamic SQL must be created/parsed and executed properly in order to avoid sql-i vulnerabilities.
+
+Dynamic SQL could be native (EXECUTE IMMEDIATE textvar, OPEN cursorname FOR textvar) or thru function calls (DBMS_SQL.PARSE and others).
+
+Tainted SQL is any SQL statement built by concatenating parts of SQL text with values from untrusted inputs,
+like variables taken from user-controlled inputs. Procedure / function parameters are considered untrusted input by default.
+
+Depending on the environment, attackers may modify the database state and try to gain further priviledges:
+- ALTER USER SYS IDENTIFIED BY ...
+- GRANT ...DBA???... TO appuser
+- CREATE JAVA SOURCE NAMED ... / CREATE PROCEDURE ... AS LANGUAGE JAVA (for OS Command execution, file extraction, file upload...)
+(see https://www.exploit-db.com/exploits/933 for examples).
+
+In fact, if there is an sql-i in a procedure owned by SYS and PUBLIC has execute privileges, then it is 'game over'...
+The attacker may gain DBA role, and then do whatever he/she wants with the database, execute arbitrary OS commands
+(as oracle account at least), perform network I/O, etc. That happened in the past, for example with
+SYS.DBMS_EXPORT_EXTENSION.GET_DOMAIN_INDEX_TABLES() or SYS.KUPP$PROC.CREATE_MASTER_PROCESS() functions.
+
+The rule emits a violation when dynamic SQL is run and the sql code can be controlled by non-sanitized untrusted inputs.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[-- colname makes static SQL impossible in this example
+
+create or replace procedure dynamic_sql_bad(
+  colname in varchar2,
+  username in varchar2,
+  password in varchar2,
+  data out varchar2
+) is
+  dynsql varchar2(256);
+
+begin
+  dynsql :=
+    'select ' || colname ||
+    ' from userdata where username = ''' || username ||
+    ''' and password = ''' || password || '''';
+
+  execute immediate dynsql into data; -- VIOLATION
+
+end dynamic_sql_bad;]]></example>
+    <repair><![CDATA[create or replace procedure dynamic_sql_safe(
+  colname in varchar2,
+  username in varchar2,
+  data out varchar2
+) is
+  dynsql varchar2(256);
+
+begin
+  -- FIXED: column name (which cannot be passed as binding vars) is sanitized,
+  --        and query variables are passed as binding vars
+  dynsql :=
+    'select ' || dbms_assert.simple_sql_name(colname) ||
+    ' from userdata where username = :1 and password = :2';
+
+  execute immediate dynsql
+    into data
+    using username, password;
+
+  -- If password cannot be passed as binding var, you should at least escape its single quotes, and quote it:
+  -- encodedPass := DBMS_ASSERT.ENQUOTE_LITERAL( TRANSLATE(password, CHAR(39), CHAR(39) || CHAR(39) );
+  -- dynsql = 'select  ... and password = ' || encodedPass;
+
+end dynamic_sql_safe;]]></repair>
+    <reference><![CDATA[https://www.defcon.org/images/defcon-18/dc-18-presentations/Siddharth/DEFCON-18-Siddharth-Hacking-Oracle-From-Web.pdf,http://www.integrigy.com/files/Integrigy_Oracle_SQL_Injection_Attacks.pdf,SQL Injection Attacks and Defense - Syngress Publishing.]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:89,CWETOP25:2021:6,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.TooBroadGrant" message="TooBroadGrant: Too broad privileges granted." class="com.kiuwan.plsql.rules.security.TooBroadGrant" technology="PLSQL" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Granting ALL PRIVILEGES or a too powerful role may give users more privileges than expected.
+
+This rule emits violation when in PL/SQL code such overly broad privileges are granted, which may be
+a potential backdoor, intentional or not.
+
+Some examples:
+- GRANT ALL PRIVILEGES TO PUBLIC/user is definitely too-broad privilege.
+
+- GRANT CREATE/ALTER ANY TRIGGER is a direct path for gaining DBA privileges. As triggers run with owner privileges,
+  an attacker might create / modify a trigger on a SYS table and gain privileges easily,
+
+- GRANT EXECUTE ANY PROCEDURE is excessive, still not equivalent to DBA. But other schemas had historically
+  security flaws (for example, MDSYS.RESET_INPROG_INDEX() had an SQL injection vulnerability, and MDSYS had
+  CREATE ANY TRIGGER privilege...).
+
+Note: Attackers exploiting PL/SQL injections that execute code as privileged users might disguise GRANT statement
+with equivalent INSERT INTO SYS.SYSAUTH$. For example, GRANT DBA TO PUBLIC is probably equivalent to
+INSERT INTO SYS.SYSAUTH$ VALUES(1, 4, 0, NULL).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[GRANT ALL PRIVILEGES TO my_user; -- VIOLATION, excessive privileges granted
+GRANT DBA TO my_user; -- VIOLATION, too powerful role]]></example>
+    <repair><![CDATA[GRANT EXECUTE ON p TO my_user;
+GRANT MY_ROLE TO my_user;]]></repair>
+    <reference><![CDATA[https://mjsoracleblog.wordpress.com/2013/11/27/any-privileges-and-other-excessive-privileges/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:266,OWASP:2021:A1,PCI-DSS:6.5.10,WASC:02]]></security>
+    </normatives>
+    <properties>
+      <property name="forbiddenRoles" descname="Comma-separated list of forbidden roles that should not be granted to application users, like DBA.">
+        <value><![CDATA[
+DBA,
+SELECT_CATALOG_ROLE, EXECUTE_CATALOG_ROLE, DELETE_CATALOG_ROLE,
+EXECUTE_ANY_DICTIONARY,
+EXP_FULL_DATABASE, IMP_FULL_DATABASE, DATAPUMP_IMP_FULL_DATABASE, DATAPUMP_EXP_FULL_DATABASE
+        ]]></value>
+      </property>
+      <property name="forbiddenToPublic" descname="If true, any GRANT TO PUBLIC is considered a violation of the rule." value="true"/>
+      <property name="forbiddenOnSys" descname="If true, any GRANT ON an object in the SYS schema is considered a violation of the rule." value="true"/>
+      <property name="forbiddenObjectPrivileges" descname="Comma-separated list of pattern pairs (separated by /) for matching forbidden privileges on objects. For example, INDEX/(SYS|SYSTEM)(\..*)? will forbid GRANT INDEX ON objects in SYS schema.">
+        <value><![CDATA[
+ALL( PRIVILEGES)?|INDEX/(SYS|SYSTEM)(\..*)?,
+.*/DBA_.*,
+EXECUTE/LIB_.*|.*_LIB
+        ]]></value>
+      </property>
+      <property name="forbiddenSystemPrivileges" descname="Comma-separated list of system privileges considered excessive.">
+        <value><![CDATA[
+ALL PRIVILEGES,
+SELECT ANY DICTIONARY,
+SELECT ANY TABLE, INSERT ANY TABLE, UPDATE ANY TABLE, DELETE ANY TABLE, READ ANY TABLE,
+CREATE ANY INDEX, ALTER ANY INDEX, DROP ANY INDEX,
+CREATE ANY VIEW, DROP ANY VIEW,
+CREATE ANY TRIGGER, ALTER ANY TRIGGER, DROP ANY TRIGGER,
+CREATE ANY SEQUENCE, SELECT ANY SEQUENCE,
+CREATE ANY PROCEDURE, EXECUTE ANY PROCEDURE,
+CREATE ANY DIRECTORY,
+CREATE LIBRARY, CREATE ANY LIBRARY, ALTER ANY LIBRARY, DROP ANY LIBRARY, EXECUTE ANY LIBRARY,
+CREATE PUBLIC SYNONYM, DROP PUBLIC SYNONYM,
+CREATE ANY EDITION, DROP ANY EDITION,
+CREATE ANY JOB, BECOME USER,
+EXEMPT ACCESS POLICY,
+SELECT ANY TRANSACTION,
+INHERIT ANY PRIVILEGES,
+SYSDBA, SYSOPER
+        ]]></value>
+      </property>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.UnqualifiedItemAtInvokerRightsRoutine" message="UnqualifiedItemAtInvokerRightsRoutine: Unqualified database items in AUTHID CURRENT_USER routine." class="com.kiuwan.plsql.rules.security.UnqualifiedItemAtInvokerRightsRoutine" technology="PLSQL" active="true">
+    <tags><![CDATA[CWEScope:AccessControl,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[In routines with AUTHID CURRENT_USER ("invoker rights"), unqualified identifiers are resolved at runtime first against
+the current user schema. If the identifier is referenced in, for example, a security check, an attacker might
+provide a fake database element in its own schema, which will be used by the routine instead of the intended element.
+The attacker may then bypass the security check.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[-- VIOLATION - The problem here is that for "invoker rights" routines, unqualified identifiers are resolved at runtime
+-- An attacker may create a PERMISSION table in its own schema, and bypass this security check
+
+create function can_read(item varchar2, username varchar2) return boolean
+  authid current_user
+is
+  num_rows number;
+  is_allowed boolean := false;
+
+begin
+  select count(*) into num_rows
+  from PERMISSION p -- unqualified table, attacker may provide its own PERMISSION table
+  where p.item = item and p.action = 'READ' and p.username = username;
+
+  if num_rows > 0 then
+    is_allowed := true;
+  end if;
+
+  return is_allowed;
+end;
+/]]></example>
+    <repair><![CDATA[create function can_read(item varchar2, username varchar2) return boolean
+  authid current_user
+is
+  num_rows number;
+  is_allowed boolean := false;
+
+begin
+  select count(*) into num_rows
+  from MY_APP.PERMISSION p -- fixed
+  where p.item = item and p.action = 'READ' and p.username = username;
+
+  if num_rows > 0 then
+    is_allowed := true;
+  end if;
+
+  return is_allowed;
+end;
+/]]></repair>
+    <reference><![CDATA[https://docs.oracle.com/en/database/oracle/oracle-database/18/lnpls/plsql-name-resolution.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:706,OWASP:2021:A1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.WeakCryptographicHash" message="WeakCryptographicHash: Weak cryptographic hashes cannot guarantee data integrity" class="com.kiuwan.plsql.rules.security.WeakCryptographicHash" technology="PLSQL" active="true">
+    <tags><![CDATA[CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,crypto,hash]]></tags>
+    <description><![CDATA[MD4, MD5 and SHA-1 are popular cryptographic hash functions often used to verify the integrity of messages, and for other usages.
+Recent advances in cryptanalysis have discovered weaknesses in hash algorithms, and MD4 / MD5 are considered weak.
+Consequently, they should no longer be relied upon in security-critical contexts.
+
+Techniques for breaking MD4 and MD5 hashes are advanced and widely available enough that the algorithm must not be relied upon for security.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[declare
+  macKey constant varchar2 := 'NoSecrets!'; -- hardcoded and trivial key ;)
+
+  inp varchar2(128);
+  inpArr raw;
+  keyArr raw;
+  computedMac raw;
+
+begin
+  inp := 'En un lugar de La Mancha, de cuyo nombre no puedo acordarme...';
+  inpArr := utl_i18n.string_to_raw(inp, 'AL32UTF8');
+  keyArr := utl_i18n.string_to_raw(macKey, 'AL32UTF8');
+
+  -- VIOLATION, - md5 is weak
+  computedMac := dbms_crypto.mac(src => inpArr, typ => dbms_crypto.hmac_md5, key => keyArr);
+
+  dbms_output.put_line( 'INPUT: ' || input );
+  dbms_output.put_line( 'HMAC: ' || utl_encode.base64_encode( computedMac ) );
+end;]]></example>
+    <repair><![CDATA[declare
+  macKey constant varchar2 := 'NoSecrets!'; -- hardcoded and trivial key ;)
+
+  inp varchar2(128);
+  inpArr raw;
+  keyArr raw;
+  computedMac raw;
+
+begin
+  inp := 'En un lugar de La Mancha, de cuyo nombre no puedo acordarme...';
+  inpArr := utl_i18n.string_to_raw(inp, 'AL32UTF8');
+  keyArr := utl_i18n.string_to_raw(macKey, 'AL32UTF8');
+
+  -- Fixed, SHA1 is allowed
+  computedMac := dbms_crypto.mac(src => inpArr, typ => dbms_crypto.hmac_sh1, key => keyArr);
+
+  dbms_output.put_line( 'INPUT: ' || input );
+  dbms_output.put_line( 'HMAC: ' || utl_encode.base64_encode( computedMac ) );
+end;]]></repair>
+    <reference><![CDATA[https://en.wikipedia.org/wiki/Hash_function_security_summary]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:328,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:50]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="Comma-separated list of allowed hash functions." value="SHA1, RIPEMD160, HMACRIPEMD160, MACTripleDES, SHA256, SHA384, SHA512, HMACSHA256, HMACSHA384, HMACSHA512"/>
+      <property name="forbiddenAlgorithms" descname="List of weak hash functions" value="MD4, MD5, HMACMD4, HMACMD5, HMACSHA1"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.PLSQL.SEC.WeakSymmetricEncryptionAlgorithm" message="WeakSymmetricEncryptionAlgorithm: Weak symmetric encryption algorithm." class="com.kiuwan.plsql.rules.security.WeakSymmetricEncryptionAlgorithm" technology="PLSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.9.3,ASVS-v4.0.2:6.2.2,ASVS-v4.0.2:8.3.7,CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,crypto]]></tags>
+    <description><![CDATA[Encryption algorithms like DES, Triple-DES and RC4 are nowadays too weak for cryptographic usage,
+in particular for ensuring information confidentiality.
+
+DES is currently broken, as an small key size renders it unsafe against brute-force attacks.
+
+RC4 is currently broken, as a related-key attack, where an attacker finds mathematical relationships
+between key values, renders it unsafe as well.
+
+Triple-DES with 112 key bits (or 2TDEA, 2des for short) is weak (80 bits of effective key length) and should not be used anymore.
+
+Triple-DES with 168 key bits (or 3DES) has an effective key length is 112 bits, which could be considered weak by current standards,
+so it should be migrated to a modern cipher, like AES.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create or replace function encrypt(inp varchar2, keyName varchar2, iv out varchar2) return varchar2
+as
+  cipherAlgo pls_integer := dbms_crypto.des_cbc_pkcs5; -- DES is weak
+  inpArr raw(4096);
+  keyArr raw(320);
+  ivArr raw(32);
+  encrypted raw(4096);
+
+begin
+  inpArr := utl_i18n.string_to_raw(inp, 'AL32UTF8');
+  select key_value into keyArr from ENCKEYS where key_name = keyName;
+
+  ivArr := crypto_dbms.randombytes(32); -- block size, 8 bytes or 32 bytes are common
+
+  encrypted := dbms_crypto.encrypt(   -- VIOLATION - DES is currently too weak
+    src => inpArr, typ => cipherAlgo, key => keyArr, iv => ivArr
+  );
+
+  iv := utl_raw.cast_to_varchar2( utl_encode.base64_encode( ivArr ) );
+  return utl_raw.cast_to_varchar2( utl_encode.base64_encode( encrypted ) );
+end;]]></example>
+    <repair><![CDATA[create or replace function encryptStronger(inp varchar2, keyName varchar2, iv out varchar2) return varchar2
+as
+  cipherAlgo pls_integer := dbms_crypto.encrypt_aes256 + dbms_crypto.chain_cbc + dbms_crypto.pad_pkcs5;
+  inpArr raw(4096);
+  keyArr raw(320);
+  ivArr raw(32);
+  encrypted raw(4096);
+
+begin
+  inpArr := utl_i18n.string_to_raw(inp, 'AL32UTF8');
+  select key_value into keyArr from ENCKEYS where key_name = keyName;
+
+  ivArr := crypto_dbms.randombytes(32); -- block size, 8 bytes or 32 bytes are common
+
+  encrypted := dbms_crypto.encrypt(   -- Fixed, AES-256 (in CBC mode with PKCS#5 padding) is not so weak
+    src => inpArr, typ => cipherAlgo, key => keyArr, iv => ivArr
+  );
+
+  iv := utl_raw.cast_to_varchar2( utl_encode.base64_encode( ivArr ) );
+  return utl_raw.cast_to_varchar2( utl_encode.base64_encode( encrypted ) );
+end;]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/327.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:327,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="List of allowed cipher algorithms" value="3des, aes"/>
+      <property name="forbiddenAlgorithms" descname="List of forbidden (weak) cipher algorithms" value="des, rc2, rc4, 2des"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="PLSQL" technology="PLSQL" active="true" weight="1.0">
+      <description><![CDATA[PLSQL rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="PLSQL" active="true" weight="8.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="PLSQL" active="true" weight="10.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="PLSQL" active="true" weight="5.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="PLSQL" active="true" weight="10.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="PLSQL" active="true" weight="4.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

@@ -1,0 +1,87 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='html' subtech='html' descriptor='html/aim.html.xml' label='Process HTML pages'>
+  <description>
+    Process HTML resources (typically, HTML pages and outgoing static dependencies (for example, CSS, JavaScript, links, images, forms...).
+    <br/>
+    NOTE: Other modules (e.g. html/asp for 'classic' ASP, dotnet/aspnet for ASP.Net, j2ee/jsp for J2EE) process
+    dynamic "server" pages. This module is focused on HTML static pages, that may only reference common web resources.
+  </description>
+
+  <properties>
+
+    <property id='aim.html.rule.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>Enable processing of HTML pages.</description>
+    </property>
+
+    <property id='aim.html.filter' type='enum'>
+      <name>filter</name>
+      <example>default</example>
+      <description>Filtering strategy for selecting HTML files to process.</description>
+      <possible>
+        <enumval name="default">Use default extensions configured for <i>html</i> technology.</enumval>
+        <enumval name="pattern">Use patterns in the <code>patterns</code> property for selecting which files should be processed.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.html.filter.pattern' type='list' subtype='antPattern'>
+      <name>patterns</name>
+      <example>**/*.html</example>
+      <description>ANT pattern(s) for matching HTML files (used only when <code>filter=pattern</code>)</description>
+    </property>
+
+    <property id='aim.html.webapp' type='string'>
+      <name>webapp</name>
+      <example>${aim.common.software}</example>
+      <description>Name of the web application. Used as fallback</description>
+    </property>
+
+    <property id='aim.html.rule.acceptUnresolved' type='bool'>
+      <name>acceptUnresolved</name>
+      <example>${aim.common.acceptUnresolved}</example>
+      <description>
+        If true, accept any unresolved reference in HTML (to a file in analyzed software) and create a target entity
+        If false, references to HTML resources not found in analyzed software are ignored
+      </description>
+    </property>
+
+    <property id='aim.html.rule.resolveArtifacts' type='string'>
+      <name>resolveArtifacts</name>
+      <example>${aim.common.resolveArtifacts}</example>
+      <description>If true, location of resources referenced via relative URLs is looked for in sources directory.</description>
+    </property>
+
+    <property id='aim.html.rule.tagsToParse' type='list' subtype="string">
+      <name>tagsToParse</name>
+      <example>link,script,a,img,form,frame,iframe</example>
+      <description>HTML tags to resolve (a subset of link,script,a,img,form,frame,iframe)</description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>
+      page(asp|css),element(COM object),program(VBScript|JavaScript),resource
+    </values>
+    <description>
+      Each HTML (and CSS style sheet) is modeled as a <i>page</i>.
+      Each referenced web resources, like images or non-ASP resources referenced via URL, is modeled as <i>resource</i>.
+      Browser-side scripts (e.g. referenced JavaScript files) are modeled as <i>program</i>.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      page-inclues|calls->page,
+      page-uses->page(css)|program(JavaScript),
+      page-transition|uses->page|resource
+    </values>
+    <description>
+      For each <i>page</i> modelling an HTML page, outgoing relations with other pages or web resources are modeled.
+    </description>
+  </createdRelations>
+
+  <importantConfigurations activation="aim.html.rule.active" />
+
+</block>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="java.rabbitmq" standard="RabbitMQ" technology="java">
+
+  <description url="https://www.rabbitmq.com/">Open-source message broker (client API)</description>
+
+  <!-- https://rabbitmq.github.io/rabbitmq-java-client/api/current/ -->
+
+  <module name="rabbitmq.client" >
+    <class name=" com.rabbitmq.client.Connection" kind="interface" >
+      <method name="getAddress" signature="getAddress()" >
+        <return type="java.net.InetAddress" />
+      </method>
+    </class>
+    <class name="com.rabbitmq.client.RecoverableConnection" kind="interface" supertypes="com.rabbitmq.client.Connection" />
+    <class name="com.rabbitmq.client.SaslMechanism" kind="interface" >
+      <method name="handleChallenge" signature="handleChallenge(com.rabbitmq.client.LongString,java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="com.rabbitmq.client.impl.CRDemoMechanism" supertypes="com.rabbitmq.client.SaslMechanism" />
+    <class name="com.rabbitmq.client.impl.ExternalMechanism" supertypes="com.rabbitmq.client.SaslMechanism" />
+    <class name="com.rabbitmq.client.impl.PlainMechanism" supertypes="com.rabbitmq.client.SaslMechanism" />
+    <class name="com.rabbitmq.client.ConnectionFactory" kind="interface" >
+      <method name="setHost" signature="setHost(java.lang.String)" >
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setPassword" signature="setPort(java.lang.String)" >
+        <tags>password:0</tags>
+        <sink kind="resource_injection" argpos="0" resource="other" />
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setPort" signature="setPort(int)" >
+        <sink kind="resource_injection" argpos="0" resource="other" />
+      </method>
+      <method name="setUsername" signature="setUsername(java.lang.String)" >
+        <tags>username:0</tags>
+        <sink argpos="0" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setUri" signature="setUri()" match="name" >
+        <sink kind="connection_string_injection" argpos="0" />
+      </method>
+    </class>
+  </module>
+
+  <module name="rabbitmq.tools.json" >
+    <class name="com.rabbitmq.tools.json.JSONReader" >
+      <method name="read" signature="read(java.lang.String)" >
+        <return type="java.lang.Object" />
+        <sink argpos="0" kind="code_injection_deserialization" />
+      </method>
+    </class>
+  </module>
+</library>

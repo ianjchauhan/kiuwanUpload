@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for powerscript language</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <!-- import resource="../database/aim.plsql.xml"/-->
+  <import resource="classpath:resources/qaking-tech-sql.xml"/>
+  <import resource="classpath:resources/qaking-tech-sql-properties.xml"/>
+  <!-- import resource="classpath:resources/qaking-tech-plsql.xml"/ -->
+  <import resource="classpath:resources/qaking-tech-powerscript.xml"/>
+
+  <bean id="aim.powerscript.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>powerscript parser</description>
+    <property name="filter" ref="aim.powerscript.filter"/>
+    <property name="languageSupport" ref="ls_powerscript"/>
+  </bean>
+
+  <!-- Rules -->
+
+  <bean id="aim.powerscript.rule" class="com.optimyth.apm.builder.rules.powerscript.PowerscriptClassRule">
+    <description>Powerscript rule</description>
+    <property name="active" value="${aim.powerscript.rule.active}"/>
+    <property name="filter" ref="aim.powerscript.filter"/>
+    <property name="powerscriptCallback" ref="aim.powerscript.callback"/>
+    <property name="callback" ref="aim.powerscript.callback"/>
+    <property name="resolveInheritance" value="${aim.powerscript.rule.resolveInheritance}"/>
+    <property name="resolveInstantiations" value="${aim.powerscript.rule.resolveInstantiations}"/>
+    <property name="resolveCalls" value="${aim.powerscript.rule.resolveCalls}"/>
+    <property name="sqlProcessor" ref="aim.powerscript.sql.processor"/>
+    <property name="resolver" ref="aim.powerscript.resolver"/>
+  </bean>
+  
+  <!-- Processors -->
+  
+  <bean id="aim.powerscript.sql.processor" class="com.optimyth.apm.builder.rules.sql.BasicSqlProcessor">
+    <property name="addSqlToModel" value="false"/>
+    <property name="parseSqlColumns" value="false"/>
+    <property name="sqlParser" ref="ls_sql_parser" />
+    <property name="sqlCallback" ref="aim.powerscript.sql.callback"/>
+  </bean>
+  
+  <!-- Callbacks -->
+  
+  <bean id="aim.powerscript.callback" class="com.optimyth.apm.builder.rules.powerscript.BasicPowerscriptCallback">
+    <property name="allmethods" value="${aim.powerscript.rule.allmethods}"/>
+    <property name="softwareResolver" ref="aim.global.applicationResolver"/>
+    <property name="dbType" value="${aim.powerscript.rule.dbsystem}"/>
+    <property name="dbInstance" value="${aim.powerscript.rule.dbname}"/>
+    <property name="ignoreCase" value="${aim.powerscript.rule.ignoreCase}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+  
+  <bean id="aim.powerscript.sql.callback" class="com.optimyth.apm.builder.rules.sql.BasicSqlCallback">
+    <property name="dbType" value="${aim.powerscript.rule.dbsystem}"/>
+    <property name="dbInstance" value="${aim.powerscript.rule.dbname}"/>
+    <property name="ignoreCase" value="${aim.powerscript.rule.ignoreCase}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+  
+  <!-- Resolvers -->
+  <bean id="aim.powerscript.resolver.abstract" abstract="true">
+    <property name="callback" ref="aim.powerscript.callback"/>
+    <property name="classnameFilter">
+      <util:constant static-field="com.optimyth.apm.builder.rules.common.Predicate.POWERSCRIPT_FILTER"/>
+    </property>
+  </bean>
+  
+  <bean id="aim.powerscript.resolver.existing" parent="aim.powerscript.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.ExistingClassDepsResolver">
+    <property name="cache"><bean class="com.optimyth.apm.builder.rules.oo.ExistingComponentCache">
+      <constructor-arg value="aim.powerscript.resolver.existing.cache"/>
+      <constructor-arg value="512"/>
+    </bean></property>
+    <property name="cacheNon"><bean class="com.optimyth.apm.builder.rules.oo.NonExistingComponentCache">
+      <constructor-arg value="1024"/>
+    </bean></property>
+  </bean>
+  
+<!--  <bean id="aim.powerscript.resolver.matching" parent="aim.powerscript.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.MatchingPkgClassDepsResolver">
+    <property name="predicate"><bean class="com.optimyth.apm.builder.rules.common.PatternsPredicate">
+      <property name="partialMatch" value="true"/>
+      <property name="regexpPatterns" value="${aim.powerscript.resolver.matching.packagePatterns}"/>
+    </bean></property>
+  </bean>-->
+  
+  <bean id="aim.powerscript.resolver" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="key" value="${aim.powerscript.resolver}"/>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.oo.ClassDepsResolver"/>
+    <property name="defaultValue" ref="aim.powerscript.resolver.existing"/>
+    <property name="map">
+    <map>
+      <entry key="existing" value-ref="aim.powerscript.resolver.existing"/>
+      <!--  entry key="matching" value-ref="aim.powerscript.resolver.matching"/ -->
+    </map></property>
+  </bean>
+
+  <!-- Filters -->
+  <bean id="aim.powerscript.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.powerscript.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.powerscript.filter}"/>
+    <property name="map">
+      <map>
+        <entry key="pattern" value-ref="aim.powerscript.filter.pattern"/>
+      </map>
+    </property>
+  </bean>
+
+  <bean id="aim.powerscript.filter.default" parent="ls_powerscript_matcher"/>
+
+  <bean id="aim.powerscript.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.powerscript.filter.pattern}"/>
+  </bean>
+
+</beans>

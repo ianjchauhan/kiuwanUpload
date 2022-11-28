@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_transactsql" updated="">
+  <description>Nykaa_Web</description>
+  <rule name="OPT.TRANSACTSQL.AvoidDynamicSql" message="AvoidDynamicSql: Avoid dynamic SQL statements as much as possible" class="com.optimyth.qaking.tsql.rules.security.AvoidDynamicSql" technology="TRANSACTSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Avoid dynamic SQL statements as much as possible. Dynamic SQL tends to be slower than static SQL, as SQL Server must generate an execution plan every time at runtime. IF and CASE statements come in handy to avoid dynamic SQL.
+
+Another major disadvantage of dynamic SQL is that it requires users to have direct access permissions on all accessed objects, like tables and views. Generally, users are given access to the stored procedures which reference the tables, but not directly on the tables. In this case, dynamic SQL will not work.
+
+Dynamic SQL, when external data is used to compute the SQL, could lead to security vulnerabilities ("SQL injection").
+
+If you need dynamic SQL anyway, you may use sp_executesql with parameters. sp_executesql gives you the possibility to use parameterised statements, EXECUTE does not. Parameterised statements, when used properly, gives no risk to SQL injection and also gives advantage of cached query plan.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[No dynamic SQL means less possibility for SQL injection vulnerabilities, better performance (as execution plan
+could be cached by database server), and less explicit permissions needed.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[EXEC (N'SELECT * FROM T WHERE LASTNAME = ''' + @arg + '''');
+-- violation: sp_executesql called without parameters (dynamic SQL)
+EXEC master.dbo.sp_executesql N'SELECT * FROM T WHERE LASTNAME = ''' + @arg + '''';]]></example>
+    <repair><![CDATA[-- Never use dynamic SQL, unless strictly necessary.
+-- Use parameterized SQL statements when possible
+SELECT * FROM T WHERE LASTNAME = @arg:
+-- Executed with parameters, no security/performance issues
+EXEC master.dbo.sp_executesql N'SELECT * FROM T WHERE LASTNAME = @ln',
+     N'@ln VARCHAR(128)',
+     @ln = @arg]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/89.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:89,CWETOP25:2021:6,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.TRANSACTSQL.AvoidEmailHardcoded" message="AvoidEmailHardcoded: Avoid hardcoded or in-comment emails in source code" class="com.optimyth.qaking.tsql.rules.security.AvoidEmailHardcoded" technology="TRANSACTSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.4,ASVS-v4.0.2:3.5.2,ASVS-v4.0.2:6.4.1,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Hardcoded emails can compromise system security in a way that cannot be easily remedied. 
+
+As example, an email could be used as credentials for logging processes. Hardcoded credentials are visible to any person reading the source code. If the resource 
+protected by such hardcoded credentials is important, this may compromise system security. With hardcoded credentials, change is difficult. If the target account 
+is compromised, and the software is deployed in production, a code change is needed, which forces a redeployment.
+
+It is never a good idea to hardcode an email.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credential leakage.
+If an account is compromised, changing credentials in an external repository does not need changes in code plus software deployment]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[CREATE PROC my_user_proc
+  ...
+  @email varchar(255) = 'mymail@domain.com'    /* VIOLATION */
+  ...
+  as
+  ...
+  return]]></example>
+    <repair><![CDATA[Never hardcode emails in source code.
+It is recommended to fetch credentials from a reliable credentials source.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/615.html,http://cwe.mitre.org/data/definitions/798.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:615,CWE:798,CWETOP25:2021:16,OWASP:2021:A7]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.TRANSACTSQL.SEC.CommandInjection" message="CommandInjection: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')" class="com.optimyth.qaking.tsql.rules.security.CommandInjection" technology="TRANSACTSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.5,ASVS-v4.0.2:5.3.8,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[The software constructs all or part of an operating system (OS) command using externally-controlled input,
+but it does not neutralize properly that input that could modify the intended command when it is sent to a function
+that executes the command.
+
+The rule detects a path in code between an user-input statement (source) and a command execution call (sink),
+with command depending on non neutralized input. This allows for an attacker to change the intended command to execute or
+to add a malicious extra command, executed with the application rights.
+
+NOTE: SQL Server & Sybase historically provided facilities for OS command execution via standard procedures,
+notably xp_cmdsshell, that allow OS command execution, and that were abused in the past for escalating existing vulnerabilities,
+like SQL Injection.
+
+A neutralization function either validates inputs and report an (neutral) error without allowing command execution,
+or replaces sensitive shell characters in the input to avoid that the resulting command has different semantics.
+If possible, use "accept known good" input validation strategy (whitelist).]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid execution of malicious commands.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create procedure dbo.listdir (@path nvarchar(256))
+as
+  declare @cmd nvarchar(512)
+  set @cmd = 'dir ' + @path
+  exec xp_cmdshell @cmd -- VIOLATION
+go]]></example>
+    <repair><![CDATA[create procedure dbo.listdir (@path nvarchar(256))
+as
+  declare @cmd nvarchar(512)
+  declare @path_exists int
+
+  -- validation: accept path
+  exec master.dbo.xp_fileexist @path, @path_exists out
+
+  if @path_exists = 1
+    begin
+      set @cmd = 'dir ' + @path
+      exec xp_cmdshell @cmd -- VIOLATION
+    end
+  else
+    begin
+      raiserror( N'Illegal path', 16, 1)
+    end
+
+go]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/78.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:77,CWE:78,CWETOP25:2021:5,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:31]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.TRANSACTSQL.SEC.InsecureRandomness" message="InsecureRandomness: Standard pseudo-random number generators cannot withstand cryptographic attacks." class="com.optimyth.qaking.tsql.rules.security.InsecureRandomness" technology="TRANSACTSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.3.1,ASVS-v4.0.2:2.6.2,ASVS-v4.0.2:2.9.2,ASVS-v4.0.2:6.3.1,ASVS-v4.0.2:6.3.2,ASVS-v4.0.2:6.3.3,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Insecure randomness errors occur when a function that can produce predictable values is used as a source of randomness
+in security-sensitive context.
+
+Computers are deterministic machines, and as such are unable to produce true randomness. Pseudo-Random Number Generators (PRNGs)
+approximate randomness algorithmically, starting with a seed from which subsequent values are calculated.
+
+There are two types of PRNGs: statistical and cryptographic. Statistical PRNGs provide useful statistical properties,
+but their output is highly predictable, and forms an easy to reproduce numeric stream that is unsuitable for use
+in cases where security depends on generated values being unpredictable.
+
+An example of a statistical generator in SQL Server / Sybase databases is the RANDOM() function, not inteded for cryptography.
+
+Cryptographic PRNGs address this problem by generating output that is more difficult to predict.
+For a value to be cryptographically secure, it must be impossible or highly improbable for an attacker to distinguish
+between it and a truly random value. A proper function like CRYPT_GEN_RANDOM() in SQL Server should be used for random number
+generation under cryptographic or other sensitive usages.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[-- rand() cannot be called inside a function
+create procedure create_token(@token int out) as
+begin
+  set @token = convert(int, rand() * 100000000 ); -- VIOLATION
+end;]]></example>
+    <repair><![CDATA[create procedure create_token(@token int out) as
+begin
+  set @token = abs(convert(int, crypt_gen_random(4))); -- FIXED
+end;]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/338.html,http://cwe.mitre.org/data/definitions/330.html,https://docs.microsoft.com/en-us/sql/t-sql/functions/crypt-gen-random-transact-sql]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:330,CWE:338,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="pattern" descname="Regular expression for detecting when a non-cryptographic PRNG is used in a security context.
+When blank, any non-cryptographic PRNG usage is reported as a rule violation." value="password|passwd|receipt|session|user|key|csrf|token|hash|mac|digest|uuid|guid|crypto|encrypt|decrypt"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.TRANSACTSQL.SEC.SleepInjection" message="SleepInjection: Denial of Service by externally controlled sleep time" class="com.optimyth.qaking.tsql.rules.security.SleepInjection" technology="TRANSACTSQL" active="true">
+    <tags><![CDATA[CWEScope:Availability]]></tags>
+    <description><![CDATA[Denial of Service attacks are targeted at causing the software to crash or become irresponsive to its users.
+
+If a procedure or function have a WAITFOR operation with delay / time controlled by an input parameter,
+which is not limited in value, an attacker may specify a large delay and hang up the database.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid potential Denial-of-Service conditions.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create procedure dbo.RunWithTimeDelay(@Delay char(8) = '00:00:00') as
+  -- some statements
+  waitfor delay @Delay -- VIOLATION
+  -- other statements
+go]]></example>
+    <repair><![CDATA[-- Untrusted input should not be used to select the delay]]></repair>
+    <reference><![CDATA[]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:730,OWASP:2021:A3,WASC:10]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.TRANSACTSQL.SEC.SqlInjection" message="SqlInjection: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')" class="com.optimyth.qaking.tsql.rules.security.SqlInjection" technology="TRANSACTSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[SQL Injection (sql-i) attacks occur where the attacker changes the SQL commands to be executed from vulnerable software
+by acting on external input. This happens typically when the software concatenates untrusted external input, without proper
+sanitization, into the sql command that is dynamicall executed.
+
+T-SQL is not totally protected against errors that lead to sql-i vulnerabilities.
+
+Static SQL (in cursors or SQL statements) is safe, as data passed thru binding variables is considered by the SQL engine as data and
+never as part of the SQL code. So no SQL injection attack may succeed into changing the SQL statement executed.
+
+But dynamic SQL must be created/parsed and executed properly in order to avoid sql-i vulnerabilities.
+
+Dynamic SQL could be native (EXECUTE(textvar)) or thru procedure calls (like SP_EXECUTESQL).
+
+Tainted SQL is any SQL statement built by concatenating parts of SQL text with values from untrusted inputs,
+like variables taken from user-controlled inputs. Procedure / function parameters are considered untrusted input by default.
+
+Depending on the environment, attackers may modify the database state and try to gain further priviledges.
+
+The attacker may gain DBA role, and then do whatever he/she wants with the database; or directly execute arbitrary OS commands,
+read or write files, perform network I/O, etc.
+
+The rule emits a violation when dynamic SQL is run and the sql code can be controlled by non-sanitized untrusted inputs.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[create procedure dbo.querydata
+	@tablename nvarchar(255),
+	@column nvarchar(255),
+	@value nvarchar(255)
+as
+begin
+	declare @sql nvarchar(MAX);
+	set @sql = N'SELECT * FROM ' + @tablename + N' WHERE ' + @column + N' = ' + @value ;
+	EXEC sys.sp_executesql @stmt = @sql; -- VIOLATION
+end]]></example>
+    <repair><![CDATA[create procedure dbo.querydata
+	@tablename nvarchar(255),
+	@column nvarchar(255),
+	@value nvarchar(255)
+as
+begin
+	declare @sql nvarchar(MAX);
+	set @sql = N'SELECT * FROM ';
+	-- FIXED - Validates that table exists and the name is quoted.
+	--         In addition, column is quoted, and value is parameterized.
+	if exists (SELECT 1 FROM sys.tables WHERE name = @tablename) begin
+	  set @sql += quotename(@tablename) + N' WHERE ' + quotename(@column) + N' = @value';
+    EXEC sys.sp_executesql
+      @stmt = @sql,
+      @params = N'@value nvarchar(255)',
+      @value = @value;
+	end else begin
+	  raiserror(N'Invalid table name supplied.', 11, 1);
+	end;
+end]]></repair>
+    <reference><![CDATA[https://www.mssqltips.com/sqlservertip/3637/protecting-yourself-from-sql-injection-in-sql-server--part-1/,SQL Injection Attacks and Defense - Syngress Publishing.]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:89,CWETOP25:2021:6,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.TRANSACTSQL.SEC.TooBroadGrant" message="TooBroadGrant: Too broad privileges granted." class="com.optimyth.qaking.tsql.rules.security.TooBroadGrant" technology="TRANSACTSQL" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Granting ALL PRIVILEGES or a too powerful role may give users more privileges than expected.
+
+This rule emits violation when in code such overly broad privileges are granted, which may be a potential backdoor, intentional or not.
+
+Some examples:
+- "GRANT ALL PRIVILEGES TO user|role" is definitely too-broad privilege.
+
+- "GRANT EXECUTE TO PUBLIC" leads to security flaws. Probably any privilege excplictely GRANTed to PUBLIC is dangerous
+  (as well as to other 'hidden' accounts, like guest).
+
+- "ALTER SERVER ROLE sysadmin ADD MEMBER user", application users should never be sysadmins.
+
+Note: The rule also checks role members additions via calls to system stored procedures like SP_ADDROLEMEMBER.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[GRANT ALL PRIVILEGES TO my_user; -- VIOLATION, excessive privileges granted
+ALTER SERVER ROLE sysadmin ADD MEMBER my_user; -- VIOLATION, too powerful role]]></example>
+    <repair><![CDATA[GRANT EXECUTE TO my_user; -- allowed
+ALTER SERVER ROLE diskadmin ADD MEMBER my_user; -- allowed]]></repair>
+    <reference><![CDATA[https://docs.microsoft.com/en-us/sql/t-sql/statements/grant-transact-sql]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:266,OWASP:2021:A1,PCI-DSS:6.5.10,WASC:02]]></security>
+    </normatives>
+    <properties>
+      <property name="forbiddenRoles" descname="Comma-separated list of forbidden roles." value="sysadmin, securityadmin, serveradmin, db_owner, db_securityadmin, db_ddladmin, db_ssisadmin, dc_admin, dbmanager, loginmanager"/>
+      <property name="forbiddenPrivilegesTo" descname="Comma-separated list of pattern pairs (separated by /) for matching forbidden privileges to principals, like ./^(public|guest)$" value="./^(public|guest)$"/>
+      <property name="forbiddenObjectPrivileges" descname="Comma-separated list of pattern pairs (separated by /) for matching forbidden privileges on objects, like ^control/^database::" value=""/>
+      <property name="forbiddenDatabaseServerPrivileges" descname="Comma-separated list of too-powerful server/database privileges." value="all, control, control server"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.TRANSACTSQL.SEC.WeakCryptographicHash" message="WeakCryptographicHash: Weak cryptographic hashes cannot guarantee data integrity" class="com.optimyth.qaking.tsql.rules.security.WeakCryptographicHash" technology="TRANSACTSQL" active="true">
+    <tags><![CDATA[CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,crypto,hash]]></tags>
+    <description><![CDATA[MD4, MD5 and SHA-1 are popular cryptographic hash functions often used to verify the integrity of messages, and for other usages.
+Recent advances in cryptanalysis have discovered weaknesses in hash algorithms, and MD4 / MD5 are considered weak.
+Consequently, they should no longer be relied upon in security-critical contexts.
+
+Techniques for breaking MD4 and MD5 hashes are advanced and widely available enough that the algorithm must not be relied upon for security.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[set @hash = hashbytes('SHA1', @data);]]></example>
+    <repair><![CDATA[set @hash = hashbytes('SHA2_256', @data);]]></repair>
+    <reference><![CDATA[https://en.wikipedia.org/wiki/Hash_function_security_summary]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:328,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:50]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="Comma-separated list of allowed hash functions." value="SHA2_256, SHA2_512"/>
+      <property name="forbiddenAlgorithms" descname="List of weak hash functions" value="MD2 , MD4, MD5, SHA, SHA1"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.TRANSACTSQL.SEC.WeakSymmetricEncryptionAlgorithm" message="WeakSymmetricEncryptionAlgorithm: Weak symmetric encryption algorithm." class="com.optimyth.qaking.tsql.rules.security.WeakSymmetricEncryptionAlgorithm" technology="TRANSACTSQL" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.9.3,ASVS-v4.0.2:6.2.2,ASVS-v4.0.2:8.3.7,CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,crypto]]></tags>
+    <description><![CDATA[Encryption algorithms like DES, Triple-DES and RC4 are nowadays too weak for cryptographic usage,
+in particular for ensuring information confidentiality.
+
+DES is currently broken, as an small key size renders it unsafe against brute-force attacks.
+
+RC4 is currently broken, as a related-key attack, where an attacker finds mathematical relationships
+between key values, renders it unsafe as well.
+
+Triple-DES with 112 key bits (or 2TDEA, 2des for short) is weak (80 bits of effective key length) and should not be used anymore.
+
+Triple-DES with 168 key bits (or 3DES) has an effective key length of 112 bits, which could be considered weak by current standards,
+so it should be migrated to a modern cipher, like AES.
+
+In SQL Server, database encryption algorithms are chosen when the symmetric key is created (CREATE SYMMETRIC KEY statement).
+Please note that ALGORITHM = DESX in CREATE SYMMETRIC KEY is equivalent to TRIPLE_DES_3KEY (168 key bits).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[CREATE SYMMETRIC KEY MyKey WITH ALGORITHM = RC4 -- VIOLATION, totally broken
+  ENCRYPTION BY CERTIFICATE MyCert;]]></example>
+    <repair><![CDATA[CREATE SYMMETRIC KEY MyKey WITH ALGORITHM = AES_256 -- allowed
+  ENCRYPTION BY CERTIFICATE MyCert;]]></repair>
+    <reference><![CDATA[https://docs.microsoft.com/en-us/sql/t-sql/statements/create-symmetric-key-transact-sql,http://cwe.mitre.org/data/definitions/327.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:327,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="List of allowed cipher algorithms" value="DESX, TRIPLE_DES_3KEY, AES_128, AES_192, AES_256"/>
+      <property name="forbiddenAlgorithms" descname="List of forbidden (weak) cipher algorithms" value="DES, TRIPLE_DES, RC2, RC4, RC4_128"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="TRANSACTSQL" technology="TRANSACTSQL" active="true" weight="1.0">
+      <description><![CDATA[TRANSACTSQL rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="TRANSACTSQL" active="true" weight="8.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="TRANSACTSQL" active="true" weight="10.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="TRANSACTSQL" active="true" weight="5.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="TRANSACTSQL" active="true" weight="10.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="TRANSACTSQL" active="true" weight="4.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="go.mail">
+
+  <description>Mail modules</description>
+
+  <module name="github.com.go-mail.mail" standard="Gomail">
+    <description url="https://pkg.go.dev/github.com/go-mail/mail" >Simple and efficient package to send emails</description>
+
+    <class name="github.com.go-mail.mail.Dialer" kind="struct">
+      <method name="DialAndSend" signature="DialAndSend(...github.com.go-mail.mail.Message)">
+        <return type="go.error" />
+        <sink kind="mail_command_injection" argpos="0" resource="network" />
+      </method>
+    </class>
+
+    <class name="github.com.go-mail.mail.Message" kind="struct"/>
+    <class name="github.com.go-mail.MessageSetting"/>
+    <class name="github.com.go-mail.mail.Sender" kind="struct"/>
+
+    <function name="github.com.go-mail.mail.NewDialer"
+              signature="github.com.go-mail.mail.NewDialer(go.string, go, int, go.string, go.string)">
+      <tags>username:2,password:3</tags>
+      <return type="github.com.go-mail.mail.Dialer"/>
+      <sink argpos="0" kind="connection_string_injection" resource="network" />
+      <sink argpos="1" kind="resource_injection" resource="network" />
+    </function>
+
+    <function name="github.com.go-mail.mail.NewMessage"
+              signature="github.com.go-mail.mail.NewMessage(...github.com.go-mail.mail.MessageSetting)">
+      <return type="github.com.go-mail.mail.Message"/>
+    </function>
+
+    <function name="github.com.go-mail.mail.NewPlainDialer"
+              signature="github.com.go-mail.mail.NewPlainDialer(go.string, go.int, go.string, go.string)">
+      <tags>username:2,password:3</tags>
+      <return type="github.com.go-mail.mail.Dialer"/>
+      <sink argpos="0" kind="connection_string_injection" resource="network" />
+      <sink argpos="1" kind="resource_injection" resource="network" />
+    </function>
+
+    <function name="github.com.go-mail.mail.Send"
+              signature="github.com.go-mail.mail.Send(github.com.go-mail.mail.Sender, github.com.go-mail.mail.Message)">
+      <return type="go.error" />
+      <sink kind="mail_command_injection" argpos="1" resource="network" />
+    </function>
+  </module>
+
+  <module name="gopkg.in.gomail" standard="Gomail">
+    <!-- Alias for the same Gomail thing -->
+    <class name="gopkg.in.gomail.Dialer" kind="struct">
+      <method name="DialAndSend" signature="DialAndSend(...gopkg.in.gomail.Message)">
+        <return type="go.error" />
+        <sink kind="mail_command_injection" argpos="0" resource="network" />
+      </method>
+    </class>
+
+    <class name="gopkg.in.gomail.Message" kind="struct"/>
+    <class name="gopkg.in.gomail.MessageSetting" />
+    <class name="gopkg.in.gomail.Sender" kind="struct"/>
+
+    <function name="gopkg.in.gomail.NewDialer"
+              signature="gopkg.in.gomail.NewDialer(go.string, go, int, go.string, go.string)">
+      <tags>username:2,password:3</tags>
+      <return type="gopkg.in.gomail.Dialer"/>
+      <sink argpos="0" kind="connection_string_injection" resource="network" />
+      <sink argpos="1" kind="resource_injection" resource="network" />
+    </function>
+
+    <function name="gopkg.in.gomail.NewMessage"
+              signature="gopkg.in.gomail.NewMessage(...gopkg.in.gomail.MessageSetting)">
+      <return type="gopkg.in.gomail.Message"/>
+    </function>
+
+    <function name="gopkg.in.gomail.NewPlainDialer"
+              signature="gopkg.in.gomail.NewPlainDialer(go.string, go.int, go.string, go.string)">
+      <tags>username:2,password:3</tags>
+      <return type="gopkg.in.gomail.Dialer"/>
+      <sink argpos="0" kind="connection_string_injection" resource="network" />
+      <sink argpos="1" kind="resource_injection" resource="network" />
+    </function>
+
+    <function name="gopkg.in.gomail.Send"
+              signature="gopkg.in.gomail.Send(gopkg.in.gomail.Sender, gopkg.in.gomail.Message)">
+      <return type="go.error" />
+      <sink kind="mail_command_injection" argpos="1" resource="network" />
+    </function>
+  </module>
+</library>

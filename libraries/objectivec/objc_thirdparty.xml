@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="thirdparty" technology="objectivec">
+
+  <description>Third-party Objective-C libraries</description>
+
+  <module name="RLMRealm" >
+    <description url="https://realm.io/docs/objc/3.1.0/api/index.html">Realm (mobile database)</description>
+
+    <class name="RLMRealm">
+      <method name="addObject:" signature="- (void)addObject:(RLMObject)" >
+        <sink paramNames="addObject" kind="sql_injection" />
+        <sink paramNames="addObject" kind="sensitive_sql" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+      </method>
+      <method name="addObjects:" signature="- (void)addObjects:(id)" >
+        <sink paramNames="addObjects" kind="sql_injection" />
+        <sink paramNames="addObjects" kind="sensitive_sql" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+      </method>
+      <method name="addOrUpdateObjects:" signature="- (void)addOrUpdateObjects:(id);" >
+        <sink paramNames="addOrUpdateObjects" kind="sql_injection" />
+        <sink paramNames="addOrUpdateObjects" kind="sensitive_sql" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+      </method>
+      <method name="addObjects:" signature="- (void)addObjects:(id)" >
+        <sink paramNames="addObjects" kind="sql_injection" />
+        <sink paramNames="addObjects" kind="sensitive_sql" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+      </method>
+      <method name="deleteObject:" signature="- (void)deleteObject:(RLMObject)" >
+        <sink paramNames="deleteObject" kind="sql_injection" />
+        <sink paramNames="deleteObject" kind="sensitive_sql" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+      </method>
+      <method name="deleteObjects:" signature="- (void)deleteObjects:(id)" >
+        <sink paramNames="deleteObjects" kind="sql_injection" />
+        <sink paramNames="deleteObjects" kind="sensitive_sql" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+      </method>
+    </class>
+  </module>
+
+  <!-- NOSQL -->
+  <module name="YapDatabase" >
+    <description url="https://github.com/yapstudios/YapDatabase">YapDatabase (extensible database for iOS and Mac)</description>
+
+    <class name="YapDatabase">
+      <method name="newConnection" signature="(YapDatabaseConnection) newConnection" >
+        <return type="YapDatabaseConnection" />
+      </method>
+    </class>
+    <class name="YapDatabaseConnection">
+      <method name="readWriteWithBlock" signature="" />
+    </class>
+
+    <class name="YapDatabaseReadWriteTransaction">
+      <method name="objectForKey:inCollection:" signature="" >
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="setObject:forKey:inCollection:" signature="" >
+        <sink paramNames="setObject" kind="nosql_injection" resource="database"/>
+        <sink paramNames="setObject" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+    </class>
+
+    <class name="YapDatabaseReadTransaction ">
+      <method name="objectForKey:inCollection:" signature="" >
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="YapDatabaseWriteTransaction ">
+      <method name="setObject:forKey:inCollection:" signature="" >
+        <sink paramNames="setObject" kind="nosql_injection" resource="database"/>
+        <sink paramNames="setObject" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+    </class>
+  </module>
+
+  <module name="CouchBase">
+    <description url="https://docs.couchbase.com/couchbase-lite/current/objc.html">CouchBase (noSQL database)</description>
+
+    <class name="CBLManager">
+      <method name="sharedInstance" signature="" >
+        <return type="CBLManager" />
+      </method>
+      <method name="databaseNamed:" signature="" >
+        <return type="CBLDatabase" />
+        <sink paramNames="databaseNamed" kind="resource_injection" resource="database" />
+      </method>
+      <method name="existingDatabaseNamed:" signature="" >
+        <return type="CBLDatabase" />
+        <sink paramNames="existingDatabaseNamed" kind="resource_injection" resource="database" />
+      </method>
+      <method name="- objectForKeyedSubscript:" signature="" >
+        <return type="CBLDatabase" />
+      </method>
+    </class>
+
+    <class name="CBLDatabase">
+      <method name="createDocument:" signature="" >
+        <return type="CBLDocument" />
+      </method>
+      <method name="documentWithID:" signature="" >
+        <return type="CBLDocument" />
+        <sink paramNames="documentWithID" kind="resource_injection" resource="database" />
+      </method>
+      <method name="existingDocumentWithID:" signature="" >
+        <return type="CBLDocument" />
+        <sink paramNames="existingDocumentWithID" kind="resource_injection" resource="database" />
+      </method>
+      <method name="objectForKeyedSubscript:" signature="" >
+        <return type="CBLDocument" />
+      </method>
+      <method name="createAllDocumentsQuery" signature="" >
+        <return type="CBLQuery" />
+      </method>
+      <method name="slowQueryWithMap:" signature="" >
+        <return type="CBLQuery" />
+      </method>
+    </class>
+
+    <class name="CBLQuery">
+      <method name="run:" signature="" >
+        <return type="CBLQueryEnumerator" />
+      </method>
+    </class>
+
+    <class name="CBLQueryEnumerator">
+      <method name="nextRow:" signature="" >
+        <return type="CBLQueryRow" />
+      </method>
+      <method name="rowAtIndex:" signature="" >
+        <return type="CBLQueryRow" />
+      </method>
+    </class>
+
+    <class name="CBLQueryRow" >
+      <field name="document" type="CBLDocument" />
+    </class>
+
+    <class name="CBLDocument">
+      <method name="putProperties:error:" signature="" >
+        <sink paramNames="putProperties" kind="nosql_injection" resource="database"/>
+        <sink paramNames="putProperties" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="documentWithId:" signature="" >
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="propertyForKey:" signature="">
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="objectForKeyedSubscript:" signature="">
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="ObjCMongoDB" >
+    <description url="https://github.com/paulmelnikow/ObjCMongoDB">Library for MongoDB and BSON</description>
+
+    <class name="MongoConnection ">
+      <method name="connectionForServer:error:" signature="" >
+        <return type="MongoConnection" />
+        <sink paramNames="connectionForServer" kind="resource_injection" resource="database" />
+        <sink paramNames="connectionForServer" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="collectionWithName:" signature="" >
+        <return type="MongoDBCollection" />
+      </method>
+    </class>
+
+    <class name="MongoDBCollection">
+      <method name="insertDictionary:writeConcern:error:" signature="" >
+        <sink paramNames="insertDictionary" kind="nosql_injection" resource="database"/>
+        <sink paramNames="insertDictionary" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="decodeDictionaryWithDocument" signature="" >
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="update:error:" signature="" >
+        <sink paramNames="update" kind="nosql_injection" resource="database"/>
+        <sink paramNames="update" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+      <method name="findOneWithPredicate:error:" signature="" >
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="removeWithPredicate:writeConcern:error:" signature="" >
+        <sink paramNames="removeWithPredicate" kind="nosql_injection" resource="database"/>
+        <sink paramNames="removeWithPredicate" kind="sensitive_nosql" resource="database">
+          <checker id="sensitiveNoSQLChecker" />
+        </sink>
+      </method>
+    </class>
+  </module>
+</library>

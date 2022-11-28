@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="agentCommon" default="none" basedir=".">
+  <description>Common ANT paths, macros and properties for agent scripts</description>
+  <property name="AGENT_HOME" value="${basedir}/.."/>
+  <property name="config.dir" value="${AGENT_HOME}/conf"/>
+  <property name="resources.dir" value="${AGENT_HOME}/resources"/>
+  <property name="config.dir.aim" value="${resources.dir}/appmap/configurations/modelbuilder"/>
+  <property name="lib.dir" value="${AGENT_HOME}/lib"/>
+  <property name="lib.engine.dir" value="${AGENT_HOME}/lib.engine"/>
+  <property name="lib.custom.dir" value="${AGENT_HOME}/lib.custom"/>
+  <property name="temp.dir" value="${AGENT_HOME}/temp"/>
+  <property name="models.dir" value="${temp.dir}/models"/>
+  <property name="upgrade.jarfile" value="upgrade.jar"/>
+  <property name="agent.deps.jarfile" value="KiuwanLocalAnalyzerDeps.jar"/>
+  <property name="agent.version.file" value="${AGENT_HOME}/agent.version"/>
+  <property name="engine.version.file" value="${AGENT_HOME}/engine.version"/>
+  <property name="agent.configuration" location="${config.dir}/agent.properties"/>
+  <property name="analyzer.configuration" location="${config.dir}/analyzer.properties"/>
+  <property environment="env"/>
+  <path id="agent.classpath">
+    <pathelement path="${AGENT_HOME}"/>
+    <pathelement path="${config.dir}"/>
+    <fileset dir="${lib.dir}">
+      <exclude name="${upgrade.jarfile}"/>
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+ <path id="engine.classpath">
+   <pathelement path="${AGENT_HOME}"/>
+   <pathelement path="${config.dir}"/>
+   <fileset dir="${AGENT_HOME}/lib.engine">
+     <include name="*.jar"/>
+   </fileset>
+   <fileset dir="${lib.dir}">
+     <include name="KiuwanLocalAnalyzer.jar"/>
+   </fileset>
+   <pathelement path="${lib.custom.dir}"/>
+   <fileset dir="${lib.custom.dir}">
+     <include name="*.jar"/>
+     <include name="**/*.jar"/>
+   </fileset>
+ </path>
+  <path id="developer.classpath">
+    <pathelement path="${AGENT_HOME}"/>
+    <pathelement path="${config.dir}"/>
+    <fileset dir="${lib.dir}">
+      <exclude name="${agent.deps.jarfile}"/>
+      <exclude name="${upgrade.jarfile}"/>
+    </fileset>
+    <fileset dir="${lib.engine.dir}"> 
+      <include name="*.jar"/>
+    </fileset>
+    <pathelement path="${lib.custom.dir}"/>
+    <fileset dir="${lib.custom.dir}">
+      <include name="*.jar"/>
+      <include name="**/*.jar"/>
+    </fileset>
+  </path>
+  <taskdef name="call" classname="com.optimyth.ant.RunTargetTask" classpathref="agent.classpath"/>
+  <taskdef name="for" classname="com.optimyth.ant.ForTask" classpathref="agent.classpath"/>
+  <taskdef name="if" classname="com.optimyth.ant.IfTask" classpathref="agent.classpath"/>
+  <taskdef name="trycatch" classname="com.optimyth.ant.TryCatchTask" classpathref="agent.classpath"/>
+  <taskdef name="throw" classname="com.optimyth.ant.ThrowTask" classpathref="agent.classpath"/>
+  <taskdef name="merge.properties" classname="com.optimyth.ant.MergePropertiesTask" classpathref="agent.classpath"/>
+  <taskdef name="copy.if.not.exists" classname="com.optimyth.ant.CopyIfNotExists" classpathref="agent.classpath"/>
+  <taskdef name="encrypt" classname="com.optimyth.ant.EncryptorTask" classpathref="agent.classpath"/>
+  <taskdef name="stopwatch" classname="com.optimyth.ant.StopWatchTask" classpathref="agent.classpath"/>
+  <taskdef name="propertycopy" classname="com.optimyth.ant.PropertyCopyTask" classpathref="agent.classpath"/>
+  <taskdef name="set.system.property" classname="com.optimyth.ant.SetSystemPropertyTask" classpathref="agent.classpath"/>
+  <taskdef name="var" classname="com.optimyth.ant.VariableTask" classpathref="agent.classpath"/>
+  <taskdef name="math" classname="com.optimyth.ant.MathTask" classpathref="agent.classpath"/>
+  <taskdef name="propertyregex" classname="com.optimyth.ant.PropertyRegexTask" classpathref="agent.classpath"/>
+  <taskdef name="lock" classname="com.optimyth.qaking.agent.analyzer.tasks.SyncTask" classpathref="agent.classpath"/>
+  <taskdef name="discovery" classname="com.optimyth.qaking.agent.analyzer.tasks.DiscoveryTask" classpathref="agent.classpath"/>
+  <taskdef name="globalReport" classname="com.optimyth.qaking.agent.analyzer.tasks.AnalysisReportTask" classpathref="agent.classpath"/>
+  <taskdef name="configuration.resolver" classname="com.optimyth.qaking.agent.analyzer.tasks.ConfigurationResolverTask" classpathref="agent.classpath"/>
+  <taskdef name="configuration.resolver.aim" classname="com.optimyth.qaking.agent.analyzer.tasks.ConfigurationResolverAimTask" classpathref="agent.classpath"/>
+  <taskdef name="configuration.load.kiuwan" classname="com.optimyth.qaking.agent.analyzer.tasks.ConfigurationLoadKiuwanTask" classpathref="agent.classpath"/>
+  <taskdef name="configuration.load.deferred" classname="com.optimyth.qaking.agent.analyzer.tasks.ConfigurationLoadDeferredTask" classpathref="agent.classpath"/>
+  <taskdef name="configuration.save.deferred" classname="com.optimyth.qaking.agent.analyzer.tasks.ConfigurationSaveDeferredTask" classpathref="agent.classpath"/>
+  <taskdef name="configuration.copy" classname="com.optimyth.qaking.agent.analyzer.tasks.ConfigurationCopyTask" classpathref="agent.classpath"/>
+  <taskdef name="configuration.copy.aim" classname="com.optimyth.qaking.agent.analyzer.tasks.ConfigurationCopyAimTask" classpathref="agent.classpath"/>
+  <taskdef name="configuration.copy.insight" classname="com.optimyth.qaking.agent.analyzer.tasks.ConfigurationCopyInsightTask" classpathref="agent.classpath"/>
+  <taskdef name="configuration.dump" classname="com.optimyth.qaking.agent.analyzer.tasks.ConfigurationDumpTask" classpathref="agent.classpath"/>
+  <taskdef name="language.info" classname="com.optimyth.qaking.agent.analyzer.tasks.LanguageInfoTask" classpathref="agent.classpath"/>
+  <taskdef name="analysis.appender" classname="com.optimyth.qaking.agent.analyzer.tasks.AnalysisAppenderTask" classpathref="agent.classpath"/>
+  <taskdef name="analysis.preconditions" classname="com.optimyth.qaking.agent.analyzer.tasks.AnalysisPreconditionsTask" classpathref="agent.classpath"/>
+  <taskdef name="unwrap.exception" classname="com.optimyth.qaking.agent.analyzer.tasks.UnwrapExceptionTask" classpathref="agent.classpath"/>
+  <taskdef name="echoproperties.encoding" classname="com.optimyth.qaking.agent.analyzer.tasks.EchoPropertiesEncodingTask" classpathref="agent.classpath"/>
+  <taskdef name="source.code.copy" classname="com.optimyth.qaking.agent.analyzer.tasks.SourceCodeCopyTask" classpathref="agent.classpath"/>
+  <taskdef name="ci.data.copy" classname="com.optimyth.qaking.agent.analyzer.tasks.ContinuousIntegrationDataCopyTask" classpathref="agent.classpath"/>
+  <taskdef name="escapearg" classname="com.optimyth.qaking.agent.analyzer.tasks.EscapeArgTask" classpathref="agent.classpath"/>
+  <taskdef name="update.engine" classname="com.optimyth.qaking.agent.analyzer.tasks.client.EngineUpdateTask" classpathref="agent.classpath"/>
+  <taskdef name="analysis.authorization" classname="com.optimyth.qaking.agent.analyzer.tasks.client.AnalysisAuthorizationTask" classpathref="agent.classpath"/>
+  <taskdef name="download.model" classname="com.optimyth.qaking.agent.analyzer.tasks.client.DownloadModelTask" classpathref="agent.classpath"/>
+  <taskdef name="download.userconfig" classname="com.optimyth.qaking.agent.analyzer.tasks.client.DownloadUserConfigTask" classpathref="agent.classpath"/>
+  <taskdef name="download.delivery.data" classname="com.optimyth.qaking.agent.analyzer.tasks.client.DownloadDeliveryDataTask" classpathref="agent.classpath"/>
+  <taskdef name="license" classname="com.optimyth.qaking.agent.analyzer.tasks.client.LicenseTask" classpathref="agent.classpath"/>
+  <taskdef name="upload.failure.results" classname="com.optimyth.qaking.agent.analyzer.tasks.client.UploadFailureResultsTask" classpathref="agent.classpath"/>
+  <taskdef name="upload.results" classname="com.optimyth.qaking.agent.analyzer.tasks.client.UploadResultsTask" classpathref="agent.classpath"/>
+  <taskdef name="retrieve.results" classname="com.optimyth.qaking.agent.analyzer.tasks.client.RetrieveResultsTask" classpathref="agent.classpath"/>
+  <taskdef name="promote.delivery" classname="com.optimyth.qaking.agent.analyzer.tasks.client.PromoteDeliveryTask" classpathref="agent.classpath"/>
+  <taskdef name="retrieve.data" classname="com.optimyth.qaking.agent.analyzer.tasks.client.RetrieveDataTask" classpathref="agent.classpath"/>
+  <taskdef name="sync.config" classname="com.optimyth.qaking.agent.analyzer.tasks.client.ConfigSyncTask" classpathref="agent.classpath"/>
+  <macrodef name="elapsed" description="dumps elapsed time reported by the given clock to global report, with given key">
+    <attribute name="key"/>
+    <attribute name="clock" default="@{key}"/>
+    <attribute name="log" default="false"/>
+    <attribute name="report" default="${global.report}"/>
+    <element name="body" optional="false" implicit="true"/>
+    <sequential>
+      <stopwatch name="@{clock}" action="start"/>
+      <body/>
+      <stopwatch name="@{clock}" action="total" log="@{log}"/>
+      <globalReport reportfile="@{report}">
+        <prop key="@{key}" value="${@{clock}}"/>
+      </globalReport>
+    </sequential>
+  </macrodef>
+  <macrodef name="deleteEmptyFolders" description="delete empty folders under given directory">
+    <attribute name="dir"/>
+    <sequential>
+      <delete includeEmptyDirs="true" failOnError="false">
+        <fileset dir="@{dir}">
+          <and><size value="0"/><type type="dir"/></and>
+        </fileset>
+      </delete>
+    </sequential>
+  </macrodef>
+</project>

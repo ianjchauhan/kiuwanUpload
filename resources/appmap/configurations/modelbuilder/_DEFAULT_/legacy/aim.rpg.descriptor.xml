@@ -1,0 +1,147 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='legacy' subtech='rpg' descriptor='legacy/aim.rpg.xml' label='Process RPG IV programs'>
+  <description>
+    Process RPG IV programs.
+  </description>
+
+  <properties>
+    <property id="aim.rpg.rule.active" type="bool">
+      <name>active</name>
+      <example>false</example>
+      <description>Enable for processing RPG IV code.</description>
+    </property>
+    
+    <property id="aim.rpg.filter" type="enum">
+      <name>filter</name>
+      <example>default</example>
+      <description>Strategy to use for selecting RPG files to process.</description>
+      <possible>
+        <enumval name="default">Accept RPG files matching extensions for rpg4 technology.</enumval>
+        <enumval name="pattern">Accept RPG files matching patterns in the <code>patterns</code> property.</enumval>
+      </possible>
+    </property>
+    
+    <property id="aim.rpg.filter.pattern" type="list" subtype="antPattern">
+      <name>patterns</name>
+      <description>If filter set to pattern, use the following comma-separated patterns.</description>
+    </property>
+    
+    <property id="aim.rpg.rule.software" type="string">
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>
+      Containing software for program entities discovered by RPG rule.
+      Used as fallback if no global resolver or global resolver cannot find a containing software for the target entity.
+      </description>
+    </property>
+    
+    <property id="aim.rpg.rule.registerProcedures" type="bool">
+      <name>registerProcedures</name>
+      <description>If true, procedures are registered, and calls to procedures are represented in the model.</description>
+    </property>
+    
+    <property id="aim.rpg.rule.registerUnresolved" type="bool">
+      <name>registerUnresolved</name>
+      <description>If true, unresolved items (files, called programs) are registered, under the default software.</description>
+    </property>
+    
+    <property id="aim.rpg.rule.parseFileDependencies" type="bool">
+      <name>parseFileDependencies</name>
+      <description>If set to true, usages of datafiles in RPG code will be resolved.</description>
+    </property>
+    
+    <property id="aim.rpg.rule.parseSqlDependencies" type="bool">
+      <name>parseSqlDependencies</name>
+      <description>If set to true, RPG - SQL dependencies will be extracted from EXEC SQL statements.</description>
+    </property>
+    
+    <property id="aim.rpg.rule.dbsystem" type="string">
+      <name>dbsystem</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>
+      The database type (e.g. DB2, Oracle...) or database name for container of referenced tables.
+      Used as fallback if no global database object resolver, or the resolver cannot find the target entity.
+      </description>
+    </property>
+    
+    <property id="aim.rpg.rule.dbname" type="string">
+      <name>dbname</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>
+      The database name or database schema for container of referenced tables.
+      Used as fallback if no global database object resolver, or the resolver cannot find the target entity.
+      </description>
+    </property>
+    
+    <property id="aim.rpg.rule.parseSqlColumns" type="bool">
+      <name>parseSqlColumns</name>
+      <description>If set to true, SQL queries and their relationships with used tables 
+      are inserted into the model as explicit entities.
+      Ignored if parseSqlDependencies=false</description>
+    </property>
+    
+    <property id="aim.rpg.rule.addSqlToModel" type="bool">
+      <name>addSqlToModel</name>
+      <description>
+      If set to true, SQL code is added as property into the queries. 
+      Ignored if parseSqlColumns=false.
+      </description>
+    </property>
+    
+    <property id="aim.rpg.resolver.rpg.extensions" type="list" subtype="string">
+      <name>extensions.rpg</name>
+      <example>rpg,rpgle,dspf,mbr</example>
+      <description>Extensions to consider for target RPG program/copy resolution.</description>
+    </property>
+    
+    <property id="aim.rpg.resolver.cobol.extensions" type="list" subtype="string">
+      <name>extensions.cobol</name>
+      <example>cob,cbl,cobol,cpy</example>
+      <description>Extensions to consider for called cobol programs resolution.</description>
+    </property>
+
+    <property id="aim.rpg.resolver.job.extensions" type="list" subtype="string">
+      <name>extensions.job</name>
+      <example>cl,cl400</example>
+      <description>Extensions to consider for CL/400 scripts.</description>
+    </property>
+        
+  </properties>
+
+  <createdEntities>
+    <values>program,copy,operation(RPG procedure),resource(datafile),sql,table</values>
+    <description>
+      RPG modules (compilation units) are modelled as <i>program</i>.
+      Included files are modelled as <i>copy</i>.
+      <br/>
+      RPG procedures (when registerProcedures=true) are modelled as <i>operation</i>.
+      <br/>
+      Files (disk or sequential devices) are modelled as resources with language=datafile.
+      <br/>
+      SQL statements are modelled as <i>sql</i> components.
+      Target database objects are created (typically as tables).
+    </description>
+  </createdEntities>
+  
+  <createdRelations>
+    <values>
+      program|operation-calls->program|operation,
+      program-contains->operation(procedure),
+      program-includes->copy,
+      program-uses->resource(datafile),
+      program-calls->sql,
+      sql-(select|insert|update|delete)->table
+    </values>
+    <description>
+      When registerProcedures=true, procedures are modelled as operations, and procedure calls
+      are modelled (a call could have a program | operation as source and target).
+      <br/>
+      Copy files are linked to including programs with the includes relation.
+
+      Sql components in EXEC SQL (when parseSqlColumns=true) are linked to calling programs with a calls relation.
+      Target database objects (mainly tables) are linked to sql components with the operation relation (select, insert,
+      update or delete).
+    </description>
+  </createdRelations>
+  
+</block>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+
+  <description>AIM rules for JSP (web.xml, JSP pages, servlets, JSF resources).</description>
+
+  <import resource="classpath:resources/qaking-tech-jsp.xml"/>
+  <import resource="classpath:resources/qaking-tech-javascript.xml"/>
+  <import resource="../common/aim.common.xml"/>
+  <import resource="../html/aim.html.xml"/>
+  <import resource="aim.java.xml"/>
+
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="j2ee/aim.jsp.properties"/>
+  </bean-->
+
+  <bean id="aim.j2ee.parser.jsp" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>JSP parser</description>
+    <property name="filter" ref="aim.j2ee.jsp.filter"/>
+    <property name="languageSupport">
+      <bean parent="ls_jsp">
+        <property name="parseJavascript" value="false"/>
+      </bean>
+    </property>
+  </bean>
+
+  <!-- Rules -->
+
+  <bean id="aim.j2ee.rule.webxml" class="com.optimyth.apm.builder.rules.j2ee.webapp.webxml.WebXmlRule">
+    <description>Resolves configuration in web.xml files</description>
+    <property name="active" value="${aim.j2ee.rule.webxml.active}" />
+    <property name="callback">
+      <bean class="com.optimyth.apm.builder.rules.j2ee.webapp.webxml.BasicWebappCallback">
+        <property name="webappName" value="${aim.j2ee.webapp}"/>
+      </bean>
+    </property>
+    <property name="webxmlPatterns" value="${aim.j2ee.rule.webxml.webxmlPatterns}"/>
+  </bean>
+
+  <bean id="aim.j2ee.rule.jsp" class="com.optimyth.apm.builder.rules.j2ee.webapp.jsp.JspBuilderRule">
+    <description>Resolves JSP dependencies</description>
+    <property name="active" value="${aim.j2ee.rule.jsp.active}"/>
+    <property name="webContents" value="${aim.j2ee.rule.jsp.webContents}"/>
+
+    <property name="callback">
+      <bean class="com.optimyth.apm.builder.rules.j2ee.webapp.jsp.BasicJspCallback">
+        <property name="webappName" value="${aim.j2ee.webapp}"/>
+        <property name="overrideSoftwareResolver" value="${aim.j2ee.rule.jsp.overrideSoftwareResolver}"/>
+      </bean>
+    </property>
+
+    <property name="tagResolver" ref="aim.j2ee.rule.jsp.tagResolver"/>
+    <property name="jspResolver"><bean class="com.als.jsp.JspResolver">
+      <property name="acceptUnresolved" value="${aim.j2ee.rule.jsp.acceptUnresolved}"/>
+    </bean></property>
+    <property name="javaResolver" ref="aim.j2ee.rule.jsp.javaResolver"/>
+
+    <!--<property name="taglibsToParse"><list><value>/WEB-INF/tld/negocia.tld</value></list></property>-->
+    <property name="filter" ref="aim.j2ee.jsp.filter"/>
+  </bean>
+  
+  <bean id="aim.j2ee.rule.servlet" parent="aim.j2ee.rule.javaBytecode" class="com.optimyth.apm.builder.rules.j2ee.webapp.servlet.ServletBuilderRule">
+    <description>Builds servlet and filter dependencies, from compiled bytecode (.class)</description>
+    <property name="active" value="${aim.j2ee.rule.servlet.active}"/>
+    <property name="callback"><bean class="com.optimyth.apm.builder.rules.j2ee.webapp.servlet.BasicServletCallback">
+      <property name="webappName" value="${aim.j2ee.webapp}"/>
+    </bean></property>
+  </bean>
+  
+  <bean id="aim.j2ee.rule.faces" class="com.optimyth.apm.builder.rules.j2ee.webapp.jsf.FacesConfigRule">
+    <description>Parses JSF (Faces 1.2) descriptors and discovers UI components and managed beans</description>
+    <!-- TODO add some metadata for order in ruleset. This rule needs that aim.j2ee.rule.webxml is active and executed before -->
+    <property name="active" value="${aim.j2ee.rule.faces.active}"/>
+    <property name="callback"><bean class="com.optimyth.apm.builder.rules.j2ee.webapp.jsf.BasicFacesConfigCallback"/></property>
+  </bean>
+  
+  <bean id="aim.j2ee.rule.faces.xhtml" class="com.optimyth.apm.builder.rules.j2ee.webapp.jsf.XhtmlRule">
+    <description>Parses XHTML files</description>
+    <property name="filter" ref="aim.j2ee.jsf.xhtml.filter"/>
+    <property name="webContents" value="${aim.common.srcdir}"/>
+    <!-- TODO add some metadata for order in ruleset. This rule needs that aim.j2ee.rule.webxml is active and executed before -->
+    <property name="active" value="${aim.j2ee.rule.faces.active}"/>
+    <property name="callback"><bean class="com.optimyth.apm.builder.rules.html.DefaultHtmlCallback">
+      <property name="resolveArtifacts" value="true"/>
+      <property name="webApplication" value="${aim.html.webapp}"/>
+    </bean></property>
+  </bean>
+  
+  <bean id="aim.j2ee.rule.faces.java.mbean" class="com.optimyth.apm.builder.rules.j2ee.webapp.jsf.ManagedBeanJavaRule">
+    <description>Parses XHTML files</description>
+    <property name="active" value="${aim.j2ee.rule.faces.active}"/>
+    <property name="callback" ref="aim.j2ee.rule.faces.java.callback"/>
+    <property name="resolver" ref="aim.j2ee.java.resolver"/>
+    <property name="filter" ref="aim.j2ee.filter.javaSource"/>
+  </bean>
+  
+  <!-- Callbacks -->
+  
+  <bean id="aim.j2ee.rule.faces.java.callback" class="com.optimyth.apm.builder.rules.j2ee.webapp.jsf.JsfManagedBeanJavaCallback">
+    <property name="language" value="java"/>
+    <property name="softwareResolver" ref="aim.global.applicationResolver"/>
+    <property name="application" value="${aim.j2ee.rule.java.software}"/><!-- fallback value -->
+    <property name="addCodeToRelations" value="${aim.j2ee.rule.java.addCodeToRelations}"/>
+    <property name="resolveArtifacts" value="${aim.j2ee.rule.java.resolveArtifacts}"/>
+  </bean>
+
+  <!-- Resolvers -->
+
+  <bean id="aim.j2ee.rule.jsp.tagResolver" class="com.optimyth.apm.builder.rules.j2ee.webapp.jsp.TagResolver">
+    <description>Resolves dependencies in HTML and JSP tags</description>
+    <property name="tagExtractors" ref="aim.j2ee.rule.jsp.tagResolver.tags"/>
+  </bean>
+
+  <util:map id="aim.j2ee.rule.jsp.tagResolver.tags">
+    <entry key="link"><bean class="com.optimyth.apm.builder.rules.j2ee.webapp.jsp.TagResolver$CssTagExtractor"><property name="acceptUnresolvedResources" value="${aim.j2ee.rule.jsp.acceptUnresolved}"/></bean></entry>
+    <entry key="script"><bean class="com.optimyth.apm.builder.rules.j2ee.webapp.jsp.TagResolver$JavascriptTagExtractor"><property name="acceptUnresolvedResources" value="${aim.j2ee.rule.jsp.acceptUnresolved}"/></bean></entry>
+    <entry key="a"><bean class="com.optimyth.apm.builder.rules.j2ee.webapp.jsp.TagResolver$ATagExtractor"><property name="acceptUnresolvedResources" value="${aim.j2ee.rule.jsp.acceptUnresolved}"/></bean></entry>
+    <entry key="img"><bean class="com.optimyth.apm.builder.rules.j2ee.webapp.jsp.TagResolver$ImgTagExtractor"><property name="acceptUnresolvedResources" value="${aim.j2ee.rule.jsp.acceptUnresolved}"/></bean></entry>
+    <entry key="frame"><bean class="com.optimyth.apm.builder.rules.j2ee.webapp.jsp.TagResolver$FrameTagExtractor"><property name="acceptUnresolvedResources" value="${aim.j2ee.rule.jsp.acceptUnresolved}"/></bean></entry>
+    <entry key="iframe"><bean class="com.optimyth.apm.builder.rules.j2ee.webapp.jsp.TagResolver$FrameTagExtractor"><property name="acceptUnresolvedResources" value="${aim.j2ee.rule.jsp.acceptUnresolved}"/></bean></entry>
+    <entry key="form"><bean class="com.optimyth.apm.builder.rules.j2ee.webapp.jsp.TagResolver$FormTagExtractor"><property name="acceptUnresolvedResources" value="${aim.j2ee.rule.jsp.acceptUnresolved}"/></bean></entry>
+  </util:map>
+
+  <!-- JSP -> Java deps resolver -->
+  <bean id="aim.j2ee.rule.jsp.javaResolver" parent="aim.j2ee.rule.abstractRule" class="com.optimyth.apm.builder.rules.j2ee.webapp.jsp.JavaResolver">
+    <property name="active" value="${aim.j2ee.rule.jsp.active}"/>
+    <property name="javaParser" ref="ls_java"/>
+    <property name="filter" ref="aim.j2ee.filter.javaSource"/>
+    <property name="resolver" ref="aim.j2ee.java.jsp.resolver"/>
+    <!--property name="javaSources" value="${aim.common.srcdir}"/-->
+  </bean>
+  
+  <bean id="aim.j2ee.java.jsp.resolver" parent="aim.j2ee.java.resolver.matching">
+    <property name="classnameFilter"><util:constant static-field="com.optimyth.apm.builder.rules.common.Predicate.JDK_OR_AUTOGENERATED_JAVA_FILTER"/></property>
+  </bean>
+
+  <!-- Filters -->
+  <bean id="aim.j2ee.jsp.filter" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.j2ee.jsp.filter}"/>
+  </bean>
+  
+  <bean id="aim.j2ee.jsf.xhtml.filter" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="*.xhtml,**/*.xhtml"/>
+  </bean>
+
+</beans>

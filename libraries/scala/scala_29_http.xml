@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="scala" name="http" standard="HTTP_frameworks">
+
+  <description>Scala HTTP Frameworks (client and server)</description>
+
+  <module name="org.http4s" standard="http4s">
+    <description url="https://http4s.org/">Streaming HTTP</description>
+
+    <class name="org.http4s.server.blaze.BlazeBuilder">
+      <constructor name="BlazeBuilder" signature="BlazeBuilder()" />
+
+      <method name="BlazeBuilder" signature="BlazeBuilder()" >
+        <return type="org.http4s.BlazeBuilder" />
+        <sink argpos="0" paramNames="socketAddress" kind="ssrf" resource="network" />
+      </method>
+      <method name="bindAny" signature="bindAny(String)">
+        <return type="org.http4s.BlazeBuilder" />
+      </method>
+      <method name="bindHttp" signature="bindHttp(Int, String)">
+        <return type="org.http4s.BlazeBuilder" />
+        <sink argpos="0" paramNames="port" kind="resource_injection" resource="network" />
+        <sink argpos="1" paramNames="host" kind="ssrf" resource="network" />
+      </method>
+      <method name="bindLocal" signature="bindLocal(Int)">
+        <return type="org.http4s.BlazeBuilder" />
+        <sink argpos="0" paramNames="port" kind="resource_injection" resource="network" />
+      </method>
+      <method name="bindSocketAddress" signature="bindSocketAddress(java.net.InetSocketAddress">
+        <return type="org.http4s.BlazeBuilder" />
+      </method>
+      <method name="enableHttp2" signature="enableHttp2(Boolean)">
+        <return type="org.http4s.BlazeBuilder" />
+      </method>
+      <method name="mountService" signature="mountService(cats.data.Kleisli, String)">
+        <return type="org.http4s.BlazeBuilder" />
+      </method>
+      <method name="run" signature="run()">
+        <return type="org.http4s.server.Server" />
+      </method>
+      <method name="serve" signature="serve()">
+        <return type="scala.collection.parallel.Task" />
+      </method>
+      <method name="start" signature="start()">
+        <return type="scala.collection.immutable.Stream" elementType="org.http4s.server.Server" />
+      </method>
+      <method name="withBufferSize" signature="withBufferSize(Int)">
+        <return type="org.http4s.BlazeBuilder" />
+      </method>
+      <method name="withConnectorPoolSize" signature="withConnectorPoolSize(Int)">
+        <return type="org.http4s.BlazeBuilder" />
+      </method>
+      <method name="withExecutionContext" signature="withExecutionContext(scala.concurrent.ExecutionContext)">
+        <return type="org.http4s.BlazeBuilder" />
+      </method>
+      <method name="withIdleTimeout" signature="withIdleTimeout(scala.concurrent.duration.Duration)">
+        <return type="org.http4s.BlazeBuilder" />
+      </method>
+      <method name="withLengthLimits" signature="withLengthLimits(Int, Int)">
+        <return type="org.http4s.BlazeBuilder" />
+      </method>
+      <method name="withNio2" signature="withNio2(Boolean)">
+        <return type="org.http4s.BlazeBuilder" />
+      </method>
+      <method name="withSSL" signature="withSSL(org.http4s.server.SSLKeyStoreSupport.StoreInfo, String, String, scala.Option, Boolean)">
+        <return type="org.http4s.BlazeBuilder" />
+      </method>
+      <method name="withSSLContext" signature="withSSLContext(SSLContext, Boolean)">
+        <return type="org.http4s.BlazeBuilder" />
+      </method>
+      <method name="withServiceErrorHandler" signature="withServiceErrorHandler()">
+        <return type="org.http4s.BlazeBuilder" />
+      </method>
+      <method name="withWebSockets" signature="withWebSockets(Boolean)">
+        <return type="org.http4s.BlazeBuilder" />
+      </method>
+    </class>
+  </module>
+
+  <module name="akka.http" standard="akka-http">
+    <description url="https://doc.akka.io/docs/akka-http/current/">Asynchronous, streaming-first HTTP server and client</description>
+
+    <class name="akka.http.scaladsl.Http">
+      <method name="Http" signature="Http()" >
+        <return type="akka.http.scaladsl.Http" />
+      </method>
+      <method name="bind" signature="bind()" >
+        <return type="akka.stream.scaladsl.Source" />
+        <sink argpos="0" paramNames="interface" kind="ssrf" resource="network" />
+        <sink argpos="1" paramNames="port" kind="resource_injection" resource="network" />
+      </method>
+      <method name="bindAndHandle" signature="bindAndHandle()" >
+        <return type="scala.concurrent.Future" elementType="akka.http.scaladsl.Http.ServerBinding" />
+        <sink argpos="1" paramNames="interface" kind="ssrf" resource="network" />
+        <sink argpos="2" paramNames="port" kind="resource_injection" resource="network" />
+      </method>
+      <method name="bindAndHandleAsync" signature="bindAndHandleAsync()" >
+        <return type="scala.concurrent.Future" elementType="akka.http.scaladsl.Http.ServerBinding" />
+        <sink argpos="1" paramNames="interface" kind="ssrf" resource="network" />
+        <sink argpos="2" paramNames="port" kind="resource_injection" resource="network" />
+      </method>
+      <method name="bindAndHandleSync" signature="bindAndHandle()" >
+        <return type="scala.concurrent.Future" elementType="akka.http.scaladsl.Http.ServerBinding" />
+        <sink argpos="1" paramNames="interface" kind="ssrf" resource="network" />
+        <sink argpos="2" paramNames="port" kind="resource_injection" resource="network" />
+      </method>
+    </class>
+
+    <class name="akka.http.scaladsl.server.HttpApp" supertypes="akka.http.scaladsl.server.Directives">
+      <method name="startServer" signature="startServer()" >
+        <sink argpos="0" paramNames="host" kind="ssrf" resource="network" />
+        <sink argpos="1" paramNames="port" kind="resource_injection" resource="network" />
+      </method>
+    </class>
+
+    <class name="akka.http.scaladsl.model.Uri" kind="abstract_class" supertypes="scala.Serializable, scala.Product" >
+      <method name="copy" signature="copy()" >
+        <return type="akka.http.scaladsl.model.Uri" />
+        <sink paramNames="scheme" kind="insecure_transport" resource="network" />
+        <sink paramNames="scheme, path" kind="http_parameter_pollution" resource="network" />
+      </method>
+
+      <method name="from" signature="from()" >
+        <return type="akka.http.scaladsl.model.Uri" />
+        <sink paramNames="scheme" kind="insecure_transport" resource="network" />
+        <sink paramNames="path" kind="http_parameter_pollution" resource="network" />
+      </method>
+      <method name="Uri" signature="Uri()" >
+        <return type="akka.http.scaladsl.model.Uri" />
+        <sink argpos="0" kind="insecure_transport" resource="network" />
+        <sink argpos="0" kind="http_parameter_pollution" resource="network" />
+      </method>
+    </class>
+  </module>
+
+  <module name="io.vertx.scala" standard="Vert.x">
+    <description url="https://vertx.io/docs/vertx-core/scala/">Tool-kit for building reactive applications</description>
+
+    <class name="io.vertx.scala.core.vertx" >
+      <method name="vertx" signature="vertx()" >
+        <return type="io.vertx.scala.core.vertx" />
+      </method>
+
+      <method name="createDatagramSocket" signature="createDatagramSocket()" >
+        <return type="io.vertx.scala.core.datagram.DatagramSocket" />
+      </method>
+      <method name="createDnsClient" signature="createDnsClient()" >
+        <return type="io.vertx.scala.core.dnsDnsClient" />
+        <sink argpos="0" paramNames="port" kind="resource_injection" resource="network" />
+        <sink argpos="1" paramNames="host" kind="ssrf" resource="network" />
+      </method>
+      <method name="createHttpClient" signature="createHttpClient()" >
+        <return type="io.vertx.scala.core.httpHttpClient" />
+      </method>
+      <method name="createHttpServer" signature="createHttpServer()" >
+        <return type="io.vertx.scala.core.HttpServer" />
+      </method>
+      <method name="createNetClient" signature="createNetClient()" >
+        <return type="io.vertx.scala.core.net.NetClient" />
+      </method>
+      <method name="NetServer" signature="NetServer()" >
+        <return type="io.vertx.scala.core.net.NetServer" />
+      </method>
+    </class>
+
+    <class name="io.vertx.scala.core.http.HttpClientOptions">
+      <method name="setDefaultPort" signature="setDefaultPort()" >
+        <return type="io.vertx.scala.core.http.HttpClientOptions" />
+        <sink argpos="0" paramNames="port" kind="resource_injection" resource="network" />
+      </method>
+      <method name="setLocalAddress" signature="setLocalAddress()" >
+        <return type="io.vertx.scala.core.http.HttpClientOptions" />
+        <sink argpos="0" paramNames="value" kind="ssrf" resource="network" />
+      </method>
+    </class>
+
+    <class name="io.vertx.scala.core.datagram.DatagramSocket">
+      <method name="listen" signature="listen(Int, String, Handler)" >
+        <return type="io.vertx.scala.core.datagram.DatagramSocket" />
+        <sink argpos="0" paramNames="port" kind="resource_injection" resource="network" />
+        <sink argpos="1" paramNames="host" kind="ssrf" resource="network" />
+        <sink argpos="1" paramNames="host" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="listenFuture" signature="listenFuture()" >
+        <return type="scala.concurrent.Future" elementType="io.vertx.scala.core.datagram.DatagramSocket" />
+        <sink argpos="0" paramNames="port" kind="resource_injection" resource="network" />
+        <sink argpos="1" paramNames="host" kind="ssrf" resource="network" />
+        <sink argpos="1" paramNames="host" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="listenMulticastGroup" signature="listenMulticastGroup()" >
+        <return type="io.vertx.scala.core.datagram.DatagramSocket" />
+        <sink argpos="0" paramNames="multicastAddress" kind="ssrf" resource="network" />
+      </method>
+      <method name="listenMulticastGroupFuture" signature="listenMulticastGroupFuture()" >
+        <return type="scala.concurrent.Future" elementType="io.vertx.scala.core.datagram.DatagramSocket" />
+        <sink argpos="0" paramNames="multicastAddress" kind="ssrf" resource="network" />
+      </method>
+      <method name="blockMulticastGroup" signature="blockMulticastGroup()" >
+        <return type="io.vertx.scala.core.datagram.DatagramSocket" />
+      </method>
+      <method name="blockMulticastGroupFuture" signature="blockMulticastGroup()" >
+        <return type="scala.concurrent.Future" elementType="io.vertx.scala.core.datagram.DatagramSocket" />
+      </method>
+      <method name="endHandler" signature="endHandler()" >
+        <return type="io.vertx.scala.core.datagram.DatagramSocket" />
+      </method>
+      <method name="exceptionHandler" signature="exceptionHandler()" >
+        <return type="io.vertx.scala.core.datagram.DatagramSocket" />
+      </method>
+      <method name="fetch" signature="fetch()" >
+        <return type="io.vertx.scala.core.datagram.DatagramSocket" />
+      </method>
+      <method name="handler" signature="handler()" >
+        <return type="io.vertx.scala.core.datagram.DatagramSocket" />
+      </method>
+      <method name="pause" signature="pause()" >
+        <return type="io.vertx.scala.core.datagram.DatagramSocket" />
+      </method>
+      <method name="resume" signature="resume()" >
+        <return type="io.vertx.scala.core.datagram.DatagramSocket" />
+      </method>
+      <method name="send" signature="send()" >
+        <return type="io.vertx.scala.core.datagram.DatagramSocket(String, Int, String)" />
+        <sink argpos="1" paramNames="port" kind="resource_injection" resource="network" />
+        <sink argpos="2" paramNames="host" kind="ssrf" resource="network" />
+        <sink argpos="2" paramNames="host" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="sendFuture" signature="sendFuture(String, Int, String)" >
+        <return type="io.vertx.scala.core.datagram.DatagramSocket" />
+        <sink argpos="1" paramNames="port" kind="resource_injection" resource="network" />
+        <sink argpos="2" paramNames="host" kind="ssrf" resource="network" />
+        <sink argpos="2" paramNames="host" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="sender" signature="sender(Int, String)" >
+        <return type="io.vertx.scala.core.datagram.DatagramSocket" />
+        <sink argpos="0" paramNames="port" kind="resource_injection" resource="network" />
+        <sink argpos="1" paramNames="host" kind="ssrf" resource="network" />
+        <sink argpos="1" paramNames="host" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="unlistenMulticastGroup" signature="unlistenMulticastGroup()" >
+        <return type="io.vertx.scala.core.datagram.DatagramSocket" />
+      </method>
+      <method name="unlistenMulticastGroupFuture" signature="unlistenMulticastGroupFuture()" >
+        <return type="scala.concurrent.Future" elementType="io.vertx.scala.core.datagram.DatagramSocket" />
+      </method>
+    </class>
+
+    <class name="io.vertx.scala.core.http.HttpServer">
+      <method name="connectionHandler" signature="connectionHandler()" >
+        <return type="io.vertx.scala.core.http.HttpServer" />
+      </method>
+      <method name="exceptionHandler" signature="exceptionHandler()" >
+        <return type="io.vertx.scala.core.http.HttpServer" />
+      </method>
+      <method name="listen" signature="listen(Int, String)" >
+        <return type="io.vertx.scala.core.http.HttpServer" />
+        <sink argpos="0, 1" paramNames="port, host" kind="resource_injection" resource="network" />
+      </method>
+      <method name="listenFuture" signature="listenFuture(Int, String)" >
+        <return type="scala.concurrent.Future" elementType="io.vertx.scala.core.http.HttpServer" />
+        <sink argpos="0, 1" paramNames="port, host" kind="resource_injection" resource="network" />
+      </method>
+      <method name="requestHandler" signature="requestHandler()" >
+        <return type="io.vertx.scala.core.http.HttpServer" />
+      </method>
+      <method name="websocketHandler" signature="websocketHandler()" >
+        <return type="io.vertx.scala.core.http.HttpServer" />
+      </method>
+    </class>
+
+    <class name="io.vertx.scala.core.http.HttpClient">
+      <method name="connectionHandler" signature="connectionHandler()" >
+        <return type="io.vertx.scala.core.http.HttpClient" />
+      </method>
+      <method name="delete" signature="delete()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="ssrf" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="deleteAbs" signature="deleteAbs()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+      </method>
+      <method name="get" signature="get()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="ssrf" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="getAbs" signature="getAbs()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+      </method>
+      <method name="getNow" signature="getNow()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="ssrf" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="head" signature="head()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="ssrf" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="headAbs" signature="headAbs()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+      </method>
+      <method name="headNow" signature="headNow()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="ssrf" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="options" signature="options()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="ssrf" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="optionsAbs" signature="optionsAbs()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+      </method>
+      <method name="optionsNow" signature="optionsNow()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="ssrf" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="post" signature="post()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="ssrf" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="postAbs" signature="postAbs()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+      </method>
+      <method name="put" signature="put()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="ssrf" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="putAbs" signature="putAbs()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+      </method>
+      <method name="redirectHandler" signature="redirectHandler()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+      </method>
+      <method name="request" signature="request()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="ssrf" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="requestAbs" signature="requestAbs()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+      </method>
+      <method name="websocket" signature="websocket()" >
+        <return type="io.vertx.scala.core.http.HttpClient" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="ssrf" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="websocketAbs" signature="websocketAbs()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+      </method>
+      <method name="websocketStream" signature="websocketStream()" >
+        <return type="io.vertx.scala.core.http.HttpClient" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="ssrf" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="websocketStreamAbs" signature="websocketStreamAbs()" >
+        <return type="io.vertx.scala.core.httpHttpClientRequest" />
+      </method>
+    </class>
+
+    <class name="io.vertx.scala.core.net.NetClient">
+      <method name="connect" signature="connect()" >
+        <return type="io.vertx.scala.core.net.NetClient" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="ssrf" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="insecure_transport" resource="network" />
+      </method>
+      <method name="connectFuture" signature="connectFuture()" >
+        <return type="io.vertx.scala.core.net.NetClient" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="ssrf" resource="network" />
+        <sink paramNames="host,remoteAddress" kind="insecure_transport" resource="network" />
+      </method>
+    </class>
+
+    <class name="io.vertx.scala.core.net.NetServer">
+      <method name="connectHandler" signature="connectHandler()" >
+        <return type="io.vertx.scala.core.net.NetServer" />
+      </method>
+      <method name="listen" signature="listen()" >
+        <return type="io.vertx.scala.core.net.NetServer" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+      </method>
+      <method name="listenFuture" signature="listenFuture()" >
+        <return type="scala.concurrent.Future" elementType="io.vertx.scala.core.net.NetServer" />
+        <sink paramNames="port" kind="resource_injection" resource="network" />
+      </method>
+    </class>
+  </module>
+
+  <module name="com.twitter.finagle" standard="Finagle">
+    <description url="https://twitter.github.io/finagle/">Extensible RPC system</description>
+
+    <class name="com.twitter.finagle.http.Response" supertypes="com.twitter.finagle.httpMessage" />
+
+    <class name="com.twitter.finagle.httpMessage">
+      <field name="headerMap" type="com.twitter.finagle.http.HeaderMap" >
+        <tags>header:-1</tags>
+      </field>
+
+      <method name="cookies" signature="cookies()" >
+        <return type="com.twitter.finagle.http.CookieMap" />
+      </method>
+      <method name="headers" signature="headers()" >
+        <tags>header:-2</tags>
+        <return type="com.twitter.finagle.http.HeaderMap" />
+      </method>
+      <method name="addCookie" signature="addCookie(com.twitter.finagle.http.Cookie)" />
+      <method name="getCookies" signature="getCookies()" >
+        <return type="scala.Iterator" elementType="com.twitter.finagle.http.Cookie" />
+      </method>
+      <method name="getInputStream" signature="getInputStream()" >
+        <return type="javax.servlet.ServletInputStream" />
+        <source argpos="-1"  kind="user_input" resource="web"/>
+      </method>
+      <method name="host" signature="host(String)" >
+        <sink argpos="0" kind="resource_injection" />
+      </method>
+      <method name="reader" signature="reader()" >
+        <return type="com.twitter.ioReader" />
+        <source argpos="-1"  kind="user_input" resource="web"/>
+      </method>
+      <method name="write" signature="write()" match="name" >
+        <sink argpos="0"  kind="xss" resource="web" />
+      </method>
+    </class>
+
+    <class name="com.twitter.finagle.http.CookieMap" supertypes="scala.collection.mutable.Map" />
+
+    <class name="com.twitter.finagle.http.Cookie">
+      <constructor name="Cookie" signature="Cookie(String, String)" match="numargs" >
+        <tags>cookie.create,cookie.maxAge:2,cookie.secure:4,cookie.httpOnly:5</tags>
+        <sink argpos="1" paramNames="value" kind="cookie_plaintext_storage" resource="web" />
+        <sink argpos="1" paramNames="value" kind="header_manipulation"  resource="web"/>
+      </constructor>
+      <constructor name="Cookie" signature="Cookie(String, String,scala.Option,scala.Option,scala.Option,Boolean,Boolean)" match="numargs" >
+        <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.domain:2,cookie.path:3,cookie.maxAge:4,cookie.secure:5,cookie.httpOnly:6</tags>
+        <sink argpos="1" paramNames="value" kind="cookie_plaintext_storage" resource="web" />
+        <sink argpos="1" paramNames="value" kind="header_manipulation"  resource="web"/>
+      </constructor>
+      <constructor name="Cookie" signature="Cookie(String,String,scala.Option,scala.Option,scala.Option,Boolean,Boolean,com.twitter.finagle.http.cookie.SameSite)" match="numargs" >
+        <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.domain:2,cookie.path:3,cookie.maxAge:4,cookie.secure:5,cookie.httpOnly:6</tags>
+        <sink argpos="1" paramNames="value" kind="cookie_plaintext_storage" resource="web" />
+        <sink argpos="1" paramNames="value" kind="header_manipulation"  resource="web"/>
+      </constructor>
+
+      <field name="name" type="String" >
+        <source argpos="-1"  kind="user_input" resource="web"/>
+      </field>
+      <field name="path" type="String" >
+        <source argpos="-1"  kind="user_input" resource="web"/>
+      </field>
+      <field name="value" type="String" >
+        <source argpos="-1"  kind="user_input" resource="web"/>
+      </field>
+
+      <method name="domain" signature="domain(scala.Option)" >
+        <tags>cookie.create,cookie.domain:0</tags>
+        <return type="com.twitter.finagle.http.Cookie" />
+      </method>
+      <method name="httpOnly" signature="httpOnly(boolean)" >
+        <tags>cookie.create,cookie.httpOnly:0</tags>
+        <return type="com.twitter.finagle.http.Cookie" />
+      </method>
+      <method name="maxAge" signature="maxAge(scala.Option)" >
+        <tags>cookie.create,cookie.maxAge:0</tags>
+        <return type="com.twitter.finagle.http.Cookie" />
+      </method>
+      <method name="path" signature="path(scala.Option)" >
+        <tags>cookie.create,cookie.path:0</tags>
+        <return type="com.twitter.finagle.http.Cookie" />
+      </method>
+      <method name="secure" signature="secure(boolean)" >
+        <tags>cookie.create,cookie.secure:0</tags>
+        <return type="com.twitter.finagle.http.Cookie" />
+      </method>
+      <method name="value" signature="secure(String)" >
+        <tags>cookie.create,cookie.value:0</tags>
+        <return type="com.twitter.finagle.http.Cookie" />
+        <sink argpos="0" paramNames="value" kind="cookie_plaintext_storage" resource="web" />
+        <sink argpos="0" paramNames="value" kind="header_manipulation"  resource="web"/>
+      </method>
+    </class>
+
+    <class name="com.twitter.finagle.http.Request" supertypes="com.twitter.finagle.httpMessage" />
+
+    <class name="com.twitter.finagle.Service"/>
+
+    <class name="com.twitter.finatra.http.response.ResponseBuilder">
+      <method name="badRequest" signature="badRequest(scala.String)" match="numargs" alias="conflict, created, forbidden, gone, internalServerError,
+    movedPermanently, notAcceptable, notFound, ok, preconditionFailed, requstEntityTooLarge, status, unauthorized" >
+        <return type="com.twitter.finatra.http.response.ResponseBuilder.EnrichedResponse" />
+        <sink argpos="0"  kind="xss" resource="web" />
+        <sink argpos="1"  kind="privacy_violation" resource="web" />
+      </method>
+
+      <method name="ok" signature="ok(int, scala.String)" match="numargs"  >
+        <return type="com.twitter.finatra.http.response.ResponseBuilder.EnrichedResponse" />
+        <sink argpos="1"  kind="xss" resource="web" />
+        <sink argpos="1"  kind="privacy_violation" resource="web" />
+      </method>
+    </class>
+
+    <class name="com.twitter.finatra.http.response.ResponseBuilder.EnrichedResponse">
+      <method name="header" signature="header(String, Any)" >
+        <tags>header.name:0,header.value:1</tags>
+        <return type="com.twitter.finatra.http.response.ResponseBuilder.EnrichedResponse" />
+      </method>
+      <method name="headers" signature="headers()" >
+        <tags>header:-1</tags>
+        <return type="com.twitter.finatra.http.response.ResponseBuilder.EnrichedResponse" />
+      </method>
+      <method name="html" signature="html(Any)" alias="json">
+        <return type="com.twitter.finatra.http.response.ResponseBuilder.EnrichedResponse" />
+        <sink argpos="0"  kind="xss" resource="web" />
+      </method>
+      <method name="location" signature="location(String)" >
+        <return type="com.twitter.finatra.http.response.ResponseBuilder.EnrichedResponse" />
+        <sink argpos="0" kind="open_redirect" resource="web" />
+        <sink argpos="0" kind="execution_after_redirect" />
+      </method>
+      <method name="host" signature="host(String)" >
+        <sink argpos="0" kind="resource_injection" />
+      </method>
+      <method name="cookies" signature="cookies()" >
+        <return type="com.twitter.finagle.http.CookieMap" />
+      </method>
+      <method name="cookie" signature="cookie()" match="name" >
+        <return type="com.twitter.finatra.http.response.ResponseBuilder.EnrichedResponse" />
+      </method>
+      <method name="addCookie" signature="addCookie(com.twitter.finagle.http.Cookie)" />
+      <method name="body" signature="body()" match="name" >
+        <return type="com.twitter.finatra.http.response.ResponseBuilder.EnrichedResponse" />
+        <source argpos="-1"  kind="user_input" resource="web" />
+      </method>
+      <method name="content" signature="content()" match="name" >
+        <return type="com.twitter.finatra.http.response.ResponseBuilder.EnrichedResponse" />
+      </method>
+      <method name="contentLength" signature="contentLength()" match="name" >
+        <return type="com.twitter.finatra.http.response.ResponseBuilder.EnrichedResponse" />
+      </method>
+      <method name="failure" signature="failure()" match="name" >
+        <return type="com.twitter.finatra.http.response.ResponseBuilder.EnrichedResponse" />
+      </method>
+      <method name="file" signature="file()" match="name" alias="fileOrIndex">
+        <return type="com.twitter.finatra.http.response.ResponseBuilder.EnrichedResponse" />
+        <sink argpos="0"  kind="xss" resource="web" />
+        <sink argpos="0"  kind="path_traversal" resource="web" />
+      </method>
+      <method name="getInputStream" signature="getInputStream()" >
+        <return type="javax.servlet.ServletInputStream" />
+        <source argpos="-1"  kind="user_input" resource="web"/>
+      </method>
+    </class>
+
+    <class name="com.twitter.finatra.http.Controller">
+      <field name="response" type="com.twitter.finatra.http.response.ResponseBuilder" />
+    </class>
+  </module>
+</library>

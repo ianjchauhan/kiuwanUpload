@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="cpp.strings" standard="string" technology="cpp">
+
+  <description url="https://en.cppreference.com/w/cpp/string">C++ string library</description>
+
+  <class name="string" alias="wstring, string_view, u8string, u16string, u32string, pmr.string, pmr.wstring, pmr.u8string, pmr.u16string, pmr.u32string, wstring_view, u8string_view, u16string_view, u32string_view">
+    <description>typedef basic_string&lt;char> string;</description>
+    
+    <constructor name="string" signature="string()"></constructor>
+    <constructor name="string_1" signature="string(const string&amp; str)"><description>copy</description></constructor>
+    <constructor name="string_1b" signature="string(const string&amp; str, size_t pos, size_t len)"><description>substring</description></constructor>
+    <constructor name="string_2" signature="string(const char *str)"></constructor>
+    <constructor name="string_3" signature="string(const char *str, size_t n)"></constructor>
+    <constructor name="string_4" signature="string(size_t n, char ch)"></constructor>
+
+    <method name="assign" signature="assign(size_t count, char ch)">
+      <return type="string &amp;"/>
+      <propagate from="1" to="-1,-2"/>
+    </method>
+    <method name="assign_2" signature="assign(const string&amp; str)">
+      <tags>string copy, size-check, src:0, dest:-1</tags>
+      <return type="string &amp;"/>
+      <propagate from="0" to="-1,-2"/>
+    </method>
+    <method name="assign_2b" signature="assign(const char* str)"><!-- other signatures: std::initializer_list<char> -->
+      <return type="string &amp;"/>
+      <propagate from="0" to="-1,-2"/>
+    </method>
+    <method name="assign_3" signature="assign(const string&amp; str, size_t pos, size_t len)">
+      <return type="string &amp;"/>
+      <propagate from="0" to="-1,-2"/>
+    </method>
+    <method name="at" signature="at(size_t pos)"><return type="char &amp;"/></method>
+    <method name="front" signature="front()" alias="back"><return type="char &amp;"/></method>
+    <method name="data" signature="data()"><return type="char *"/></method>
+    <method name="c_str" signature="c_str()"><return type="char *"/></method>
+    <method name="empty" signature="empty()"><return type="bool"/></method>
+    <method name="size" signature="size()" alias="length">
+      <tags>string length, size-check, pointer:-2</tags>
+      <return type="size_t"/>
+    </method>
+    <method name="max_size" signature="max_size()"><return type="size_t"/></method>
+    <method name="capacity" signature="capacity()"><return type="size_t"/></method>
+    <method name="clear" signature="clear()"><neutralization argpos="-2" kind="string"/></method>
+    <method name="insert" signature="insert(size_t idx, size_t count, char ch)"><return type="string&amp;"/><propagate from="2" to="-1,-2"/></method>
+    <method name="insert_2" signature="insert(size_t idx, const char* s)"><return type="string&amp;"/><propagate from="1" to="-1,-2"/></method>
+    <method name="insert_3" signature="insert(size_t idx, string&amp; s, size_t from, size_t len)"><return type="string&amp;"/><propagate from="1" to="-1,-2"/></method>
+    <method name="insert_4" signature="insert()"><return type="string&amp;"/></method>
+    <method name="erase" signature="erase(size_t start, size_t len)"></method>
+    <method name="append" signature="append(string&amp; s)"><return type="string&amp;"/><propagate from="0" to="-2,-1"/></method>
+    <method name="append_2" signature="append(size_t count, string&amp; s)"><return type="string&amp;"/><propagate from="1" to="-2,-1"/></method>
+    <method name="append_3" signature="append(string&amp; s, size_t pos, size_t len)"><return type="string&amp;"/><propagate from="0" to="-2,-1"/></method>
+    <method name="push_back" signature="push_back(char ch)"><propagate from="0" to="-2"/></method>
+    <method name="pop_back" signature="pop_back()"/>
+    <method name="compare" signature="compare(string&amp; s)">
+      <tags>string comparison</tags>
+      <return type="int"/>
+      <neutralization argpos="-2,0" kind="string"/>
+    </method>
+    <method name="compare_2" signature="compare(size_t pos, size_t len, string&amp; s)">
+      <tags>string comparison</tags>
+      <return type="int"/>
+      <neutralization argpos="-2,2" kind="string"/>
+    </method>
+    <method name="compare_3" signature="compare(size_t pos, size_t len, string&amp; s, size_t pos2, size_t len2)">
+      <tags>string comparison</tags>
+      <return type="int"/>
+      <neutralization argpos="-2,2" kind="string"/>
+    </method>
+    <method name="starts_with" signature="starts_with(char* s)" alias="ends_with">
+      <return type="bool"/>
+      <neutralization argpos="-2" kind="path_traversal"/>
+    </method>
+    <method name="replace" signature="replace(size_t idx, size_t len, char* s)">
+      <return type="string &amp;"/>
+      <propagate from="2" to="-1,-2"/>
+    </method>
+    <method name="replace_2" signature="replace(size_t idx, size_t len, char* s, size_t idx2, size_t len2)">
+      <return type="string &amp;"/>
+      <propagate from="2" to="-1,-2"/>
+    </method>
+    <method name="replace_3" signature="replace(size_t idx, size_t len, size_t len2, char ch)">
+      <return type="string &amp;"/>
+      <propagate from="2" to="-1,-2"/>
+    </method>
+    <method name="substr" signature="substr(size_t idx, size_t len)" match="name"><return type="string"/><propagate from="-2" to="-1"/></method>
+    <method name="copy" signature="copy(char* dest, size_t count)">
+      <tags>string copy, size-check, src:-2, dest:0, size:1</tags>
+      <propagate from="-2" to="0"/>
+    </method>
+    <method name="copy_2" signature="copy(char* dest, size_t count, size_t pos)">
+      <tags>string copy, size-check, src:-2, dest:0, size:1</tags>
+      <propagate from="-2" to="0"/>
+    </method>
+    <method name="resize" signature="resize(size_t count)"></method>
+    <method name="resize_2" signature="resize(size_t count, char ch)"></method>
+    <method name="find" signature="find(string &amp; s)" match="name" alias="rfind, find_first_not_if, find_last_of, find_last_not_of">
+      <tags>string search</tags>
+      <return type="size_t"/>
+    </method>
+
+  </class>
+
+  <function name="getline" signature="getline(istream&amp; is, string&amp; line)">
+    <description>c++ signature - </description>
+    <return type="istream&amp;"/>
+    <source kind="user_input" resource="environment" argpos="1">
+      <checker id="cpp.checkers.stdin"><property name="argpos" value="0"/></checker>
+    </source>
+    <source kind="file_input" resource="environment" argpos="1"/>
+  </function>
+  <function name="getline_posix" signature="getline(char** line, size_t* n, FILE* stream)">
+    <description>This is POSIX C function with same name - http://man7.org/linux/man-pages/man3/getline.3.html</description>
+    <return type="size_t"/>
+    <source kind="user_input" resource="environment" argpos="0">
+      <checker id="cpp.checkers.stdin"><property name="argpos" value="2"/></checker>
+    </source>
+    <source kind="file_input" resource="environment" argpos="0"/>
+  </function>
+
+  <function name="atoll" signature="long long atoll(const char* nptr)">
+    <description>Converts string to long long</description>
+    <tags>string conversion</tags>
+    <propagate from="0" to="-1"/>
+    <errorProcessing kind="errno"/>
+  </function>
+  <function name="stoi" signature="stoi(string &amp; s)" match="name">
+    <tags>string conversion</tags>
+    <return type="int"/>
+    <propagate from="0" to="-1"/>
+    <errorProcessing kind="exception"/>
+  </function>
+  <function name="stol" signature="stol(string &amp; s)" match="name" alias="stoul">
+    <tags>string conversion</tags>
+    <return type="long"/>
+    <propagate from="0" to="-1"/>
+    <errorProcessing kind="exception"/>
+  </function>
+  <function name="stoll" signature="stoll(string &amp; s)" match="name" alias="stoull">
+    <tags>string conversion</tags>
+    <return type="long long"/>
+    <propagate from="0" to="-1"/>
+    <errorProcessing kind="exception"/>
+  </function>
+  <function name="stof" signature="stof(string &amp; s)" match="name">
+    <tags>string conversion</tags>
+    <return type="float"/>
+    <propagate from="0" to="-1"/>
+    <errorProcessing kind="exception"/>
+  </function>
+  <function name="stod" signature="stod(string &amp; s)" match="name">
+    <tags>string conversion</tags>
+    <return type="double"/>
+    <propagate from="0" to="-1"/>
+    <errorProcessing kind="exception"/>
+  </function>
+  <function name="stold" signature="stold(string &amp; s)" match="name">
+    <tags>string conversion</tags>
+    <return type="long double"/>
+    <propagate from="0" to="-1"/>
+    <errorProcessing kind="exception"/>
+  </function>
+
+  <function name="to_string" signature="to_string(int value)" match="numargs">
+    <return type="string"/>
+  </function>
+  <function name="to_wstring" signature="to_wstring(int value)" match="numargs">
+    <return type="wstring"/>
+  </function>
+
+  <function name="format" signature="format(string_view fmt, Arg&amp;... args)">
+    <tags>formattedOutput</tags>
+    <return type="string&amp;"/>
+    <sink resource="formatstr" argpos="0" kind="format_injection"/>
+  </function>
+  <function name="format_to" signature="format_to(output_iterator out, string_view fmt, Arg&amp;... args)">
+    <tags>formattedOutput</tags>
+    <return type="string&amp;"/>
+    <sink resource="formatstr" argpos="1" kind="format_injection"/>
+  </function>
+  <function name="format_to_n" signature="format_to_n(output_iterator out, size_t n, string_view fmt, Arg&amp;... args)">
+    <tags>formattedOutput</tags>
+    <return type="string&amp;"/>
+    <sink resource="formatstr" argpos="2" kind="format_injection"/>
+  </function>
+  <function name="vformat" signature="vformat(string_view fmt, format_args args)">
+    <tags>formattedOutput</tags>
+    <return type="string&amp;"/>
+    <sink resource="formatstr" argpos="0" kind="format_injection"/>
+  </function>
+  <function name="vformat_2" signature="vformat(locale&amp; loc, string_view fmt, format_args args)">
+    <tags>formattedOutput</tags>
+    <return type="string&amp;"/>
+    <sink resource="formatstr" argpos="0" kind="format_injection"/>
+  </function>
+  <function name="vformat_to" signature="vformat_to(output_iterator it, string_view fmt, format_args args)">
+    <tags>formattedOutput</tags>
+    <return type="string&amp;"/>
+    <sink resource="formatstr" argpos="0" kind="format_injection"/>
+  </function>
+  <function name="vformat_to_2" signature="vformat_to(locale&amp; loc, output_iterator it, locale&amp; loc, string_view fmt, format_args args)">
+    <tags>formattedOutput</tags>
+    <return type="string&amp;"/>
+    <sink resource="formatstr" argpos="0" kind="format_injection"/>
+  </function>
+
+</library>

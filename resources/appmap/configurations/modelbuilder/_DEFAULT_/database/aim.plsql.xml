@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+
+  <description>AIM rules for PL/SQL code</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-plsql.xml"/>
+
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="database/aim.plsql.properties"/>
+  </bean-->
+
+  <bean name="aim.plsql.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>PL/SQL parser</description>
+    <property name="filter" ref="aim.plsql.filter"/>
+    <property name="languageSupport" ref="ls_plsql"/>
+  </bean>
+
+  <bean id="aim.plsql.rule" class="com.optimyth.apm.builder.rules.plsql.PlsqlDatabaseSchemaRule">
+    <description>Process PL/SQL sources</description>
+    <property name="active" value="${aim.plsql.rule.active}"/>
+    <property name="callback" ref="aim.plsql.callback" />
+    <property name="plsqlProcessor" ref="aim.plsql.codeProcessor"/>
+    <property name="databaseCallback">
+      <bean class="com.optimyth.apm.builder.rules.sql.BasicDatabaseCallback">
+        <property name="caseSensitive" value="false"/><!-- Oracle is case insensitive -->
+        <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+      </bean>
+    </property>
+    <property name="filter" ref="aim.plsql.filter"/>
+    <property name="priority" value="2"/>
+    <property name="processPhase" value="-1"/>
+  </bean>
+
+  <bean id="aim.plsql.callback" class="com.optimyth.apm.builder.rules.plsql.BasicPlsqlCallback">
+    <property name="databaseName" value="${aim.plsql.database}"/>
+    <property name="schemaName" value="${aim.plsql.schema}"/>
+    <property name="schemaResolver" ref="aim.plsql.schemaResolver"/>
+    <property name="typeResolver" ref="aim.plsql.typeResolver"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+    <property name="ignoreCaseColumns" value="${aim.plsql.ignoreCaseColumns}"/>
+
+    <property name="scriptFilter" ref="aim.plsql.scriptFilter"/>
+    <property name="softwareName" value="${aim.plsql.software}"/>
+    <property name="sqlCallback" ref="aim.plsql.sqlCallback"/>
+  </bean>
+
+  <bean id="aim.plsql.sqlCallback" class="com.optimyth.apm.builder.rules.sql.BasicPlSqlCallback">
+    <property name="dbType" value="${aim.plsql.database}"/>
+    <property name="dbInstance" value="${aim.plsql.schema}"/>
+    <property name="schemaResolver" ref="aim.plsql.schemaResolver"/>
+    <property name="databaseDepsResolver" ref="aim.plsql.databaseDepsResolver"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+    <property name="softwareName" value="${aim.plsql.software}"/>
+  </bean>
+
+  <bean name="aim.plsql.typeResolver" class="com.optimyth.apm.builder.rules.plsql.PlsqlTypeResolver">
+    <property name="plsqlCallback" ref="aim.plsql.callback" />
+  </bean>
+
+  <bean name="aim.plsql.databaseDepsResolver" class="com.optimyth.apm.builder.rules.sql.resolution.DefaultDatabaseDepsResolver"/>
+
+  <bean name="aim.plsql.codeProcessor" class="com.optimyth.apm.builder.rules.plsql.PlsqlCodeProcessor">
+    <property name="createInternalObjects" value="${aim.plsql.rule.createInternalObjects}"/>
+    <property name="acceptUnresolvedResources" value="${aim.common.acceptUnresolved}"/>
+    <property name="sqlCallback" ref="aim.plsql.callback" />
+    <property name="typeResolver" ref="aim.plsql.typeResolver"/>
+    <property name="sqlProcessor" ref="aim.plsql.plSqlProcessor"/>
+  </bean>
+
+  <bean id="aim.plsql.plSqlProcessor" class="com.optimyth.apm.builder.rules.sql.BasicPlSqlProcessor">
+    <property name="addSqlToModel" value="${aim.plsql.rule.addSqlToModel}"/>
+    <property name="parseSqlColumns" value="${aim.plsql.rule.parseSqlColumns}"/>
+    <property name="sqlParser" ref="ls_plsql_parser"/>
+    <property name="databaseDepsResolver" ref="aim.plsql.databaseDepsResolver"/>
+    <property name="sqlCallback" ref="aim.plsql.sqlCallback"/>    
+  </bean>
+  
+  <!-- Filters -->
+
+  <bean id="aim.plsql.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.plsql.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.plsql.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.plsql.filter.pattern"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.plsql.filter.default" parent="ls_plsql_matcher"/>
+
+  <bean id="aim.plsql.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.plsql.filter.pattern}"/>
+  </bean>
+
+  <!-- Script filter -->
+  <bean id="aim.plsql.scriptFilter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue"><util:constant static-field="com.optimyth.apm.builder.file.NoneFileFilter.INSTANCE"/></property>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.plsql.scriptFilter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.plsql.filter.pattern"/>
+    </map></property>
+  </bean>
+
+
+  <!-- Schema resolvers -->
+
+  <bean id="aim.plsql.schemaResolver" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.plsql.schemaResolver.default"/>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.plsql.SchemaResolver"/>
+    <property name="key" value="${aim.plsql.schemaResolver}"/>
+    <property name="map"><map>
+      <entry key="multi" value-ref="aim.plsql.schemaResolver.multi"/>
+      <entry key="directories" value-ref="aim.plsql.schemaResolver.directories"/>
+    </map></property>
+
+  </bean>
+
+  <bean id="aim.plsql.schemaResolver.default" class="com.optimyth.apm.builder.rules.plsql.BasicSchemaResolver">
+    <constructor-arg value="${aim.plsql.schema}"/>
+  </bean>
+
+  <bean id="aim.plsql.schemaResolver.multi" class="com.optimyth.apm.builder.rules.plsql.MultiSchemaResolver">
+    <property name="schemaDefault" value="${aim.plsql.schema}"/>
+    <property name="schemas" value="${aim.plsql.schemaResolver.multi.schemas}"/>
+  </bean>
+
+  <bean id="aim.plsql.schemaResolver.directories" class="com.optimyth.apm.builder.rules.plsql.DirectoriesSchemaResolver">
+    <property name="schemaName" value="${aim.plsql.schema}"/>
+    <property name="schemasDirectory" value="${aim.plsql.schemaResolver.directories.schemasDirectory}"/>
+  </bean>
+
+</beans>

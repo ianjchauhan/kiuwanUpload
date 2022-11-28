@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="metrics" default="run" basedir=".">
+
+	<import file="analyzerCommon.xml" />
+
+	<target name="run">
+    <if><not><equals arg1="@{language}" arg2="bytecode" /></not>
+    <then>
+      <run.static.analysis language="${language}"
+        ruleset="qaking_metrics_${language}.xml"
+        kind="metrics"
+        reportFormat="xml_metrics"
+      />
+    </then>
+    <else>
+      <echo>Technology @{language} not supported for metrics analysis. Skipped.</echo>
+    </else>
+    </if>
+	</target>
+
+</project>

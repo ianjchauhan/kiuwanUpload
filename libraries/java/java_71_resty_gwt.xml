@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="java.restygwt" standard="RestyGWT" technology="java">
+
+  <description url="https://github.com/resty-gwt/resty-gwt">GWT generator for REST services and JSON encoded objects</description>
+
+  <module name="org.fusesource.restygwt.client" >
+    <class name="org.fusesource.restygwt.client.MethodCallback" kind="interface" >
+      <method name="onFailure" signature="onFailure(org.fusesource.restygwt.client.Method,java.lang.Throwable)" />
+      <method name="onSuccess" signature="onSuccess(org.fusesource.restygwt.client.Method,java.lang.Object)" >
+        <source kind="external_input" argpos="1" />
+      </method>
+    </class>
+    <class name="org.fusesource.restygwt.client.JsonCallback" kind="interface" supertypes="org.fusesource.restygwt.client.MethodCallback" />
+    <class name="org.fusesource.restygwt.client.OverlayCallback" kind="interface" supertypes="org.fusesource.restygwt.client.MethodCallback" />
+    <class name="org.fusesource.restygwt.client.TextCallback" kind="interface" supertypes="org.fusesource.restygwt.client.MethodCallback" />
+    <class name="org.fusesource.restygwt.client.XmlCallback" kind="interface" supertypes="org.fusesource.restygwt.client.MethodCallback" />
+    <class name="org.fusesource.restygwt.client.REST" >
+      <method name="withCallback" signature="withCallback(org.fusesource.restygwt.client.MethodCallback)" >
+        <return type="org.fusesource.restygwt.client.REST" />
+      </method>
+      <method name="call" signature="call(java.lang.Object)" >
+        <return type="java.lang.Object" />
+      </method>
+    </class>
+    <class name="org.fusesource.restygwt.client.Resource" >
+      <constructor name="Resource" signature="Resource(java.lang.String)" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="network" />
+      </constructor>
+      <constructor name="Resource" signature="Resource(java.lang.String,java.lang.String)" match="fullsignature" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="network" />
+        <sink kind="http_parameter_pollution" argpos="1" resource="network" />
+      </constructor>
+      <constructor name="Resource" signature="Resource(java.lang.String,java.util.Map)" match="fullsignature" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="network" />
+        <sink kind="header_manipulation" argpos="1" resource="network" />
+      </constructor>
+      <constructor name="Resource" signature="Resource(java.lang.String,java.lang.String,java.util.Map)" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="network" />
+        <sink kind="http_parameter_pollution" argpos="1" resource="network" />
+        <sink kind="header_manipulation" argpos="2" resource="network" />
+      </constructor>
+      <method name="resolve" signature="resolve(java.lang.String)" >
+        <return type="org.fusesource.restygwt.client.Resource" />
+      </method>
+      <method name="addQueryParam" signature="addQueryParam(java.lang.String,java.lang.String)" >
+        <return type="org.fusesource.restygwt.client.Resource" />
+      </method>
+      <method name="addQueryParams" signature="addQueryParams(java.lang.String,java.lang.Iterable)" >
+        <return type="org.fusesource.restygwt.client.Resource" />
+      </method>
+      <method name="head" signature="head()" >
+        <return type="org.fusesource.restygwt.client.Method" />
+      </method>
+      <method name="get" signature="get()" >
+        <return type="org.fusesource.restygwt.client.Method" />
+      </method>
+      <method name="put" signature="put()" >
+        <return type="org.fusesource.restygwt.client.Method" />
+      </method>
+      <method name="post" signature="post()" >
+        <return type="org.fusesource.restygwt.client.Method" />
+      </method>
+      <method name="delete" signature="delete()" >
+        <return type="org.fusesource.restygwt.client.Method" />
+      </method>
+      <method name="options" signature="options()" >
+        <return type="org.fusesource.restygwt.client.Method" />
+      </method>
+      <method name="getUri" signature="getUri()" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="jsonp" signature="jsonp()" >
+        <return type="org.fusesource.restygwt.client.JsonpMethod" />
+      </method>
+      <method name="getPath" signature="getPath()" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="getQuery" signature="getQuery()" >
+        <return type="java.lang.String" />
+      </method>
+      <method name="getHeaders" signature="getHeaders()" >
+        <return type="java.util.Map" />
+      </method>
+      <method name="defaultHeaders" signature="defaultHeaders()" >
+        <return type="java.util.Map" />
+      </method>
+    </class>
+    <class name="org.fusesource.restygwt.client.Method" >
+      <constructor name="Method" signature="Method()" />
+      <constructor name="Method" signature="Method(org.fusesource.restygwt.client.Resource,java.lang.String)" >
+        <sink argpos="1" kind="header_manipulation" resource="web" />
+      </constructor>
+      <method name="isExpected" signature="isExpected(int)" >
+        <return type="boolean" />
+      </method>
+      <method name="user" signature="user(java.lang.String)" >
+        <tags>username:0</tags>
+        <return type="org.fusesource.restygwt.client.Method" />
+        <sink kind="hardcoded_credentials" argpos="0" resource="web" />
+      </method>
+      <method name="password" signature="password(java.lang.String)" >
+        <tags>password:0</tags>
+        <return type="org.fusesource.restygwt.client.Method" />
+        <sink kind="hardcoded_credentials" argpos="0" resource="web" />
+      </method>
+      <method name="header" signature="header(java.lang.String,java.lang.String)" >
+        <return type="org.fusesource.restygwt.client.Method" />
+        <sink argpos="0,1" kind="header_manipulation" resource="web" />
+      </method>
+      <method name="headers" signature="headers(java.util.Map)" >
+        <return type="org.fusesource.restygwt.client.Method" />
+        <sink argpos="0" kind="header_manipulation" resource="web" />
+      </method>
+      <method name="defaultContentType" signature="defaultContentType(java.lang.String)" >
+        <sink argpos="0" kind="header_manipulation" resource="web" />
+      </method>
+      <method name="text" signature="text(java.lang.String)" >
+        <return type="org.fusesource.restygwt.client.Method" />
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+      <method name="json" signature="json(com.google.gwt.json.client.JSONValue)" >
+        <return type="org.fusesource.restygwt.client.Method" />
+      </method>
+      <method name="xml" signature="xml(com.google.gwt.xml.client.Document)" >
+        <return type="org.fusesource.restygwt.client.Method" />
+      </method>
+      <method name="form" signature="form(java.lang.String)" >
+        <return type="org.fusesource.restygwt.client.Method" />
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+      <method name="timeout" signature="timeout(int)" >
+        <return type="org.fusesource.restygwt.client.Method" />
+      </method>
+      <method name="expect" signature="expect(int...)" >
+        <return type="org.fusesource.restygwt.client.Method" />
+      </method>
+      <method name="send" signature="send(com.google.gwt.http.client.RequestCallback)" >
+        <return type="java.lang.Object" />
+      </method>
+      <method name="send" signature="send(org.fusesource.restygwt.client.TextCallback)" >
+        <return type="java.lang.Object" />
+      </method>
+      <method name="defaultAcceptType" signature="defaultAcceptType(java.lang.String)" >
+        <sink argpos="0" kind="header_manipulation" resource="web" />
+      </method>
+      <method name="send" signature="send(org.fusesource.restygwt.client.MethodCallback)" >
+        <return type="java.lang.Object" />
+        <source argpos="-1" kind="external_input" resource="web" />
+      </method>
+      <method name="send" signature="send(org.fusesource.restygwt.client.JsonCallback)" >
+        <return type="java.lang.Object" />
+        <source argpos="-1" kind="external_input" resource="web" />
+      </method>
+      <method name="send" signature="send(org.fusesource.restygwt.client.XmlCallback)" >
+        <return type="java.lang.Object" />
+        <source argpos="-1" kind="external_input" resource="web" />
+      </method>
+      <method name="send" signature="send(org.fusesource.restygwt.client.OverlayCallback)" >
+        <return type="java.lang.Object" />
+        <source argpos="-1" kind="external_input" resource="web" />
+      </method>
+      <method name="setDispatcher" signature="setDispatcher(org.fusesource.restygwt.client.Dispatcher)" />
+      <method name="addData" signature="addData(java.lang.String,java.lang.String)" >
+        <propagate from="0" to="-2" />
+        <propagate from="1" to="-2" />
+      </method>
+      <method name="getRequest" signature="getRequest()" >
+        <return type="com.google.gwt.http.client.Request" />
+      </method>
+      <method name="getResponse" signature="getResponse()" >
+        <return type="com.google.gwt.http.client.Response" />
+      </method>
+      <method name="getDispatcher" signature="getDispatcher()" >
+        <return type="org.fusesource.restygwt.client.Dispatcher" />
+      </method>
+      <method name="getData" signature="getData()" >
+        <return type="java.util.Map" />
+      </method>
+    </class>
+  </module>
+</library>

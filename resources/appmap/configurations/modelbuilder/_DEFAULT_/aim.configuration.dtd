@@ -1,0 +1,50 @@
+<!ENTITY % html "(#PCDATA|br|i|b|code|span|p|ul)*">
+
+<!ELEMENT block (description, dependencies?, properties, createdEntities?, createdRelations?)>
+
+<!ATTLIST block
+  tech CDATA #REQUIRED
+  subtech CDATA #REQUIRED
+  descriptor CDATA #REQUIRED
+  label CDATA #IMPLIED
+  created CDATA #IMPLIED
+  lastModified CDATA #IMPLIED
+>
+
+<!ELEMENT dependencies (dependency*)>
+<!ELEMENT dependency (#PCDATA)>
+
+<!ELEMENT properties (property*)>
+
+<!ELEMENT property (name, example?, description, possible?)>
+<!ATTLIST property
+  id ID #REQUIRED
+  type (string|bool|enum|list) "string"
+  subtype (string|regexp|antPattern) "string"
+  separator CDATA #IMPLIED
+>
+
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT example (#PCDATA)>
+<!ELEMENT description %html;>
+<!ELEMENT possible (enumval*)>
+<!ELEMENT enumval %html;>
+<!ATTLIST enumval
+  name CDATA #REQUIRED
+>
+
+<!ELEMENT br EMPTY>
+<!ELEMENT p %html;>
+<!ELEMENT i %html;>
+<!ELEMENT b %html;>
+<!ELEMENT code %html;>
+<!ELEMENT span %html;>
+<!ATTLIST span
+  class CDATA #IMPLIED
+>
+<!ELEMENT ul (li*)>
+<!ELEMENT li (#PCDATA)>
+
+<!ELEMENT createdEntities (values,description)>
+<!ELEMENT createdRelations (values,description)>
+<!ELEMENT values (#PCDATA)>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>Validation rules</description>
+
+  <import resource="../common/aim.common.xml"/>
+
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="validation/aim.validation.properties"/>
+  </bean-->
+  
+  <bean id="aim.validation.rule.validate" class="com.optimyth.apm.builder.rules.validation.DeclarativeValidationRule">
+    <description>Declarative validation rule</description>
+    <property name="active" value="${aim.validation.rule.validate.active}"/>
+    <property name="category" value="${aim.validation.rule.validate.category}"/>
+    <property name="codeResource" value="${aim.validation.rule.validate.codeResource}"/>
+    <property name="code"><value><![CDATA[
+    ${aim.validation.rule.validate.code}
+    ]]></value></property>
+  </bean>
+  
+  <util:constant id="aim.validation.types.software" static-field="com.optimyth.apm.model.Types.SOFTWARE" />
+  <util:constant id="aim.validation.types.component" static-field="com.optimyth.apm.model.Types.COMPONENT" />
+  <util:constant id="aim.validation.types.class" static-field="com.optimyth.apm.model.Types$ComponentType.CLASS"/>
+  <util:constant id="aim.validation.types.program" static-field="com.optimyth.apm.model.Types$ComponentType.PROGRAM"/>
+  <util:constant id="aim.validation.types.dbObject" static-field="com.optimyth.apm.model.Types$ComponentType.DATABASE_OBJECT"/>
+
+  <bean id="aim.validation.rule.tooMuchCoupling" class="com.optimyth.apm.builder.rules.TooMuchCouplingValidationRule">
+    <description>Validation rule that detects Dependency anti-patterns ('design bad smells') due to excessive coupling</description>
+    <property name="active" value="${aim.validation.rule.tooMuchCoupling.active}"/>
+    <property name="transitiveCoupling" value="${aim.validation.rule.tooMuchCoupling.transitive}"/>
+    <property name="thresholds">
+      <bean class="com.optimyth.apm.builder.rules.TooMuchCouplingValidationRule$Thresholds">
+        <property name="defaultThreshold" value="${aim.validation.rule.tooMuchCoupling.defaultThreshold}"/>
+        
+        <property name="componentPercentageThreshold" value="${aim.validation.rule.tooMuchCoupling.componentPercentageThreshold}"/>
+        <property name="byType"><map>
+          <entry key-ref="aim.validation.types.software" value="${aim.validation.rule.tooMuchCoupling.threshold.software}"/>
+          <entry key-ref="aim.validation.types.component" value="${aim.validation.rule.tooMuchCoupling.threshold.component}"/>
+        </map></property>
+        <property name="bySubType"><map>
+          <entry key-ref="aim.validation.types.class" value="${aim.validation.rule.tooMuchCoupling.threshold.class}"/>
+          <entry key-ref="aim.validation.types.program" value="${aim.validation.rule.tooMuchCoupling.threshold.program}"/>
+          <entry key-ref="aim.validation.types.dbObject" value="${aim.validation.rule.tooMuchCoupling.threshold.dbObject}"/>
+        </map></property>
+      </bean>
+    </property>
+  </bean>
+  
+</beans>

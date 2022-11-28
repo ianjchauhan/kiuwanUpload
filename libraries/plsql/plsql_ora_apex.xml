@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library.database
+  xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  technology="plsql" name="plsql_ora_apex" standard="Oracle_APEX">
+
+  <description url="https://docs.oracle.com/en/database/oracle/application-express/20.1/aeapi/index.html">
+    Oracle Application Express (APEX) and other packages (like HTP/HTF) related to web applications
+  </description>
+
+  <package name="apex_collection">
+    <procedure name="create_collection_from_query" signature="create_collection_from_query(p_collection_name varchar2, p_query varchar2, p_generate_md5 varchar2)"
+               alias="create_collection_from_query2, create_collection_from_query_b">
+      <sink argpos="1" kind="sql_injection" resource="database"/>
+    </procedure>
+  </package>
+
+  <package name="apex_escape">
+    <function name="html" signature="html(p_string varchar2)"
+               alias="html_attribute">
+      <return type="varchar2"/>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </function>
+    <function name="html_trunc" signature="html_trunc(p_string varchar2, p_length number)">
+      <return type="varchar2"/>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </function>
+    <function name="html_whitelist" signature="html_whitelist(p_html varchar2, p_whitelist_tags varchar2)">
+      <return type="varchar2"/>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </function>
+    <function name="js_literal" signature="js_literal(p_string varchar2, p_quote number)">
+      <return type="varchar2"/>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </function>
+    <function name="ldap_dn" signature="ldap_dn(p_string varchar2, p_reserved_chars varchar2, p_escaped_on_ascii boolean)"
+               alias="ldap_search_filter">
+      <return type="varchar2"/>
+      <neutralization argpos="0" kind="ldap_injection" resource="network"/>
+    </function>
+  </package>
+
+  <package name="apex_javascript">
+    <procedure name="add_onload_code" signature="add_onload_code(p_code varchar2, p_key varchar2)">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </procedure>
+    <function name="add_attribute" signature="add_attribute(p_name varchar2, p_value varchar2)">
+      <return type="varchar2"/>
+      <sink argpos="0,1" kind="xss" resource="web"/>
+    </function>
+    <procedure name="add_inline_code" signature="add_inline_code(p_code varchar2, p_key varchar2)">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </procedure>
+    <function name="add_value" signature="add_value(p_value varchar2, p_add_comma boolean)">
+      <return type="varchar2"/>
+      <sink argpos="0" kind="xss" resource="web"/>
+    </function>
+    <function name="escape" signature="escape(p_text varchar2)">
+      <return type="varchar2"/>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </function>
+  </package>
+
+  <package name="apex_util">
+    <procedure name="change_current_user_pw" signature="change_current_user_pw(p_new_password varchar2)">
+      <tags>password:0</tags>
+      <sink argpos="0" kind="hardcoded_credentials"/>
+    </procedure>
+    <procedure name="redirect_url" signature="redirect_url(p_url varchar2, p_reset_htp_buffer boolean)">
+      <sink argpos="0" kind="open_redirect" resource="web"/>
+    </procedure>
+  </package>
+
+  <package name="htp">
+    <procedure name="address" signature="address(cvalue varchar2, cnowrap varchar2, cclear varchar2, cattributes varchar2)">
+      <sink argpos="0,2,3" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="anchor2" signature="anchor2(curl varchar2, ctext varchar2, cname varchar2, ctarget varchar2, cattributes varchar2)"
+              alias="anchor">
+      <sink argpos="0,1,2,3,4" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="appletopen" signature="appletopen(ccode varchar2, cheight number, cwidth number, cattributes varchar2)">
+      <sink argpos="0,3" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="area" signature="area(ccords varchar2, cshape varchar2, chref varchar2, cnohref varchar2, ctarget varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2,4,5" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="base" signature="base(ctarget varchar2, cattributes varchar2)">
+      <sink argpos="0,1" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="bgsound" signature="bgsound(csrc varchar2, cloop varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="big" signature="big(ctext varchar2, cattributes varchar2)"
+               alias="bold, center, cite, code, comment, dfn, em, emphasis, italic, kbd, keyboard, listheader, plaintext, s, sample, small, strike, strong, sub, sup, teletype, underline, variable">
+      <sink argpos="0,1" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="blockquoteopen" signature="blockquoteopen(cnowrap varchar2, cclear varchar2, cattributes varchar2)">
+      <sink argpos="1,2" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="bodyopen" signature="bodyopen(cbackground varchar2, cattributes varchar2)">
+      <sink argpos="0,1" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="br" signature="br(cclear varchar2, cattributes varchar2)"
+               alias="dlistopen, nl">
+      <sink argpos="0,1" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="div" signature="div(calign varchar2, cattributes varchar2)">
+      <sink argpos="0,1" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="dlistdef" signature="dlistdef(ctext varchar2, cclear varchar2, cattributes varchar2)" alias="dlistterm">
+      <sink argpos="0,1,2" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="escape_sc" signature="escape_sc(ctext varchar2)">
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="fontopen" signature="fontopen(ccolor varchar2, cface varchar2, csize varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2,3" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="formcheckbox" signature="formcheckbox(cname varchar2, cvalue varchar2, cchecked varchar2, cattributes varchar2)"
+               alias="formradio">
+      <sink argpos="0,1,3" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="formopen" signature="formopen(curl varchar2, cmethod varchar2, ctarget varchar2, cenctype varchar2, cattributes varchar2)">
+      <sink argpos="0,2,3,4" kind="xss" resource="web"/>
+      <sink argpos="0" kind="ssrf"/>
+    </procedure>
+    <procedure name="formfile" signature="formfile(cname varchar2, caccept varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="formhidden" signature="formhidden(cname varchar2, cvalue varchar2, cattributes varchar2)"
+               alias="formsubmit">
+      <sink argpos="0,1,2" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="formimage" signature="formimage(cname varchar2, csrc varchar2, calign varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2,3" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="formreset" signature="formreset(cvalue varchar2, cattributes varchar2)">
+      <sink argpos="0,1" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="formselectopen" signature="formselectopen(cname varchar2, cprompt varchar2, nsize integer, cattributes varchar2)">
+      <sink argpos="0,1,3" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="formselectoption" signature="formselectoption(cvalue varchar2, cselected varchar2, cattributes varchar2)">
+      <sink argpos="0,2" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="formtext" signature="formtext(cname varchar2, csize varchar2, cmaxlength varchar2, cvalue varchar2, cattributes varchar2)"
+               alias="formpassword">
+      <sink argpos="0,1,2,3,4" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="formtextarea" signature="formtextarea(cname varchar2, nrows integer, ncolums integer, calign varchar2, cattributes varchar2)"
+               alias="formtextareaopen">
+      <sink argpos="0,3,4" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="formtextarea2" signature="formtextarea2(cname varchar2, nrows integer, ncolums integer, calign varchar2, cwrap varchar2, cattributes varchar2)"
+               alias="formtextareaopen2">
+      <sink argpos="0,3,4,5" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="frame" signature="frame(csrc varchar2, cname varchar2, cmarginwidth varchar2, cmarginheight varchar2, cscrolling varchar2, cnoresize varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2,3,5" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="framesetopen" signature="framesetopen(crows varchar2, ccols varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="header" signature="header(nsize integer, cheader varchar2, calign varchar2, cnowrap varchar2, cclear varchar2, cattributes varchar2)">
+      <sink argpos="1,2,4,5" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="hr" signature="hr(cclear varchar2, csrc varchar2, cattributes varchar2)"
+               alias="line">
+      <sink argpos="0,1,2" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="img" signature="img(curl varchar2, calign varchar2, calt varchar2, cismap varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2,4" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="img2" signature="img2(curl varchar2, calign varchar2, calt varchar2, cismap varchar2, cusemap varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2,4,5" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="isindex" signature="isindex(cprompt varchar2, curl varchar2)">
+      <sink argpos="0,1" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="linkrev" signature="linkrev(crev varchar2, curl varchar2, ctitle varchar2)">
+      <sink argpos="0,1,2" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="listitem" signature="listitem(ctext varchar2, cclear varchar2, cdingbat varchar2, csrc varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2,3,4" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="mailto" signature="mailto(caddress varchar2, ctext varchar2, cname varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2,3" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="mapopen" signature="mapopen(cname varchar2, cattributes varchar2)">
+      <sink argpos="0,1" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="meta" signature="meta(chttp_equiv varchar2, cname varchar2, ccontent varchar2)">
+      <sink argpos="0,1,2" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="nobr" signature="nobr(ctext varchar2)">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="olistopen" signature="olistopen(cclear varchar2, cwrap varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="paragraph" signature="paragraph(calign varchar2, cnowrap varchar2, cclear varchar2, cattributes varchar2)">
+      <sink argpos="0,2,3" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="param" signature="param(cname varchar2, cvalue varchar2)">
+      <sink argpos="0,1" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="preopen" signature="preopen(cclear varchar2, cwidth varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2" kind="xss" resource="web"/>
+    </procedure>
+
+    <procedure name="print" signature="print(cbuf varchar2)" alias="p, prn">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="prints" signature="prints(ctext varchar2)" alias="ps">
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </procedure>
+
+    <procedure name="script" signature="script(cscript varchar2, clanguage varchar2)">
+      <sink argpos="0,1" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="style" signature="style(cstyle varchar2)">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="tablecaption" signature="tablecaption(ccaption varchar2, calign varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="tabledata" signature="tabledata(cvalue varchar2, calign varchar2, cdp varchar2, cnowrap varchar2, crowspan varchar2, ccolspan varchar2, cattributes varchar2)"
+               alias="tableheader">
+      <sink argpos="0,1,2,4,5,6" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="tableopen" signature="tableopen(border varchar2, calign varchar2, cnowrap varchar2, cclear varchar2, cattributes varchar2)">
+      <sink argpos="0,1,3,4" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="tablerowopen" signature="tablerowopen(calign varchar2, cvalign varchar2, cdp varchar2, cnowrap varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2,4" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="title" signature="title(ctitle varchar2)">
+      <sink argpos="0" kind="xss" resource="web"/>
+    </procedure>
+    <procedure name="ulistopen" signature="ulistopen(cclear varchar2, cwrap varchar2, cdingbat varchar2, csrc varchar2, cattributes varchar2)">
+      <sink argpos="0,1,2,3,4" kind="xss" resource="web"/>
+    </procedure>
+  </package>
+
+  <package name="htf" alias="htp" onAliasedItem="procedureToVarcharFunction">
+    <function name="escape_sc" signature="escape_sc(ctext varchar2)">
+      <return type="varchar2"/>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </function>
+    <function name="escape_url" signature="escape_url(p_url varchar2)">
+      <tags>deprecated</tags>
+      <return type="varchar2"/>
+      <neutralization argpos="0" kind="xss" resource="web"/>
+    </function>
+    <function name="format_cell" signature="format_cell(columnValue, format_numbers varchar2)">
+      <return type="varchar2"/>
+      <sink argpos="0" kind="xss" resource="web"/>
+    </function>
+  </package>
+
+</library.database>

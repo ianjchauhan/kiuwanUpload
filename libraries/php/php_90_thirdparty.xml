@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="php_thirdparty" technology="php">
+
+  <module name="anti_csrf">
+    <description>Anti-csrf libraries</description>
+    <!-- http://resources.infosecinstitute.com/fixing-csrf-vulnerability-in-php-application -->
+
+    <class name="Csrf.CsrfToken">
+      <!-- https://github.com/foxbunny/CSRF4PHP/ -->
+      <method name="checkToken" signature="checkToken">
+        <neutralization argpos="-1" kind="csrf" resource="web"/>
+      </method>
+    </class>
+    <class name="CsrfToken">
+      <method name="checkToken" signature="checkToken">
+        <neutralization argpos="-1" kind="csrf" resource="web"/>
+      </method>
+    </class>
+
+    <class name="nocsrf">
+      <!-- https://github.com/BKcore/NoCSRF -->
+      <method name="check" signature="check">
+        <neutralization argpos="-1" kind="csrf" resource="web"/>
+      </method>
+    </class>
+    <class name="CSRF">
+      <!-- https://github.com/Skookum/csrf/blob/master/classes/csrf.php -->
+      <method name="valid" signature="valid">
+        <neutralization argpos="-1" kind="csrf" resource="web"/>
+      </method>
+    </class>
+    <class name="SecureToken">
+      <!-- https://code.google.com/archive/p/anticsurf -->
+      <method name="CheckToken" signature="CheckToken">
+        <neutralization argpos="-1" kind="csrf" resource="web"/>
+      </method>
+    </class>
+    <class name="CSRF_Protect">
+      <!-- https://github.com/XCMer/csrfprotect/blob/master/CSRF_Protect.php -->
+      <method name="verifyRequest" signature="verifyRequest" alias="isTokenValid">
+        <neutralization argpos="-1" kind="csrf" resource="web"/>
+      </method>
+    </class>
+    <class name="ParagonIE.AntiCSRF.AntiCSRF">
+      <!-- https://github.com/paragonie/anti-csrf -->
+      <method name="validateRequest" signature="validateRequest">
+        <neutralization argpos="-1" kind="csrf" resource="web"/>
+      </method>
+    </class>
+    <class name="AntiCSRF">
+      <method name="validateRequest" signature="validateRequest">
+        <neutralization argpos="-1" kind="csrf" resource="web"/>
+      </method>
+    </class>
+    <class name="EasyCSRF.EasyCSRF">
+      <!-- https://github.com/gilbitron/EasyCSRF -->
+      <method name="check" signature="check">
+        <neutralization argpos="-1" kind="csrf" resource="web"/>
+      </method>
+    </class>
+
+    <function name="csrfguard_start" alias="csrfguard_validate_token">
+      <!-- https://www.owasp.org/index.php/PHP_CSRF_Guard -->
+      <neutralization argpos="-1" kind="csrf" resource="web"/>
+    </function>
+    <function name="session_csrf_validate">
+      <!-- https://wiki.php.net/rfc/automatic_csrf_protection -->
+      <neutralization argpos="-1" kind="csrf" resource="web"/>
+    </function>
+
+  </module>
+
+  <!-- JOOMLA -->
+  <module name="Joomla" >
+    <description url="https://api.joomla.org/">Joomla! CMS / Framework</description>
+
+    <class name="JFactory">
+      <method name="getDbo" signature="getDbo" >
+        <return type="JDatabase" />
+      </method>
+      <method name="getUser" signature="getUser" >
+        <return type="JUser" />
+      </method>
+    </class>
+
+    <class name="JDatabase">
+      <method name="getQuery" signature="getQuery" >
+        <return type="JDatabaseQuery" />
+      </method>
+      <method name="setQuery" signature="setQuery" alias="setquery">
+        <return type="JDatabase" />
+        <sink kind="sql_injection" resource="database" argpos="0" />
+        <source kind="database_input" resource="database" argpos="-1" />
+      </method>
+      <method name="loadResult" signature="loadResult" >
+        <source kind="database_input" resource="database" argpos="-1" />
+      </method>
+      <method name="loadRow" signature="loadRow" >
+        <source kind="database_input" resource="database" argpos="-1" />
+      </method>
+      <method name="loadAssoc" signature="loadAssoc" >
+        <source kind="database_input" resource="database" argpos="-1" />
+      </method>
+      <method name="loadObject" signature="loadObject" >
+        <source kind="database_input" resource="database" argpos="-1" />
+      </method>
+      <method name="loadColumn" signature="loadColumn" >
+        <source kind="database_input" resource="database" argpos="-1" />
+      </method>
+      <method name="loadRowList" signature="loadRowList" >
+        <source kind="database_input" resource="database" argpos="-1" />
+      </method>
+      <method name="loadAssocList" signature="loadAssocList" >
+        <source kind="database_input" resource="database" argpos="-1" />
+      </method>
+      <method name="loadObjectList" signature="loadObjectList" >
+        <source kind="database_input" resource="database" argpos="-1" />
+      </method>
+    </class>
+
+    <class name="JUser">
+      <method name="getParam" signature="getParam" >
+        <source kind="user_input" resource="web" argpos="-1" />
+      </method>
+      <method name="getParameters" signature="getParameters" >
+        <source kind="user_input" resource="web" argpos="-1" />
+      </method>
+    </class>
+
+    <class name="JDatabaseQuery">
+      <method name="select" signature="select" >
+        <return type="JDatabaseQuery" />
+      </method>
+      <method name="from" signature="from" >
+        <return type="JDatabaseQuery" />
+      </method>
+      <method name="where" signature="where" >
+        <return type="JDatabaseQuery" />
+      </method>
+    </class>
+
+    <class name="JControllerLegacy">
+      <method name="getModel" signature="getModel" >
+        <return type="JModel" />
+      </method>
+    </class>
+    <class name="JModel">
+      <method name="getState" signature="getState" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+  </module>
+
+  <!-- FFI -->
+  <module name="FFI">
+    <description url="https://www.php.net/manual/en/book.ffi.php">FFI PHP extension (Foreign Function Interface)</description>
+    <!-- Dangerous, use only when you know what you are doing... -->
+    <class name="FFI">
+      <method name="cdef" instance="false" signature="cdef(string $code, string $lib)">
+        <return type="FFI"/>
+        <sink kind="code_injection" argpos="0" resource="os"/>
+        <sink kind="resource_injection" argpos="1" resource="os"/>
+      </method>
+      <method name="load" instance="false" signature="load(string $filename)">
+        <return type="FFI"/>
+        <sink kind="resource_injection" argpos="0" resource="os"/>
+      </method>
+      <method name="scope" instance="false" signature="scope(string $scope_name)">
+        <return type="FFI"/>
+      </method>
+      <method name="new" signature="new(mixed $type, bool $owned = TRUE, bool $persistent = FALSE)">
+        <return type="FFI.CData"/>
+        <sink kind="code_injection" argpos="0" resource="os"/>
+      </method>
+      <method name="free" signature="free(FFI.CData &amp;$ptr)">
+      </method>
+      <method name="addr" instance="false" signature="addr(FFI.CData &amp;$ptr)">
+        <return type="FFI.CData"/>
+      </method>
+    </class>
+  </module>
+
+</library>  

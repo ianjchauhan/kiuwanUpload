@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/express" standard="nodejs">
+
+  <module name="nodejs/express" standard="express">
+    <description url="https://www.npmjs.com/package/express">Web framework for Node.js</description>
+    <!-- Pseudo type, from body-parser middleware -->
+    <class name="nodejs/express.Request.Params" supertypes="String">
+      <field name="*" type="String"/>
+    </class>
+
+    <class name="nodejs/express.Request" supertypes="nodejs/http.IncomingMessage">
+      <field name="app" type="nodejs/express.Application"/>
+      <field name="baseUrl" type="String"/>
+      <field name="body" type="nodejs/express.Request.Params">
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </field>
+      <field name="cookies" type="Object">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="signedCookies" type="Object">
+        <!-- This is safe, as an attacker typically cannot forge cookie signature -->
+      </field>
+      <field name="hostname" type="String"/>
+      <field name="ip" type="String"/>
+      <field name="ips" type="Array"/>
+      <field name="originalUrl">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="params" type="nodejs/express.Request.Params">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="path" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="protocol" type="String"/>
+      <field name="query" type="Object">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="route" type="String"/>
+      <field name="secure" type="Boolean"/>
+      <field name="subdomains" type="Array"/>
+      <field name="xhr" type="Boolean"/>
+
+      <field name="session" type="nodejs/express-session.Session">
+        <checker id="express.hasMiddleware"><property name="modules" value="cookie-session,express-session"/></checker>
+        <!--sink kind="trust_boundary" resource="web"/-->
+      </field>
+
+      <function name="accepts" alias="acceptsCharsets,acceptsEncodings,acceptsLanguages"/>
+      <function name="get" alias="header">
+        <source kind="external_input" resource="web" argpos="-1"/>
+      </function>
+      <function name="param">
+        <source kind="external_input" resource="web" argpos="-1"/>
+      </function>
+      <function name="sanitize"><!-- injected by express-sanitizer -->
+        <neutralization kind="xss" argpos="0">
+          <checker id="express.hasMiddleware"><property name="modules" value="express-sanitizer"/></checker>
+        </neutralization>
+      </function>
+      <!--
+      TODO express-validator adds many 'chained' functions to nodejs/express.Request;
+      the effect of the neutralizations cannot be expressed declaratively with current metadata.
+      In addition, the sanitize() function added to request collides with express-sanitizer, with different behaviour
+      Many complex cases: https://github.com/ctavan/express-validator
+
+      <function name="check" alias="assert,validate,checkBody,checkQuery,checkParams,checkHeaders,checkCookies">
+        <return type="nodejs/express-validator.Validation"/>
+      </function>
+      <function name="sanitize" alias="filter,sanitizeBody,sanitizeQuery,sanitizeParams,sanitizeHeaders,sanitizeCookies">
+        <return type="nodejs/express-validator.Sanitizer"/>
+      </function>f
+      -->
+    </class>
+
+    <class name="nodejs/express.Response" supertypes="nodejs/http.ServerResponse">
+      <field name="app" type="nodejs/express.Application"/>
+      <!-- all methods are chainable -->
+      <function name="append" alias="set">
+        <tags>header.name:0, header.value:1</tags>
+        <return type="nodejs/express.Response"/>
+        <sink kind="header_manipulation" argpos="0,1" resource="web"/>
+        <sink kind="open_redirect" resource="web"><arg pos="0" field="Location"/></sink>
+        <sink kind="open_redirect" resource="web" argpos="1"><checker id="express.isLocationHeader"/></sink>
+      </function>
+      <function name="attachment">
+        <return type="nodejs/express.Response"/>
+        <sink kind="path_traversal" argpos="0" resource="web"/>
+      </function>
+      <function name="cookie">
+        <tags>cookie, cookie.name:0, cookie.value:1, cookie.options:2</tags>
+        <return type="nodejs/express.Response"/>
+        <sink kind="cookie_poisoning" argpos="0,1" resource="web"/>
+      </function>
+      <function name="clearCookie"/>
+      <function name="download">
+        <return type="nodejs/express.Response"/>
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="json" alias="jsonp">
+        <return type="nodejs/express.Response"/>
+        <!-- Is this vulnerable??? -->
+      </function>
+      <function name="location">
+        <return type="nodejs/express.Response"/>
+        <sink kind="open_redirect" argpos="0" resource="web"/>
+      </function>
+      <function name="redirect">
+        <return type="nodejs/express.Response"/>
+        <sink kind="open_redirect" argpos="0,1" resource="web"/>
+      </function>
+      <function name="render">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,String)" last="true"/>
+        </parameters>
+        <return type="nodejs/express.Response"/>
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+      <function name="send">
+        <return type="nodejs/express.Response"/>
+        <sink kind="xss" argpos="0" resource="web"/>
+      </function>
+      <function name="sendFile">
+        <return type="nodejs/express.Response"/>
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="sendStatus" alias="status">
+        <return type="nodejs/express.Response"/>
+      </function>
+      <function name="type">
+        <return type="nodejs/express.Response"/>
+      </function>
+      <function name="vary">
+        <return type="nodejs/express.Response"/>
+      </function>
+    </class>
+
+    <class name="nodejs/express.Application" supertypes="Function">
+      <field name="locals" type="Object"/>
+      <field name="mountPath" type="Array"/>
+
+      <function name="use" alias="handle">
+        <tags>middleware</tags>
+        <parameters>
+          <!-- first (optional) param is path, we cannot control such dynamism here... -->
+          <param type="function(nodejs/express.Request, nodejs/express.Response)"/>
+          <param type="function(nodejs/express.Request, nodejs/express.Response)"/>
+          <param type="function(nodejs/express.Request, nodejs/express.Response)"/>
+        </parameters>
+        <return type="nodejs/express.Application"/>
+      </function>
+
+      <function name="all"
+                alias="checkout,copy,delete,get,head,lock,merge,mkactivity,mkcol,move,notify,options,patch,post,purge,put,report,search,subscribe,trace,unlock,unsubscribe">
+        <tags>middleware</tags>
+        <parameters>
+          <param type="String"/><!-- route -->
+          <param type="function(nodejs/express.Request, nodejs/express.Response)"/>
+          <param type="function(nodejs/express.Request, nodejs/express.Response)"/>
+          <param type="function(nodejs/express.Request, nodejs/express.Response)"/>
+        </parameters>
+        <return type="nodejs/express.Application"/>
+      </function>
+
+      <function name="disable"/>
+      <function name="disabled"/>
+      <function name="enable"/>
+      <function name="enabled"/>
+
+      <function name="render">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error,String)" last="true"/>
+        </parameters>
+        <sink kind="server_side_template_injection" argpos="0"/>
+      </function>
+
+      <function name="engine"/>
+
+      <function name="route">
+        <return type="nodejs/express.Route"/>
+      </function>
+
+      <function name="listen">
+        <tags>server.listen</tags>
+        <parameters>
+          <param type="Number"/>
+        </parameters>
+        <return type="nodejs/http.Server"/>
+        <sink kind="configuration_setting_injection" argpos="0,1"/>
+      </function>
+
+      <function name="param">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/express.Request, nodejs/express.Response, nodejs/express.Application, String)"/>
+        </parameters>
+      </function>
+
+      <function name="set">
+        <!-- Express is configured with properties set here -->
+      </function>
+    </class>
+
+    <class name="nodejs/express.Route">
+      <function name="all"
+                alias="checkout,copy,delete,get,head,lock,merge,mkactivity,mkcol,move,notify,options,patch,post,purge,put,report,search,subscribe,trace,unlock,unsubscribe">
+        <tags>middleware</tags>
+        <parameters>
+          <param type="function(nodejs/express.Request, nodejs/express.Response)"/>
+          <param type="function(nodejs/express.Request, nodejs/express.Response)"/>
+          <param type="function(nodejs/express.Request, nodejs/express.Response)" last="true"/>
+        </parameters>
+        <return type="nodejs/express.Route"/>
+      </function>
+      <function name="use">
+        <parameters>
+          <param type="function(nodejs/express.Request, nodejs/express.Response)"/>
+          <param type="function(nodejs/express.Request, nodejs/express.Response)"/>
+          <param type="function(nodejs/express.Request, nodejs/express.Response)" last="true"/>
+        </parameters>
+        <return type="nodejs/express.Route"/>
+      </function>
+    </class>
+
+    <class name="nodejs/express.Router">
+      <function name="all"
+                alias="checkout,copy,delete,get,head,lock,merge,mkactivity,mkcol,move,notify,options,patch,post,purge,put,report,search,subscribe,trace,unlock,unsubscribe">
+        <tags>middleware</tags>
+        <parameters>
+          <param type="String"/><!-- route -->
+          <param type="function(nodejs/express.Request, nodejs/express.Response)"/>
+          <param type="function(nodejs/express.Request, nodejs/express.Response)"/>
+          <param type="function(nodejs/express.Request, nodejs/express.Response)" last="true"/>
+        </parameters>
+        <return type="nodejs/express.Router"/>
+      </function>
+      <function name="use">
+        <tags>middleware</tags>
+        <parameters>
+          <!-- first (optional) param is path, we cannot control such dynamism here... -->
+          <param type="function(nodejs/express.Request, nodejs/express.Response)"/>
+          <param type="function(nodejs/express.Request, nodejs/express.Response)"/>
+          <param type="function(nodejs/express.Request, nodejs/express.Response)" last="true"/>
+        </parameters>
+        <return type="nodejs/express.Router"/>
+      </function>
+      <function name="param">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/express.Request, nodejs/express.Response, nodejs/express.Application, String)"/>
+        </parameters>
+      </function>
+      <function name="route">
+        <parameters>
+          <param type="String"/>
+        </parameters>
+        <return type="nodejs/express.Route"/>
+      </function>
+    </class>
+
+    <class name="nodejs/express">
+      <function name="#module#">
+        <tags>server.new,app.new</tags>
+        <return type="nodejs/express.Application"/>
+      </function>
+      <function name="static">
+        <!-- serves static files -->
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </function>
+      <function name="Router">
+        <return type="nodejs/express.Router"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/express.middlewares" >
+    <class name="nodejs/express-session">
+      <function name="#module#">
+        <sink kind="hardcoded_key" resource="crypto">
+          <arg pos="0" field="secret"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/cookie-session">
+      <function name="#module#">
+        <sink kind="hardcoded_key" resource="crypto">
+          <arg pos="0" field="secret,keys"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/express-session.Session.Cookie"/>
+
+    <class name="nodejs/express-session.Session">
+      <field name="cookie" type="nodejs/express-session.Session.Cookie"/>
+      <field name="*">
+        <sink kind="trust_boundary" resource="web"/>
+      </field>
+    </class>
+  </module>
+
+</library>  

@@ -1,0 +1,133 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='dotnet' subtech='aspnet' descriptor='dotnet/aim.aspnet.xml' label='Process ASP.Net web applications'>
+  <description>
+    Process ASP.Net applications, analyzing presentation layer artefacts
+    (page, masterpage, control, webservice, Web.config descriptors).
+    <br/>
+    For processing .Net classes (e.g. code-behind, or mid-layer classes),
+    you may activate the <i>dotnet/dotnet</i> module as well.
+  </description>
+
+  <dependencies>
+  </dependencies>
+
+  <properties>
+
+    <property id='aim.aspnet.rule.page.active' type='bool'>
+      <name>active</name>
+      <example>false</example>
+      <description>Enables processing ASP.Net artefacts (page, masterpage, control, webservice).</description>
+    </property>
+
+    <property id='aim.aspnet.rule.config.active' type='bool'>
+      <name>webConfigActive</name>
+      <example>false</example>
+      <description>Enables processing Web.config files</description>
+    </property>
+
+    <property id='aim.aspnet.software' type='string'>
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>
+        Default application name to use when application name cannot be extracted
+        from Web.Config or resolved by global software resolver.
+      </description>
+    </property>
+
+    <property id='aim.aspnet.filter' type='enum'>
+      <name>filter</name>
+      <example>default</example>
+      <description>Filtering strategy for selecting ASP.Net artifacts to process.</description>
+      <possible>
+        <enumval name="default">Use default extensions configured for aspnet technology.</enumval>
+        <enumval name="pattern">Use patterns in the <code>patterns</code> property for selecting which files should be processed.</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.aspnet.filter.pattern' type='list' subtype='antPattern'>
+      <name>patterns</name>
+      <example>**/*.aspx, **/*.asmx, **/*.ascx, **/*.asax, **/*.ashx</example>
+      <description>
+        Ant pattern(s) to process (used when <code>filter=pattern</code>).
+      </description>
+    </property>
+
+    <property id='aim.aspnet.rule.config.basedirs' type='string'>
+      <name>basedirs</name>
+      <example>${aim.common.srcdir}</example>
+      <description>
+        Comma-separated directories where ASP.Net applications are be located.
+        If not set, input basedirs will be used.
+      </description>
+    </property>
+
+    <property id='aim.aspnet.rule.config.webConfigPatterns' type='list' subtype='antPattern'>
+      <name>webConfigPatterns</name>
+      <example>**/Web.Config</example>
+      <description>Ant patter(n)s matching Web.Config files.</description>
+    </property>
+
+    <property id='aim.aspnet.rule.config.xpathAppName' type='string'>
+      <name>xpathAppName</name>
+      <example>concat(//ApplicationIdentity/add[@key='AppType']/@value, '-' ,//ApplicationIdentity/add[@key='AppID']/@value)</example>
+      <description>
+        XPath expression for extracting application name from Web.config entries.
+      </description>
+    </property>
+
+    <property id='aim.aspnet.rule.page.acceptUnresolvedResources' type='bool'>
+      <name>acceptUnresolvedResources</name>
+      <example>${aim.common.acceptUnresolved}</example>
+      <description>
+        If true, resources referenced by ASP.Net elements not resolved to software artefacts will be registered.
+        If false, unresolved resources will be ignored.
+      </description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>
+      configuration(Web.config),
+      page(aspx page|aspx masterpage),
+      element(ascx user control),
+      webService(asmx file)
+      library(assembly),
+      class,resource,program
+    </values>
+    <description>
+      Creates configuration for Web.Config files. For ASP.Net pages or master pages (.aspx), and CSS stylesheets, <i>page</i> components are created.
+      For user controls (.ascx), <i>element</i> is created. A <i>resource</i> component is created for HTML referenced
+      items (images, external links, forms, etc.), and a <i>program</i> for each client-side script (JavaScript, VBScript...).
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      software(webapp)-configuration->configuration(Web.config),
+      software(webapp)-uses->library(assembly),
+      page-use->resource|program|page,
+      page-calls|includes->page,
+      page-transition->page|resource,
+      page-uses->element(user control),
+      page-uses->class(code-behind),
+      page-uses->program(JavaScript|VBScript),
+      webService-uses->class(code-behind)
+    </values>
+    <description>
+      A configuration relation is modeled between each web application (and elements declared in the descriptor)
+      and the Web.Config descriptor.
+      <br/>
+      Dependencies between ASP.Net pages and referenced web elements (web resources, included/forwarded pages,
+      browser-side scripts) are modeled.
+      <br/>
+      Additionally, dependencies between ASP.Net pages and .NET (C# or VB .NET) code-behind classes are modeled
+      (see <i>dotnet/dotnet</i> module for full details).
+    </description>
+  </createdRelations>
+
+  <importantConfigurations activation="aim.aspnet.rule.page.active">
+    <alternative><value>aim.aspnet.rule.config.active=true</value></alternative>
+  </importantConfigurations>
+
+</block>

@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="dotnet.devart" standard="Devart_dotConnect" technology="csharp">
+
+  <description url="https://www.devart.com/dotconnect/">ADO.NET providers for common databases</description>
+
+  <!-- DevArt base classes -->
+  <module name="Devart.Data">
+    <description url="https://www.devart.com/dotconnect/db2/docs/Devart.Data.html">Devart dotConnect common API</description>
+
+    <class name="Devart.Common.DbScript">
+      <description>Serves to execute series of SQL statements separated by special symbols.</description>
+      <field name="ScriptText" type="string">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </field>
+    </class>
+
+    <class name="Devart.Common.SelectStatement">
+      <description>Composes, modifies and parses SELECT statements.</description>
+      <field name="Where" type="string">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </field>
+      <method name="AddWhereCondition" signature="AddWhereCondition(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+    </class>
+
+    <class name="Devart.Common.SelectColumn">
+      <description>Represents a column or an expression in SELECT, GROUP BY and ORDER BY clauses of a SQL statement.</description>
+      <constructor name="SelectColumn" signature="SelectColumn(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SelectColumn" signature="SelectColumn(string,string,string,string)">
+        <sink argpos="1,2" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SelectColumn" signature="SelectColumn(string,string,string,string,string)">
+        <sink argpos="2,3" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Common.SelectTable">
+      <description>Represents a table or a subquery in the FROM clause of a SELECT statement.</description>
+      <constructor name="SelectTable" signature="SelectTable(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SelectTable" signature="SelectTable(string,string,string)">
+        <sink argpos="1" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SelectTable" signature="SelectTable(string,string,string,string)">
+        <sink argpos="2" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+  </module>
+
+  <!--  Sql Server API -->
+  <module name="Devart.Data.SqlServer">
+    <description url="https://www.devart.com/dotconnect/sqlserver/docs/">Devart dotConnect for SQL Server</description>
+
+    <class name="Devart.Data.SqlServer.SqlConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_leak,disposable</tags>
+      <constructor name="SqlConnection" signature="SqlConnection(string)" match="name">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.SqlServer.SqlCommand" supertypes="System.Data.IDbCommand">
+      <description>Represents a Sql Server statement to execute against a Sql Server database.</description>
+      <constructor name="SqlCommand" signature="SqlCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SqlCommand" signature="SqlCommand(string,Devart.Data.SqlServer.SqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SqlCommand" signature="SqlCommand(string,Devart.Data.SqlServer.SqlConnection,Devart.Data.SqlServer.SqlTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.SqlServer.SqlDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the Dataset and update a Sql Server database.</description>
+      <constructor name="SqlDataAdapter" signature="SqlDataAdapter(string,Devart.Data.SqlServer.SqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SqlDataAdapter" signature="SqlDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.SqlServer.SqlScript" supertypes="Devart.Common.DbScript">
+      <description>Represents a set of data commands and a database connection that are used to fill the Dataset and update a Sql Server database.</description>
+      <constructor name="SqlScript" signature="SqlScript(string,Devart.Data.SqlServer.SqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SqlScript" signature="SqlScript(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.SqlServer.SqlSelectStatement" supertypes="Devart.Common.SelectStatement"/>
+  </module>
+
+  <!-- Oracle API -->
+  <module name="Devart.Data.Oracle">
+    <description url="https://www.devart.com/dotconnect/oracle/docs/">Devart dotConnect for Oracle</description>
+
+    <class name="Devart.Data.Oracle.OracleConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_leak,disposable</tags>
+      <constructor name="OracleConnection" signature="OracleConnection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.Oracle.OracleCommand" supertypes="System.Data.IDbCommand">
+      <description>Represents a Oracle statement to execute against a Oracle database.</description>
+      <constructor name="OracleCommand" signature="OracleCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OracleCommand" signature="OracleCommand(string,Devart.Data.Oracle.OracleConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OracleCommand" signature="OracleCommand(string,Devart.Data.Oracle.OracleConnection,Devart.Data.Oracle.OracleTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.Oracle.OracleDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the Dataset and update a Oracle database.</description>
+      <constructor name="OracleDataAdapter" signature="OracleDataAdapter(string,Devart.Data.Oracle.OracleConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OracleDataAdapter" signature="OracleDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.Oracle.OracleScript" supertypes="Devart.Common.DbScript">
+      <description>Represents a set of data commands and a database connection that are used to fill the Dataset and update a Oracle database.</description>
+      <constructor name="OracleScript" signature="OracleScript(string,Devart.Data.Oracle.OracleConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="OracleScript" signature="OracleScript(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.Oracle.OracleSelectStatement" supertypes="Devart.Common.SelectStatement"/>
+  </module>
+
+  <!-- MySql -->
+  <module name="Devart.Data.MySql">
+    <description url="https://www.devart.com/dotconnect/mysql/docs/">Devart dotConnect for MySQL</description>
+
+    <class name="Devart.Data.MySql.MySqlConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_leak,disposable</tags>
+      <constructor name="MySqlConnection" signature="MySqlConnection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.MySql.MySqlCommand" supertypes="System.Data.IDbCommand">
+      <description>Represents a MySql statement to execute against a MySql database.</description>
+      <constructor name="MySqlCommand" signature="MySqlCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="MySqlCommand" signature="MySqlCommand(string,Devart.Data.MySql.MySqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="MySqlCommand" signature="MySqlCommand(string,Devart.Data.MySql.MySqlConnection,Devart.Data.MySql.MySqlTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.MySql.MySqlDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the Dataset and update a MySql database.</description>
+      <constructor name="MySqlDataAdapter" signature="MySqlDataAdapter(string,Devart.Data.MySql.MySqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="MySqlDataAdapter" signature="MySqlDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.MySql.MySqlScript" supertypes="Devart.Common.DbScript">
+      <description>Represents a set of data commands and a database connection that are used to fill the Dataset and update a MySql database.</description>
+      <constructor name="MySqlScript" signature="MySqlScript(string,Devart.Data.MySql.MySqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="MySqlScript" signature="MySqlScript(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.MySql.MySqlSelectStatement" supertypes="Devart.Common.SelectStatement"/>
+  </module>
+
+  <!-- PostgreSQL -->
+  <module name="Devart.Data.PostgreSql">
+    <description url="https://www.devart.com/dotconnect/postgresql/docs/">Devart dotConnect for PostgreSQL</description>
+
+    <class name="Devart.Data.PostgreSql.PgSqlConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_leak,disposable</tags>
+      <constructor name="PgSqlConnection" signature="PgSqlConnection(string)" match="name">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.PostgreSql.PgSqlCommand" supertypes="System.Data.IDbCommand">
+      <description>Represents a PostgreSQL statement to execute against a PostgreSQL database.</description>
+      <constructor name="PgSqlCommand" signature="PgSqlCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="PgSqlCommand" signature="PgSqlCommand(string,Devart.Data.PostgreSql.PgSqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="PgSqlCommand" signature="PgSqlCommand(string,Devart.Data.PostgreSql.PgSqlConnection,Devart.Data.PostgreSql.PgSqlTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.PostgreSql.PgSqlDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the Dataset and update a PostgreSQL database.</description>
+      <constructor name="PgSqlDataAdapter" signature="PgSqlDataAdapter(string,Devart.Data.PostgreSql.PgSqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="PgSqlDataAdapter" signature="PgSqlDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.PostgreSql.PgSqlScript" supertypes="Devart.Common.DbScript">
+      <description>Represents a set of data commands and a database connection that are used to fill the Dataset and update a PostgreSQL database.</description>
+      <constructor name="PgSqlScript" signature="PgSqlScript(string,Devart.Data.PostgreSql.PgSqlConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="PgSqlScript" signature="PgSqlScript(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.PostgreSql.PgSqlSelectStatement" supertypes="Devart.Common.SelectStatement"/>
+  </module>
+
+  <!-- DB2 -->
+  <module name="Devart.Data.DB2">
+    <description url="https://www.devart.com/dotconnect/db2/docs/">Devart dotConnect for DB2</description>
+
+    <class name="Devart.Data.DB2.DB2Connection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_leak,disposable</tags>
+      <constructor name="DB2Connection" signature="DB2Connection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.DB2.DB2Command" supertypes="System.Data.IDbCommand">
+      <description>Represents a DB2 statement to execute against a DB2 database.</description>
+      <constructor name="DB2Command" signature="DB2Command(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="DB2Command" signature="DB2Command(string,Devart.Data.DB2.DB2Connection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="DB2Command" signature="DB2Command(string,Devart.Data.DB2.DB2Connection,Devart.Data.DB2.DB2Transaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.DB2.DB2DataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the Dataset and update a DB2 database.</description>
+      <constructor name="DB2DataAdapter" signature="DB2DataAdapter(string,Devart.Data.DB2.DB2Connection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="DB2DataAdapter" signature="DB2DataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.DB2.DB2Script" supertypes="Devart.Common.DbScript">
+      <description>Represents a set of data commands and a database connection that are used to fill the Dataset and update a DB2 database.</description>
+      <constructor name="DB2Script" signature="DB2Script(string,Devart.Data.DB2.DB2Connection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="DB2Script" signature="DB2Script(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.DB2.DB2SelectStatement" supertypes="Devart.Common.SelectStatement"/>
+  </module>
+
+  <!-- SQLite API -->
+  <module name="Devart.Data.SQLite">
+    <description url="https://www.devart.com/dotconnect/sqlite/docs/">Devart dotConnect for SQLite</description>
+
+    <class name="Devart.Data.SQLite.SQLiteConnection" supertypes="System.Data.Common.DbConnection">
+      <description>Represents an open connection to a database.</description>
+      <tags>database_leak,disposable</tags>
+      <constructor name="SQLiteConnection" signature="SQLiteConnection(string)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.SQLite.SQLiteCommand" supertypes="System.Data.IDbCommand">
+      <description>Represents a SQLite statement to execute against a SQLite database.</description>
+      <constructor name="SQLiteCommand" signature="SQLiteCommand(string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SQLiteCommand" signature="SQLiteCommand(string,Devart.Data.SQLite.SQLiteConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SQLiteCommand" signature="SQLiteCommand(string,Devart.Data.SQLite.SQLiteConnection,Devart.Data.SQLite.SQLiteTransaction)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.SQLite.SQLiteDataAdapter">
+      <description>Represents a set of data commands and a database connection that are used to fill the DataSet and update a SQLite database.</description>
+      <constructor name="SQLiteDataAdapter" signature="SQLiteDataAdapter(string,Devart.Data.SQLite.SQLiteConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SQLiteDataAdapter" signature="SQLiteDataAdapter(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.SQLite.SQLiteScript" supertypes="Devart.Common.DbScript">
+      <description>Represents a set of data commands and a database connection that are used to fill the Dataset and update a SQLite database.</description>
+      <constructor name="SQLiteScript" signature="SQLiteScript(string,Devart.Data.SQLite.SQLiteConnection)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+      <constructor name="SQLiteScript" signature="SQLiteScript(string,string)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="Devart.Data.SQLite.SQLiteSelectStatement" supertypes="Devart.Common.SelectStatement"/>
+  </module>
+
+</library>

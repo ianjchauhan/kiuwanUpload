@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="aiohttp" technology="python">
+
+  <description url="https://docs.aiohttp.org/">Asynchronous HTTP Client/Server for asyncio and Python</description>
+
+  <module name="aiohttp">
+    <module name="web">
+      <class name="Application" >
+        <field name="logger" type="logging.Logger" />
+      </class>
+
+      <class name="BaseRequest" >
+        <field name="url" alias="rel_url" type="yarl.URL">
+          <source argpos="-1" kind="user_input" resource="web" />
+        </field>
+        <field name="host" type="builtins.str" >
+          <source argpos="-1" kind="user_input" resource="web" />
+        </field>
+        <field name="remote" type="builtins.str" >
+          <source argpos="-1" kind="user_input" resource="web" />
+        </field>
+        <field name="path_qs" type="builtins.str" >
+          <source argpos="-1" kind="user_input" resource="web" />
+        </field>
+        <field name="path" alias="raw_path" type="builtins.str" >
+          <source argpos="-1" kind="user_input" resource="web" />
+        </field>
+        <field name="query" type="builtins.dict" >
+          <source argpos="-1" kind="user_input" resource="web" />
+        </field>
+        <field name="query_string" type="builtins.str" >
+          <source argpos="-1" kind="user_input" resource="web" />
+        </field>
+        <field name="headers" type="builtins.dict" >
+          <source argpos="-1" kind="user_input" resource="web" />
+        </field>
+        <field name="raw_headers" type="builtins.dict" >
+          <source argpos="-1" kind="user_input" resource="web" />
+        </field>
+        <field name="cookies" type="builtins.dict" >
+          <tags>CWE:784</tags>
+          <source argpos="-1" kind="user_input" resource="web" />
+        </field>
+        <field name="transport" type="asyncio.Transport"/>
+        <field name="content" type="aiohttp.StreamReader">
+          <!-- request body -->
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </field>
+        <field name="content_type" type="builtins.str" alias="charset">
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </field>
+        <field name="content_length" type="builtin.int"/>
+        <field name="http_range" type="builtins.slice">
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </field>
+        <field name="if_modified_since" alias="if_unmodified_since, if_range" type="datetime.datetime"/>
+
+        <method name="read" signature="read()" >
+          <return type="builtins.bytes" />
+          <source argpos="-1" kind="user_input" resource="web" />
+        </method>
+        <method name="text" signature="text()" >
+          <return type="builtins.str" />
+          <source argpos="-1" kind="user_input" resource="web" />
+        </method>
+        <method name="json" signature="json()" >
+          <return type="builtins.str" />
+          <source argpos="-1" kind="user_input" resource="web" />
+        </method>
+        <method name="multipart" signature="multipart()" >
+          <return type="aiohttp.multipart.MultipartReader" />
+          <source argpos="-1" kind="user_input" resource="web" />
+        </method>
+        <method name="post" signature="post()" >
+          <return type="builtins.dict" />
+          <source argpos="-1" kind="user_input" resource="web" />
+        </method>
+      </class>
+
+      <class name="Request" supertypes="aiohttp.web.BaseRequest" />
+
+      <class name="StreamResponse" >
+        <field name="headers" type="builtins.dict" >
+          <tags>open_redirect: -2</tags>
+          <sink argpos="-2" kind="header_manipulation" resource="web" />
+        </field>
+        <field name="cookies" type="builtins.dict" >
+          <tags>CWE:784</tags>
+          <sink argpos="0" kind="sensitive_data" resource="web" />
+          <sink argpos="-2" kind="header_manipulation" resource="web" />
+        </field>
+
+        <method name="set_cookie" signature="set_cookie(name, value, *, path='/', expires=None, domain=None, max_age=None, secure=None, httponly=None, version=None)">
+          <tags>cookieName:0,cookieValue:1,httpOnly:httponly:false,secure:secure:false,maxAge:max_age,expires:expires,path:path,domain:domain</tags>
+          <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+          <sink argpos="0,1" kind="cookie_poisoning" resource="web"/>
+          <sink argpos="0" paramNames="name, value" kind="cookie_plaintext_storage" resource="web" />
+        </method>
+        <method name="write" signature="write(data)" >
+          <sink argpos="0" kind="xss" resource="web" />
+        </method>
+      </class>
+
+      <class name="Response" supertypes="aiohttp.web.StreamResponse" >
+        <field name="body" type="builtins.str" >
+          <sink argpos="-2" kind="xss" resource="web" />
+        </field>
+        <field name="text" type="builtins.str" >
+          <sink argpos="-2" kind="xss" resource="web" />
+        </field>
+      </class>
+
+      <class name="WebSocketResponse" supertypes="aiohttp.web.StreamResponse" >
+        <field name="body" type="builtins.str" >
+          <sink argpos="-2" kind="xss" resource="web" />
+        </field>
+        <field name="text" type="builtins.str" >
+          <sink argpos="-2" kind="xss" resource="web" />
+        </field>
+      </class>
+    </module>
+
+    <class name="ClientSession" >
+      <method name="get" signature="get()" match="name">
+        <sink argpos="0" kind="insecure_transport" resource="web" />
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        <source argpos="-1" kind="user_input" resource="network"/>
+      </method>
+      <method name="put" signature="put()" match="name" alias="post,option,delete,head,patch">
+        <sink argpos="0" kind="insecure_transport" resource="web" />
+        <source argpos="-1" kind="user_input" resource="network"/>
+      </method>
+      <method name="ws_connect" signature="ws_connect()" match="name">
+        <sink argpos="0" kind="insecure_transport" resource="web" />
+        <source argpos="-1" kind="user_input" resource="network"/>
+      </method>
+    </class>
+
+    <function name="aiohttp.request" signature="aiohttp.request()" match="name" >
+      <sink argpos="1" kind="insecure_transport" resource="web" />
+      <sink argpos="1" kind="http_parameter_pollution" resource="web"/>
+      <source argpos="-1" kind="user_input" resource="network"/>
+    </function>
+  </module>
+
+</library>

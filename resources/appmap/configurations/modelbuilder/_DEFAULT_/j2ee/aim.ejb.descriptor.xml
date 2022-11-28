@@ -1,0 +1,92 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='j2ee' subtech='ejb' descriptor='j2ee/aim.ejb.xml' label='Process Enterprise Java Beans'>
+  <description>
+    Models Enterprise Java Beans (EJBs) in Java source code.
+    Session (stateless and stateful), entity, and message-drive beans are supported.
+    <br/>
+    Currently EJB3 beans that use J2EE 5+ EJB (javax.ejb.*) and Java Persistence API, JPA (javax.persistence.*) annotations are supported.
+    <br/>
+    Database dependencies declared via JPA annotations are resolved (on tables/views and sequences).
+    The default database system + database name (or database name + schema for schema-oriented systems, like Oracle)
+    could be specified if no global resolver is able to find the location of a target database entity.
+    <br/>
+    Note: If the bean implementation uses JDBC or other API to refer to databases, you activate the <i>j2ee/jdbc</i>
+    module to resolve such dependencies.
+    <br/>
+    Additionally, EJB2 beans are discovered in the standard J2EE descriptor (ejb-jar.xml).
+  </description>
+
+  <dependencies>
+    <dependency>j2ee/java</dependency>
+  </dependencies>
+
+  <properties>
+
+    <property id='aim.j2ee.rule.ejb.active' type='bool'>
+      <name>ejb3Active</name>
+      <example>false</example>
+      <description>Activates EJB3 (annotated EJBs) processing.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.ejb.resolveEntities' type='bool'>
+      <name>resolveEntities</name>
+      <example>true</example>
+      <description>If true, entity beans and their dependencies are processed.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.ejb.dbsystem' type='string'>
+      <name>dbsystem</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>The default database system (or database name) to use when the target database entity cannot be resolved.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.ejb.dbname' type='string'>
+      <name>dbname</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>The default database name (or schema) to use when the target database entity cannot be resolved.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.ejb.ignoreCase' type='string'>
+      <name>ignoreCase</name>
+      <example>${aim.common.ignoreCase}</example>
+      <description>If true, case in name for database entities is ignored.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.ejbDescriptor.active' type="bool">
+      <name>ejb2Active</name>
+      <example>true</example>
+      <description>Activates EJB2 (ejb-jar.xml descriptor) processing.</description>
+    </property>
+
+    <property id='aim.j2ee.rule.ejbDescriptor.patterns' type='list' subtype='antPattern'>
+      <name>ejb2Patterns</name>
+      <example>**/ejb-jar.xml</example>
+      <description>Ant patterns for matching EJB descriptors to process</description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>configuration,element,class,table,view,sequence</values>
+    <description>
+      Each EJB is modeled as <i>element</i> (with j2eeType=ejb). The constituent entities
+      (implementation class, and classes declaring the local, local home, remote and remote home interfaces).
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      element(ejb)-uses->class(ejb part),
+      element(ejb)-references->element(ejb),
+      element(ejb)-uses->table|view|sequence
+    </values>
+    <description>
+      "Uses" relation between the EJB and its parts (implementation class, and local/remote and local/remote home interfaces) is set.
+      "References" relation is set between EJB and referenced EJBs via @EJB and @EJBs annotations or descriptor file.
+      "Uses" relation between the (entity) EJB and the referenced (via JPA annotations or descriptor file) database items.
+    </description>
+  </createdRelations>
+  
+  <importantConfigurations activation="aim.j2ee.rule.ejb.active" />
+  
+</block>

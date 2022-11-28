@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.functionsPerFile" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.SIZE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.SIZE.CODE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds />
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <internal-name id="OPT.ABAP.SIZE.NFF" />
+        <java-class>com.als.abap.metrics.FunctionsAbapMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.SIZE.NFF" />
+        <java-class>com.als.cpp.metrics.FunctionsCppMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+        <internal-name id="OPT.JS.NFF" />
+        <java-class>com.optimyth.qaking.javascript.metrics.FunctionsJavascriptMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <internal-name id="OPT.PLSQL.SIZE.NFF" />
+        <java-class>com.als.plsql.metrics.FunctionsPlsqlMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+        <internal-name id="OPT.VB6.SIZE.NFF" />
+        <java-class>com.optimyth.qaking.vb6.metrics.FunctionsVB6MetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+
+    </implementations>
+
+    <code-examples>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <code-example name="metricCodeExampleAbap" result-value="1">
+<![CDATA[
+report z3.
+
+FUNCTION Z_IDOC_INBOUND_ASYNCHRONOUS.                            "FUNCTIONS = 1
+
+ data e1edp16 type e1edp16.
+ loop at idoc_control_rec_40
+  where mestyp = 'DELINS'.
+  loop at IDOC_DATA_REC_40
+    where docnum = idoc_control_rec_40-docnum and
+     segnam = 'E1EDP16'.
+   move IDOC_DATA_REC_40-sdata to e1edp16.
+   IF not E1EDP16-PRGRS CA 'DWMI'.
+    delete IDOC_DATA_REC_40.
+   ENDIF.
+  endloop.
+ endloop.
+ CALL FUNCTION 'IDOC_INBOUND_ASYNCHRONOUS'
+  TABLES
+   idoc_control_rec_40       = IDOC_CONTROL_REC_40
+   idoc_data_rec_40          = IDOC_DATA_REC_40.
+ENDFUNCTION.
+]]>
+        </code-example>
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <code-example name="metricCodeExampleCpp" result-value="1">
+<![CDATA[
+int main() { l(); return 0; }                               //FUNCTIONS = 1
+]]>
+        </code-example>
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+        <code-example name="metricCodeExampleJavascript" result-value="1">
+<![CDATA[
+// PEOtherPartyData.js
+
+TEXT_AHV_NO = 'idTxtNewAhv';
+
+function ahvnumber() {                                        //FUNCTIONS = 1
+     var ahvstring = "";
+     var numZeropad1 = document.getElementById(TEXT_AHV_NO).value;
+     var numZeropad = numZeropad1 + ''; //prueba
+     if(numZeropad.length > 0 && numZeropad1 > 0)
+       {
+       while(numZeropad.length < count) {
+        numZeropad = "0" + numZeropad;
+       }
+
+     ahvstring =  numZeropad.value;
+
+    }
+}
+]]>
+        </code-example>
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <code-example name="metricCodeExamplePlsql" result-value="1">
+<![CDATA[
+CREATE OR REPLACE FUNCTION FACTURACION.FN_SAP_IT (            -- FUNCTIONS = 1
+   e_nrowid_in   ROWID
+)
+   RETURN NUMBER
+AS
+BEGIN
+          BEGIN
+            SELECT csap
+              INTO k_ccodsap
+              FROM txcodsap
+             WHERE ctipocod = 'A'
+               AND cipf = ee_cipfemb
+               AND cdocumen = ee_cdocuemb
+               AND brsch = ee_brsch;
+         EXCEPTION
+            WHEN NO_DATA_FOUND
+            THEN
+               k_ccodsap := NULL;
+         END;
+
+END fn_sap_it;
+/
+]]>
+        </code-example>
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+        <code-example name="metricCodeExampleVb6" result-value="4">
+<![CDATA[
+Private Sub CmdLimpiar_Click()               ' FUNCTIONS = 1
+    On Error GoTo CmdLimpiarClick_Error
+
+    vLimpiarPantalla
+
+    Exit Sub
+
+CmdLimpiarClick_Error:
+    Call errvManejaErrores(Err)
+    Resume
+
+End Sub
+
+Private Sub CmdSalir_Click()                 ' FUNCTIONS = 2
+    Unload Me
+End Sub
+
+Sub vLimpiarPantalla()                       ' FUNCTIONS = 3
+
+    On Error GoTo LimpiarPantalla_Error
+
+       vLimpiarFr1General Fr1Informe, sFlagsInforme
+
+    Exit Sub
+
+LimpiarPantalla_Error:
+    Call errvManejaErrores(Err)
+    Resume
+
+End Sub
+
+
+Private Sub Fr1Informe_KeyPress(KeyAscii As Integer)    ' FUNCTIONS = 4
+    On Error GoTo Fr1Informe_KeyPress_Error
+
+
+    Call inpvMayusculasKeypress(KeyAscii)
+
+    Exit Sub
+Fr1Informe_KeyPress_Error:
+    Call errvManejaErrores(Err)
+    Resume
+
+End Sub
+]]>
+       </code-example>
+      </language-parser>
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Funciones]]></name>
+      
+      <description>
+<![CDATA[
+Número de funciones para cualquier ámbito o nivel de alcance (no de clases). Ficheros con demasiadas funciones son más difíciles de "leer" y entender (problemas de mantenibilidad). También puede que aumente el tiempo de compilación, ya que cualquier cambio en un fichero grande fuerza su recompilación completa.
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Suma de todas las funciones definidas en un mismo fichero, independiente del tipo de parámetros que declare ("IMPORTING", "EXPORTING", "USING", "TABLES" o ninguno) y pueden estar incluídas en function groups, function modules o en otro tipo de ficheros (report...). .
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Suma de todos las funciones, independientemente del tipo de almacenamiento utilizado (extern, static o ninguno que implicaría por defecto extern), del valor de retorno definido o void si no es necesario, de los modificadores adicionales utilizados (extern, inline o static) y del número de parámetros definidos (incluido ninguno) IMPLEMENTADAS en un mismo fichero. Sólo se cuentan las funciones en los ficheros donde están IMPLEMENTADAS. Si tenemos un a.h con 5 funciones definidas de las cuales 1 está implementada en a.h y un a.cpp con 4 implementaciones el conteo de funciones es a.h=1 y a.cpp=4.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+<![CDATA[
+Suma de todas las funciones definidas en un mismo fichero. Toda clase de definiciones de funciones se tendrán en cuenta (anidadas, como parámetros de otras funciones...). Incluye todos los niveles de alcance.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Suma de todas las funciones implementadas en un mismo fichero (no cuenta los procedimientos). No importa si el objeto al que pertenece es público o privado. Se contabilizan tanto si se crean ("CREATE"), se reemplazan ("REPLACE") o ambas opciones ("CREATE OR REPLACE").
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+<![CDATA[
+Suma de todas las funciones del tipo Sub, Properties y Function; ámbito "Public", "Protected" o "Private" definidas fuera de clases en un mismo fichero (cualquier fichero excepto los .cls). Los Function y Sub contados pueden incluir parámetros o no.
+]]>
+      </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Functions]]></name>
+      
+      <description>
+<![CDATA[
+Number of funtions for any scope or access level (not in classes). Large files with too-many functions are more difficult to "read" and understand (maintainability issues). Compilation times may increase, as any change in a large file forces recompilation for the whole file.
+]]></description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+<![CDATA[
+Counts all the functions defined in the same file, independent from the type of parameters that it declares ("IMPORTING", "EXPORTING", "USING", "TABLES" or none) and they coud be included in function groups, function modules or another type of files (report...).
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Counts all the functions, independently of the type of used storage ("extern", "static" or none that it would imply for default extern), of the type of return value or void if it is not necessary, Of the additional used modifiers ("extern", "inline" o "static") and the number of defined parameters (included none)IMPLEMENTED in the same file. Only counts functions in the files where they are IMPLEMENTED. If we have an a.h with 5 defined functions, with only 1 implemented in a.h, and an a.cpp with 4 implementations, the count will be a.h=1 and a.cpp=4
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+<![CDATA[
+Counts all the functions defined in the same file. All kind of function definition will be taken into account (nested, as parameters of other functions ...). Include all access level.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Counts all the functions implemented in the same file (It does not count procedures). It does not matter if the object to which it belongs is public or private. They are counted if they are created (" BELIEVE YOURSELF "), there are replaced ("REPLACE") or both options (" CREATE YOUR YOUR OR REPLACE ").
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VB6">
+<![CDATA[
+Counts all the functions Sub, Properties and Function; scope "Public", "Protected" or "Private" defined out of classes in the same file (any file except the .cls). The Function and Sub counted can include parameters or not.
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

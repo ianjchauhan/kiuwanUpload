@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         name="security" standard="security" technology="csharp">
+
+  <description>Validation libraries</description>
+
+  <module name="DataValidation">
+    <!-- The base class for all validation attributes -->
+    <annotation name="System.ComponentModel.DataAnnotations.Validation">
+      <field name="ErrorMessage" type="string"/>
+      <field name="ErrorMessageResourceName" type="string"/>
+      <field name="ErrorMessageResourceType" type="System.Type"/>
+      <field name="ErrorMessageString" type="string"/>
+      <field name="RequiresValidationContext" type="bool"/>
+      <method name="IsValid" signature="IsValid(object)"><return type="bool"/></method>
+      <method name="IsValid" signature="IsValid(object, System.ComponentModel.DataAnnotations.ValidationContext)"><return type="bool"/></method>
+      <method name="GetValidationResult" signature="GetValidationResult(object, System.ComponentModel.DataAnnotations.ValidationContext)">
+        <return type="System.ComponentModel.DataAnnotations.ValidationResult"/>
+      </method>
+      <method name="Validate" signature="Validate(object, System.ComponentModel.DataAnnotations.ValidationContext)"></method>
+      <method name="FormatErrorMessage" signature="FormatErrorMessage(string)"><return type="string"/></method>
+    </annotation>
+
+    <annotation name="System.ComponentModel.DataAnnotations.DataType" supertype="System.ComponentModel.DataAnnotations.Validation">
+
+    </annotation>
+
+    <annotation name="System.ComponentModel.DataAnnotations.Association" supertype="System.Attribute"></annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.Compare" supertype="System.ComponentModel.DataAnnotations.Validation">
+      <neutralization argpos="-1" kind="*"/>
+    </annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.ConcurrencyCheck" supertype="System.Attribute"></annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.CreditCard" supertype="System.ComponentModel.DataAnnotations.DataType">
+      <neutralization argpos="-1" kind="string"/>
+    </annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.CustomValidation" supertype="System.ComponentModel.DataAnnotations.Validation">
+      <field name="Method" type="string"/>
+    </annotation>
+
+    <annotation name="System.ComponentModel.DataAnnotations.Display"></annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.DisplayColumn"></annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.DisplayFormat"></annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.Editable"></annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.EmailAddress" supertype="System.ComponentModel.DataAnnotations.DataType">
+      <neutralization argpos="-1" kind="string"/>
+    </annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.EnumDataType" supertype="System.ComponentModel.DataAnnotations.DataType">
+      <neutralization argpos="-1" kind="*"/>
+    </annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.FileExtensions" supertype="System.ComponentModel.DataAnnotations.DataType">
+    </annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.FilterUIHint"></annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.Key"></annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.MaxLength" supertype="System.ComponentModel.DataAnnotations.Validation">
+      <field name="Length" type="int"/>
+    </annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.MinLength" supertype="System.ComponentModel.DataAnnotations.Validation">
+      <field name="Length" type="int"/>
+    </annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.Phone" supertype="System.ComponentModel.DataAnnotations.DataType">
+      <neutralization argpos="-1" kind="string"/>
+    </annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.Range" supertype="System.ComponentModel.DataAnnotations.Validation">
+      <neutralization argpos="-1" kind="*"/>
+    </annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.RegularExpression" supertype="System.ComponentModel.DataAnnotations.Validation">
+      <neutralization argpos="-1" kind="string"/>
+    </annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.Required" supertype="System.ComponentModel.DataAnnotations.Validation"></annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.ScaffoldColumn" supertype="System.Attribute"></annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.StringLength" supertype="System.ComponentModel.DataAnnotations.Validation">
+      <field name="MaximumLength" type="int"/><field name="MinimumLength" type="int"/>
+    </annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.Timestamp" supertype="System.Attribute">
+      <neutralization argpos="-1" kind="*"/>
+    </annotation>
+    <annotation name="System.ComponentModel.DataAnnotations.UIHint" supertype="System.Attribute"></annotation>
+    <!-- According to source code, this uses a (awful) regex for full URLs for http(s):// and ftp:// protocols. Do this block any injection payload ??? -->
+    <annotation name="System.ComponentModel.DataAnnotations.Url" supertype="System.ComponentModel.DataAnnotations.DataType">
+      <neutralization argpos="-1" kind="string"/>
+    </annotation>
+
+    <class name="System.ComponentModel.DataAnnotations.ValidationContext"></class>
+    <class name="System.ComponentModel.DataAnnotations.ValidationResult"></class>
+
+    <annotation name="System.Web.Security.MembershipPassword" supertype="System.ComponentModel.DataAnnotations.Validation">
+      <field name="MinRequiredNonAlphanumericCharacters" type="int"/>
+      <field name="MinRequiredPasswordLength" type="int"/>
+      <field name="PasswordStrengthRegularExpression" type="int"/>
+      <!-- neutralization argpos="-1" kind="string"/ --><!-- does not block injection attacks... or it does ??? -->
+    </annotation>
+
+  </module>
+
+  <module name="HtmlSanitizer">
+    <description url="https://github.com/mganss/HtmlSanitizer">Cleans HTML to avoid XSS attacks</description>
+
+    <class name="HtmlSanitizer" >
+      <method name="Sanitize" signature="Sanitize(string,string)" match="name">
+        <return type="string" />
+        <neutralization argpos="0" kind="xss" />
+      </method>
+    </class>
+  </module>
+
+</library>

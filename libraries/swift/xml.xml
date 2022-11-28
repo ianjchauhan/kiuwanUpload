@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="swift" name="xml" standard="swift">
+
+  <module name="AEXML" >
+    <description url="https://github.com/tadija/AEXML">XML parsing</description>
+
+    <class name="AEXMLDocument">
+      <constructor name="AEXMLDocument" signature="AEXMLDocument(xml: data, options: options)" >
+        <parameters>
+          <param type="String" name="xml" />
+          <param type="AEXML.ParserOptions" name="options" />
+        </parameters>
+        <sink paramNames="xml" kind="xml_entity_injection" resource="other" />
+      </constructor>
+
+      <method name="addChild" signature="addChild(name: String, value: String)" >
+        <parameters>
+          <param type="String" name="name" />
+          <param type="String" name="value" />
+        </parameters>
+        <sink paramNames="name, value" kind="xml_injection" resource="other" />
+      </method>
+
+      <function name="ParserOptions" signature="ParserOptions()" >
+        <return type="AEXML.ParserOptions" />
+      </function>
+      <function name="NSParserOptions" signature="NSParserOptions()" >
+        <return type="AEXML.ParserOptions" />
+      </function>
+
+    </class>
+
+    <class name="ParserOptions">
+      <field name="shouldResolveExternalEntities" type="Bool" />
+    </class>
+  </module>
+  
+  <module name="Fuzi" >
+    <description url="http://cezheng.github.io/Fuzi/">XML and HTML parser in Swift with XPath and CSS</description>
+
+    <class name="XMLDocument" supertypes="Fuzi.Queryable">
+      <constructor name="XMLDocument" signature="XMLDocument(string: html)" >
+        <parameters>
+          <param type="String" name="string" />
+        </parameters>
+        <sink argpos="-2" kind="xml_entity_injection" resource="other" />
+      </constructor>
+      <constructor name="XMLDocument" signature="XMLDocument(string: html, encoding: String.Encoding.utf8)" >
+        <parameters>
+          <param type="String" name="string" />
+          <param type="String.Encoding" name="encoding" />
+        </parameters>
+      </constructor>
+    </class>
+
+    <class name="HTMLDocument" supertypes="Fuzi.XMLDocument">
+      <constructor name="HTMLDocument" signature="HTMLDocument(string: html, encoding: String.Encoding.utf8)" >
+        <parameters>
+          <param type="String" name="string" />
+          <param type="String.Encoding.utf8" name="encoding" />
+        </parameters>
+      </constructor>
+    </class>
+    
+    <class name="Queryable" kind="interface" >
+      <method name="xpath" signature="xpath(xpath: String)" >
+        <parameters>
+          <param type="String" />
+        </parameters>
+        <sink argpos="0" kind="xpath_injection" resource="other" />
+      </method>
+      <method name="eval" signature="eval(xpath: xpath)" >
+        <parameters>
+          <param type="String" name="xpath" />
+        </parameters>
+        <sink paramNames="xpath" kind="xpath_injection" resource="other" />
+      </method>
+    </class>
+
+    <class name="XMLElement" supertypes="Fuzi.Queryable" />
+  </module>
+
+  <module name="SWXMLHash" >
+    <description url="https://github.com/drmohundro/SWXMLHash">XML parsing</description>
+
+    <member name="config" type="SWXMLHash" />
+
+    <function name="parse" signature="parse(data)" >
+      <parameters>
+        <param type="String" />
+      </parameters>
+    </function>
+    <function name="lazy" signature="parse(lazy)" >
+      <parameters>
+        <param type="String" />
+      </parameters>
+    </function>
+
+  </module>
+  
+  <module name="Kanna" >
+    <description url="https://github.com/tid-kijyun/Kanna">XML and HTML parser</description>
+
+    <function name="XML" signature="XML(xml: xml, encoding: .utf8)" >
+      <parameters>
+        <param type="String" name="xml" />
+        <param type="String" name="encoding" />
+      </parameters>
+      <return type="Kanna.XMLDocument" />
+    </function>
+
+    <class name="XMLDocument">
+      <method name="at_xpath" signature="at_xpath(xpath, namespaces: namespaces)" >
+        <parameters>
+          <param type="String" />
+          <param type="String" name="namespaces" />
+        </parameters>
+        <sink argpos="0" kind="xpath_injection" resource="other" />
+      </method>
+    </class>
+  </module>
+
+  <module name="XML" >
+    <class name="XML">
+      <constructor name="XML" signature="XML(contentsOf: url)" >
+        <parameters>
+          <param type="String" name="contentsOf" />
+        </parameters>
+      </constructor>
+    </class>
+    
+    <class name="XMLNode">
+      <constructor name="XMLNode" signature="XMLNode(name: name)" >
+        <parameters>
+          <param type="String" name="name" />
+        </parameters>
+      </constructor>
+      
+      <method name="addChild" signature="addChild(name: name, value: value)" >
+        <parameters>
+          <param type="String" name="name" />
+          <param type="String" name="value" />
+        </parameters>
+        <sink paramNames="name, value" kind="xml_injection" resource="other" />
+      </method>
+    </class>
+  </module>
+</library>

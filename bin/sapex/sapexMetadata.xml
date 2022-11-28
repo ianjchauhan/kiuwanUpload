@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="sapexCode" default="run" basedir=".">
+  <description>
+Launches Kiuwan Extractor for SAP, for metadata extraction.
+
+Usage:
+ant -f sapexMetadata.xml
+[-Dhost=HOSTNAME] [-Dsysnr=SYSNR_VALUE] [-Dclient=CLIENT_NAME]
+[-Duser=USER] [-Dpass=PASS]
+[-Dsap.connector=PATH_TO_SAP_JCO]
+
+[-Ddir.metadata=DIRECTORY_FOR_EXPORTED_CODE]
+
+Example:
+ant -f sapexMetadata.xml -Ddir.metadata=/my/dir
+
+NOTE: This script uses SAP Java Connector (JCo) version 3.
+You may download it from http://service.sap.com/connectors.
+
+Connection properties for target SAP server could be configured
+in sapex.properties file in ${env.CHECKING_DATA}/config, or in
+this script directory.
+
+Custom code extract config could be placed in a sapexMetadata.properties file
+located in ${env.CHECKING_DATA}/config, or in this script directory.
+Any parameter passed at script command line overwrites a parameter
+with same name in sapexMetadata.properties.
+
+Host, sysnr, client, user, pass and sap.connector are configuration values
+for target SAP system, and the location of the SAP JCo3 library.
+
+dir.metadata is the directory where SAP information files will be stored.
+
+For operation, you must add to target SAP system the function module
+ZKW_SAPEX_METADATA_RPC (which must be RFC-enabled), and program ZKW_SAPEX_METADATA,
+plus the utility classes ZKW_CLASSES.
+
+The program ZKW_SAPEX_METADATA might be run in SAP as an alternative to this
+(remote) extraction script.
+  </description>
+
+  <property environment="env"/>
+
+  <!-- Find config file in CHECKING config, kiuwan agent config, or in script directory -->
+  <property file="${SAPEX_CONFIG_DIR}/sapex.properties" />
+  <property file="${SAPEX_CONFIG_DIR}/sapexMetadata.properties" />
+  <property file="${AGENT_HOME}/conf/sapex/sapex.properties"/>
+  <property file="${AGENT_HOME}/conf/sapex/sapexMetadata.properties"/>
+
+  <!-- Default configuration, when SAPConnector.properties not available -->
+  <property name="host" value="localhost"/>
+  <property name="sysnr" value="00"/>
+  <property name="client" value="000"/>
+  <property name="user" value="DEVELOPER"/>
+  <property name="pass" value="Appl1ance"/>
+  <property name="sap.connector" value="."/>
+
+  <!-- Local directory where metadata files will be saved -->
+  <property name="dir.metadata" value="${basedir}"/>
+
+  <!-- If true, extract metadata for transaction codes -->
+  <property name="tcodes" value="true" />
+
+  <!-- If true, extract metadata for authorization objects -->
+  <property name="authObjects" value="true" />
+
+  <!-- If true, extract metadata for messages -->
+  <property name="messages" value="true" />
+
+  <!-- If true, extract metadata for memory parameters -->
+  <property name="memoryParams" value="true" />
+
+  <!-- If true, extract metadata for executable programs/reports -->
+  <property name="programs" value="true" />
+
+  <!-- If true, extract metadata for function modules -->
+  <property name="functions" value="true" />
+
+  <!-- If true, extract metadata for parameters in custom function modules -->
+  <property name="funcParams" value="true" />
+
+  <!-- If true, extract metadata for dynpros (dialog modules) -->
+  <property name="dynpros" value="true" />
+
+  <!-- If true, extract metadata for web dynpros -->
+  <property name="webDynpros" value="true" />
+
+  <!-- If true, extract metadata for database tables properties -->
+  <property name="tableProperties" value="true" />
+
+  <!-- If true, extract metadata for indexes on database tables -->
+  <property name="tableIndexes" value="true" />
+
+  <!-- If true, extract metadata for fields in custom tables -->
+  <property name="tableFields" value="true" />
+
+  <!-- If true, extract metadata for table authorization objects -->
+  <property name="tableAuthObjects" value="true" />
+
+  <!-- If true, extract metadata for append structures for DB tables -->
+  <property name="tableAppendStructs" value="true" />
+
+  <!-- If true, extract size (number of rows) for database tables matching tablePattern -->
+  <property name="tableSizes" value="true" />
+
+  <!-- The pattern for table names whose size will be analyzed when tableSizes=true -->
+  <property name="tablePattern" value="Z*" />
+
+  <!-- classpath -->
+  <path id="classpath">
+    <fileset id="sap.connector.location" dir="${sap.connector}">
+      <include name="sapjco3.jar"/>
+    </fileset>
+    <fileset dir="${AGENT_HOME}/lib.engine">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+
+  <target name="run">
+    <taskdef name="sapexMetadata" classname="com.als.abap.sapex.SapexMetadataTask" classpathref="classpath"/>
+    <sapexMetadata failonerror="true" classpathref="classpath">
+      <config
+        host="${host}" sysnr="${sysnr}" client="${client}" user="${user}" pass="${pass}"
+        />
+      <metadataconfig
+        metadatadir="${dir.metadata}"
+        tcodes="${tcodes}" authobjects="${authObjects}" messages="${messages}" memoryparams="${memoryParams}"
+        programs="${programs}" functions="${functions}" funcparams="${funcParams}"
+        dynpros="${dynpros}" webdynpros="${webDynpros}"
+        tableproperties="${tableProperties}" tableindexes="${tableIndexes}" tablefields="${tableFields}"
+        tableauthobjects="${tableAuthObjects}" tableappendstructs="${tableAppendStructs}"
+        tablesizes="${tableSizes}" tablepattern="${tablePattern}"
+        />
+    </sapexMetadata>
+  </target>
+
+</project>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric"
+    version="1.1">
+
+  <metric id="OPT.ncss" unit="LOC" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.SIZE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.SIZE.CODE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.POWERSCRIPT" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="1000.00" meaning="good" />
+        <threshold from="1000.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.SIZE.LOC" />
+        <java-class>com.als.cpp.metrics.LocMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <internal-name id="OPT.OBJECTIVEC.SIZE.STATEMENTS" />
+        <java-class>com.optimyth.qaking.objectivec.metrics.StatementsMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>  
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.SIZE.NCSS" />
+        <java-class>com.als.java.metrics.StatementsMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>    
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <internal-name id="OPT.PHP.SIZE.STATEMENTS" />
+        <java-class>com.optimyth.qaking.php.metrics.StatementsMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.POWERSCRIPT">
+        <internal-name id="OPT.POWERSCRIPT.SIZE.LOC" />
+        <java-class>com.optimyth.qaking.powerscript.metrics.LocMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+    <code-examples />
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+      <i18n ref="OPT.LANGUAGE.SPANISH">
+        <name><![CDATA[Líneas de código (sin comentarios)]]></name>
+        
+        <description>
+<![CDATA[
+Una simple métrica de volumetría que mide el tamaño del código.
+
+Aunque se considera una medida muy cruda del tamaño del software, es una métrica básica con muchos usos (por ejemplo, los modelos de COCOMO estiman el esfuerzo y el coste en base a las líneas de código).
+]]>
+        </description>
+        <implementation-descriptions>
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Cuenta todas las líneas que no sean blancas o comentarios
+]]>
+          </implementation-description>
+        </implementation-descriptions> 
+        <parameters />
+      </i18n>
+
+      <i18n ref="OPT.LANGUAGE.ENGLISH">
+        <name><![CDATA[Non commenting source statements]]></name>
+        
+        <description>
+<![CDATA[
+A simple volumetric metric that measures code size.
+
+Although considered a crude measure of software size, it is a classical metric with many uses (for example, COCOMO models estimate effort and cost from lines-of-code counts).
+]]>
+        </description>
+        <implementation-descriptions>
+         <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+It counts all the lines that are not blanks or comment
+]]>
+          </implementation-description>
+        </implementation-descriptions>  
+        <parameters />
+      </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

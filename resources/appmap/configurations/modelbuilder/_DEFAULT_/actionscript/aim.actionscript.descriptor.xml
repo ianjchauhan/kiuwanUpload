@@ -1,0 +1,127 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='actionscript' subtech='actionscript' descriptor='actionscript/aim.actionscript.xml' label='Process ActionScript technology'>
+  <description>
+    Process ActionScript technology. ActionScript sources are processed to extract entities (for both procedural
+    and class-oriented paradigms) and dependencies are resolved.
+  </description>
+
+  <properties>
+    <property id="aim.actionscript.rule.active" type="bool">
+      <name>actionscript.rule.active</name>
+      <example>true</example>
+      <description>If true, process ActionScript source code.</description>
+    </property>
+
+    <property id="aim.actionscript.software" type="string">
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>
+        Containing software for program entities discovered by ActionScript rule.
+        Used as fallback if no global resolver or global resolver cannot find a containing software for the target entity.
+      </description>
+    </property>
+
+    <property id="aim.actionscript.rule.dbsystem" type="string">
+      <name>dbsystem</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>
+        The database type (e.g. DB2, Oracle...) or database name for container of referenced tables.
+				Used as fallback if no global database object resolver, or the resolver cannot find the target entity.
+      </description>
+    </property>
+
+    <property id="aim.actionscript.rule.dbname" type="string">
+      <name>dbname</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>
+        The database name or database schema for container of referenced tables.
+				Used as fallback if no global database object resolver, or the resolver cannot find the target entity.
+      </description>
+    </property>
+
+    <property id="aim.actionscript.rule.ignoreCase" type="bool">
+      <name>ignoreCase</name>
+      <example>${aim.common.ignoreCase}</example>
+      <description>
+        If true ignore case for database components.
+      </description>
+    </property>
+
+    <property id="aim.actionscript.rule.addSqlToModel" type="bool">
+      <name>addSqlToModel</name>
+      <example>${aim.common.addCodeToRelations}</example>
+      <description>
+        If set to true, SQL code is added as property into the queries.
+      </description>
+    </property>
+
+    <property id="aim.actionscript.rule.parseSqlColumns" type="bool">
+      <name>parseSqlColumns</name>
+      <example>true</example>
+      <description>
+        If set to true, SQL queries and their relationships with used tables are inserted into the model as explicit entities.
+      </description>
+    </property>
+
+    <property id="aim.actionscript.filter" type="enum">
+      <name>filter</name>
+      <example>default</example>
+      <description>Strategy to use for selecting ActionScript files to process.</description>
+      <possible>
+        <enumval name="default">Use extensions in language info.</enumval>
+        <enumval name="pattern">Uses explicit pattern.</enumval>
+      </possible>
+    </property>
+
+    <property id="aim.actionscript.filter.pattern" type="list" subtype="antPattern">
+      <name>filter.pattern</name>
+      <example>*.as,**/*.as</example>
+      <description>If filter set to pattern, use the following comma-separated patterns</description>
+    </property>
+
+    <property id="aim.actionscript.process.functions" type="bool">
+      <name>process.functions</name>
+      <example>true</example>
+      <description>If true create components of type operation to model functions and the relations between functions.</description>
+    </property>
+
+    <property id="aim.actionscript.rule.sql.objects" type="list" subtype='string'>
+      <name>sql.objects</name>
+      <example>SQLStatement</example>
+      <description>Comma-separated objects that access to database.</description>
+    </property>
+
+    <property id="aim.actionscript.rule.sql.methods" type="list" subtype='string'>
+      <name>sql.methods</name>
+      <example>execute</example>
+      <description>Comma-separated methods to execute queries.</description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>
+      program, package, class, operation(function), table
+    </values>
+    <description>
+    	Creates program component for each file and if this contains packages, class or functions.
+    	A program can contain package, class or functions.
+    	A package can contain class or functions.
+    	A class can contain functions.
+    	Functions may belong to namespaces.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      program-contains->package|class|function,
+    	package-contains->class|function,
+    	class-contains->function,
+      program|package|class|function-calls->program|package|class|function
+    </values>
+    <description>
+      Process relations between ActionScript entities. Any entity can call to other entity.
+    </description>
+  </createdRelations>
+
+</block>

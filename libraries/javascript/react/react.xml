@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="react" standard="javascript">
+
+  <description url="https://reactjs.org/docs/react-api.html">React framework</description>
+  <!-- updated: 07-Aug-2020 v16.13.1 -->
+
+  <typeAnnotation name="react" class="com.optimyth.qaking.js.frameworks.react.ReactAnnotation"/>
+
+  <module name="react">
+    <function name="React.createElement" signature="React.createElement(type, props, ...children)" alias="React.cloneElement">
+      <parameters>
+        <param type="String" /><!-- could be also a React component or fragment -essentially, a class or function -->
+        <param type="Object" />
+        <param type="Object" />
+      </parameters>
+      <sink kind="xss" argpos="0,1" resource="web" />
+    </function>
+
+    <function name="React.createFactory" signature="React.createFactory()">
+      <tags>deprecated, deprecatedBy:React.createElement</tags>
+      <parameters><param type="String"/><!-- same as type arg for createElement() --></parameters>
+      <return type="React.Component"/>
+      <sink kind="xss" argpos="0" resource="web" />
+    </function>
+
+    <function name="React.isValidElement">
+      <parameters><param type="Object"/></parameters>
+      <return type="Boolean"/>
+    </function>
+
+    <function name="React.memo" signature="React.memo(function)">
+      <return type="React.Component"/>
+    </function>
+
+    <function name="React.Children.map">
+      <parameters>
+        <param type="Array" elementType="React.Element"/>
+        <param type="function()"/>
+      </parameters>
+      <return type="Array"/>
+    </function>
+    <function name="React.Children.forEach">
+      <parameters>
+        <param type="Array" elementType="React.Element"/>
+        <param type="function()"/>
+      </parameters>
+    </function>
+    <function name="React.Children.toArray">
+      <parameters>
+        <param type="Object"/>
+      </parameters>
+      <return type="Array" elementType="React.Element"/>
+    </function>
+
+    <class name="React.Component">
+      <field name="props" type="Object"/>
+      <field name="state" type="Object"/>
+
+      <constructor name="Component" signature="Component(props)">
+        <parameters><param type="Object"/></parameters>
+      </constructor>
+      <method name="render" signature="render()">
+        <return type="React.Element"/>
+      </method>
+    </class>
+    <class name="React.PureComponent" supertypes="React.Component"/>
+    <class name="React.Fragment" supertypes="React.Component">
+      <!-- Produced by JSX <React.Fragment>...</React.Fragment> or shortand <>...</> syntax -->
+    </class>
+
+    <class name="React.Element"></class>
+
+    <!-- React refs give direct DOM access -->
+    <function name="React.createRef()">
+      <return type="React.Ref"/>
+    </function>
+
+    <class name="React.Ref">
+      <field name="current" type="HTMLElement"/><!-- Really, George ? -->
+    </class>
+
+  </module>
+
+  <module name="react-dom">
+    <function name="ReactDOM.render" match="name" alias="ReactDOM.hydrate"
+              signature="ReactDOM.render(element, container, callback)" >
+      <parameters>
+        <param type="String" />
+        <param type="Object" />
+        <param type="function()" callback="true"/>
+      </parameters>
+      <sink kind="xss" argpos="0" resource="web" />
+    </function>
+
+    <function name="ReactDOM.findDOMNode" signature="ReactDOM.findDOMNode(component)">
+      <parameters><param type="React.Component"/></parameters>
+      <return type="HTMLElement"/>
+    </function>
+
+    <function name="ReactDOM.createPortal" signature="ReactDOM.createPortal(child, container)">
+      <parameters>
+        <param type="React.Component"/><!-- could be also string, boolean, number... -->
+        <param type="HTMLElement"/>
+      </parameters>
+    </function>
+  </module>
+
+  <module name="react-dom/server">
+    <function name="ReactDOMServer.renderToString" alias="renderToStaticMarkup"
+              signature="ReactDOMServer.renderToString(React.Component)">
+      <return type="String"/>
+    </function>
+    <function name="ReactDOMServer.renderToNodeStream"
+              signature="ReactDOMServer.renderToNodeStream(React.Component)" alias="renderToStaticNodeStream">
+      <return type="nodejs/stream.Readable"/>
+    </function>
+  </module>
+
+</library>

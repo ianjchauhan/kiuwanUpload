@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="scala" name="skinny_framework" standard="Skinny_framework">
+
+  <description url="https://github.com/skinny-framework/skinny-framework">Full-stack web app framework, similar to Ruby on Rails</description>
+
+  <module name="skinny" >
+    <class name="skinny.Skinny">
+      <method name="getAs" signature="getAs()" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="params" signature="params()" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="getParams" signature="getParams()" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="multiParams" signature="multiParams()" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="getMultiParams" signature="getMultiParams()" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="flash" signature="flash()" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="getFlash" signature="getFlash()" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <class name="skinny.session.servlet.SkinnyHttpRequestWrapper" supertypes="javax.servlet.http.HttpServletRequestWrapper" />
+    <class name="skinny.session.servlet.SkinnyHttpSessionWrapper" supertypes="javax.servlet.http.HttpSession" />
+    <class name="skinny.session.SkinnyHttpSession">
+      <method name="getAttribute" signature="getAttribute(scala.String)" alias="getAs">
+        <return type="java.lang.Object"/>
+        <propagate from="0" to="-1"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="setAttribute" signature="setAttribute(scala.String, scala.Object)">
+        <tags>CWE:501, stateChange</tags>
+        <sink argpos="0,1" kind="trust_boundary" resource="web"/>
+      </method>
+      <method name="getAttributeOrElseUpdate" signature="getAttributeOrElseUpdate(scala.String, scala.Any)">
+        <propagate from="0" to="-1"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+        <sink argpos="1" kind="trust_boundary" resource="web"/>
+      </method>
+    </class>
+    <class name="skinny.session.SkinnyHttpSessionJDBCImpl" supertypes="skinny.session.SkinnyHttpSession" />
+
+    <class name="skinny.http.Request">
+      <field name="headers" type="scala.collection.mutable.Map" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="queryParams" type="scala.collection.mutable.List" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="requestBody" type="RequestBody" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="bodyBytes" type="scala.Option" elementType="scala.Array" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="formParams" type="scala.collection.mutable.Map" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+
+      <method name="headerNames" signature="headerNames()" >
+        <return type="scala.collection.mutable.Set" elementType="scala.String"/>
+      </method>
+      <method name="header" signature="header()" >
+        <return type="scala.String" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="queryParams" signature="queryParams()" >
+        <return type="scala.String" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="formParams" signature="formParams()" >
+        <return type="scala.String" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="body" signature="body()" >
+        <return type="scala.Array" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <class name="skinny.controller.feature.SkinnyControllerCommonBase" kind="trait" >
+      <method name="renderWithFormat" signature="renderWithFormat()" >
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+    </class>
+
+    <class name="skinny.controller.SkinnyControllerBase" supertypes="skinny.controller.feature.SkinnyControllerCommonBase" kind="trait" />
+    <class name="skinny.controller.SkinnyController" supertypes="skinny.controller.SkinnyControllerBase" kind="trait" />
+
+    <class name="skinny.controller.AsyncSkinnyApiController" supertypes="skinny.controller.SkinnyControllerBase" kind="trait" />
+    <class name="skinny.controller.AsyncSkinnyController" supertypes="skinny.controller.SkinnyControllerBase" kind="trait" />
+    <class name="skinny.controller.AsyncSkinnyControllerBase" supertypes="skinny.controller.SkinnyControllerBase" kind="trait" />
+    <class name="skinny.controller.SkinnyApiController" supertypes="skinny.controller.SkinnyControllerBase" kind="trait" />
+
+    <class name="skinny.controller.feature.CSRFProtectionFeature" kind="trait" >
+      <method name="handleForgery" signature="handleForgery()" />
+      <method name="handleForgeryIfDetected" signature="handleForgeryIfDetected()" />
+    </class>
+    <class name="skinny.controller.feature.AsyncCSRFProtectionFeature" kind="trait" >
+      <method name="handleForgery" signature="handleForgery()" />
+      <method name="handleForgeryIfDetected" signature="handleForgeryIfDetected()" />
+    </class>
+    <class name="TemplateEngineFeature" kind="trait" >
+      <method name="render" signature="render()" >
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+    </class>
+  </module>
+
+  <module name="skinny.mailer" >
+    <class name="skinny.mailer.SkinnyMailer">
+      <method name="from" signature="from(scala.String)" >
+        <return type="skinny.mailer.SkinnyMailer" />
+      </method>
+      <method name="subject" signature="subject(scala.String)" >
+        <return type="skinny.mailer.SkinnyMailer" />
+        <sink argpos="0" kind="mail_command_injection" resource="web" />
+      </method>
+      <method name="to" signature="to(scala.String)" >
+        <return type="skinny.mailer.SkinnyMailer" />
+      </method>
+      <method name="cc" signature="cc(scala.String)" >
+        <return type="skinny.mailer.SkinnyMailer" />
+      </method>
+      <method name="body" signature="body(scala.String)" >
+        <return type="skinny.mailer.SkinnyMailer" />
+      </method>
+      <method name="htmlBody" signature="htmlBody(scala.String)" >
+        <return type="skinny.mailer.SkinnyMailer" />
+      </method>
+      <method name="attachment" signature="attachment(scala.String, scala.String, scala.String)" >
+        <return type="skinny.mailer.SkinnyMailer" />
+      </method>
+    </class>
+  </module>
+</library>

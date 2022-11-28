@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/TP_sequelize" standard="nodejs">
+
+  <module name="nodejs/sequelize" standard="database/Sequelize">
+    <description url="https://sequelize.org/v3/api/sequelize/">Object-Relational Mapper for Node.js and io.js</description>
+
+    <class name="nodejs/sequelize">
+      <function name="#module#">
+        <return type="nodejs/Sequelize" />
+        <sink kind="resource_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="last" field="database,dialect,storage"/>
+        </sink>
+        <sink kind="sensitive_data" resource="database">
+          <arg pos="1"/>
+          <arg pos="2"/>
+          <arg pos="last" field="username,password"/>
+        </sink>
+        <sink kind="ssrf" resource="database">
+          <arg pos="last" field="host,port"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/Sequelize">
+      <function name="authenticate">
+        <return type="Promise"/>
+      </function>
+      <function name="escape">
+        <neutralization argpos="0" kind="sql_injection" resource="database"/>
+      </function>
+      <function name="getQueryInterface">
+        <return type="nodejs/Sequelize.QueryInterface"/>
+      </function>
+      <function name="import">
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+      </function>
+      <function name="model">
+        <return type="nodejs/Sequelize.Model"/>
+        <sink argpos="0" kind="resource_injection" resource="database"/>
+      </function>
+      <function name="query">
+        <return type="Promise"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </function>
+    </class>
+
+    <class name="nodejs/Sequelize.QueryInterface"/>
+    <class name="nodejs/Sequelize.Model"/>
+  </module>
+</library>

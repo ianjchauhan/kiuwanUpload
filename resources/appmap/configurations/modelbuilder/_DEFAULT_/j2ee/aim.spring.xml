@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+
+  <description>AIM rules for Spring framework.</description>
+
+  <import resource="../common/aim.common.xml"/>
+
+  <import resource="../j2ee/aim.java.xml"/>
+
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="j2ee/aim.spring.properties"/>
+  </bean-->
+
+  <!-- Rules -->
+
+  <bean id="aim.j2ee.rule.spring.beans" class="com.optimyth.apm.builder.rules.spring.SpringDescriptorRule">
+    <description>Resolves Spring descriptors elements</description>
+    <property name="active" value="${aim.j2ee.rule.spring.beans.active}"/>
+    <property name="callback" ref="aim.j2ee.rule.spring.beans.callback"/>
+    <property name="filter" ref="aim.j2ee.rule.spring.beans.filter"/>
+  </bean>
+
+  <bean id="aim.j2ee.rule.spring.java" class="com.optimyth.apm.builder.rules.spring.SpringJavaRule">
+    <property name="active" value="${aim.j2ee.rule.spring.beans.active}"/>
+    <property name="filter">
+      <bean class="com.optimyth.apm.builder.file.AntPatternFilter">
+        <property name="pattern" value="**/*.java"/>
+      </bean>
+    </property>
+    <property name="callback" ref="aim.j2ee.rule.spring.beans.callback"/>
+    <property name="javaParserVisitors">
+      <list>
+        <bean class="com.optimyth.apm.builder.rules.spring.SpringAnnotationVisitor">
+          <constructor-arg><ref bean="aim.j2ee.rule.spring.beans.callback"/></constructor-arg>
+        </bean>
+      </list>
+    </property>
+    <property name="hlaVisitors">
+      <list>
+        <bean class="com.optimyth.apm.builder.rules.spring.PropertyVisitor">
+          <constructor-arg><ref bean="aim.j2ee.rule.spring.propertyRegistry"/></constructor-arg>
+        </bean>
+      </list>
+    </property>
+  </bean>
+  
+  <!-- Callback -->
+  
+  <bean id="aim.j2ee.rule.spring.beans.callback" class="com.optimyth.apm.builder.rules.spring.BasicSpringDescriptorCallback">
+    <property name="application" value="${aim.j2ee.rule.spring.beans.software}"/>
+    <property name="beanFilter"><util:constant static-field="com.optimyth.apm.builder.rules.spring.BeanFilter.ALL"/></property>
+    <property name="classFilter"><util:constant static-field="com.optimyth.apm.builder.rules.common.Predicate.JDK_FILTER"/></property>
+    <property name="propertyRegistry" ref="aim.j2ee.rule.spring.propertyRegistry"/>
+    <property name="springProcessor">
+      <bean class="com.optimyth.apm.builder.rules.spring.processors.CompositeSpringProcessor">
+        <property name="springProcessors"><list>
+          <ref bean="aim.j2ee.rule.spring.beans.processor.jaxProxy"/>
+          <ref bean="aim.j2ee.rule.spring.beans.processor.xfireProxy"/>
+          <ref bean="aim.j2ee.rule.spring.beans.processor.xfireExporter"/>
+        </list></property>
+        <property name="extraSpringProcessors" value="${aim.j2ee.rule.spring.beans.extraProcessors}"/>
+      </bean>
+    </property>
+    <property name="resolver" ref="aim.j2ee.java.resolver"/>
+  </bean>
+  
+  <bean id="aim.j2ee.rule.spring.propertyRegistry" class="com.optimyth.apm.builder.rules.spring.PropertyRegistry" />
+  
+  <!-- Standard SpringProcessors -->
+  
+  <bean id="aim.j2ee.rule.spring.beans.processor.jaxProxy" class="com.optimyth.apm.builder.rules.spring.processors.JaxProxySpringProcessor">
+    <description>Process JAX-RPC (JaxRpcPortProxyFactoryBean) or JAX-WS (JaxWsPortProxyFactoryBean) proxy beans to web services</description>
+    <property name="active" value="${aim.j2ee.rule.spring.beans.processor.jaxProxy.active}"/>
+    <property name="acceptUnresolved" value="${aim.j2ee.rule.spring.beans.processor.jaxProxy.acceptUnresolved}"/>
+  </bean>
+  
+  <bean id="aim.j2ee.rule.spring.beans.processor.xfireProxy" class="com.optimyth.apm.builder.rules.spring.processors.XFireProxySpringProcessor">
+    <description>Process XFireClientFactoryBean and resolve dependencies between the bean (web service proxy) and the target web service</description>
+    <property name="active" value="${aim.j2ee.rule.spring.beans.processor.xfireProxy.active}"/>
+    <property name="acceptUnresolved" value="${aim.j2ee.rule.spring.beans.processor.xfireProxy.acceptUnresolved}"/>
+  </bean>
+
+  <bean id="aim.j2ee.rule.spring.beans.processor.xfireExporter" class="com.optimyth.apm.builder.rules.spring.processors.XFireExporterSpringProcessor">
+    <description>Process XFireExporter and resolve dependencies between the bean (web service) and the target web service</description>
+    <property name="active" value="${aim.j2ee.rule.spring.beans.processor.xfireExporter.active}"/>
+  </bean>
+
+  <!-- Spring webflow rule -->
+
+  <bean id="aim.j2ee.rule.spring.webflow" class="com.optimyth.apm.builder.rules.spring.webflow.SpringWebflowRule">
+    <description>Resolves SpringWebflow flows</description>
+    <property name="active" value="${aim.j2ee.rule.spring.webflow.active}"/>
+    <property name="callback" ref="aim.j2ee.rule.spring.webflow.callback"/>
+    <property name="filter" ref="aim.j2ee.rule.spring.webflow.filter"/>
+  </bean>
+
+  <bean id="aim.j2ee.rule.spring.webflow.callback" class="com.optimyth.apm.builder.rules.spring.webflow.BasicSpringWebflowCallback">
+    <property name="application" value="${aim.j2ee.rule.spring.webflow.software}"/>
+    <property name="webappRoot" value="${aim.common.srcdir}"/>
+    <property name="parseBeanImports" value="${aim.j2ee.rule.spring.webflow.parseBeanImports}"/>
+  </bean>
+  
+
+  <!-- Filters -->
+
+  <bean id="aim.j2ee.rule.spring.beans.filter" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.j2ee.rule.spring.beans.filter}"/>
+  </bean>
+
+  <bean id="aim.j2ee.rule.spring.webflow.filter" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.j2ee.rule.spring.webflow.filter}"/>
+  </bean>  
+
+</beans>

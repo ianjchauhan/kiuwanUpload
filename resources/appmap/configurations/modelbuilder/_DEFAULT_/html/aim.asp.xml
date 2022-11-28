@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for asp language</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-asp.xml"/>
+  <import resource="classpath:resources/qaking-tech-javascript.xml"/>
+
+  <!--bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="html/aim.asp.properties"/>
+  </bean-->
+
+  <bean id="aim.asp.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>ASP3 parser</description>
+    <property name="filter" ref="aim.asp.filter"/>
+    <property name="languageSupport" ref="ls_asp"/>
+  </bean>
+
+  <!-- Rules -->
+
+  <bean id="aim.asp.rule" class="com.optimyth.apm.builder.rules.asp.AspBuilderRule">
+    <description>ASP3 rule</description>
+    <property name="active" value="${aim.asp.rule.active}"/>
+
+    <property name="callback"><bean class="com.optimyth.apm.builder.rules.asp.BasicAspCallback">
+      <property name="webappName" value="${aim.asp.webapp}"/>
+      <property name="resolveArtifacts" value="${aim.common.resolveArtifacts}"/>
+    </bean></property>
+
+    <property name="tagResolver" ref="aim.asp.tagResolver"/>
+
+    <property name="filter" ref="aim.asp.filter"/>
+  </bean>
+
+  <!-- Resolvers -->
+  <!-- Resolvers -->
+
+  <bean id="aim.asp.tagResolver" class="com.optimyth.apm.builder.rules.asp.TagResolver">
+    <description>Resolves dependencies in HTML and ASP tags</description>
+    <property name="tagExtractors" ref="aim.asp.tagResolver.tags"/>
+  </bean>
+
+  <util:map id="aim.asp.tagResolver.tags">
+    <entry key="link"><bean class="com.optimyth.apm.builder.rules.asp.TagResolver$CssTagExtractor"><property name="acceptUnresolvedResources" value="${aim.asp.rule.acceptUnresolved}"/></bean></entry>
+    <entry key="script"><bean class="com.optimyth.apm.builder.rules.asp.TagResolver$JavascriptTagExtractor"><property name="acceptUnresolvedResources" value="${aim.asp.rule.acceptUnresolved}"/></bean></entry>
+    <entry key="a"><bean class="com.optimyth.apm.builder.rules.asp.TagResolver$ATagExtractor"><property name="acceptUnresolvedResources" value="${aim.asp.rule.acceptUnresolved}"/></bean></entry>
+    <entry key="img"><bean class="com.optimyth.apm.builder.rules.asp.TagResolver$ImgTagExtractor"><property name="acceptUnresolvedResources" value="${aim.asp.rule.acceptUnresolved}"/></bean></entry>
+    <entry key="frame"><bean class="com.optimyth.apm.builder.rules.asp.TagResolver$FrameTagExtractor"><property name="acceptUnresolvedResources" value="${aim.asp.rule.acceptUnresolved}"/></bean></entry>
+    <entry key="iframe"><bean class="com.optimyth.apm.builder.rules.asp.TagResolver$FrameTagExtractor"><property name="acceptUnresolvedResources" value="${aim.asp.rule.acceptUnresolved}"/></bean></entry>
+    <entry key="form"><bean class="com.optimyth.apm.builder.rules.asp.TagResolver$FormTagExtractor"><property name="acceptUnresolvedResources" value="${aim.asp.rule.acceptUnresolved}"/></bean></entry>
+  </util:map>
+
+  <!-- Filters -->
+  <bean id="aim.asp.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.asp.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.asp.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.asp.filter.pattern"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.asp.filter.default" parent="ls_asp_matcher"/>
+
+  <bean id="aim.asp.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.asp.filter.pattern}"/>
+  </bean>
+
+</beans>

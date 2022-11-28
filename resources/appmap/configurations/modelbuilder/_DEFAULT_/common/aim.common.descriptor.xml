@@ -1,0 +1,128 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='common' subtech='common' descriptor='common/aim.common.xml' label='Common properties'>
+  <description>
+    Common global properties that could be used in another configuration blocks.
+  </description>
+
+  <properties>
+    <property id='aim.common.resolveArtifacts' type='bool'>
+      <name>resolveArtifacts</name>
+      <example>true</example>
+      <description>
+        If true, artefacts file property will be resolved
+      </description>
+    </property>
+
+    <property id='aim.common.addCodeToRelations' type='bool'>
+      <name>addCodeToRelations</name>
+      <example>true</example>
+      <description>
+        If true, extraction rules could add matching code fragments as property to relations
+      </description>
+    </property>
+
+    <property id='aim.common.acceptUnresolved' type='bool'>
+      <name>acceptUnresolved</name>
+      <example>true</example>
+      <description>
+        If true, unresolved entities will be added to the model
+      </description>
+    </property>
+
+    <property id='aim.common.software' type='string'>
+      <name>software</name>
+      <example>${project}</example>
+      <description>
+        The default software name to use when rules cannot infer software name from code or configuration artefacts
+      </description>
+    </property>
+
+    <property id='aim.common.srcdir' type='list' subtype='string'>
+      <name>srcdir</name>
+      <example>${src.dir}</example>
+      <description>
+        The source directories to analyze
+      </description>
+    </property>
+
+    <property id='aim.common.database.dbsystem' type='string'>
+      <name>dbsystem</name>
+      <example>UNKNOWN_DB</example>
+      <description>
+        The default database type (e.g. DB2, Oracle...) or database name
+      </description>
+    </property>
+
+    <property id='aim.common.database.dbname' type='string'>
+      <name>dbname</name>
+      <example>UNKNOWN_SCHEMA</example>
+      <description>
+        The default database name or database schema
+      </description>
+    </property>
+
+    <property id='aim.common.ignoreCase' type='bool'>
+      <name>ignoreCase</name>
+      <example>true</example>
+      <description>
+        If true, database entities are converted to uppercase; if false, they are left unchanged as they appear in source code
+      </description>
+    </property>
+
+    <property id='aim.common.excludeDatabaseItems' type='list' subtype='string'>
+      <name>excludeDatabaseItems</name>
+      <example>DUAL</example>
+      <description>List of database items to ignore, in upper-case (e.g. DUAL table in Oracle)</description>
+    </property>
+
+    <property id='aim.common.dbresolver.name' type='enum'>
+      <name>dbresolver.name</name>
+      <description>Database resolver type, by default is null.</description>
+      <possible>
+        <enumval name="multidatabase">Use databaseSchema.xml to get mappings between softwareName -> {database, schema} pairs</enumval>
+        <enumval name="custom">Use aim.custom.databaseObjectResolver bean, defined in aim.custom.xml</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.common.dbresolver.directories' type='list' subtype='string'>
+      <name>dbresolver.directories</name>
+      <example></example>
+      <description>list of schema directories where "databaseSchema.xml" file is stored</description>
+    </property>
+
+    <property id='aim.common.dbresolver.schema.patterns' type="list" subtype="antPattern">
+      <name>dbresolver.schema.patterns</name>
+      <example>*.xml</example>
+      <description>list of Ant patters for matching schema XML descriptors under resolver directories</description>
+    </property>
+
+    <property id="aim.common.rule.metrics.active" type="bool">
+      <name>metrics.active</name>
+      <example>true</example>
+      <description>If metrics rule is active; in that case, XML metrics report will be parsed to insert code metrics in AIM model.</description>
+    </property>
+
+    <property id="aim.common.metrics.directories" type="list" subtype="string">
+      <name>metrics.directories</name>
+      <example>${CHECKING_DATA}/plugindata/metrics/${project}</example>
+      <description>list of directories where the metrics rule find files of metrics (metrics_*.xml)</description>
+    </property>
+
+    <property id="aim.common.metrics" type="list" subtype="string">
+      <name>metrics</name>
+      <example>pctdoc,loc,lcom,sentences,ccn,publicMethods,cbo,operations,fanout</example>
+      <description>list of names of code metrics to retrieve from metric report into model</description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values></values>
+    <description></description>
+  </createdEntities>
+
+  <createdRelations>
+    <values></values>
+    <description></description>
+  </createdRelations>
+</block>

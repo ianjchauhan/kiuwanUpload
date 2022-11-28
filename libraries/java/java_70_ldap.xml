@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library  xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          name="java.ldap" standard="java.ldap" technology="java">
+
+  <description>Common Java LDAP libraries</description>
+  
+  <module name="ldap.UnboundID" standard="ldap.UnboundID">
+    <description url="https://ldap.com/unboundid-ldap-sdk-for-java/">UnboundID LDAP SDK for Java</description>
+
+    <class name="com.unboundid.ldap.sdk.LDAPConnection">
+      <constructor name="LDAPConnection" signature="LDAPConnection(java.lang.String, int)">
+        <sink kind="ssrf" argpos="0,1" resource="network"/>
+      </constructor>
+      <constructor name="LDAPConnection" signature="LDAPConnection(java.lang.String, int, java.lang.String, java.lang.String)">
+        <tags>username:2, password:3</tags>
+        <sink kind="ssrf" argpos="0,1" resource="network"/>
+        <sink kind="hardcoded_credentials" argpos="2,3" resource="network"/>
+      </constructor>
+      <constructor name="LDAPConnection" signature="LDAPConnection(com.unboundid.ldap.sdk.LDAPConnectionOptions, java.lang.String, int)">
+        <sink kind="ssrf" argpos="1,2" resource="network"/>
+      </constructor>
+      <constructor name="LDAPConnection" signature="LDAPConnection(com.unboundid.ldap.sdk.LDAPConnectionOptions, java.lang.String, int, java.lang.String, java.lang.String)">
+        <tags>username:3, password:4</tags>
+        <sink kind="ssrf" argpos="1,2" resource="network"/>
+        <sink kind="hardcoded_credentials" argpos="3,4" resource="network"/>
+      </constructor>
+      <constructor name="LDAPConnection" signature="LDAPConnection(avax.net.SocketFactory, com.unboundid.ldap.sdk.LDAPConnectionOptions, java.lang.String, int)">
+        <sink kind="ssrf" argpos="2,3" resource="network"/>
+      </constructor>
+      <constructor name="LDAPConnection" signature="LDAPConnection(avax.net.SocketFactory, com.unboundid.ldap.sdk.LDAPConnectionOptions, java.lang.String, int, java.lang.String, java.lang.String)">
+        <tags>username:4, password:5</tags>
+        <sink kind="ssrf" argpos="2,3" resource="network"/>
+        <sink kind="hardcoded_credentials" argpos="4,5" resource="network"/>
+      </constructor>
+
+      <method name="bind" signature="bind(java.lang.String, java.lang.String)">
+        <tags>username:0, password:1</tags>
+        <return type="com.unboundid.ldap.sdk.BindResult"/>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="network"/>
+      </method>
+      <method name="connect" signature="connect(java.lang.String, int)">
+        <sink kind="ssrf" argpos="0,1" resource="network"/>
+      </method>
+      <method name="connect" signature="connect(java.lang.String, int, int)">
+        <sink kind="ssrf" argpos="0,1" resource="network"/>
+      </method>
+      <method name="connect" signature="connect(java.lang.String, java.net.InetAddress, int, int)">
+        <sink kind="ssrf" argpos="0,1,2" resource="network"/>
+      </method>
+      <method name="search" signature="search(com.unboundid.ldap.sdk.SearchResultListener, java.lang.String, com.unboundid.ldap.sdk.SearchScope, com.unboundid.ldap.sdk.DereferencePolicy, int, int, boolean, java.lang.String, java.lang.String...)">
+        <return type="com.unboundid.ldap.sdk.SearchResult"/>
+        <sink kind="ldap_injection" argpos="1,7"/>
+      </method>
+      <method name="search" signature="search(com.unboundid.ldap.sdk.SearchResultListener, java.lang.String, com.unboundid.ldap.sdk.SearchScope, java.lang.String, java.lang.String...)">
+        <return type="com.unboundid.ldap.sdk.SearchResult"/>
+        <sink kind="ldap_injection" argpos="1,3"/>
+      </method>
+      <method name="search" signature="search(java.lang.String, com.unboundid.ldap.sdk.SearchScope, com.unboundid.ldap.sdk.DereferencePolicy, int, int, boolean, java.lang.String, java.lang.String...)">
+        <return type="com.unboundid.ldap.sdk.SearchResult"/>
+        <sink kind="ldap_injection" argpos="0,6"/>
+      </method>
+      <method name="search" signature="search(java.lang.String, com.unboundid.ldap.sdk.SearchScope, java.lang.String, java.lang.String...)">
+        <return type="com.unboundid.ldap.sdk.SearchResult"/>
+        <sink kind="ldap_injection" argpos="0,2"/>
+      </method>
+      <method name="searchForEntry" signature="searchForEntry(java.lang.String, com.unboundid.ldap.sdk.SearchScope, com.unboundid.ldap.sdk.DereferencePolicy, int, boolean, java.lang.String, java.lang.String...)">
+        <return type="com.unboundid.ldap.sdk.SearchResultEntry"/>
+        <sink kind="ldap_injection" argpos="0,5"/>
+      </method>
+      <method name="searchForEntry" signature="searchForEntry(java.lang.String, com.unboundid.ldap.sdk.SearchScope, java.lang.String, java.lang.String...)">
+        <return type="com.unboundid.ldap.sdk.SearchResultEntry"/>
+        <sink kind="ldap_injection" argpos="0,2"/>
+      </method>      
+    </class>
+    
+    <class name="com.unboundid.ldap.sdk.Filter">
+      <method name="create" signature="create(java.lang.String)" instance="false">
+        <return type="@self"/>
+        <sink kind="ldap_injection" argpos="0"/>
+      </method>
+      <method name="createEqualityFilter" signature="createEqualityFilter(java.lang.String, java.lang.String)" instance="false" match="name"
+              alias="createApproximateMatchFilter, createExtensibleMatchFilter, createGreaterOrEqualFilter, createLessOrEqualFilter, createPresenceFilter, createSubAnyFilter, createSubFinalFilter, createSubInitialFilter, createSubstringFilter">
+        <return type="@self"/>
+        <neutralization argpos="-1" kind="ldap_injection"/>
+      </method>
+      <method name="encodeValue" signature="encodeValue(java.lang.String)" instance="false">
+        <return type="java.lang.String"/>
+        <neutralization kind="ldap_injection" argpos="-1"/>
+      </method>
+      <method name="encodeValue" signature="encodeValue(com.unboundid.asn1.ASN1OctetString, java.lang.StringBuilder)" instance="false">
+        <neutralization kind="ldap_injection" argpos="0"/>
+      </method>
+    </class>
+
+    <class name="com.unboundid.ldap.sdk.SearchRequest">
+      <constructor name="SearchRequest" signature="SearchRequest(com.unboundid.ldap.sdk.SearchResultListener, com.unboundid.ldap.sdk.Control[], java.lang.String, com.unboundid.ldap.sdk.SearchScope, com.unboundid.ldap.sdk.DereferencePolicy, int, int, boolean, java.lang.String, java.lang.String...)">
+        <sink kind="ldap_injection" argpos="2,8"/>
+      </constructor>
+      <constructor name="SearchRequest" signature="SearchRequest(com.unboundid.ldap.sdk.SearchResultListener, java.lang.String, com.unboundid.ldap.sdk.SearchScope, com.unboundid.ldap.sdk.DereferencePolicy, int, int, boolean, java.lang.String, java.lang.String...)">
+        <sink kind="ldap_injection" argpos="1,7"/>
+      </constructor>
+      <constructor name="SearchRequest" signature="SearchRequest(com.unboundid.ldap.sdk.SearchResultListener, java.lang.String, com.unboundid.ldap.sdk.SearchScope, java.lang.String, java.lang.String...)">
+        <sink kind="ldap_injection" argpos="1,3"/>
+      </constructor>
+      <constructor name="SearchRequest" signature="SearchRequest(java.lang.String, com.unboundid.ldap.sdk.SearchScope, com.unboundid.ldap.sdk.DereferencePolicy, int, int, boolean, java.lang.String, java.lang.String...)">
+        <sink kind="ldap_injection" argpos="0,6"/>
+      </constructor>
+      <constructor name="SearchRequest" signature="SearchRequest(java.lang.String, com.unboundid.ldap.sdk.SearchScope, java.lang.String, java.lang.String...)">
+        <sink kind="ldap_injection" argpos="0,2"/>
+      </constructor>
+      <method name="duplicate" signature="duplicate()" match="name">
+        <return type="@self"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="setBaseDN" signature="setBaseDN(java.lang.String)" alias="setFilter">
+        <sink kind="ldap_injection" argpos="0"/>
+      </method>
+    </class>
+  </module>
+  
+  <module name="apache.ldap" standard="apache.ldap">
+    <description url="https://directory.apache.org/api/">Apache Directory LDAP API</description>
+    
+    <class name="org.apache.directory.ldap.client.api.LdapConnection" kind="interface">
+      <method name="anonymousBind" signature="anonymousBind()">
+        <sink kind="anonymous_ldap_bind" argpos="-1"/>
+      </method>
+      <method name="bind" signature="bind()"></method>
+      <method name="bind" signature="bind(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="network"/>
+      </method>
+      <method name="bind" signature="bind(java.lang.String, java.lang.String)">
+        <tags>username:0, password:1</tags>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="network"/>
+      </method>
+      <method name="connect" signature="connect()"></method>
+      <method name="search" signature="search(java.lang.String, java.lang.String, org.apache.directory.api.ldap.model.message.SearchScope, java.lang.String...)">
+        <sink kind="ldap_injection" argpos="0,1"/>
+      </method>
+    </class>
+
+    <class name="org.apache.directory.ldap.client.api.LdapAsyncConnection" kind="interface" supertypes="org.apache.directory.ldap.client.api.LdapConnection">
+      <method name="anonymousBindAsync" signature="anonymousBindAsync()">
+        <return type="org.apache.directory.ldap.client.api.future.BindFuture"/>
+        <sink kind="anonymous_ldap_bind" argpos="-1"/>
+      </method>
+      <method name="bindAsync" signature="bindAsync()">
+        <return type="org.apache.directory.ldap.client.api.future.BindFuture"/>
+      </method>
+      <method name="bindAsync" signature="bindAsync(java.lang.String)">
+        <tags>username:0</tags>
+        <return type="org.apache.directory.ldap.client.api.future.BindFuture"/>
+        <sink kind="hardcoded_credentials" argpos="0" resource="network"/>
+      </method>
+      <method name="bindAsync" signature="bindAsync(java.lang.String, java.lang.String)">
+        <tags>username:0, password:1</tags>
+        <return type="org.apache.directory.ldap.client.api.future.BindFuture"/>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="network"/>
+      </method>
+      <method name="searchAsync" signature="searchAsync(java.lang.String, java.lang.String, org.apache.directory.api.ldap.model.message.SearchScope, java.lang.String...)">
+        <return type="org.apache.directory.ldap.client.api.future.SearchFuture"/>
+        <sink kind="ldap_injection" argpos="0,1"/>
+      </method>
+    </class>
+    
+    <class name="org.apache.directory.ldap.client.api.AbstractLdapConnection" kind="abstract_class" supertypes="org.apache.directory.ldap.client.api.LdapConnection"></class>
+    <class name="org.apache.directory.ldap.client.api.LdapNetworkConnection"
+           supertypes="org.apache.directory.ldap.client.api.AbstractLdapConnection, org.apache.directory.ldap.client.api.LdapAsyncConnection, java.io.Closeable, java.lang.AutoCloseable">
+      <constructor name="LdapNetworkConnection" signature="LdapNetworkConnection(java.lang.String, int)">
+        <sink kind="ssrf" argpos="0,1" resource="network"/>
+      </constructor>
+      <constructor name="LdapNetworkConnection_1" signature="LdapNetworkConnection(java.lang.String, int, boolean)">
+        <sink kind="ssrf" argpos="0,1" resource="network"/>
+      </constructor>
+      <constructor name="LdapNetworkConnection_2" signature="LdapNetworkConnection(java.lang.String, int, boolean, org.apache.directory.ldap.codec.api.LdapApiService)">
+        <sink kind="ssrf" argpos="0,1" resource="network"/>
+      </constructor>
+    </class>
+
+    <class name="org.apache.directory.api.ldap.model.message.SearchRequest" kind="interface">
+      <method name="setBase" signature="setBase(java.lang.String)" alias="setFilter">
+        <sink kind="ldap_injection" argpos="0"/>
+      </method>
+    </class>
+
+    <class name="org.apache.directory.api.ldap.model.message.SearchRequestImpl" supertypes="org.apache.directory.api.ldap.model.message.SearchRequest"/>
+
+    <class name="org.apache.directory.api.ldap.model.filter.EqualityNode">
+      <constructor name="EqualityNode" signature="EqualityNode(java.lang.String, org.apache.directory.api.ldap.model.entry.Value)">
+        <neutralization kind="ldap_injection" argpos="0,1"/>
+      </constructor>
+    </class>
+
+  </module>
+  
+</library>  

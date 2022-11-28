@@ -1,0 +1,152 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='database' subtech='oracleforms' descriptor='database/aim.oracleforms.xml' label='Models in Oracle XML Forms and Reports'>
+  <description>
+    Process parsed Oracle Forms and reports looking for forms, reports and their dependencies.
+  </description>
+
+  <dependencies>
+  </dependencies>
+
+  <properties>
+
+    <property id='aim.oracleforms.rule.active' type='bool'>
+      <name>oracleformsActive</name>
+      <example>false</example>
+      <description>If true, normal Oracle Forms and Reports XML exported files are processed.</description>
+    </property>
+
+    <property id='aim.oracleforms.rule.software' type='string'>
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>Name of the software (application) where OracleForms and Reports are placed.</description>
+    </property>
+
+    <property id='aim.oracleforms.rule.filter' type='list' subtype='antPattern'>
+      <name>filter</name>
+      <example>**/*.xml</example>
+      <description>Ant pattern(s) to select which normal Oracle Forms and Reports XML exported files to process.</description>
+    </property>
+    
+    <property id='aim.oracleforms.rule.dbsystem' type='string'>
+      <name>dbsystem</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>
+        The database type (e.g. DB2, Oracle...) or database name for container of referenced tables.
+        Used as fallback if no global database object resolver, or the resolver cannot find the target entity.
+      </description>
+    </property>
+
+    <property id='aim.oracleforms.rule.dbname' type='string'>
+      <name>dbname</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>
+        The database name or database schema for container of referenced tables.
+        Used as fallback if no global database object resolver, or the resolver cannot find the target entity.
+      </description>
+    </property>
+    
+    <property id='aim.oracleforms.rule.ignoreCase' type='bool'>
+      <name>ignoreCase</name>
+      <example>${aim.common.ignoreCase}</example>
+      <description>
+        If true, case is ignored in entity names found in oracleforms files 
+      </description>
+    </property>
+    
+    <property id='aim.oracleforms.rule.createInternalObjects' type='bool'>
+      <name>createInternalObjects</name>
+      <example>true</example>
+      <description>
+        If true, create internal objects (e.g. TYPES) in PL/SQL.
+      </description>
+    </property>
+
+    <property id='aim.oracleforms.addSqlCode' type="bool">
+      <name>addSqlCode</name>
+      <example>true</example>
+      <description>
+        If true, SQL statements (queries, DML operations) are registered as explicit components.
+        If false, direct relations between form / module and database objects (like tables) are created.
+      </description>
+    </property>
+
+    <property id='aim.oracleforms.schemaResolver' type='enum'>
+      <name>schemaResolver</name>
+      <example>default</example>
+      <description>
+        Schema resolver to use.
+      </description>
+      <possible>
+        <enumval name="default">
+          Returns the <code>schema</code> property as schema name.
+        </enumval>
+        <enumval name="multi">
+          Assumes that SQL files for multiple schemes follow this layout: <code>SCHEMA_DIR/SchemaName/...sql files in arbitrary subdirs...</code>.
+          The <code>schemasDirectory</code> property contains the directory where schema subdirectories are located.
+        </enumval>
+        <enumval name="directories">
+          The first directory behind sources directory is used as the schema name, if matches one the schemas
+          in <code>allowedSchemas</code> property. If none matches, uses the default strategy.
+        </enumval>
+      </possible>
+    </property>
+
+    <property id='aim.oracleforms.schemaResolver.multi.schemas' type='string'>
+      <name>allowedSchemas</name>
+      <example>MYSCHEMA,MYOTHERSCHEMA</example>
+      <description>
+        Schemas (comma-separated) to accept when <code>schemaResolver=multi</code>.
+      </description>
+    </property>
+
+    <property id='aim.oracleforms.schemaResolver.directories.schemasDirectory' type='string'>
+      <name>schemasDirectory</name>
+      <example>${CHECKING_DATA}/plugindata/schema${project}</example>
+      <description>
+        Schemas directory to use when <code>schemaResolver=directories</code>.
+      </description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>module,form,menu,report,table,procedure,function</values>
+    <description>
+      Creates Oracle Forms and Reports components and the referenced table components in embedded PLSQL code.
+    </description>
+  </createdEntities>
+  <createdRelations>
+    <values>
+      application-contains->module,
+      module-contains->form,
+      module-contains->report,
+      form-insert->table,
+      form-delete->table,
+      form-select->table,
+      form-update->table,
+      form-contains->storedProcedure|function,
+      form-references->report,
+      database-contains->databaseInstance,
+      databaseInstance-contains->table,
+    </values>
+    <description>
+      Creates select, insert, update and delete relations between forms and referenced tables.
+      <ul>
+        <li>application-contains->module</li>
+      	<li>module-contains->form</li>
+      	<li>module-contains->report</li>
+        <li>form-contains->menu</li>
+      	<li>form-insert->table</li>
+      	<li>form-delete->table</li>
+      	<li>form-select->table</li>
+      	<li>form-update->table</li>
+      	<li>form-contains->storedProcedure|function</li>
+        <li>form-references->report</li>
+      	<li>database-contains->databaseInstance</li>
+      	<li>databaseInstance-contains->table</li>
+      </ul>
+    </description>
+  </createdRelations>
+  
+  <!-- importantConfigurations activation="aim.oracleforms.rule.active" /-->
+</block>

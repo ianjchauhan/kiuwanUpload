@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_oracleforms" updated="">
+  <description>Nykaa_Web</description>
+  <rule name="OPT.ORACLEFORMS.SqlInjection" message="SqlInjection: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')" class="com.optimyth.qaking.oracleforms.rules.SqlInjection" technology="ORACLEFORMS" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Oracle Forms is not totally protected against errors that lead to SQL Injection vulnerabilities.
+Most of the errors in PL/SQL related with SQL Injection could be done in Oracle Forms: - EXECUTE IMMEDIATE with tainted SQL code.
+- DBMS_SQL.PARSE with tainted SQL code.
+- OPEN CURSOR FOR tained SELECT.
+
+'Tainted' SQL is any SQL statement built by concatenating parts of SQL text with values from user-controlled inputs, like Forms items or variables taken from user-controlled inputs.
+
+You may check every user-controlled input used in dynamic SQL construction using a validation procedure, but it is better to use 'parameterized' SQL, where each user-controlled input that needs to be passed as parameter is replaced by a 'bind variable' (see code examples for details).
+
+The rule tries to check common tainted SQL conditions. Please note that this is a difficult problem for static analysis, and there could be some SQL Injection conditions not detected by the rule.
+
+Additionally, Oracle Forms have a 'query/where' functionality: user may enter : or & as first char in a Forms field, which opens an SQL query editor when the user may place any SQL code. That functionality is enabled by default in most Forms releases (it was disabled by default since Oracle Applications 11.5.9+).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Reduce the possibility for SQL Injection conditions.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[-- Tainted SQL, concatenate values from user-controlled input instead of using bind variables
+sqlstr := 'SELECT postal-code FROM states WHERE state-name = ''' || :BLK.STATE || '''';
+EXECUTE IMMEDIATE sqlstr INTO code; -- VIOLATION
+
+sqlstr := 'SELECT postal-code FROM states WHERE state-name = ''' || :BLK.STATE || '''';
+DBMS_SQL.PARSE(cursor_name, sqlstr, DBMS_SQL.NATIVE); -- VIOLATION
+DBMS_SQL.DEFINE_COLUMN(cursor_name, 1, code, 10);
+rows_processed := DBMS_SQL.EXECUTE(cursor_name);
+...
+
+-- Violation, tainted SQL
+OPEN cursor_states FOR SELECT postal-code FROM states WHERE state-name = ''' || :BLK.STATE || ''';]]></example>
+    <repair><![CDATA[sqlstr := 'SELECT postal-code FROM states WHERE state-name = :1';
+EXECUTE IMMEDIATE sqlstr USING :BLK.STATE INTO code; -- FIXED
+
+sqlstr := 'SELECT postal-code FROM states WHERE state-name = :name';
+DBMS_SQL.PARSE(cursor_name, sqlstr, DBMS_SQL.NATIVE);
+DBMS_SQL.DEFINE_COLUMN(cursor_name, 1, code, 10);
+DBMS_SQL.BIND_VARIABLE(cursor_name, ':name', name); -- FIXED
+rows_processed := DBMS_SQL.EXECUTE(cursor_name);
+...
+
+DECLARE
+  CURSOR cursor_name(p1 in varchar2(128)) IS SELECT postal-code FROM states WHERE state-name = p1;
+  ...
+BEGIN
+  ...
+  OPEN cursor_name(:BLK.STATE); -- FIXED, parameterized cursor
+
+In general: Avoid in all places in PL/SQL code where 'dynamic SQL' is used (EXECUTE IMMEDIATE, CURSORs for dynamic
+SQL, DBMS_SQL.PARSE, etc.) concatenation of user-controlled data in the query. Use parameterized
+SQL (with variable SQL parts like where clauses using binding vars for user-controlled Form items) and
+NEVER concatenate values from user-controlled Form items in the SQL.
+See http://www.integrigy.com/files/Integrigy_Oracle_SQL_Injection_Attacks.pdf for full details.
+
+Set the undocumented environment variable FORMSxx_RESTRICT_ENTER_QUERY to true in Forms server
+to disable query/where functionality. If application really needs that functionality enabled,
+then you should write a PRE-QUERY/ON-ERROR trigger for EVERY input field, and validate the entire
+input for EVERY Forms module (obviously this is not easy to do).]]></repair>
+    <reference><![CDATA[http://www.integrigy.com/files/Integrigy_Oracle_SQL_Injection_Attacks.pdf
+    http://www.red-database-security.com/wp/sql_injection_forms_us.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:89,CWETOP25:2021:6,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="ORACLEFORMS" technology="ORACLEFORMS" active="true" weight="1.0">
+      <description><![CDATA[ORACLEFORMS rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="ORACLEFORMS" active="true" weight="8.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="ORACLEFORMS" active="true" weight="10.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="ORACLEFORMS" active="true" weight="5.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="ORACLEFORMS" active="true" weight="10.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="ORACLEFORMS" active="true" weight="4.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

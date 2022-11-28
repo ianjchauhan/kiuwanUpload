@@ -1,0 +1,1526 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_abap" updated="">
+  <description>HelloVerify</description>
+  <rule name="OPT.ABAP.AGR.CallSysFunction" message="CallSysFunction: Do not call system / kernel functions from ABAP application code" class="com.als.abap.rules.agr.AGR_CallSysFunction" technology="ABAP" active="true">
+    <tags><![CDATA[essential]]></tags>
+    <description><![CDATA[Avoid calls to system functions (kernel calls, SYSTEM-CALL), because they are reserved for internal use, and they could be modified
+by SAP and lead to errors or unexpected behaviour. They are not portable between SAP versions, and add significant security risks.
+
+System functions could be called using SYSTEM-CALL statement, or using kernel function calls (CALL FUNCTION 'cfunc' ID id FIELD fld),
+also known as C function calls (because they were implemented typically in the C language).
+
+Calls of system functions whose names or parameters are injected into the program from outside present a serious security risk.
+The values from outside must be checked thoroughly before being used. In particular, there are 8 high risk kernel calls: SYSTEM
+(OS command exec), C_DB_EXECUTE / C_DB_FUNCTION (native SQL execution), C_GET_TABLE / C_MOD_TABLE (for accessing and modifying
+database tables), INTERNET_USER_LOGON (user switch), and XXPASS / XXPASSNET (compute password hash).
+
+Since SAP 6.20, kernel methods replace both kinds of system functions.
+
+Note: The related rule SEC.CommandInjection checks kernel function calls for potential command injection vulnerabilities.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid stability and security issues.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[* VIOLATION, ABAP kernel call (to system shell)
+CALL 'SYSTEM' ID 'COMMAND' FIELD l_unix_command ID 'ITAB' FIELD itab-*sys*.
+
+* VIOLATION, ABAP kernel call
+CALL 'C_DB_EXECUTE' ID 'STATLEN' FIELD lv_len
+  ID 'STATTXT' FIELD lv_stmt ID 'SQLERR' FIELD lv_sqlerr.
+
+* VIOLATION, system call
+SYSTEM-CALL ICT DID 29
+  PARAMETERS
+    lv_buff1 lv_buff2 lv_dummy lv_dummy
+    lv_dummy lv_dummy lv_dummy lv_dummy.]]></example>
+    <repair><![CDATA[" Do not call system / kernel functions from ABAP application code.]]></repair>
+    <reference><![CDATA[http://virtualforge.com/tl_files/Theme/Presentations/The%20ABAP%20Underverse%20-%20Slides.pdf,http://help.sap.com/abapdocu_750/en/ABAPSYSTEM-CALL.htm,http://help.sap.com/abapdocu_750/en/ABAPCALL-.htm]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:676,OWASP:2021:A6,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.ASR.SecuritySelectTables" message="SecuritySelectTables: Avoid queries on sensitive tables from ABAP code" class="com.als.abap.rules.asr.ASR_SecuritySelectTables" technology="ABAP" active="true">
+    <tags><![CDATA[controversial]]></tags>
+    <description><![CDATA[Avoid queries on sensitive tables from ABAP code, such tables should be read from a transaction, function or class method.
+Application code should not perform SELECT on such tables, to ensure that appropriate security controls are in place.
+
+The 'forbiddenTables' property lists the sensitive tables that should not be queried in SELECT statements.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid direct queries on sensitive database tables.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[SELECT vbakpart-id
+FROM vbak    "VIOLATION
+INTO TABLE itab_vbak_data.]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/813.html]]></reference>
+    <normatives>
+      <security><![CDATA[BIZEC-APP:04,CWE:813,OWASP:2021:A1]]></security>
+    </normatives>
+    <properties>
+      <property name="forbiddenTables" descname="Forbidden tables for queries in ABAP code." value="REPOSRC, TADIR, TRDIR, TFDIR, BSAD, BSAK, BSAS, BSID, BSIK, VBAK, VBAP, EKKO, EKPO"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.BadAuthorizationCheck" message="BadAuthorizationCheck: Improper implementation of authorization check" class="com.optimyth.qaking.abap.rules.sec.BadAuthorizationCheck" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.4,ASVS-v4.0.2:13.4.2,ASVS-v4.0.2:4.1.3,ASVS-v4.0.2:4.1.5,ASVS-v4.0.2:7.2.2,ASVS-v4.0.2:8.3.3,ASVS-v4.0.2:8.3.8,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Roles and authorizations are a central security topic in SAP environments.
+Properly coding explicit SAP authorization checks in ABAP is not trivial.
+Not performing or performing incorrectly authorization checks may lead to information exposures and other consequences.
+
+The best authorization concept is rather useless if custom code does not check (correctly) the necessary authorizations.
+
+Security issues arise in the following cases:
+- the developer forgets to perform an authorization check in the code.
+- The developer uses the wrong authorization object.
+- The developer uses proprietary authorization logic.
+- The developer does not handle the return value of the authorization check correctly.
+
+Using the standard AUTHORITY-CHECK statement (or an API like function / method that invokes it) is better than using
+a propietary authorization scheme, as there are well-known transactions for maintaining the authorization permissions,
+and only such checks appear in the SAP authorization trace. Using "custom" authorization controls based on usernames
+and/or custom tables is a bad practice.
+
+This rule checks security defect APP-04 in BIZEC APP/11 standard.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[" VIOLATION, sy-subrc not checked
+AUTHORITY-CHECK OBJECT 'S_TCODE' ID 'TCD' FIELD 'SE80'.
+CALL TRANSACTION 'SE80'.
+
+" VIOLATION, TCD field for S_TCODE should not use DUMMMY
+AUTHORITY-CHECK OBJECT 'S_TCODE' ID 'TCD' DUMMY.
+IF sy-subrc = 0.
+  CALL TRANSACTION 'SE80'.
+ENDIF.
+
+" VIOLATION, TCD field for S_TCODE should not use wildcards
+AUTHORITY-CHECK OBJECT 'S_TCODE' ID 'TCD' FIELD '*'.
+IF sy-subrc = 0.
+  CALL TRANSACTION 'SE80'.
+ENDIF.
+
+" VIOLATIONS:
+" P_GROUP should appear (e.g. as DUMMY),
+" DEVCLASS should not be wildcard
+" ACTVT should have a proper value
+AUTHORITY-CHECK OBJECT 'S_DEVELOP'
+  ID 'DEVCLASS' FIELD '*'
+  ID 'OBJTYPE'  FIELD 'PROG'
+  ID 'OBJNAME'  FIELD lv_prog
+  ID 'ACTVT'    DUMMY.
+
+IF sy-subrc = 0.
+  READ REPORT lv_prog INTO lt_code.
+ENDIF.]]></example>
+    <repair><![CDATA[" OK
+AUTHORITY-CHECK OBJECT 'S_TCODE' ID 'TCD' FIELD 'SE80'.
+IF sy-subrc = 0.
+  CALL TRANSACTION 'SE80'.
+ENDIF.
+
+" OK
+AUTHORITY-CHECK OBJECT 'S_DEVELOP'
+  ID 'DEVCLASS' FIELD 'PKG'
+  ID 'OBJTYPE'  FIELD 'PROG'
+  ID 'OBJNAME'  FIELD lv_prog
+  ID 'P_GROUP'  DUMMY " not required in this context
+  ID 'ACTVT'    FIELD '03'.
+
+IF sy-subrc = 0.
+  READ REPORT lv_prog INTO lt_code.
+ENDIF.]]></repair>
+    <reference><![CDATA[DSAG - Best Practice Guidelines for Development, section 5.1.1 "Authorization Checks".]]></reference>
+    <normatives>
+      <security><![CDATA[BIZEC-APP:04,CWE:285,OWASP:2021:A1]]></security>
+    </normatives>
+    <properties>
+      <property name="checkForUser" descname="If true, FOR USER addition is forbidden" value="true"/>
+      <property name="checkFields" descname="If true, fields are checked" value="true"/>
+      <property name="useAlternateAPI" descname="If true, when alternate API for authorization objects exist, it should be used" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.CheckAuthInAllPrograms" message="CheckAuthInAllPrograms: Any report must perform an authority check" class="com.optimyth.qaking.abap.rules.sec.CheckAuthInAllPrograms" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.4,ASVS-v4.0.2:13.4.2,ASVS-v4.0.2:4.1.3,ASVS-v4.0.2:4.1.5,ASVS-v4.0.2:7.2.2,ASVS-v4.0.2:8.3.3,ASVS-v4.0.2:8.3.8,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity,controversial]]></tags>
+    <description><![CDATA[Authorization checks must be always explicit in any ABAP program/report for verifying if the underlying user can access
+the resources the program uses.
+
+Related rules check the validity of the authorization check in context. This rule only checks that at least one valid
+authorization check exists in each ABAP program/report.
+
+Note: The rule looks for authorization checks in the programa/report, either in any of the LOAD-OF-PROGRAM, INITIALIZATION,
+START-OF-SELECTION or AT SELECTION-SCREEN events, or in the report body when no explicit events (which acts as a
+START-OF-SELECTION event handler).]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[All reports have explicit authorization checks, to ensure that no sensitive operation is not controlled with SAP authorizations.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[REPORT YUSRLOCK MESSAGE-ID Z1 . "VIOLACION
+  TABLES: USR02.
+  PARAMETERS: LOCK AS CHECKBOX, LISTLOCK AS CHECKBOX.
+  DATA: UFLAGVAL TYPE I, LOCKSTRING(8) TYPE C.]]></example>
+    <repair><![CDATA[REPORT YUSRLOCK MESSAGE-ID Z1 .
+  TABLES: USR02.
+  PARAMETERS: LOCK AS CHECKBOX, LISTLOCK AS CHECKBOX.
+  DATA: UFLAGVAL TYPE I, LOCKSTRING(8) TYPE C.
+  "-------------- Authorization check -----------------------*
+	AUTHORITY-CHECK OBJECT 'ZPROG_RUN' ID 'PROGRAM' FIELD SY-CPROG.	"OK, custom authorization object is checked]]></repair>
+    <reference><![CDATA[Secure ABAP Programming (Sichere ABAP-Programmierung) section 5.3]]></reference>
+    <normatives>
+      <security><![CDATA[BIZEC-APP:04,CWE:285,OWASP:2021:A1]]></security>
+    </normatives>
+    <properties>
+      <property name="include" descname="Regular expression for names of reports to check." value=""/>
+      <property name="exclude" descname="Regular expression for names of reports to ignore." value=""/>
+      <property name="customCheckFunctions" descname="Comma-separated list of custom functions that, when called in report, are considered valid authorization checks." value=""/>
+      <property name="customCheckMethods" descname="Comma-separated list of custom methods that, when called in report, are considered valid authorization checks.
+Each method has the format: class-&gt;method (for instance methods) or class=&gt;method (for class methods)." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.CommandInjection" message="CommandInjection: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')" class="com.optimyth.qaking.abap.rules.sec.CommandInjection" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.5,ASVS-v4.0.2:5.3.8,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[Executing commands that include unvalidated user input can cause an application to execute malicious commands on behalf of an attacker.
+The 'official' way to execute OS commands in SAP is transaction SM49.
+
+There are many ways to execute OS commands in SAP, rule checks the following cases:
+
+* CALL TRANSACTION 'SM49'. If command-line arguments depend on non-neutralized external input, code is vulnerable to OS command injection.
+Even if the OS command cannot be altered by the attacker, command arguments may include shell characters (; or | or && are typical options)
+so the attacker could feed additional commands.
+
+* SXPG_CALL_SYSTEM/SXPG_COMMAND_EXECUTE: The function modules SXPG_CALL_SYSTEM and SXPG_COMMAND_EXECUTE can be used
+to execute a command by providing its alias and optional parameters. Function module SXPG_CALL_SYSTEM executes commands on the SAP system
+where it is called, whereas function module SXPG_COMMAND_EXECUTE can execute commands on other/remote SAP systems.
+The (called) SAP system finally determines the proper command for the operating system it is running on by resolving
+the alias value and executes the command along with any parameters.
+
+This mechanism of the SAP standard allows certain control over the operating system commands that can be executed,
+since a white list of allowed commands can be specified. Additionally, execution of the specified commands can be further
+restricted with the authorization object S_LOG_COM. But it is possible to perform OS Command Injection attacks even through
+the function modules SXPG_CALL_SYSTEM and SXPG_COMMAND_EXECUTE are used. This is possible, if the (optional) additional_parameters
+of the called OS command are based on user input. In this case, malicious users can try to "chain" the executed command
+with a second command. This can be done by feeding specific command characters (e.g. 'pipe') to the parameters,
+so commands executed could be controlled by the external input.
+
+* CALL 'SYSTEM': The ABAP command CALL allows to invoke functionality in the SAP Kernel. Kernel function 'SYSTEM' can be used
+to execute arbitrary OS commands. The authorization object S_C_FUNCT allows restricting its execution by means of SAP authorizations.
+This can provide a second layer of defense. However, this authorization object only determines IF a user can execute CALL 'SYSTEM',
+not which OS commands are actually executed. SAP emphasizes that this call is for internal use only, and should not be used in
+application code.
+
+* CALL 'ThWpInfo': This call admits a PROG argument, which should not depend on external input.
+
+* OPEN DATASET ... FILTER: OPEN DATASET (ABAP command that opens files on the SAP application server) can execute arbitrary OS commands
+through the option FILTER. This could be restricted with authorization object S_DATASET, but when command could be controlled by
+external input, an OS Command Injection attack could succeed.
+
+* RFC_REMOTE_EXEC and RFC_REMOTE_PIPE: Function modules that invoke server program rfcexec, allowing execution of arbitrary OS commands.
+A 'command' parameter, when tainted with external input, could be targeted for injection attack.
+
+* Calls to method CL_GUI_FRONTEND_SERVICES->EXECUTE or (obsolete) function modules WS_EXECUTE, GUI_EXECUTE or GUI_RUN,
+when arguments related to the command to execute (in client workstation) are potentially tainted with external input.
+
+Remember: Whoever controls the operating system, controls the SAP system as well.
+
+The rule checks for above cases and emits a violation when vulnerable arguments are not clearly constant
+(input neutralization is complex for OS commands).
+
+Please note that exposed functionality in SAP systems may be vulnerable to command-injection attacks. For example,
+the TH_GREP function module was vulnerable, and was patched in support packages since 2011.
+
+This rule checks security defect APP-02 in BIZEC APP/11 standard.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid unintended OS command execution. Whoever controls the operating system, controls SAP system as well.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[REPORT ZFT.
+
+PARAMETERS lv_opt TYPE string.
+PARAMETERS lv_prog TYPE string.
+
+TYPES: BEGIN OF res_type,
+         line(255) TYPE c,
+       END OF res_type.
+
+DATA res_tab TYPE TABLE OF res_type.
+DATA mycmd   TYPE string.
+
+PARAMETERS mycmd TYPE string.
+
+DATA th_opcode(1)        TYPE x.
+DATA opcode_wp_exec_prog LIKE th_opcode VALUE 9.
+DATA lv_server           TYPE c LENGTH 30.
+lv_server = ' '.
+
+* VIOLATION, SYSTEM with command taken from external input
+CALL 'SYSTEM' ID 'COMMAND' FIELD lv_prog.
+
+* VIOLATION, ThWpInfo may be vulnerable to OS command injection.
+CALL 'ThWpInfo' ID 'OPCODE' FIELD opcode_wp_exec_prog
+                ID 'SERVER' FIELD lv_server
+                ID 'PROG' FIELD lv_prog
+                ID 'ARGC' FIELD 1
+                ID 'ARG1' FIELD '/tmp/xu.txt'.
+
+* VIOLATION, FILTER option make this vulnerable to OS command injection.
+OPEN DATASET 'c:\\test.dat' FOR INPUT IN BINARY MODE FILTER lv_opt.
+
+* VIOLATION, vulnerable to OS command injection
+CALL FUNCTION 'RFC_REMOTE_EXEC' DESTINATION 'SERVER_EXEC'
+  EXPORTING
+    command  = mycmd
+  TABLES
+    pipedata = res_tab.]]></example>
+    <repair><![CDATA[Using transaction SM69 create a new command alias, and invoke it using SXPG_COMMAND_EXECUTE. Make sure that "additional_parameters"
+parameter provided is not based on user input, or at least that input is adequately neutralized.
+
+Never use CALL 'SYSTEM' or CALL 'ThWpInfo'.
+
+Do not use OPEN DATASET ... FILTER prog, or at least make sure that prog is not controlled by external input.
+
+Avoid RFC_REMOTE_EXEC and RFC_REMOTE_PIPE, or at least make sure that 'command' parameter is not controlled by external input.
+
+Avoid passing to method CL_GUI_FRONTEND_SERVICES->EXECUTE or function modules WS_EXECUTE, GUI_EXECUTE or GUI_RUN arguments
+for command/program name or command arguments that depend on non-neutralized external inputs.]]></repair>
+    <reference><![CDATA[https://blogs.sap.com/2013/10/29/secure-execution-of-os-commands-by-abap-programs/]]></reference>
+    <normatives>
+      <security><![CDATA[BIZEC-APP:02,CWE:77,CWE:78,CWETOP25:2021:5,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:31]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.CrossSiteScripting" message="CrossSiteScripting: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')" class="com.optimyth.qaking.abap.rules.sec.CrossSiteScripting" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in page content. An attacker could inject browser script code that is executed
+in the client browser. The end-user is the attacked subject, and the software is the vehicle for the attack.
+There are two main kinds of XSS:
+
+* Reflected XSS: Attacker causes victim to supply malicious content to a vulnerable web application, which
+renders HTML content embedding a malicious script executed in victim's browser. A variation of this is named
+DOM-based XSS, where the vulnerable software does not generate content depending on user input but include
+script code that use user-controlled input.
+
+* Persistent XSS: Attacker provides malicious content to vulnerable application. When other user access to
+vulnerable pages that embed without proper neutralization the attacker content, script code is executed in the
+victim's browser.
+
+The script executed in the victim's browser could perform different malicious activities. When the XSS-injected payload
+directs victim's browser to an web application that trusts the victim, the XSS attack is known as "cross-site request
+forgery" (CSRF or XSRF in short).
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but user browsers
+generally allow scripting languages (e.g. JavaScript) in their browsers (disabling JavaScript severely limits
+a web site).
+
+This rule checks security defect APP-10 in BIZEC APP/11 standard.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<%@page language="abap"%>
+<%@extension name="htmlb" prefix="htmlb"%>
+<% data:
+     prod_id type xstring,
+     it_ekko table of ekko,
+     wa_ekko like line of it_ekko.
+%>
+<% prod_id = request->get_form_field( 'prod_id' ). %>
+<table>
+<%
+select * up to 10 rows
+from ekko
+into table it_ekko
+where ekko-prod_id = prod_id.
+
+loop at it_ekko into wa_ekko.
+%>
+<tr>
+  <!-- VIOLATION, user input prod_id not neutralized-->
+  <td><%=prod_id%></td>
+  <!-- VIOLATION (when allowPersistedSources=true), external wa_ekko not neutralized-->
+  <td><%=wa_ekko-ebeln%></td>
+</tr>
+<% endloop. %></table>]]></example>
+    <repair><![CDATA[<!-- OK, output encoding of contents so injected script code will be neutralized -->
+<%@page language="abap" forceEncode="html"%>
+...
+
+<!-- alternative: explicit encoding -->
+  escaped = cl_http_utility=>escape_html( prod_id )
+  <%html=prod_id%>]]></repair>
+    <reference><![CDATA[http://help.sap.com/saphelp_nw70ehp2/helpdata/en/a6/87890ae991441b89bf418d0198ddcc/content.htm]]></reference>
+    <normatives>
+      <security><![CDATA[BIZEC-APP:10,CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.7]]></security>
+    </normatives>
+    <properties>
+      <property name="allowPersistedSources" descname="When true, external inputs for persisted XSS will be checked." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.DangerousFileDownload" message="DangerousFileDownload: Dangerous file download" class="com.optimyth.qaking.abap.rules.sec.informative.DangerousFileDownload" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.2.1,ASVS-v4.0.2:12.5.2,ASVS-v4.0.2:13.1.5,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,informative]]></tags>
+    <description><![CDATA[SAP GUI offers facilities to download files from an SAP Server to a client computer.
+
+Such file downloads are not malicious by itself, but certain cases are problematic:
+- Sensitive information may be leaked from SAP servers.
+- ABAP code may try to download malicious files to end-user computers, or overwrite sensitive local files,
+  without user consent.
+
+Note: Authorization object S_GUI (which controls a user's permission to download files) only restrict file downloads
+in general, but the authorization by itself does not offer any security against the cases enumerated above.
+
+This rule checks if the code does not ask consent for the user before download a file to his/her computer.
+For example, with hard-coded filenames (which may overwrite sensitive files).
+
+Note: Since SAP GUI 7.20, all file downloads are monitored by SAP GUI, and the user is informed and asked for approval.
+By this reason, the flaws emitted by this rule are informative.]]></description>
+    <priority>5</priority>
+    <effort>2</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[FORM file_download.
+  DATA:
+    BEGIN OF itab,
+      text(255) TYPE c,
+    END OF itab.
+  DATA file_content TYPE itab OCCURS 0.
+  DATA file_len TYPE i.
+
+  " VIOLATION, a potential overwrite of user's computer configuration
+  CALL FUNCTION 'GUI_DOWNLOAD'
+    EXPORTING
+      filetype = 'ASC'
+      filename = 'C:\config.sys'
+    IMPORTING
+      filelength = file_len
+    TABLES
+      data_tab = file_content
+    EXCEPTIONS
+      file_write_error = 1
+      OTHERS = 2.
+ENDFORM.]]></example>
+    <repair><![CDATA[FORM file_download.
+  " Same data as before
+  DATA:
+    chosen_filename TYPE string,
+    chosen_path TYPE string,
+    chosen_fullpath TYPE string,
+    rc TYPE i.
+
+  " FIXED, local file to write should be chosen by user
+  CALL METHOD cl_gui_frontend_services=>file_save_dialog
+    EXPORTING
+      window_title = 'Choose CSV filename'
+      initial_directory = 'C:\temp'
+      file_filter = '*.CSV'
+      prompt_on_overwrite = abap_true
+    CHANGING
+      filename = chosen_filename
+      path = chosen_path
+      fullpath = chosen_fullpath
+      user_action = rc
+    EXCEPTIONS
+      cntl_error  = 1
+      error_no_gui = 2
+      not_supported_by_gui = 3
+      OTHERS = 4.
+
+  IF sy-subrc = 0 AND rc = cl_gui_frontend_services=>action_ok.
+    CALL FUNCTION 'GUI_DOWNLOAD'
+      EXPORTING
+        filetype = 'ASC'
+        filename = chosen_fullpath
+    IMPORTING
+        filelength = file_len
+      TABLES
+        data_tab = file_content.
+  ENDIF.
+ENDFORM.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/434.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:434,CWETOP25:2021:10]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.DangerousFileUpload" message="DangerousFileUpload: Dangerous file upload" class="com.optimyth.qaking.abap.rules.sec.informative.DangerousFileUpload" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.2.1,ASVS-v4.0.2:12.5.2,ASVS-v4.0.2:13.1.5,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,informative]]></tags>
+    <description><![CDATA[SAP GUI offers facilities to upload files from a client computer to a SAP Server.
+
+Such file uploads are not malicious by itself, but certain cases are problematic:
+- Malicious content may be uploaded and could compromise the server.
+- Potentially malicious ABAP code may try to upload files from end-user computers, without user consent.
+
+Note: Authorization object S_GUI (which controls a user's permission to upload files) only restrict file uploads
+in general, but without explicit checks on how the file is chosen and which files (by content) are allowed after upload,
+the authorization by itself does not offer any security.
+
+This rule checks if the code does not ask consent for the user before uploading a file from his/her computer.
+For example, with hard-coded filenames (which may leak sensitive files). This should be avoided, as such practice
+may open legal issues in many countries.
+
+Note: Since SAP GUI 7.20, all file uploads are monitored by SAP GUI, and the user is informed and asked for approval.
+By this reason, the flaws emitted by this rule are informative.]]></description>
+    <priority>5</priority>
+    <effort>2</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[FORM file_upload.
+  DATA:
+    BEGIN OF itab,
+      text(255) TYPE c,
+    END OF itab.
+  DATA file_content TYPE itab OCCURS 0.
+
+  " VIOLATION, a potential leak of user's computer configuration
+  CALL FUNCTION 'GUI_UPLOAD'
+    EXPORTING
+      filetype = 'ASC'
+      filename = 'C:\config.sys'
+    TABLES
+      data_tab = file_content.
+ENDFORM.]]></example>
+    <repair><![CDATA[FORM file_upload.
+  " Same data as before
+  DATA:
+    chosen_file_table TYPE filetable,
+    chosen_file TYPE string,
+    rc TYPE i.
+
+  " FIXED, filename to upload should be chosen by user
+  CALL METHOD cl_gui_frontend_services=>file_open_dialog
+    EXPORTING
+      window_title = 'Choose CSV file to upload'
+      file_filter = '*.CSV'
+      multiselection = 'N'
+    CHANGING
+      file_table = chosen_file_table
+      rc = lv_rc
+    EXCEPTIONS
+      file_open_dialog_failed = 1
+      cntl_error = 2
+      error_no_gui = 3
+      not_supported_by_gui = 4
+      OTHERS = 5.
+
+  IF sy-subrc = 0 AND rc = 1.
+    READ TABLE chosen_file_table INDEX 1 INTO chosen_file.
+    CALL FUNCTION 'GUI_UPLOAD'
+      EXPORTING
+        filetype = 'ASC'
+        filename = chosen_file
+      TABLES
+        data_tab = file_content.
+  ENDIF.
+ENDFORM.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/434.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:434,CWETOP25:2021:10]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.DirectUpdate" message="DirectUpdate: SQL Bad Practices - Direct Update" class="com.optimyth.qaking.abap.rules.sec.DirectUpdate" technology="ABAP" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Direct SQL Updates (INSERT / UPDATE / MODIFY / DELETE statements) are generally a bad practice.
+They undermine the integrity and security of the system, and should not be allowed.
+Modifying Standard SAP tables may dramatically change the behaviour of SAP system.
+
+Direct SQL Updates are error-prone, and can cause unexpected system behavior:
+- Authorization checks are not part of the Open SQL statement and need to be explicitly performed.
+- Easy to miss edit checks and audit trails, automatically generated when using provided SAP transactions or function modules for data modification.
+- SAP Locking mechanism must be invoked when using the statement writing on SAP table, to avoid synchronization issues.
+- Need to ensure all associated tables and modules are updated alongwith the main table.
+
+The rule emits a violation when any SAP standard table is modified with a DML statement (INSERT / UPDATE / MODIFY / DELETE),
+using either Open SQL or native SQL.
+
+This rule checks security defect APP-06 in BIZEC APP/11 standard.]]></description>
+    <priority>2</priority>
+    <effort>4</effort>
+    <vulntype>Design error</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[More robust operations on standard tables.
+Prevents flaws and security issues (lack of authorization checks, no audit log leading to poor auditability)]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[* OpenSQL
+INSERT INTO SKB1 VALUES myrec. "VIOLATION, single line insert into G/L table SKB1
+MODIFY SKB1 FROM TABLE itab. "VIOLATION, insert/update rows from internal table into SKB1
+UPDATE SKB1 SET A=1 WHERE Z=1. "VIOLATION, update on SKB1
+DELETE FROM SKB1 WHERE A=1. "VIOLATION, delete on SKB1
+
+* VIOLATION NativeSQL (INSERT, UPDATE, DELETE on standard table)
+EXEC SQL.
+  UPDATE SKB1 SET A=B WHERE A=1
+ENDEXEC.]]></example>
+    <repair><![CDATA[* Replace modification of standard SAP tables by equivalent exposed operations (e.g. BAPIs),
+* so data changes are done in a controlled way.
+
+* Following is allowed:
+* OpenSQL (update on internal or custom DB table)
+INSERT INTO ZTAB VALUES myrec.
+MODIFY ztab FROM TABLE itab.
+UPDATE Z_2 SET A=1 WHERE Z=1.
+UPDATE Z_2 FROM TABLE itab.
+UPDATE Z_2 FROM wa.
+DELETE FROM ZTAB WHERE A=1.
+
+* NativeSQL (INSERT, UPDATE, DELETE on custom DB table)
+EXEC SQL.
+  UPDATE ZTAB SET A=B WHERE A=1
+ENDEXEC.
+* Other statements, not related to standard table update
+DELETE DATASET dsname.
+DELETE FROM DATABASE mydb(ar) ID mykey.
+DELETE FROM SHARED BUFFER myclust(ar) ID mykey.
+DELETE TABLE itab FROM wa.
+DELETE itab WHERE f=1.
+DELETE ADJACENT DUPLICATES FROM itab.]]></repair>
+    <reference><![CDATA[https://scn.sap.com/thread/1832136]]></reference>
+    <normatives>
+      <security><![CDATA[BIZEC-APP:06,CWE:862,CWETOP25:2021:18]]></security>
+    </normatives>
+    <properties>
+      <property name="customTablesPattern" descname="Regular expression for custom tables (where direct updates are allowed)." value="(\/(?:[^\/]+\/)+)?[YZ][_A-Za-z0-9]*"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.DynamicCode" message="DynamicCode: Avoid Dynamic Code constructs" class="com.optimyth.qaking.abap.rules.sec.DynamicCode" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.4,ASVS-v4.0.2:5.5.4,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[ABAP Dynamic Code constructs are potential targets to code injection attacks, particularly when dynamic code generated
+could be affected by external inputs.
+
+Such dynamic code constructs cannot be fully tested by QA team, and leaves no traces, as code exists in memory (it is generated at runtime).
+Could be used to code a backdoor that may pass security audits.
+
+The rule checks for the following dynamic programming features:
+* Extract code to internal table: READ REPORT prog INTO itab.
+* Generate program from internal table: INSERT REPORT prog FROM itab.
+* Removing a program: DELETE REPORT.
+* Loading a program: LOAD REPORT prog PART part INTO itab.
+* Edit the program: EDITOR-CALL FOR REPORT prog.
+* Generate (temporary) subroutines from internal table: GENERATE SUBROUTINE POOL itab NAME prog.
+* Generate program (internal use): GENERATE REPORT prog.
+* Generate screen/dynpro (internal use): GENERATE DYNPRO h f e m ID dynpro_id.
+* Exporting dynpro: EXPORT DYNPRO h f e m ID dynpro_id.
+* Importing dynpro: IMPORT DYNPRO h f e m ID dynpro_id.
+* Performing table contents syntax check: SYNTAX-CHECK FOR itab MESSAGE msg LINE l WORD w PROGRAM prog.
+* Performing dynpro syntax check: SYNTAX CHECK FOR DYNPRO h f e m.
+* Tokenize code and store it into the repository: SCAN ABAP-SOURCE itab1 TOKENS INTO itab2.
+* Inserting textpool into repository: INSERT TEXTPOOL prog FROM itab LANGUAGE lang.
+* Reading textpool form repository: READ TEXTPOOL prog INTO itab LANGUAGE lang.
+* Removing textpool from repository: DELETE TEXTPOOL prog LANGUAGE lg.
+
+* SYNTAX-CHECK FOR DYNPRO.
+
+The generated ABAP code may be invoked later (via SUBMIT or PERFORM).
+
+Note: GENERATE REPORT / GENERATE DYNPRO are intended for internal use only.
+
+This rule checks security defect APP-01 in BIZEC APP/11 standard.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Forbidding dynamic code generation avoids high-impact code injection security flaws.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[* VIOLATION, creates subroutine pool from itabCode
+GENERATE SUBROUTINE POOL itabCode NAME poolName.
+
+* VIOLATION, generates program from code in reptab
+INSERT REPORT lv_dynamic FROM reptab.
+
+* VIOLATION, reads prog code into internal table itab
+READ REPORT prog INTO itab.
+
+* VIOLATION, for internal use only
+GENERATE REPORT progname.
+
+* VIOLATION, generates dynpro dynamically
+GENERATE DYNPRO h f e m ID dynpro_id.
+
+* Classical code injection attack when external input concatenated.
+* val is external input variable.
+* Imagine that attacker sets val to '3. DELETE FROM USR02. "'
+FORM read_data USING val TYPE STRING.
+  ...
+  APPEND 'REPORT ZREAD_DYNAMIC.' INTO itab.
+  APPEND 'DATA: lv_val TYPE STRING.' INTO itab.
+  CONCATENATE 'lv_val = ' val '.' INTO l_statement.
+  APPEND l_statement INTO itab.
+  ...
+
+  ...
+  INSERT REPORT lv_dynamic FROM itab. " VIOLATION
+  SUBMIT (lv_dynamic) AND RETURN. " dynamic code executed
+ENDFORM
+
+* Code executed could be this, if val is '3. DELETE FROM USR02. "'
+  REPORT ZREAD_DYNAMIC.
+  DATA: lv_val TYPE STRING.
+  lv_val = 3. DELETE FROM USR02. ".]]></example>
+    <repair><![CDATA[Refactor your program so that you do not have to dynamically generate code. If you are absolutely
+confident that dynamic code is not vulnerable to code injection, set a suppression to the rule.]]></repair>
+    <reference><![CDATA[https://help.sap.com/abapdocu_731/en/abengeneric_internal.htm,Secure ABAP Programming (Sichere ABAP-Programmierung) section 5.7,http://events.asug.com/2011AC/706_Secure_Programming_ABAP.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[BIZEC-APP:01,CWE:95,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.DynamicConstructs" message="DynamicConstructs: Avoid dynamic constructs controlled by external input" class="com.optimyth.qaking.abap.rules.sec.DynamicConstructs" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.4,ASVS-v4.0.2:5.5.4,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[Setting variables when the name of the variable is evaluated at runtime,
+or calling behaviour units where the name of the called unit is known at runtime,
+are dangerous if the target item depends on external input. An attacker may
+influence the target to modify / execute, producing unexpected behaviour.
+
+Remember that generic code is the enemy of application security, so try to avoid
+dynamic constructs if possible, do not make them dependent on external untrusted inputs,
+and carefully validate the variables in dynamic construct to avoid security vulnerabilities.
+
+The rule detects dynamic constructs in ABAP code and tries to find an execution path
+from an external input (not neutralized by validation functions, like regular expression checks)
+to the variable used in the dynamic construct.
+
+The constructs checked for 'taintedness' by the rule are:
+1) ASSIGN (var) TO <fs>.
+2) WRITE (var) TO dest.
+3) SUBMIT (var1).
+4) PERFORM (var1) IN PROGRAM zvftest.
+5) PERFORM (var1) IN PROGRAM (var2).
+6) CALL FUNCTION var1.
+7) CALL FUNCTION 'ZFUNCTION' DESTINATION var2.
+8) CALL METHOD (var1).
+9) CALL METHOD me->(var1).
+10) CALL METHOD z_class=>(var1).
+11) CALL METHOD (var2)=>method.
+12) CALL METHOD (var2)=>(var1).
+13) CALL TRANSACTION var.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid unintended data modifications, or unexpected execution of code.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[REPORT Z_DYNAMIC.
+  FORM DYNAMIC_FORM.
+
+  DATA: request TYPE REF TO if_http_request.
+  DATA: lv_var TYPE string.
+  DATA: lv_target TYPE string.
+  DATA: lv_dest(80) TYPE c.
+  FIELD-SYMBOLS <fs> TYPE string.
+
+  lv_var = request->get_form_field( 'web_param' ).
+  lv_target = request->get_form_field( 'web_param' ).
+
+  " VIOLATIONS, think about values for web_param like 'admin_class=>registerUser('DEVIL')'
+  ASSIGN (lv_var) TO <fs>.
+  WRITE (lv_var) TO lv_dest.
+
+  " VIOLATIONS, the executed item is under control of a potential attacker
+  CALL FUNCTION lv_var.
+  CALL FUNCTION lv_var DESTINATION lv_dest.
+  SUBMIT (lv_var).
+  PERFORM (lv_var) IN PROGRAM (lv_target).
+  CALL METHOD (lv_var)->mymethod().
+  CALL METHOD (lv_var)->(lv_target).
+
+  ENDFORM.]]></example>
+    <repair><![CDATA[Do not use dynamic constructs that could be controlled by external input.
+At least, carefully validate the variables controlling dynamic constructs, when influenced by external inputs.
+For example, regex_whitelist_1 and regex_whitelist_2 could be regular expressions that controls what
+are the allowed values for external inputs:
+
+  lv_var = request->get_form_field( 'web_param' ).
+  IF cl_abap_matcher=>matches(pattern = regex_whitelist_1 text = lv_var) = abap_false.
+    RAISE EXCEPTION TYPE cx_http_ext_exception EXPORTING msg = 'Invalid Input!'.
+  ENDIF.
+
+  lv_target = request->get_form_field( 'web_param2' ).
+  IF cl_abap_matcher=>matches(pattern = regex_whitelist_2 text = lv_target) = abap_false.
+    RAISE EXCEPTION TYPE cx_http_ext_exception EXPORTING msg = 'Invalid Input!'.
+  ENDIF.]]></repair>
+    <reference><![CDATA[Secure ABAP Programming (Sichere ABAP-Programmierung), sections 5.5 and 5.6]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:114,CWE:95,OWASP:2021:A3,PCI-DSS:6.5.8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.HardcodedClientCheck" message="HardcodedClientCheck: Hardcoded SAP client check (sy-mandt)" class="com.optimyth.qaking.abap.rules.sec.HardcodedClientCheck" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Any check on sy-mandt variable could be used as backdoor or to override client separation enforced in SAP systems.
+
+This rule checks security defect APP-07 in BIZEC APP/11 standard.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid potential violations of client separation in SAP.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[" VIOLATION, check on system variable for client name.
+IF sy-mandt = 'XYZ'.
+  PERFORM dangerousThingsWhenXYZ.
+ENDIF.]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[]]></reference>
+    <normatives>
+      <security><![CDATA[BIZEC-APP:07,CWE:200,CWE:488,CWETOP25:2021:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.HardcodedDateCheck" message="HardcodedDateCheck: Avoid hardcoding into the code current server date checks (sy-datum)" class="com.optimyth.qaking.abap.rules.sec.HardcodedDateCheck" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[An ABAP program shouldn't have any dependency with the current server date, so sy-datum
+checks should be avoided when they lead to a program flow modification.
+
+This rule reports violation when sy-datum checks are found into the code.]]></description>
+    <priority>4</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping sensitive information safe avoids inadequate access, improving security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[IF sy-datum = 'XYZ'.   " VIOLATION
+  PERFORM bad.
+ENDIF.]]></example>
+    <repair><![CDATA[Avoid hardcoding into the code current server date checks.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/200.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:200,CWETOP25:2021:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.HardcodedSensitiveData" message="HardcodedSensitiveData: Avoid hardcoding sensitive information" class="com.optimyth.qaking.abap.rules.sec.HardcodedSensitiveData" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Encoding certain sensitive information into the code can be a problem when a malicious
+attacker gains access to it. Even it could be worst if the attacker use that information to force the flow of the
+program to get the execution of some part of it.
+
+This rule reports violation when an email, ip, or url is found into the code.]]></description>
+    <priority>4</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping sensitive information safe avoids inadequate access, improving security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[REPORT test.
+gv_email = 'xyz@gmail.com'. " VIOLATION
+
+i_ip = '91.121.140.145'.  " VIOLATION
+
+i_url = 'https://www.google.es/'.  " VIOLATION
+i_url = 'http://www.google.es/'.  " VIOLATION
+i_url = 'ftp://192.168.1.234/'.  " VIOLATION]]></example>
+    <repair><![CDATA[Avoid hardcoding sensitive information.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/200.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:200,CWETOP25:2021:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.HttpHeaderManipulation" message="HttpHeaderManipulation: Unvalidated data in HTTP response header" class="com.optimyth.qaking.abap.rules.sec.HttpHeaderManipulation" technology="ABAP" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Including unvalidated data in an HTTP response header can enable different attacks.
+
+Including unvalidated data in an HTTP response header can enable cache-poisoning, cross-site scripting, cross-user defacement
+or page hijacking attacks. A Header Manipulation vulnerability occurs when external input (e.g. from an HTTP request)
+is inserted as a header value in a generated HTTP response.
+
+One of common attacks targeted at this vulnerability is HTTP Response Splitting: The application must allow input
+that contains CR (carriage return) and LF (line feed) characters into the header. These characters not only give attackers
+control of the remaining headers and body of the response the application intends to send, but also allows them to create
+additional responses entirely under their control, which may get cached in intermediate web caches.
+
+Of course the attacker may inject another header (e.g. a Set-Cookie or Location header), resulting in impersonation,
+cross-user defacement, cross-site scripting, or URL redirect ("page hijacking") attacks.
+
+There are different methods in the IF_HTTP_ENTITY (or subtypes) that modify HTTP header. Some with explicit names (set_header_field),
+others not so explicit (set_cookie, set_content_type, set_status ...)
+
+NOTE: Please remember that HTTP-mediated access to ABAP code could be provided by different SAP facilities: ITS,
+WebGUI, BSP-based applications, Web Dynpro or exposed Web Services.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<%
+data customer type xstring.
+customer = request->get_form_field( 'customer' ).
+" VIOLATION: Set-Cookie = http header field, not neutralized
+response->set_cookie( name = 'customer' value = customer ).
+%>]]></example>
+    <repair><![CDATA[<%
+data customer type xstring.
+customer = request->get_form_field( 'customer' ).
+" OK, validated against regular expression
+if cl_abap_matcher=>matches(pattern = '\w+' text = customer).
+  response->set_cookie( name = 'customer' value = customer ).
+else.
+  RAISE EXCEPTION TYPE cx_http_ext_exception
+  EXPORTING msg = 'Invalid Input!'.
+endif.
+%>]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/113.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:113,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.NoAuthorizationCheckCallTransaction" message="NoAuthorizationCheckCallTransaction: Authorization check must be done explicitely before CALL TRANSACTION" class="com.optimyth.qaking.abap.rules.sec.NoAuthorizationCheckCallTransaction" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.4,ASVS-v4.0.2:13.4.2,ASVS-v4.0.2:4.1.3,ASVS-v4.0.2:4.1.5,ASVS-v4.0.2:7.2.2,ASVS-v4.0.2:8.3.3,ASVS-v4.0.2:8.3.8,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[CALL TRANSACTION does not check if current user is authorized to execute the transaction. Without proper authorization checks,
+the program may allow an unauthorized user to start a restricted transaction. To avoid this, the rule checks if
+authorization check (either with AUTHORITY-CHECK sentence or AUTHORITY_CHECK_TCODE function module) immediately preceeds
+CALL TRANSACTION, and the result of the authorization check is tested immediately before CALL TRANSACTION.
+
+NOTE: Should I care on this?
+SAP was obviously aware of this security flaw, and in recent versions (7.4 and higher) added WITH AUTHORITY-CHECK
+to CALL TRANSACTION command for explicit authorization check. In 7.0 with enhancement package 3 (and higher), S_TCODE
+authorization object is checked in CALL TRANSACTION, so you probably may deactivate this rule when running on patched versions.
+
+Please note for LEAVE TO TRANSACTION, the ABAP runtime performs implicitely the authorization check,
+so there is no need for explicit authorization check.
+
+This rule checks security defect APP-04 in BIZEC APP/11 standard.]]></description>
+    <priority>1</priority>
+    <effort>1</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Better access control to restricted transactions.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[" VIOLATION: No explicit authorization check
+CALL TRANSACTION 'SE38' USING BDCDATA MODE 'N' MESSAGES INTO MESSTAB.
+" Starts ABAP editor, where attacker may inject or alter code in SAP system]]></example>
+    <repair><![CDATA[" OK, call is immediately preceeded by authorization check
+AUTHORITY-CHECK OBJECT 'S_TCODE' ID 'TCD' FIELD 'SE38'.
+IF sy-subrc = 0.
+  CALL TRANSACTION 'SE38' USING BDCDATA MODE 'N' MESSAGES INTO MESSTAB.
+ENDIF.
+
+" OK, other way to go
+CALL FUNCTION 'AUTHORITY_CHECK_TCODE' EXPORTING TCODE='SE38'.
+CASE sy-subrc.
+WHEN 0.
+  CALL TRANSACTION 'SE38' USING BDCDATA MODE 'N' MESSAGES INTO MESSTAB.
+ENDCASE.]]></repair>
+    <reference><![CDATA[https://www.virtualforge.com/tl_files/Theme/Presentations/BIZEC14_ten_golden_rules.pdf,Secure ABAP Programming (Sichere ABAP-Programmierung) section 5.1]]></reference>
+    <normatives>
+      <security><![CDATA[BIZEC-APP:04,CWE:285,OWASP:2021:A1]]></security>
+    </normatives>
+    <properties>
+      <property name="tcodesToIgnore" descname="Comma-separated list of transaction codes that should be ignored by the rule." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.NoAuthorizationCheckRFC" message="NoAuthorizationCheckRFC: Authorization check must be done explicitly in RFC-enabled functions" class="com.optimyth.qaking.abap.rules.sec.NoAuthorizationCheckRFC" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.4,ASVS-v4.0.2:13.4.2,ASVS-v4.0.2:4.1.3,ASVS-v4.0.2:4.1.5,ASVS-v4.0.2:7.2.2,ASVS-v4.0.2:8.3.3,ASVS-v4.0.2:8.3.8,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The RFC (Remote Function Call) interface allows remote execution of business logic in SAP from other systems.
+If a function is configured as remotely executable via RFC, the access boundary extends to remote systems.
+SAP system usually checks incoming RFC calls, usually using user credentials and S_RFC authorization object.
+(in a trusted/trusting scenario, only username and S_RFC authorization object are used).
+
+To reduce risk, RFC-enabled functions should perform additional explicit authorization checks on the resources accessed
+in the function implementation body. The rule enforces this by requiring, for each custom function module that is remotely called,
+that at least an explicit programmatic authorization check is done (using AUTHORIZATION-CHECK sentence).
+
+NOTE: Should I care on this?
+SAP was obviuosly aware of this security flaw. Since 7.0 enhancement package 3, RFC calls perform explicit AUTHORITY-CHECK,
+at least when auth/rfc_authority_check parameter set, so you may deactivate the rule.
+From SAP documentation:
+"When RFC function modules are called over RFC connections, for example, from an RFC client program or from another system,
+an authorization check is performed in the called system against the authorization object S_RFC.
+In this check, the system checks the name of the function group to which the function module belongs.
+If this check fails, the system also checks the authorizations for the name of the function module.
+
+SAP administrators may configure this check with the parameter auth/rfc_authority_check.
+
+This rule checks security defect APP-04 in BIZEC APP/11 standard.]]></description>
+    <priority>1</priority>
+    <effort>1</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Better access control to restricted transactions.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[* Caller
+FUNCTION ZRUN IMPORTING filename TYPE string.
+  CALL FUNCTION 'ZRFC_FM' DESTINATION target_server
+    EXPORTING filename = filename.
+ENDFUNCTION.
+
+* RFC-enabled function: VIOLATION, no explicit authorization check
+FUNCTION ZRFC_FM IMPORTING filename TYPE string.
+  DELETE DATASET filename.
+ENDFUNCTION.]]></example>
+    <repair><![CDATA[* Caller
+FUNCTION ZRUN IMPORTING filename TYPE string.
+  CALL FUNCTION 'ZRFC_FM' DESTINATION target_server
+    EXPORTING filename = filename.
+ENDFUNCTION.
+
+* RFC-enabled function, with explicit authorization check
+FUNCTION ZRFC_FM IMPORTING filename TYPE string.
+  AUTHORITY-CHECK OBJECT 'ZRFC_FM'   " FIXED
+    ID 'FILEGRP' FIELD 'FIN'
+    ID 'ACTVT' FIELD '23'.
+  IF SY-SUBRC <> 0.
+    RAISE EXCEPTION TYPE cx_http_ext_exception EXPORTING msg = 'User not authorized'.
+  ENDIF.
+  " Sensitive operation
+  DELETE DATASET filename.
+ENDFUNCTION.]]></repair>
+    <reference><![CDATA[Secure ABAP Programming (Sichere ABAP-Programmierung) section 5.3,Securing Remote Function Calls - http://sapassets.edgesuite.net/sapcom/docs/2015/07/e6441a8d-5b7c-0010-82c7-eda71af511fa.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[BIZEC-APP:04,CWE:285,OWASP:2021:A1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.NoAuthorizationCheckSQL" message="NoAuthorizationCheckSQL: Authorization check must be done explicitely on SQL statements" class="com.optimyth.qaking.abap.rules.sec.NoAuthorizationCheckSQL" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.4,ASVS-v4.0.2:13.4.2,ASVS-v4.0.2:4.1.3,ASVS-v4.0.2:4.1.5,ASVS-v4.0.2:7.2.2,ASVS-v4.0.2:8.3.3,ASVS-v4.0.2:8.3.8,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Authorization for direct accesses to tables (via Open SQL, Native SQL, C_DB_EXECUTE, C_DB_FUNCTION or DB_EXECUTE_SQL)
+should be authorized explicitely, either with AUTHORITY-CHECK on S_TABU_DIS | S_TABU_NAME or similar authorization objects,
+or VIEW_AUTHORITY_CHECK function module.
+
+Custom programs are as secure as developers made them. S_TABU_* authorization object may be used by SAP transactions,
+but not implicitely from Open SQL, native SQL, or ADBC APIs.
+
+For producing a heart-attack on your boss, show her/him the output of this program:
+
+REPORT ZDUMP_ALL_HR.
+TABLES: pa0008.      " HR Master Record: Infotype 0008 (Basic Pay)
+SELECT * FROM pa0008 CLIENT SPECIFIED.
+  " SAP Client, User Name, Personnel Number, Annual Salary
+  WRITE: / pa0008-mandt, pa0008-uname, pa0008-pernr, pa0008-ansal.
+ENDSELECT.
+
+(see http://www.daniel-berlin.de/security/sap-sec/table-authorizations/).
+
+Rule reports a violation on each SQL operation not controlled by a previous authority check.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid data information leakages due to lack of authorization checks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[REPORT Z_HR_DUMP.
+TABLES: pa0008. " HR Master Record: Infotype 0008 (Basic Pay)
+" VIOLATION, and potential heart-attack on your boss.
+" And remember, "see" is bad, but MODIFY/UPDATE is even worse.
+SELECT * FROM pa0008 CLIENT SPECIFIED.
+  " SAP Client, User Name, Personnel Number, Annual Salary
+  WRITE: / pa0008-mandt, pa0008-uname, pa0008-pernr, pa0008-ansal.
+ENDSELECT.]]></example>
+    <repair><![CDATA[REPORT Z_HR_DUMP.
+TABLES: pa0008. " HR Master Record: Infotype 0008 (Basic Pay)
+" FIXED, your boss may sleep better
+" You may use S_TABU_DIS object or VIEW_AUTHORITY_CHECK function module as well
+AUTHORITY-CHECK OBJECT 'S_TABU_NAM' ID 'TABLE' FIELD 'PA0008' ID 'ACTVT' FIELD '03'.
+IF sy-subrc = 0.
+  SELECT * FROM pa0008 CLIENT SPECIFIED.
+    " SAP Client, User Name, Personnel Number, Annual Salary
+    WRITE: / pa0008-mandt, pa0008-uname, pa0008-pernr, pa0008-ansal.
+  ENDSELECT.
+ELSE.
+  WRITE: / 'Unauthorized query on HR data'.
+ENDIF.]]></repair>
+    <reference><![CDATA[http://www.daniel-berlin.de/security/sap-sec/table-authorizations/]]></reference>
+    <normatives>
+      <security><![CDATA[BIZEC-APP:04,CWE:285,OWASP:2021:A1]]></security>
+    </normatives>
+    <properties>
+      <property name="tablesToCheck" descname="Regular expression to match which tables to check for authorizations" value=".*"/>
+      <property name="sourcesToCheck" descname="Regular expression to match which programs to check for authorizations" value=".*"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.OpenRedirect" message="OpenRedirect: URL Redirection to Untrusted Site ('Open Redirect')" class="com.optimyth.qaking.abap.rules.sec.OpenRedirect" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.5,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Allowing non-validated input to control the URL used in a redirect can point to an attacker-controlled web site
+or at least to an unintended site, so attacker may mount different attacks.
+
+Redirects allow web applications to direct users to different pages within the same application or to external sites.
+Open redirect vulnerabilities occur when a web application redirects browser to any arbitrary URL that can be controlled by an attacker.
+Attackers can utilize open redirects to trick users into visiting a URL to a trusted site and redirecting them to a malicious site
+("phising attacks"). By encoding the URL, an attacker can make it more difficult for end-users to notice the malicious destination of the redirect,
+even when it is passed as a URL parameter to the trusted site. Open redirects are often abused as part of phishing scams,
+to harvest sensitive end-user data.
+
+Typical web redirects are calls to cl_http_response->redirect() or different methods in navigation BSP object (of type if_bsp_navigation).
+
+NOTE: Please remember that HTTP-mediated access to ABAP code could be provided by different SAP facilities: ITS,
+WebGUI, BSP-based applications, Web Dynpro or exposed Web Services.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid open redirect vulnerabilities that could permit phising and other attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<%
+DATA: dest TYPE c.
+dest = request->get_form_field( 'dest' ).
+response->redirect( dest ). " VIOLATION
+%>]]></example>
+    <repair><![CDATA[<%
+DATA: dest TYPE c.
+dest = request->get_form_field( 'dest' ).
+cl_http_utility=>check_http_whitelist( dest ).
+response->redirect( dest ). "OK, external URL is validated against white-list
+%>]]></repair>
+    <reference><![CDATA[http://events.asug.com/2011AC/706_Secure_Programming_ABAP.pdf, p. 34]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:601,CWETOP25:2021:37,OWASP:2013:A10,PCI-DSS:6.5.1,WASC:24]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.PasswordManagement" message="PasswordManagement: Avoid hard-coded or in-comment credentials (username / password) in code" class="com.optimyth.qaking.abap.rules.sec.PasswordManagement" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.4,ASVS-v4.0.2:3.5.2,ASVS-v4.0.2:6.4.1,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Avoid hard-coded or in-comment usernames / passwords in ABAP code.
+
+Usernames and passwords are sensitive information that could provide unintended access to the target system,
+to people with access to the source code.
+
+For hard-coded usernames and passwords, changes to the target system's account need patching the software
+to change the credentials.
+
+The rule looks for API items (like function modules, for example SUSR_USER_CHANGE_PASSWORD_RFC), as well as database operations
+holding credential fields (like BNAME or BCODE fields in USR02 table). For each site where a username/password is used,
+the rule checks if the value is taken from a literal in source code.
+
+A literal in a logical condition with sy-uname is also considered a username literal, and reported as violation of the rule.]]></description>
+    <priority>2</priority>
+    <effort>4</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[CONSTANTS:
+  username2 TYPE rsyst-bname VALUE 'myuser',
+  pass2 TYPE rsyst-bcode VALUE 'oldpass'.
+
+CALL FUNCTION 'SUSR_USER_CHANGE_PASSWORD_RFC' " VIOLATION
+EXPORTING
+  BNAME        = lw_user
+  PASSWORD     = pass
+  NEW_PASSWORD = newpass.]]></example>
+    <repair><![CDATA[" Remove sensitive information from code comments.
+" Replace hardcoded credentials with credentials taken from an trusted source (database or file),
+" possibly protected with encryption.]]></repair>
+    <reference><![CDATA[NIST Special Publication 800-53 Revision 4 - SC-28 Protection of Information at Rest,https://www.daniel-berlin.de/security/sap-sec/detecting-hard-coded-user-names-in-abap/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:259,CWE:615,CWE:798,CWETOP25:2021:16,OWASP:2021:A7,PCI-DSS:6.5.3,WASC:24]]></security>
+    </normatives>
+    <properties>
+      <property name="checkPasswordInComments" descname="When true, passwords in comments will be reported." value="true"/>
+      <property name="pattern" descname="Pattern to check for hardcoded passwords in comments. If blank, the default pattern will be used." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.PathManipulation" message="PathManipulation: External Control of File Name or Path" class="com.optimyth.qaking.abap.rules.sec.PathManipulation" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.1,ASVS-v4.0.2:12.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Many ABAP applications handle files on SAP application server. File processing has multiple security aspects,
+like virus protection or handling sensitive data in datafiles.
+
+Path manipulation flaws occur when an attacker can specify a path used in an operation on the filesystem.
+When the application uses the resource specified by that path, the attacker gains a capability that would not otherwise
+be permitted. For example, the program may give the attacker the ability to overwrite an unintended file or use
+a configuration file controlled by the attacker.
+
+In ABAP, OPEN DATASET / TRANSFER statements use file paths that could depend on external input. Later operations
+(READ DATASET, DELETE DATASET, TRANSFER) operate on the server file whose path was controlled by external input.
+There are other possibilities (classes and function modules, file upload in Web Dynpro / BSP, etc.) where path
+manipulation vulnerabilities may occur. If the path manipulation vulnerability is available in an RFC-enabled function,
+the risk is even higher.
+
+An attacker could leverage a path manipulation flaw to see configuration data on the SAP server, see sensitive datafiles,
+manipulate or delete critical files on the server, etc.
+
+This rule checks security defect APP-05 in BIZEC APP/11 standard.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[DATA:
+  cRoot TYPE string,
+  cPath TYPE string,
+  cFile TYPE string.
+
+  cRoot = 'c:\www\pub\'.
+  cFile = request->get_parameter('filename').
+  CONCATENATE cRoot '\' cFile INTO cPath.
+  OPEN DATASET FOR OUTPUT cPath IN TEXT MODE ENCODING DEFAULT.
+  " File operations go here
+  CLOSE DATASET cPath.]]></example>
+    <repair><![CDATA[* First possibility: external input may choose one of a sequence of known files
+* External input chooses one ID in a allowed sequence of file names in internal table IT_ALLOWED_FILES
+  cFileId = request->get_form_field('fileid').
+  SELECT SINGLE file_name FROM IT_ALLOWED_FILES INTO cFile WHERE file_id = cFileId.
+  CONCATENATE cRoot '\' cFile INTO cPath.
+
+* If the file name needs to depend on external input, use a whitelist validation, for example:
+  cFile = request->get_form_field('filename').
+  regex_whitelist = '^[a-zA-Z0-9]*$'.
+  " Raises exception if invalid input is found
+  IF CL_ABAP_MATCHER=>matches (pattern = regex_whitelist text = cFile) = abap_false.
+    RAISE EXCEPTION TYPE cx_http_ext_exception EXPORTING msg = 'Invalid Input!'.
+  ENDIF.
+  CONCATENATE cRoot '\' cFile '.dat' INTO cPath.
+
+* Second possibility: use logical filenames
+  cLogicalFile = request->get_form_field('filename').
+  CALL FUNCTION 'FILE_VALIDATE_NAME'
+    EXPORTING logical_filename = cLogicalFile
+    CHANGING physical_filename = cFile
+    EXCEPTION OTHERS = 1.
+  IF sy-subrc <> 0.
+    MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-magno WITH sy-msgv1.
+  ELSE
+    OPEN DATASET FOR OUTPUT cFile IN TEXT MODE ENCODING DEFAULT.
+    " File operations go here
+  ENDIF.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/73.html,https://blogs.sap.com/2013/08/05/protecting-abap-code-against-directory-traversal-attacks/,Secure ABAP Programming (Sichere ABAP-Programmierung) section 5.9,http://cwe.mitre.org/data/definitions/22.html]]></reference>
+    <normatives>
+      <security><![CDATA[BIZEC-APP:05,CWE:22,CWE:73,CWETOP25:2021:8,OWASP:2021:A4,OWASP:2021:A5,PCI-DSS:6.5.8,WASC:33]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.RegexInjection" message="RegexInjection: Prevent denial of service attack through malicious regular expression ('Regex Injection')" class="com.optimyth.qaking.abap.rules.sec.RegexInjection" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.1.1,CWEScope:Access-Control,ReDoS,denial-of-service]]></tags>
+    <description><![CDATA[If the software creates a regular expression ("pattern", "regex") from untrusted input, an attacker may supply
+malicious input that produces a denial-of-service (DoS) condition during regular expression matching.
+
+Alternatively, if the regular expression is used for input validation, the attacker-controlled regular expression
+may fail to neutralize undesired input, which may bypass the intended restrictions or render useless
+a security control.
+
+In ABAP, the FIND / REPLACE statements allow a REGEX pattern addition; and many string-based built-in functions allow a regex
+parameter for specifying a regular expression argument.
+
+If the attacker controls also the input to be matched, he/she could craft an input for the evil regex that
+takes an inordinate amount of time to match, consuming resources (like CPU).
+Evil regex typically has a group with repetition, and the repeated group has repetition or alternation with overlapping.
+For example: "(a+)+", "([a-z]+)*", "(a|aa)+" or "(aa|aab?)*".
+
+For example, a "(a+)+" regex will take long computing time when matching "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"
+takes many seconds to complete, and longer strings (with exponential time increase) may lead to DoS conditions.
+
+Please note that regular expressions are often used for security controls and input validation.
+
+The rule checks for potential injection of untrusted input into regex APIs.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid DoS conditions produced by regular expression injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[REPORT ZRegexInjection.
+
+PARAMETERS:
+  p_regex TYPE c LENGTH 80.
+
+DATA: text TYPE c LENGTH 120
+           VALUE `Cathy's cat with the hat sat on Matt's mat.`,
+      regx TYPE c LENGTH 120
+           VALUE `\<.at\>`.
+
+DATA: result TYPE i,
+      substr TYPE string.
+
+result = find( val   = text  " OK, regx constant (trusted)
+               regex = regx
+               occ   = sy-index ).
+
+result = find( val   = text " VIOLATION, p_regex under attacker control
+               regex = p_regex
+               occ   = sy-index ).
+
+DATA: result_tab TYPE match_result_tab.
+
+FIND REGEX regx IN text RESULTS result_tab. " OK, regx constant (trusted)
+FIND REGEX p_regex IN text RESULTS result_tab. " VIOLATION, p_regex under attacker control]]></example>
+    <repair><![CDATA[" Never let untrusted input to be used (or concatenated) into patterns used in ABAP regular expression functions.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/400.html,https://en.wikipedia.org/wiki/ReDoS,https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:400,CWETOP25:2021:27,OWASP:2004:A9,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.RfcDestinationInjection" message="RfcDestinationInjection: Destination injection in RFC call" class="com.optimyth.qaking.abap.rules.sec.RfcDestinationInjection" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.6.1,ASVS-v4.0.2:5.2.6]]></tags>
+    <description><![CDATA[In ABAP, "CALL FUNCTION fname DESTINATION dest" allows to invoke functions on remote systems via Remote Function Call (RFC).
+
+If the DESTINATION is based on user input, then a malicious user could invoke the given function on a remote server
+for which an RFC destination is maintained.
+
+The attacker may then:
+- Run code on unintended locations.
+- Change business logic: If such function exists in the target system, it may execute completely different code as the intended,
+or it may execute the same code, but compute different results due to different system configuration or different database status.
+
+Therefore, allowing untrusted input to affect the destination of RFC call is reported as a security flaw.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[REPORT TEST.
+FORM call_rfc.
+  DATA request TYPE REF TO if_http_request.
+  DATA lv_rfc TYPE string.
+
+  lv_rfc = request->get_form_field( 'rfc_dest' ).
+  CALL FUNCTION 'Z_MY_FUNC' DESTINATION lv_rfc. " VIOLATION
+ENDFORM.]]></example>
+    <repair><![CDATA[REPORT TEST.
+FORM call_rfc.
+  " If such functionality is required, a whitelist filter was added.
+  DATA request TYPE REF TO if_http_request.
+  DATA i_dest TYPE i.
+  DATA lv_rfc TYPE string.
+  " check input against whitelist table
+  i_dest = request->get_form_field( 'rfc_dest' ).
+  SELECT SINGLE dest FROM zwhitelist INTO lv_rfc WHERE idest = i_dest AND fname = 'Z_MY_FUNC'.
+  IF sy-subrc EQ 0.
+    CALL FUNCTION 'Z_MY_FUNC' DESTINATION lv_rfc.
+  ELSE.
+    " error handling : no match in white list
+  ENDIF.
+ENDFORM.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/941.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:918,CWETOP25:2021:24,OWASP:2021:A10,PCI-DSS:6.5.8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.SqlInjection" message="SqlInjection: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')" class="com.optimyth.qaking.abap.rules.sec.SqlInjection" technology="ABAP" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[In ABAP, OpenSQL (OSQL) and native SQL are the most usual ways for performing database operations.
+
+OpenSQL is relatively safe against SQL injections, as input parameters to the SQL statement are considered data,
+and they are not considered as SQL code (ABAP runtime generates "parameterized SQL" code for the target database,
+so each input parameter is considered data).
+
+But OpenSQL statements allow dynamic constructs (in WHERE clauses, in FROM clause, in selected fields clause).
+When such dynamic constructs are used, SQL injection is possible, as the SQL that is executed against database
+mixes SQL code and parameters to the statement.
+
+Dynamic SQL is possible for OpenSQL statements:
+1) INSERT INTO (dyn_tab) VALUES itab.
+2) INSERT (dyn_tab) FROM itab.
+3) MODIFY (dyn_tab) ...
+4) SELECT * FROM (dyn_tab) INTO itab WHERE (dyn_where).
+5) DELETE FROM (dyn_tab) WHERE (dyn_where)
+6) OPEN CURSOR FOR SELECT * FROM mycur (dyn_tab) WHERE (dyn_where).
+8) UPDATE (dyn_tab) SET (dyn_set) WHERE (dyn_where).
+
+Embedded native SQL (EXEC SQL ... ENDEXEC) does not allow dynamic constructs, and all parameters to the statement
+are considered data and do not form part of the SQL statement. Please note that EXEC SQL ... ENDEXEC bypasses security features of OpenSQL
+(client separation, restrictive access to SQL commands), so it should not be used.
+If application code uses embedded native SQL, and executes an stored procedure that launches OS commands (like x_cmdshell
+in SQL Server), other attacks (like OS command injection) could success. For a particular case (EXEC SQL EXECUTE IMMEDIATE :sql ENDEXEC)
+where dynamic SQL is executed in embedded SQL, a violation is emitted.
+
+Other APIs for executing native SQL statements in ABAP are checked as well (ABAP Database Connectivity, known as ADBC):
+1) Methods in CL_SQL_STATEMENT / CL_SQL_PREPARED_STATEMENT classes.
+2) DB_EXECUTE_SQL function module.
+3) Kernel calls C_DB_EXECUTE / C_DB_FUNCTION (for internal use, should not be used in user ABAP code).
+
+ADBC bypasses security features provided by OpenSQL and should not be used anyway.
+
+The effects of SQL injection exploits in SAP systems could be devastating. Just think about what could be done if the attacker
+could alter the REPOSRC table, where source code for standard and custom programs is stored. Backdoors and rootkits could be installed.
+See http://www.isaca.org/Groups/Professional-English/sap-applications/GroupDocuments/White%20Paper%20-%20Perfect%20Storm.pdf
+for full details.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[REPORT SQL_02.
+
+FORM DYN_SQL USING p_carrid.
+  DATA lt_sec TYPE sbook.
+  DATA lv_where TYPE string.
+  DATA lv_stmt TYPE string.
+  DATA lv_len TYPE i.
+
+  " Concatenate WHERE clause with un-neutralized input p_carrid
+  CONCATENATE `carrid = '` p_carrid `' AND reserved = ' '` INTO lv_where.
+
+  " VIOLATION, potential SQL injection
+  SELECT class passname fldate FROM sbook CLIENT SPECIFIED
+  INTO CORRESPONDING FIELDS OF lt_sec
+  WHERE (lv_where).
+   WRITE : / lt_sec-class, lt_sec-passname, lt_sec-fldate.
+  ENDSELECT.
+
+  " OK, NativeSQL is secure
+  EXEC SQL.
+    SELECT CLASS, PASSNAME, FLDATE INTO :F1, :F2, :F3 FROM SBOOK
+    WHERE CARRID = :p_carrid AND RESERVED = ' '
+  ENDEXEC.
+
+  " VIOLATION, SAP Kernel call to C_DB_EXECUTE, lv_stmt set using external input
+  CALL 'C_DB_EXECUTE'
+   ID 'STATTXT' FIELD lv_stmt
+   ID 'STATLEN' FIELD lv_len
+   ID 'SQLERR' FIELD lv_sqlerr.
+
+  " VIOLATION, SAP Kernel call to C_DB_EXECUTE, lv_stmt set using external input
+  CALL FUNCTION 'DB_EXECUTE_SQL'
+  EXPORTING
+    stmt = lv_stmt
+    stmt_ln = lv_len
+  IMPORTING
+    sql_code = lv_retcode
+    sql_msg = lv_retmsg
+    row_num = lv_numrows.
+
+ENDFORM.]]></example>
+    <repair><![CDATA[...
+" Simple neutralization
+p_carrid = cl_abap_dyn_prg=>quote_str( p_carrid ).
+
+" Concatenate WHERE with neutralized input p_carrid
+CONCATENATE `carrid = '` p_carrid `' AND reserved = ' '` INTO lv_where.
+...]]></repair>
+    <reference><![CDATA[http://scn.sap.com/community/abap/blog/2013/11/20/how-to-protect-your-abap-code-against-sql-injection-attacks,Secure ABAP Programming (Sichere ABAP-Programmierung) section 5.8]]></reference>
+    <normatives>
+      <security><![CDATA[BIZEC-APP:08,CWE:89,CWETOP25:2021:6,OWASP:2021:A3,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.ABAP.SEC.WeakHashAlgorithm" message="WeakHashAlgorithm: Weak cryptographic hashes cannot guarantee data integrity" class="com.optimyth.qaking.abap.rules.sec.WeakHashAlgorithm" technology="ABAP" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,crypto,hash]]></tags>
+    <description><![CDATA[Weak cryptographic hashes cannot guarantee data integrity and should not be used in security-critical contexts.
+MD5 and SHA-1 are popular cryptographic hash algorithms often used as primitives for verifying message integrity, and other applications.
+
+Recent advances in cryptanalysis have discovered weaknesses in both algorithms. Consequently, MD5 and SHA-1 should
+no longer be used to verify the authenticity of data in security-critical contexts.
+
+Techniques for breaking MD5 hashes are advanced and widely available enough that the algorithm must not be used
+in any security context.
+
+In the case of SHA-1, current techniques still require a significant amount of computational power and
+are more difficult to implement.
+However, attackers have found the Achilles' heel for the algorithm, and techniques for breaking it will likely lead
+to the discovery of even faster attacks.
+
+Note: SHA-1 is not a recommended algorithm for password hashes, Hash-based Message Authentication Codes (HMAC),
+for digital signature generation/verification, and other uses (NIST).
+
+In ABAP, SAP provides (in Basis/BC-SEC/SECH package) the class CL_ABAP_MESSAGE_DIGEST, which is the recommended API for
+cryptographic message digest operations ("crypto hashes"), class CL_ABAP_HMAC for hash-based message authentication codes (HMAC),
+and class CL_SEC_SXML_WRITER for XML-Security encryption/MAC.
+
+The rule checks if the cryptographic hash algorithm used is one of the allowed ones; the rule can lead to false negatives
+if the algorithm value argument cannot be inferred statically.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[More robust cryptographic message digest (hash) primitives.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[PARAMETERS:
+  text TYPE string.
+
+CONSTANTS:
+  algo TYPE string VALUE 'MD5'. " Not allowed
+
+DATA:
+  o TYPE REF TO cl_abap_message_digest,
+  hash TYPE string.
+
+o = cl_abap_message_digest=>get_instance( algo ). " VIOLATION
+" ...
+" VIOLATION
+cl_abap_message_digest=>calculate_hash_for_char(
+  EXPORTING if_data = text if_algorithm = algo IMPORTING ef_hashb64string = hash
+).
+ " VIOLATION, if_algorithm='SHA1' is the default
+cl_abap_message_digest=>calculate_hash_for_raw(
+  EXPORTING if_data = text IMPORTING ef_hashb64string = hash
+).]]></example>
+    <repair><![CDATA[CONSTANTS:
+  algo TYPE string VALUE 'SHA256'. " FIXED
+
+o = cl_abap_message_digest=>get_instance( algo ).
+" ...
+cl_abap_message_digest=>calculate_hash_for_char(
+  EXPORTING if_data = text if_algorithm = sha256 IMPORTING ef_hashb64string = hash
+).
+cl_abap_message_digest=>calculate_hash_for_raw(
+  EXPORTING if_data = text if_algorithm = sha256 IMPORTING ef_hashb64string = hash
+).]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/328.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:328,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="Allowed cryptographic hash algorithms" value="SHA224, SHA256, SHA384, SHA512"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="ABAP" technology="ABAP" active="true" weight="1.0">
+      <description><![CDATA[ABAP rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="ABAP" active="true" weight="8.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="ABAP" active="true" weight="10.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="ABAP" active="true" weight="5.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="ABAP" active="true" weight="10.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="ABAP" active="true" weight="4.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="insight" default="exec-insight" basedir=".">
+  <property name="AGENT_HOME" value="${basedir}/.."/>
+  <property name="config.dir" value="${AGENT_HOME}/conf"/>
+  <property name="includes" value="**"/>
+  <path id="insight.path">
+    <pathelement location="${config.dir}"/>
+    <fileset dir="${AGENT_HOME}/lib.engine/insight">
+      <include name="optimyth-insight.jar"/>
+    </fileset>
+    <fileset dir="${AGENT_HOME}/lib.engine/insight">
+      <include name="*.jar"/>
+    </fileset>
+    <fileset dir="${AGENT_HOME}/lib.engine">
+      <exclude name="analyzer.jar"/>
+      <exclude name="saxon9-xpath-9.1.0.8.jar"/>
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+  <taskdef resource="insight-taskdefs.properties" onerror="fail">
+    <classpath refid="insight.path"/>
+  </taskdef>
+  <target name="exec-insight" description="Insight Analysis">
+    <insight-analyzer projectname="${project}" reportoutputdirectory="${report.output.dir}" reportformat="XML" enableexperimental="true" kiuwanUrl="${kiuwan.url}" username="${username}" password="${password}" sourcesPath="${analysis.dir}" temporalDirectory="${temporal.directory}" proxyServer="${proxy.host}" proxyPort="${proxy.port}" proxyProtocol="${proxy.protocol}" proxyAuthorization="${proxy.authentication}" proxyUsername="${proxy.username}" proxyPassword="${proxy.password}" configurationFile="${agent.configuration}" connectionTimeout="${proxy.timeout}">
+      <fileset dir="${analysis.dir}" includes="${includes}" excludes="${excludes}"/>
+    </insight-analyzer>
+  </target>
+</project>

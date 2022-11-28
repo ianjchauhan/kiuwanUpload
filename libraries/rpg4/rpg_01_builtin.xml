@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="iseries" technology="rpg4">
+
+  <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/aplist.htm">IBM iSeries Program APIs</description>
+  <!-- last API level: 7.2 -->
+
+  <module name="iseries.command.exec">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/pgm1.htm">iSeries Program Exec API</description>
+    <function name="QCMDEXC" match="name" >
+      <sink argpos="0" kind="command_injection" resource="os" />
+    </function>
+    <function name="QCAPCMD" match="name" >
+      <sink argpos="0" kind="command_injection" resource="os" />
+    </function>
+    <function name="SYSTEM" match="name" alias="Qp0zSystem">
+      <sink argpos="0" kind="command_injection" resource="os" />
+    </function>
+    <function name="QCMDCHK">
+      <neutralization argpos="0" kind="command_injection"/>
+    </function>
+  </module>
+
+  <module name="iseries.date.time">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/catdate.htm">iSeries Data and Time API</description>
+    <function name="QWCADJTM">
+      <description>Adjust time</description>
+      <sink kind="resource_injection" resource="os" argpos="0"/>
+    </function>
+    <function name="QWCSETTM">
+      <description>Set system time</description>
+      <sink kind="resource_injection" resource="os" argpos="1"/>
+    </function>
+  </module>
+
+  <module name="iseries.heap">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/ile8a2.htm">iSeries Heap Storage API</description>
+    <function name="CEEGTST">
+      <description>Get heap storage</description>
+      <tags>memory allocation,memsize:1,pointer:2,error:3</tags>
+      <errorProcessing kind="other"/>
+      <!--source resource="memory" argpos="2" kind="memory_allocation"/-->
+    </function>
+    <function name="CEECZST">
+      <description>Reallocates heap</description>
+      <tags>memory reallocation,pointer:0,memsize:1,error:3</tags>
+      <errorProcessing kind="other"/>
+    </function>
+    <function name="CEEFRST">
+      <description>Free heap storage</description>
+      <tags>memory deallocation,pointer:0</tags>
+    </function>
+  </module>
+
+  <module name="iseries.hfs">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/hfs1.htm">iSeries Hierarchical File System API</description>
+    <function name="QHFCRTDR">
+      <description>Create dir</description>
+      <sink kind="path_traversal" resource="filesystem" argpos="0"/>
+    </function>
+    <function name="QHFDLTDR">
+      <description>Delete dir</description>
+      <sink kind="path_traversal" resource="filesystem" argpos="0"/>
+    </function>
+    <function name="QHFRNMDR">
+      <description>Rename dir</description>
+      <sink kind="path_traversal" resource="filesystem" argpos="0,2"/>
+    </function>
+    <function name="QHFOPNSF">
+      <description>Open stream file</description>
+      <sink kind="path_traversal" resource="filesystem" argpos="0"/>
+    </function>
+    <function name="QHFRDSF">
+      <description>Read from stream file</description>
+      <source kind="file_input" resource="filesystem" argpos="1"/>
+    </function>
+    <function name="QHFWRTSF">
+      <description>Write to stream file</description>
+      <sink kind="file_output" resource="filesystem" argpos="1"/>
+    </function>
+    <function name="QHFCPYSF">
+      <description>Copy stream file</description>
+      <sink kind="path_traversal" resource="filesystem" argpos="0, 3"/>
+    </function>
+    <function name="QHFDLTSF">
+      <description>Delete stream file</description>
+      <sink kind="path_traversal" resource="filesystem" argpos="0"/>
+    </function>
+    <function name="QHFMOVSF" alias="QHFRNMSF">
+      <description>move / rename stream file</description>
+      <sink kind="path_traversal" resource="filesystem" argpos="0, 2"/>
+    </function>
+    <function name="QHFOPNDR">
+      <description>Open directory</description>
+      <sink kind="path_traversal" resource="filesystem" argpos="1"/>
+    </function>
+  </module>
+
+  <module name="iseries.office">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/off1.htm">iSeries Office API</description>
+    <function name="QtmmSendMail">
+      <description>Send MIME mail</description>
+    </function>
+    <function name="QtmsCreateSendEmail">
+      <description>Send MIME mail</description>
+    </function>
+  </module>
+
+  <module name="iseries.program">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/pgm1.htm">iSeries Program / CL Command API</description>
+    <function name="QCLSCAN">
+      <neutralization kind="string" argpos="0"/>
+    </function>
+    <function name="QCAVFYNM" alias="QcaVerifyName">
+      <neutralization kind="string" argpos="0"/>
+    </function>
+  </module>
+  
+  <module name="iseries.work.management">
+    <description url="https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_72/apis/wm1.htm">iSeries Work Management API</description>
+    <function name="QWVRCSTK">
+      <description>Retrieve call stack</description>
+      <sink argpos="0" kind="sensitive_system_info" resource="os"/>
+    </function>
+  </module>
+  
+  <!-- Qp0L API on IFS (integrated file system) -->
+  <module name="Qp0l">
+    <description url="https://www.ibm.com/support/knowledgecenter/en/ssw_ibm_i_74/apis/unix2.htm">iSeries Integrated File System API</description>
+    <function name="Qp0lGetAttr" match="name" >
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="Qp0lOpen" match="name" >
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="Qp0lProcessSubtree" match="name" >
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="Qp0lSaveStgFree" match="name" >
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="Qp0lSetAttr" match="name" >
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="Qp0lUnlink" match="name" >
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="Qp0lRenameKeep" match="name" >
+      <sink argpos="0,1" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="Qp0lRenameUnlink" match="name" >
+      <sink argpos="0,1" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="Qp0zLprintf" match="name" alias="Qp0zUprintf" >
+      <sink argpos="0" kind="format_injection" resource="filesystem" />
+      <sink argpos="1,2,3,4,5,6,7,8" kind="log_forging" resource="filesystem" />
+    </function>
+  </module>
+
+</library>

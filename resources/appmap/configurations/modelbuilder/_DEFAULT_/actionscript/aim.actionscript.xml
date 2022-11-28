@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for abap language</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-actionscript.xml"/>
+  <import resource="classpath:resources/qaking-tech-sql.xml"/>
+  <import resource="classpath:resources/qaking-tech-plsql.xml"/>
+  <import resource="classpath:resources/qaking-tech-transactsql.xml"/>
+
+  <bean id="aim.actionscript.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>actionscript parser</description>
+    <property name="filter" ref="aim.actionscript.filter"/>
+    <property name="languageSupport" ref="ls_actionscript"/>
+  </bean>
+
+  <!-- Rules -->
+  <bean id="aim.actionscript.rule" class="com.optimyth.apm.builder.rules.actionscript.ActionScriptBuilderRule">
+    <description>actionscript rule</description>
+    <property name="active" value="${aim.actionscript.rule.active}"/>
+    <property name="filter" ref="aim.actionscript.filter"/>
+    <property name="callback" ref="aim.actionscript.rule.callback"/>
+    <property name="resolver" ref="aim.actionscript.rule.resolver"/>
+    <property name="objectsSql" value="${aim.actionscript.rule.sql.objects}"/>
+    <property name="methodsSql" value="${aim.actionscript.rule.sql.methods}"/>
+    <property name="sqlProcessor" ref="aim.actionscript.sql.processor"/>
+    <property name="processFunctions" value="${aim.actionscript.process.functions}"/>
+  </bean>
+
+  <!-- Callback -->
+  <bean id="aim.actionscript.rule.callback" class="com.optimyth.apm.builder.rules.actionscript.DefaultActionScriptCallback">
+    <description>actionscript callback</description>
+    <property name="softwareName" value="${aim.actionscript.software}" />
+  </bean>
+
+  <bean id="aim.actionscript.sql.callback" class="com.optimyth.apm.builder.rules.sql.BasicSqlCallback">
+    <property name="dbType" value="${aim.actionscript.rule.dbsystem}"/>
+    <property name="dbInstance" value="${aim.actionscript.rule.dbname}"/>
+    <property name="ignoreCase" value="${aim.actionscript.rule.ignoreCase}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+  
+  <bean id="aim.actionscript.plsql.callback" parent="aim.actionscript.sql.callback" class="com.optimyth.apm.builder.rules.sql.BasicPlSqlCallback">
+  </bean>
+
+  <bean id="aim.actionscript.transactsql.callback" parent="aim.actionscript.sql.callback" class="com.optimyth.apm.builder.rules.sql.BasisTransactSqlCallback">
+  </bean>  
+  
+  
+  <!-- Resolver -->
+  <bean id="aim.actionscript.rule.resolver" class="com.optimyth.apm.builder.rules.actionscript.ActionScriptObjectResolver">
+  	<property name="callback" ref="aim.actionscript.rule.callback"/>
+  	<property name="processFunctions" value="${aim.actionscript.process.functions}"/>
+  </bean>
+
+  <!-- Processors -->
+    
+  <bean id="aim.actionscript.sql.processor" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <description>
+      Process aim.actionscript.sqltype to choose the right SqlProcessor used by the BuilderRule
+    </description>
+    <property name="key" value="${aim.actionscript.sqltype}"/>  <!-- New property - no old configuration -->
+    <property name="objectType" value="com.optimyth.apm.builder.rules.sql.SqlProcessor"/>
+    <property name="defaultValue" ref="aim.actionscript.sql.processor.ansisql"/>
+    <property name="map"><map>
+      <entry key="ansisql"     value-ref="aim.actionscript.sql.processor.ansisql"/>
+      <entry key="plsql"       value-ref="aim.actionscript.sql.processor.plsql"/>
+      <entry key="transactsql" value-ref="aim.actionscript.sql.processor.transactsql"/>
+      <entry key="multi"       value-ref="aim.actionscript.sql.processor.multi"/>
+    </map></property>    
+  </bean>
+  
+  <bean id="aim.actionscript.sql.processor.ansisql" class="com.optimyth.apm.builder.rules.sql.BasicSqlProcessor">
+    <property name="addSqlToModel" value="${aim.actionscript.rule.addSqlToModel}"/>
+    <property name="parseSqlColumns" value="${aim.actionscript.rule.parseSqlColumns}"/>
+    <property name="variableEvaluator" ref="aim.actionscript.rule.evaluator"/>
+    <property name="sqlParser" ref="ls_sql_parser"/>
+    <property name="sqlCallback" ref="aim.actionscript.sql.callback"/>
+  </bean>
+
+  <bean id="aim.actionscript.sql.processor.plsql" parent="aim.actionscript.sql.processor.ansisql" class="com.optimyth.apm.builder.rules.sql.BasicPlSqlProcessor">
+    <property name="sqlParser" ref="ls_plsql_parser"/>
+    <property name="sqlCallback" ref="aim.actionscript.plsql.callback"/>    
+  </bean>
+  
+  <bean id="aim.actionscript.sql.processor.transactsql" parent="aim.actionscript.sql.processor.ansisql" class="com.optimyth.apm.builder.rules.sql.BasicTransactSqlProcessor">
+    <property name="sqlParser" ref="ls_transactsql_parser"/>
+    <property name="sqlCallback" ref="aim.actionscript.transactsql.callback"/>    
+  </bean>
+
+  <bean id="aim.actionscript.sql.processor.multi" class="com.optimyth.apm.builder.rules.sql.CompositeSqlProcessor">
+    <property name="sqlProcessors"><list>
+      <ref bean="aim.actionscript.sql.processor.ansisql"/>
+      <ref bean="aim.actionscript.sql.processor.plsql"/>
+      <ref bean="aim.actionscript.sql.processor.transactsql"/>
+    </list></property>
+  </bean>
+
+  <!-- Filters -->
+  <bean id="aim.actionscript.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.actionscript.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.actionscript.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.actionscript.filter.pattern"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.actionscript.filter.default" parent="ls_actionscript_matcher"/>
+
+  <bean id="aim.actionscript.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.actionscript.filter.pattern}"/>
+  </bean>
+  
+  <!-- Evaluator -->
+  <bean id="aim.actionscript.rule.evaluator" class="com.optimyth.apm.builder.rules.actionscript.ActionScriptVariableEvaluator">
+    <!-- TODO -->
+  </bean>
+  
+</beans>

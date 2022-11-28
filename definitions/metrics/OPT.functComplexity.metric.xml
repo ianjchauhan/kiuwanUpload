@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.functComplexity" unit="" aggregation="avg" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COMPLEXITY" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COMPLEXITY" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.LOWER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="100.00" meaning="good" />
+        <threshold from="100.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <internal-name id="OPT.PLSQL.COMPLEXITY.FUNCTIONALCOMPLEXITY" />
+        <java-class>com.als.plsql.metrics.FunctionalComplexityMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+     <!-- Code examples for each language parser -->
+    <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+        <code-example name="metricCodeExamplePlsql" result-value="6">
+<![CDATA[
+CREATE OR REPLACE PROCEDURE update_employee_salary(
+      p_factor IN NUMBER
+    ) AS
+      v_employee_count INTEGER;
+    BEGIN
+        UPDATE employee
+        SET salary = salary * p_factor;
+        COMMIT;
+    EXCEPTION
+     WHEN OTHERS THEN
+       ROLLBACK;
+   END update_employee_salary;
+CREATE OR REPLACE PROCEDURE delete_employee_salary(
+      p_factor IN NUMBER
+    ) AS
+      v_employee_count INTEGER;
+    BEGIN
+        DELETE FROM employee
+      WHERE       first_name = 'junk';
+        COMMIT;
+    EXCEPTION
+     WHEN OTHERS THEN
+       ROLLBACK;
+   END update_employee_salary;
+   /
+]]>
+        </code-example>
+      </language-parser>
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Complejidad funcional]]></name>
+      
+      <description>
+<![CDATA[
+Esta métrica de complejidad combina las de la parte cliente y la de la implementación. La complejidad funcional equivale a IC + CCN, para cada función/procedimiento, donde:
+- IC es la Complejidad de Interfaz, número de argumentos y puntos de retorno.
+- CCN es la Complejidad Ciclomática, número de caminos de ejecución diferentes en el cuerpo de la función/procedimiento.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Complejidad funcional (FC=Complejidad interface + Complejidad ciclomática)
+]]>
+            </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Functional complexity]]></name>
+      
+      <description>
+<![CDATA[
+This complexity metric combines client-side and implementation-side complexities. Functional complexity equals to IC + CCN, for each function/procedure, where:
+- IC is the Interface Complexity, number of arguments and return points.
+- CCN is Cyclomatic Complexity Number, the number of distinct execution paths in the body of the function/procedure.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PLSQL">
+<![CDATA[
+Functional Complexity (FC=Interface Complexity + Cyclomatic Complexity)
+]]>
+         </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

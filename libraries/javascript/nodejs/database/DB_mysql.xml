@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/DB_mysql" standard="nodejs">
+
+
+  <module name="nodejs/DB_mysql" standard="database/mysql">
+    <description url="https://www.npmjs.com/package/mysql">Node.js driver for MySQL</description>
+
+    <class name="nodejs/mysql">
+      <description>MySQL module (Node.js)</description>
+      <function name="createConnection">
+        <return type="nodejs/mysql.connection" />
+        <sink kind="sensitive_data" resource="database">
+          <arg pos="0" field="user,password"/>
+        </sink>
+        <sink kind="resource_injection" resource="database">
+          <arg pos="0"/>
+          <arg pos="0" field="database"/>
+        </sink>
+        <sink kind="ssrf" resource="database">
+          <arg pos="0" field="host,port"/>
+        </sink>
+      </function>
+
+      <function name="createPool" alias="createPoolCluster">
+        <return type="nodejs/mysql.pool" />
+        <sink kind="sensitive_data" resource="database">
+          <arg pos="0" field="user,password"/>
+        </sink>
+        <sink kind="resource_injection" resource="database">
+          <arg pos="0" field="database"/>
+        </sink>
+        <sink kind="ssrf" resource="database">
+          <arg pos="0" field="host,port"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="nodejs/mysql.connection">
+      <description>Connection to MySQL</description>
+
+      <function name="query">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error, nodejs/mysql.rowset, Array)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+          <param type="function(Error, nodejs/mysql.rowset, Array)">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+            <source argpos="1" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/mysql.query"/>
+        <!-- Warning: even when using ? placeholders, they are really escaped & replaced using connection.escape() -->
+        <sink kind="sql_injection" resource="database">
+          <arg pos="0" />
+          <arg pos="0" field="sql"/>
+        </sink>
+      </function>
+
+      <function name="beginTransaction"></function>
+      <function name="commit"></function>
+      <function name="rollback"></function>
+
+      <function name="escape" alias="escapeId">
+        <neutralization argpos="0" kind="sql_injection" resource="database"/>
+      </function>
+      <function name="format">
+        <neutralization argpos="0" kind="sql_injection" resource="database"/>
+      </function>
+    </class>
+
+    <class name="nodejs/mysql.pool">
+      <description>Connection pool</description>
+      <function name="getConnection">
+        <return type="nodejs/mysql.connection"/>
+      </function>
+    </class>
+
+    <class name="nodejs/mysql.query">
+      <tags>hasEvents</tags>
+      <function name="on:error">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Error)" callback="true">
+            <source argpos="0" kind="sensitive_error_info" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/mysql.query"/>
+      </function>
+      <function name="on:fields">
+        <parameters>
+          <param type="String"/>
+          <param type="function(Array)" callback="true"/>
+        </parameters>
+        <return type="nodejs/mysql.query"/>
+      </function>
+      <function name="on:result">
+        <parameters>
+          <param type="String"/>
+          <param type="function(nodejs/mysql.rowset)" callback="true">
+            <source argpos="0" kind="database_input" resource="database"/>
+          </param>
+        </parameters>
+        <return type="nodejs/mysql.query"/>
+      </function>
+      <function name="on:end">
+        <return type="nodejs/mysql.query"/>
+      </function>
+    </class>
+
+    <class name="nodejs/mysql.rowset">
+      <tags>database_input</tags>
+      <field name="insertId" type="Number"><neutralization/></field>
+      <field name="affectedRows" type="Number"><neutralization/></field>
+      <field name="changedRows" type="Number"><neutralization/></field>
+    </class>
+  </module>
+
+</library>

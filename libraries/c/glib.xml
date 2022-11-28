@@ -1,0 +1,140 @@
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="glib" standard="glib" technology="cpp">
+  <description url="https://developer.gnome.org/glib/2.64/">GNOME GLib</description>
+
+  <header name="glib.h" standard="glib">
+    <typedef name="gint" type="int"/>
+    <typedef name="guint" type="unsigned int"/>
+    <typedef name="gboolean" type="int"/>
+    <typedef name="gpointer" type="void *"/>
+    <typedef name="gconstpointer" type="const void *"/>
+    <typedef name="gchar" type="char"/>
+    <typedef name="guchar" type="unsigned char"/>
+    <typedef name="gshort" type="short"/>
+    <typedef name="gushort" type="unsigned short"/>
+    <typedef name="glong" type="long"/>
+    <typedef name="gulong" type="unsigned long"/>
+    <typedef name="gint8" type="signed char"/>
+    <typedef name="guint8" type="unsigned char"/>
+    <typedef name="gint16" type="signed short"/>
+    <typedef name="guint16" type="unsigned short"/>
+    <typedef name="gint32" type="signed int"/>
+    <typedef name="guint32" type="unsigned int"/>
+    <typedef name="gint64" type="signed long"/>
+    <typedef name="guint64" type="unsigned long"/>
+    <typedef name="gfloat" type="float"/>
+    <typedef name="gdouble" type="double"/>
+    <typedef name="gsize" type="unsigned long"/>
+    <typedef name="gssize" type="signed long"/>
+    <typedef name="goffset" type="signed long"/>
+    <typedef name="gintptr" type="intptr_t"/>
+    <typedef name="guintptr" type="uintptr_t"/>
+
+    <!-- memory allocation -->
+    <functionAlias name="g_malloc" super="malloc" signature="gpointer g_malloc(gsize n)">
+      <tags>abortOnFailure</tags>
+    </functionAlias>
+    <functionAlias name="g_try_malloc" super="malloc" signature="gpointer g_try_malloc(gsize n)">
+    </functionAlias>
+    <functionAlias name="g_malloc0" super="malloc" signature="gpointer g_malloc0(gsize n)">
+      <tags>abortOnFailure, initialized</tags>
+    </functionAlias>
+    <functionAlias name="g_try_malloc0" super="malloc" signature="gpointer g_try_malloc0(gsize n)">
+      <tags>initialized</tags>
+    </functionAlias>
+    <functionAlias name="g_realloc" super="realloc" signature="gpointer g_realloc(gpointer mem, gsize n)">
+      <tags>abortOnFailure</tags>
+    </functionAlias>
+    <functionAlias name="g_try_realloc" super="realloc" signature="gpointer g_try_realloc(gpointer mem, gsize n)">
+    </functionAlias>
+    <function name="g_try_malloc_n" signature="gpointer g_try_malloc_n(gsize n, gsize blksz)">
+      <tags>memory allocation,nullptr:-1,arrsize:0,itemsize:1</tags>
+      <source resource="memory" argpos="-1" kind="memory_allocation"/>
+    </function>
+    <functionAlias name="g_malloc_n" super="g_try_malloc_n">
+      <tags>abortOnFailure</tags>
+    </functionAlias>
+    <functionAlias name="g_try_malloc0_n" super="g_try_malloc_n">
+      <tags>initialized</tags>
+    </functionAlias>
+    <functionAlias name="g_malloc0_n" super="g_try_malloc_n">
+      <tags>abortOnFailure,initialized</tags>
+    </functionAlias>
+    <function name="g_try_realloc_n" signature="gpointer g_try_realloc_n(gpointer mem, gsize n, gsize blksz)">
+      <tags>memory reallocation,nullptr:-1,pointer:0,arrsize:1,itemsize:2</tags>
+      <source resource="memory" argpos="-1" kind="memory_allocation"/>
+      <propagate from="0" to="-1"/>
+    </function>
+    <functionAlias name="g_realloc_n" super="g_try_realloc_n">
+      <tags>abortOnFailure</tags>
+    </functionAlias>
+    <functionAlias name="g_free" super="free"/>
+    <functionAlias name="g_alloca" super="alloca"/>
+    <functionAlias name="g_memmove" super="memmove"/>
+    <function name="g_memdup" signature="gpointer g_memdup (gconstpointer mem, guint sz)">
+      <description>Allocates sz bytes and copies sz bytes from mem to the allocated buffer</description>
+      <tags>memory allocation,memory copy,abortOnFailure,initialized,nullptr:-1,pointer:0,memsize:1,src:0,dest:-1,size:1</tags>
+      <source resource="memory" argpos="-1" kind="memory_allocation"/>
+    </function>
+
+    <!-- strings -->
+    <functionAlias name="g_strdup" super="strdup"/>
+    <functionAlias name="g_strndup" super="strndup"/>
+    <function name="g_strdupv" signature="gchar** g_strdupv(gchar **strarr)">
+      <tags>memory allocation,string copy,nullptr:-1,pointer:0</tags>
+      <propagate from="0" to="-1"/>
+      <source resource="memory" argpos="-1" kind="memory_allocation"/>
+    </function>
+    <function name="g_strfill" signature="gchar *g_strfill(gsize len, gchar fillChar)">
+      <tags>memory allocation,string fill,nullptr:-1,memsize:0</tags>
+      <source resource="memory" argpos="-1" kind="memory_allocation"/>
+    </function>
+    <function name="g_strcanon" signature="gchar* g_strcanon(gchar *s, const gchar *valid, gchar substitutor)">
+      <neutralization argpos="0" kind="string"/>
+    </function>
+    <functionAlias name="g_stpcpy" super="strcpy"/>
+    <functionAlias name="g_strcmp0" super="strcmp"/>
+    <functionAlias name="g_strfreev" super="free" signature="void g_strfreev(gchar **strarr)"/>
+    <functionAlias name="g_strlcpy" super="strlcpy"/>
+    <function name="g_strstr_len" signature="gchar* g_strstr_len(const gchar* haystack, gssize haystack_len, const gchar* needle)">
+      <tags>string search,size-check,nullptr:-1,size:1</tags>
+      <propagate from="0" to="-1"/>
+    </function>
+    <functionAlias name="g_strrstr" super="strstr"/>
+    <functionAlias name="g_strrstr_len" super="g_strstr_len"/>
+    <functionAlias name="g_strlcpy" super="strlcpy"/>
+    <functionAlias name="g_strlcat" super="strlcat"/>
+    <function name="g_strdup_vprintf" signature="gchar *g_strdup_vprintf(const gchar* format, va_list args)">
+      <tags>formattedOutput</tags>
+      <sink resource="formatstr" argpos="0" kind="format_injection"/>
+      <propagate from="0,1" to="-1"/>
+    </function>
+    <functionAlias name="g_printf" super="printf"/>
+    <functionAlias name="g_vprintf" super="vprintf"/>
+    <functionAlias name="g_fprintf" super="fprintf"/>
+    <functionAlias name="g_vfprintf" super="fprintf"/>
+    <functionAlias name="g_sprintf" super="sprintf"/>
+    <functionAlias name="g_vsprintf" super="sprintf"/>
+    <functionAlias name="g_snprintf" super="snprintf"/>
+    <functionAlias name="g_vsnprintf" super="snprintf"/>
+    <functionAlias name="g_vasprintf" super="vasprintf"/>
+    <function name="g_printf_string_upper_bound" signature="gsize g_printf_string_upper_bound(const gchar* format,...)">
+      <tags>string length, no-size-check, pointer:0</tags>
+    </function>
+    <function name="g_str_is_ascii" signature="gboolean g_str_is_ascii(const gchar *str)">
+    </function>
+    <functionAlias name="g_ascii_isalnum" super="isalnum"/>
+    <functionAlias name="g_ascii_isalpha" super="isalpha"/>
+    <functionAlias name="g_ascii_iscntrl" super="iscntrl"/>
+    <functionAlias name="g_ascii_isdigit" super="isdigit"/>
+    <functionAlias name="g_ascii_isgraph" super="isgraph"/>
+    <functionAlias name="g_ascii_islower" super="islower"/>
+    <functionAlias name="g_ascii_isprint" super="isprint"/>
+    <functionAlias name="g_ascii_ispunct" super="ispunct"/>
+    <functionAlias name="g_ascii_isspace" super="isspace"/>
+    <functionAlias name="g_ascii_isupper" super="isupper"/>
+    <functionAlias name="g_ascii_isxdigit" super="isxdigit"/>
+  </header>
+
+</library>

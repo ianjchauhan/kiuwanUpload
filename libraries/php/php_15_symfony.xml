@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="php_symfony" technology="php">
+  <description url="https://symfony.com/">Symfony web framework</description>
+
+  <class name="Symfony.Component.HttpFoundation.Request">
+    <field name="attributes" type="Symfony.Component.HttpFoundation.ParameterBag">
+      <!-- parameters in PATH_INFO-->
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="request" type="Symfony.Component.HttpFoundation.ParameterBag">
+      <tags>$_POST</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="query" type="Symfony.Component.HttpFoundation.ParameterBag">
+      <tags>$_GET</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="headers" type="Symfony.Component.HttpFoundation.HeaderBag">
+      <!-- HTTP_*. CONTENT_LENGTH, CONTENT_MD5, CONTENT_TYPE, PHP_AUTH_USER, PHP_AUTH_PW, PHP_AUTH_DIGEST, AUTHORIZATION -->
+      <tags>$_SERVER</tags>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </field>
+    <field name="server" type="Symfony.Component.HttpFoundation.ServerBag">
+      <tags>$_SERVER</tags>
+      <source argpos="-1" kind="user_input" resource="web">
+        <checker id="symfony.serverChecker"/>
+      </source>
+    </field>
+    <field name="files" type="Symfony.Component.HttpFoundation.FileBag">
+      <tags>$_FILES</tags>
+      <source argpos="-1" kind="user_input" resource="web">
+        <checker id="symfony.filesChecker"/>
+      </source>
+    </field>
+
+    <constructor name="Request" signature="Request(array $query, array $request, array $attributes, array $cookies, array $files, array $server, string $content)"/>
+    <method name="createFromGlobals" signature="createFromGlobals()" instance="false">
+      <return type="Symfony.Component.HttpFoundation.Request"/>
+    </method>
+    <method name="create" signature="create(string $uri, string $method, array $parameters, array $cookies, array $files, array $server, string $content)" instance="false">
+      <return type="Symfony.Component.HttpFoundation.Request"/>
+    </method>
+    <method name="duplicate" signature="duplicate(array $query, array $request, array $attributes, array $cookies, array $files, array $server)">
+      <return type="Symfony.Component.HttpFoundation.Request"/>
+      <!--<propagate from="" to=""/>-->
+    </method>
+    <method name="initialize" signature="initialize(array $query, array $request, array $attributes, array $cookies, array $files, array $server, string $content)"></method>
+    <method name="normalizeQueryString" signature="normalizeQueryString">
+      <return type="string"/>
+      <neutralization argpos="0" kind="http_parameter_pollution"/>
+    </method>
+    <method name="overrideGlobals" signature="overrideGlobals()"></method>
+    <method name="enableHttpMethodParameterOverride" signature="enableHttpMethodParameterOverride">
+      <!-- When app calls this, _method parameter could be used in a POST request to change the HTTP verb that symfony will use -->
+      <!-- This may open CSRF attacks if no explicit anti-CSRF control in place -->
+      <sink argpos="-1" kind="csrf"/>
+    </method>
+    <method name="get" signature="get">
+      <!-- attribute in PATH, then query string (_GET), then parameter in body (_POST) -->
+      <return type="mixed"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getSession" signature="getSession()">
+      <return type="Symfony.Component.HttpFoundation.Session.SessionInterface"/>
+    </method>
+    <method name="setSession" signature="setSessiion(Symfony.Component.HttpFoundation.Session.SessionInterface $session)"></method>
+    <!--
+    getClientIp and getClientIps are considered safe for most attacks.
+    IP addresses may be spoofed, but it should be an IPv4/IPv6 address, and it is difficult they can convey an injection attack.
+    Amnyway, they should not be used for client authentication, at least as the unique auth mechanism...
+    -->
+    <method name="getClientIp" signature="getClientIp()"><return type="string"/></method>
+    <method name="getClientIps" signature="getClientIps()"><return type="array" elementType="string"/></method>
+    <method name="getScriptName" signature="getScriptName()"><tags>SCRIPT_NAME</tags><return type="string"/></method>
+    <method name="getPathInfo" signature="getPathInfo()"><tags>PATH_INFO</tags><return type="string"/><!--source argpos="-1" kind="user_input" resource="web"/--></method>
+    <method name="getBasePath" signature="getBasePath()"><tags>basename(PATH_INFO)</tags><return type="string"/><!--source argpos="-1" kind="user_input" resource="web"/--></method>
+    <method name="getBaseUrl" signature="getBaseUrl()"><return type="string"/><!--source argpos="-1" kind="user_input" resource="web"/--></method>
+    <method name="getScheme" signature="getScheme()"><return type="string"/></method>
+    <method name="getPort" signature="getPort()"><return type="int"/></method>
+    <method name="getUser" signature="getUser()"><return type="string"/><source argpos="-1" kind="user_input" resource="web"/></method>
+    <method name="getPassword" signature="getPassword()"><return type="string"/><source argpos="-1" kind="user_input" resource="web"/></method>
+    <method name="getUserInfo" signature="getUserInfo()"><return type="string"/><source argpos="-1" kind="user_input" resource="web"/></method>
+    <method name="getHttpHost" signature="getHttpHost()"><return type="string"/></method>
+    <method name="getRequestUri" signature="getRequestUri()" alias="getUri">
+      <return type="string"/>
+      <source argpos="-1" kind="user_input" resource="web"/><!-- includes query string -->
+    </method>
+    <method name="getSchemeAndHttpHost" signature="getSchemeAndHttpHost()"><return type="string"/></method>
+    <method name="getUriForPath" signature="getUriForPath(string $path)"><return type="string"/></method>
+    <method name="getRelativeUriForPath" signature="getRelativeUriForPath(string $path)"><return type="string"/></method>
+    <method name="getQueryString" signature="getQueryString()"><return type="string"/><source argpos="-1" kind="user_input" resource="web"/></method>
+    <method name="isSecure" signature="isSecure()"><return type="bool"/></method>
+    <method name="getHost" signature="getHost()">
+      <description>This may be used controlled, depends on the configuration</description>
+      <return type="string"/><!--source argpos="-1" kind="user_input" resource="web"/-->
+    </method>
+    <method name="getMethod" signature="getMethod()"><return type="string"/></method>
+    <method name="getRealMethod" signature="getRealMethod()"><return type="string"/></method>
+    <method name="getMimeType" signature="getMimeType(string $format)"><return type="string"/></method>
+    <method name="getMimeTypes" signature="getMimeTypes(string $format)"><return type="array"/></method>
+    <method name="getFormat" signature="getFormat(string $mimeType)"><return type="string"/></method>
+    <method name="getRequestFormat" signature="getRequestFormat(string $default)"><return type="string"/></method>
+    <method name="getContentType" signature="getContentType()"><!-- safe, whitelisted --><return type="string"/></method>
+    <method name="getDefaultLocale" signature="getDefaultLocale()" alias="getLocale"><return type="string"/></method>
+    <method name="isMethod" signature="isMethod(string $method)"><return type="bool"/></method>
+    <method name="isMethodSafe" signature="isMethodSafe()" alias="isMethodIdempotent, isMethodCacheable"><return type="bool"/></method>
+    <method name="getProtocolVersion" signature="getProtocolVersion()"><return type="string"/></method>
+    <method name="getContent" signature="getContent()"><return type="string"/><source argpos="-1" kind="user_input" resource="web"/></method>
+    <method name="getETags" signature="getETags()"><return type="array" elementType="string"/><source argpos="-1" kind="user_input" resource="web"/></method>
+    <method name="isNoCache" signature="isNoCache()"><return type="bool"/></method>
+    <method name="getPreferredLanguage" signature="getPreferredLanguage()"><return type="string"/></method>
+    <method name="getLanguages" signature="getLanguages()"><return type="array" elementType="string"/><source argpos="-1" kind="user_input" resource="web"/></method>
+    <method name="getCharsets" signature="getCharsets()" alias="getEncodings, getAcceptableContentTypes"><return type="array" elementType="string"/><source argpos="-1" kind="user_input" resource="web"/></method>
+    <method name="isXmlHttpRequest" signature="isXmlHttpRequest()"><return type="bool"/></method>
+  </class>
+
+  <class name="Symfony.Component.HttpFoundation.Response">
+    <field name="headers" type="ResponseHeaderBag"/>
+    <field name="content" type="string"/>
+    <field name="version" type="string"/>
+    <field name="statusCode" type="int"/>
+    <field name="statusText" type="string"/>
+    <field name="charset" type="string"/>
+
+    <constructor name="Response" signature="Response(string $content, int $status, array $headers)"></constructor>
+    <method name="create" signature="create(string $content, int $status, array $headers)" instance="false"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="prepare" signature="prepare(Symfony.Component.HttpFoundation.Request $request)"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="sendHeaders" signature="sendHeaders()"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="sendContent" signature="sendContent()"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="send" signature="send()"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+
+    <!-- setters return $this for chained calls -->
+    <method name="setContent" signature="setContent(mixed $content)"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="getContent" signature="getContent()"><return type="string"/></method>
+    <method name="setProtocolVersion" signature="setProtocolVersion(string $version)"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="getProtocolVersion" signature="getProtocolVersion()"><return type="string"/></method>
+    <method name="setStatusCode" signature="setStatusCode(int $code, string $text)"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="getStatusCode" signature="getStatusCode()"><return type="int"/></method>
+    <method name="setCharset" signature="setContent(string $charset)"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="setCharset" signature="getContent()"><return type="string"/></method>
+    <method name="isCacheable" signature="isCacheable()" alias="isFresh,isValidateable"><return type="bool"/></method>
+    <method name="getDate" signature="getDate()"><return type="DateTime"/></method>
+    <method name="setDate" signature="setDate(DateTime $date)"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="getAge" signature="getAge()"><return type="int"/></method>
+    <method name="expire" signature="expire()"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="getExpires" signature="getExpires()"><return type="DateTime"/></method>
+    <method name="setExpires" signature="setExpires(DateTime $date)"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="getMaxAge" signature="getMaxAge()"><return type="int"/></method>
+    <method name="setMaxAge" signature="setMaxAge(int $value)" alias="setSharedMaxAge"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="getTtl" signature="getTtl()"><return type="int"/></method>
+    <method name="setTtl" signature="setTtl(int $seconds)" alias="setClientTtl"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="getLastModified" signature="getLastModified()"><return type="DateTime"/></method>
+    <method name="setLastModified" signature="setLastModified(DateTime $date)"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="getEtag" signature="getEtag()"><return type="string"/></method>
+    <method name="setEtag" signature="setEtag(string $etag, bool $weak)"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="setCache" signature="setCache(array $options)"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="setNotModified" signature="setNotModified()"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="hasVary" signature="hasVary()"><return type="bool"/></method>
+    <method name="setVary" signature="setVary(array $headers, bool $replace)"><return type="Symfony.Component.HttpFoundation.Response"/></method>
+    <method name="isNotModified" signature="isNotModified(Symfony.Component.HttpFoundation.Request $request)"><return type="bool"/></method>
+    <method name="isInvalid" signature="isInvalid()"
+            alias="isInformational, isSuccessful, isRedirection, isClientError, isServerError, isOk, isForbidden, isNotFound, isEmpty">
+      <return type="bool"/>
+    </method>
+    <method name="isRedirect" signature="isRedirect(string $location)"><return type="bool"/></method>
+    <method name="closeOutputBuffers" signature="closeOutputBuffers(int $targetLevel, bool $flush)" instance="false"></method>
+  </class>
+
+  <class name="Symfony.Component.HttpFoundation.StreamedResponse" supertypes="Symfony.Component.HttpFoundation.Response">
+    <constructor name="StreamedResponse" signature="StreamedResponse(callable $callback, int $status, array $headers)"></constructor>
+    <method name="create" signature="create(callable $callback, int $status, array $headers)">
+      <return type="Symfony.Component.HttpFoundation.StreamedResponse"/>
+    </method>
+    <method name="setCallback" signature="setCallback(callable $callback)"/>
+  </class>
+
+  <class name="Symfony.Component.HttpFoundation.ParameterBag" supertypes="IteratorAggregate, Countable">
+    <method name="all" signature="all">
+      <return type="array"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="filter" signature="filter">
+      <!-- same considerations as with filter_var -->
+      <tags>
+        filter.validation,
+        safeParameters:FILTER_VALIDATE_BOOLEAN/FILTER_VALIDATE_DOMAIN/FILTER_VALIDATE_EMAIL/FILTER_VALIDATE_FLOAT/FILTER_VALIDATE_INT/FILTER_VALIDATE_MAC/
+        FILTER_SANITIZE_MAGIC_QUOTES/FILTER_SANITIZE_EMAIL/FILTER_SANITIZE_NUMBER_FLOAT/FILTER_SANITIZE_NUMBER_INT,
+        *:FILTER_VALIDATE_REGEXP/FILTER_CALLBACK,
+        ldap_injection:FILTER_SANITIZE_FULL_SPECIAL_CHARS/FILTER_SANITIZE_NUMBER_INT/FILTER_SANITIZE_SPECIAL_CHARS/FILTER_SANITIZE_FULL_SPECIAL_CHARS,
+        open_redirect:FILTER_SANITIZE_NUMBER_FLOAT/FILTER_SANITIZE_NUMBER_INT,
+        xss:FILTER_SANITIZE_SPECIAL_CHARS/FILTER_SANITIZE_FULL_SPECIAL_CHARS/FILTER_SANITIZE_STRING/FILTER_SANITIZE_STRIPPED
+      </tags>
+      <neutralization argpos="-1" kind="string" resource="web"/>
+    </method>
+    <method name="get" signature="get(string $path, mixed $default, bool $deep = false)">
+      <return type="mixed"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getAlpha" signature="getAlpha(string $key, string $default = '')" alias="getAlnum,getDigits">
+      <!--
+      Considered kosher WRT most injection attacks, as they exclude most metachars: use preg_replace with ^[:alpha:] or ^[:alnum:],
+      or using $this->filter(..., FILTER_SANITIZE_NUMBER_INT)
+       -->
+      <tags>alphanumeric.validation</tags>
+      <neutralization argpos="-1" kind="string" resource="web"/>
+    </method>
+    <method name="getInt" signature="getInt(string $key, int $default = 0, $deep = false)">
+      <tags>numeric.validation</tags>
+      <return type="int"/>
+      <neutralization argpos="-1" kind="string" resource="web"/>
+    </method>
+    <method name="getBoolean" signature="getInt(string $key, bool $default = false)">
+      <tags>numeric.validation</tags>
+      <return type="bool"/>
+      <neutralization argpos="-1" kind="string" resource="web"/>
+    </method>
+    <method name="has" signature="has(string $key)">
+      <return type="bool"/>
+    </method>
+    <method name="add" signature="add(array $headers)" alias="replace"/>
+    <method name="remove" signature="remove(string $key)"/>
+  </class>
+
+  <class name="Symfony.Component.HttpFoundation.ServerBag" supertypes="Symfony.Component.HttpFoundation.ParameterBag">
+    <method name="get" signature="get(string $key, mixed $default = null, bool $first = true)">
+      <return type="string"/>
+      <!-- Not all -->
+      <source argpos="-1" kind="user_input" resource="web">
+        <checker id="symfony.serverChecker"/>
+      </source>
+    </method>
+
+  </class>
+
+  <class name="Symfony.Component.HttpFoundation.HeaderBag" supertypes="IteratorAggregate, Countable">
+    <method name="all" signature="all()">
+      <return type="array" elementType="string"/>
+      <!-- Unconditional source, any header is under user control -->
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="add" signature="add(array $headers)" alias="replace"/>
+    <method name="remove" signature="remove(string $key)"/>
+    <method name="get" signature="get(string $key, mixed $default = null, bool $first = true)">
+      <return type="string"/>
+      <!-- Unconditional source, any header is under user control -->
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+  </class>
+
+  <class name="Symfony.Component.HttpFoundation.FileBag" supertypes="Symfony.Component.HttpFoundation.ParameterBag">
+    <method name="get" signature="get(string $key, mixed $default = null)">
+      <return type="mixed"/>
+      <source argpos="-1" kind="user_input" resource="web">
+        <checker id="symfony.filesChecker"/>
+      </source>
+    </method>
+  </class>
+
+  <class name="Symfony.Component.HttpFoundation.ResponseHeaderBag" supertypes="Symfony.Component.HttpFoundation.HeaderBag">
+    <method name="getCookies" signature="getCookies()">
+      <return type="array" elementType="Symfony.Component.HttpFoundation.Cookie"/>
+    </method>
+    <method name="setCookie" signature="setCookie(Symfony.Component.HttpFoundation.Cookie)"></method>
+    <method name="removeCookie" signature="removeCookie(string $name, string $path, string $domain)"></method>
+    <method name="clearCookie" signature="clearCookie(string $name, string $path, string $domain, bool $secure, bool $httpOnly)"></method>
+    <method name="makeDisposition" signature="makeDisposition(string $disposition, string $filename, string $filenameFallback)"></method>
+    <method name="all" signature="all()"><return type="array"/></method>
+    <method name="set" signature="set(string key, array $values, bool $replace"></method>
+    <method name="remove" signature="remove(string $key)"></method>
+    <method name="get" signature="get(string $key, mixed $default = null, bool $first = true)">
+      <return type="string"/>
+      <!-- not a source -->
+    </method>
+  </class>
+
+  <class name="Symfony.Component.HttpFoundation.Cookie">
+    <constructor name="Cookie"
+                 signature="Cookie(string $name, string $value = null, int $expire = 0, string $path = '/', string $domain = null, bool $secure = false, bool $httpOnly = true, bool $raw = false, string $sameSite = null)">
+      <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.persistent:2,cookie.path:3,cookie.domain:4,cookie.secure:5,cookie.httpOnly:6,cookie.samesite:8</tags>
+    </constructor>
+    <method name="create" instance="false"
+            signature="create(string $name, string $value = null, int $expire = 0, string $path = '/', string $domain = null, bool $secure = false, bool $httpOnly = true, bool $raw = false, string $sameSite = null)">
+      <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.persistent:2,cookie.path:3,cookie.domain:4,cookie.secure:5,cookie.httpOnly:6,cookie.samesite:8</tags>
+    </method>
+    <method name="fromString" instance="false" signature="fromString(string $cookie, bool $decode)">
+      <tags>cookie.create</tags>
+      <return type="Symfony.Component.HttpFoundation.Cookie"/>
+    </method>
+
+    <method name="getName" signature="getName()"><return type="string"/></method>
+    <method name="getValue" signature="getValue()"><return type="string"/></method>
+    <method name="getDomain" signature="getDomain()"><return type="string"/></method>
+    <method name="getExpiresTime" signature="getExpiresTime()" alias="getMaxAge()"><return type="int"/></method>
+    <method name="getPath" signature="getPath()"><return type="string"/></method>
+    <method name="isSecure" signature="isSecure()"><return type="bool"/></method>
+    <method name="isHttpOnly" signature="isHttpOnly()"><return type="bool"/></method>
+    <method name="isCleared" signature="isCleared()"><return type="bool"/></method>
+    <method name="isRaw" signature="isRaw()"><return type="bool"/></method>
+    <method name="getSameSite" signature="getSameSite()"><return type="string"/></method>
+  </class>
+
+  <class name="Symfony.Component.HttpFoundation.AcceptHeader">
+    <constructor name="AcceptHeader" signature="AcceptHeader(array $items)"></constructor>
+    <method name="fromString" signature="fromString(string $headerValue)" instance="false">
+      <return type="Symfony.Component.HttpFoundation.AcceptHeader"/>
+    </method>
+    <method name="get" signature="get(string $value)">
+      <return type="Symfony.Component.HttpFoundation.AcceptHeaderItem"/>
+    </method>
+    <method name="has" signature="has(string $value)">
+      <return type="bool"/>
+    </method>
+    <method name="add" signature="add(AcceptHeaderItem $item)">
+      <return type="Symfony.Component.HttpFoundation.AcceptHeader"/>
+    </method>
+    <method name="all" signature="all()">
+      <return type="array" elementType="Symfony.Component.HttpFoundation.AcceptHeaderItem"/>
+    </method>
+    <method name="first" signature="first()">
+      <return type="Symfony.Component.HttpFoundation.AcceptHeaderItem"/>
+      <propagate from="-2" to="-1"/>
+    </method>
+    <method name="filter" signature="filter(string $pattern)">
+      <tags>regex.validation</tags>
+      <return type="Symfony.Component.HttpFoundation.AcceptHeader"/>
+      <neutralization argpos="-1" kind="string" resource="web"/>
+    </method>
+  </class>
+
+  <class name="Symfony.Component.HttpFoundation.AcceptHeaderItem">
+    <constructor name="AcceptHeaderItem" signature="AcceptHeaderItem(string $value, array $attributes = [])"></constructor>
+    <method name="fromString" signature="fromString(string $itemValue)" instance="false">
+      <return type="Symfony.Component.HttpFoundation.AcceptHeaderItem"/>
+    </method>
+    <method name="getValue" signature="getValue()">
+      <return type="string"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getQuality" signature="getQuality()"><return type="float"/></method>
+    <method name="getAttribute" signature="getAttribute(string $key, mixed $default = null)">
+      <return type="mixed"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </method>
+    <method name="getIndex" signature="getIndex()"><return type="int"/></method>
+  </class>
+
+  <class name="Symfony.Component.HttpFoundation.Session.SessionInterface" kind="interface">
+    <method name="getId" signature="getId()">
+      <tags>sensitive_info</tags>
+      <return type="string"/>
+      <source argpos="-1" kind="sensitive_info" resource="web"/>
+    </method>
+    <method name="has" signature="has(string $name)"><return type="bool"/></method>
+    <method name="set" signature="set(string $name, mixed $value)">
+      <tags>CWE:501, stateChange</tags>
+      <sink argpos="0,1" kind="trust_boundary" resource="web"/>
+    </method>
+    <method name="get" signature="get(string $name)">
+      <return type="mixed"/>
+      <propagate from="0" to="-1"/>
+      <!-- <source argpos="-1" kind="user_input" resource="web"/> -->
+    </method>
+    <method name="getBag" signature="getBag(string $name)">
+      <return type="Symfony.Component.HttpFoundation.Session.SessionBagInterface"/>
+    </method>
+  </class>
+
+  <class name="Symfony.Bundle.FrameworkBundle.Controller.ControllerTrait" kind="trait">
+    <description>Symfony 3 controller interface</description>
+
+    <method name="get" signature="get(string $id)"><return type="object"/></method>
+    <method name="generateUrl" signature="generateUrl(string $route, array $parameters, int $referenceType)">
+      <return type="string"/>
+    </method>
+    <method name="forward" signature="forward(string $controller, array $path, array $query)">
+      <return type="Symfony.Component.HttpFoundation.Response"/>
+    </method>
+    <method name="redirect" signature="redirect(string $url, int $status = 302)" alias="redirectToRoute">
+      <return type="Symfony.Component.HttpFoundation.RedirectResponse"/>
+      <sink kind="open_redirect" argpos="0" neutralizer="string,open_redirect" resource="web"/>
+    </method>
+    <method name="json" signature="json($data, int $status = 200, array $headers, array $context)">
+      <return type="Symfony.Component.HttpFoundation.JsonResponse"/>
+    </method>
+    <method name="file" signature="file($file, string $filename, string $disposition)">
+      <return type="Symfony.Component.HttpFoundation.BinaryFileResponse"/>
+    </method>
+    <method name="isGranted" signature="isGranted($attributes, $subject)">
+      <return type="bool"/>
+      <neutralization kind="missing_authorization" argpos="-1" resource="web"/>
+    </method>
+    <method name="denyAccessUnlessGranted" signature="denyAccessUnlessGranted($attributes, $subject, string $message)">
+      <neutralization kind="missing_authorization" argpos="-1" resource="web"/>
+    </method>
+    <method name="renderView" signature="renderView(string $view, array $parameters)">
+      <return type="string"/>
+    </method>
+    <method name="render" signature="render(string $view, array $parameters, Response $response)">
+      <return type="Symfony.Component.HttpFoundation.Response"/>
+    </method>
+    <method name="stream" signature="stream(string $view, array $parameters, StreamedResponse $response)">
+      <return type="StreamedResponse"/>
+    </method>
+    <method name="createNotFoundException" signature="createNotFoundException(string $message, Exception $previous)">
+      <return type="Symfony.Component.HttpKernel.Exception.NotFoundHttpException"/>
+    </method>
+    <method name="createNotFoundException" signature="createNotFoundException(string $message, Exception $previous)">
+      <return type="Symfony.Component.HttpKernel.Exception.NotFoundHttpException"/>
+    </method>
+    <method name="createAccessDeniedException" signature="createAccessDeniedException(string $message, Exception $previous)">
+      <return type="Symfony.Component.Security.Core.Exception.AccessDeniedException"/>
+    </method>
+    <method name="createForm" signature="createForm(string $type, mixed $data, array $options)">
+      <return type="Symfony.Component.Form.FormInterface"/>
+    </method>
+    <method name="createFormBuilder" signature="createFormBuilder(mixed $data, array $options)">
+      <return type="Symfony.Component.Form.FormBuilderInterface"/>
+    </method>
+    <method name="getDoctrine" signature="getDoctrine()">
+      <return type="Doctrine.Common.Persistence.ManagerRegistry"/>
+    </method>
+    <method name="getUser" signature="getUser()"></method>
+    <method name="isCsrfTokenValid" signature="isCsrfTokenValid(string $id, string $token)">
+      <return type="bool"/>
+      <neutralization kind="csrf" resource="web" argpos="-1"/>
+    </method>
+    <method name="dispatchMessage" signature="dispatchMessage(object $message)">
+      <return type="Symfony.Component.Messenger.Envelope"/>
+    </method>
+  </class>
+
+  <class name="Symfony.Bundle.FrameworkBundle.Controller.Controller" kind="abstract_class" supertypes="Symfony.Bundle.FrameworkBundle.Controller.ControllerTrait">
+    <method name="getParameter" signature="getParameter(string $name)"><return type="mixed"/></method>
+  </class>
+
+  <class name="Symfony.Bundle.FrameworkBundle.Controller.AbstractController" kind="abstract_class"
+         supertypes="Symfony.Bundle.FrameworkBundle.Controller.ControllerTrait, Symfony.Contracts.Service.ServiceSubscriberInterface">
+    <field name="container" type="Psr.Container.ContainerInterface"/>
+
+    <method name="getSubscribedServices" signature="getSubscribedServices()" instance="false"><return type="array"/></method>
+  </class>
+
+  <class name="Symfony.Bundle.FrameworkBundle.Controller.RedirectController">
+    <constructor name="RedirectController" signature="RedirectController(Symfony.Component.Routing.Generator.UrlGeneratorInterface $router, int $httpPort, int $httpsPort)"></constructor>
+    <method name="redirectAction" signature="redirectAction(Symfony.Component.HttpFoundation.Request $request, string $route, bool $permanent, mixed $ignoreAttributes, bool $keepRequestMethod)">
+      <return type="Symfony.Component.HttpFoundation.Response"/>
+      <sink kind="resource_injection" argpos="1" resource="web"/>
+    </method>
+    <method name="urlRedirectAction" signature="redirectAction(Symfony.Component.HttpFoundation.Request $request, string $path, bool $permanent, string $scheme, int $httpPort, int $httpsPort, bool $keepRequestMethod)">
+      <return type="Symfony.Component.HttpFoundation.Response"/>
+      <sink kind="open_redirect" argpos="1" resource="web"/>
+      <sink kind="resource_injection" argpos="3,4,5" resource="web"/>
+    </method>
+
+  </class>
+
+</library>

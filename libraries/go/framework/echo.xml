@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="Echo">
+
+  <description url="https://echo.labstack.com/">Go web framework (high performance, minimalist)</description>
+
+  <module name="github.com.labstack.echo" >
+    <class name="github.com.labstack.echo.Context" >
+      <method name="Request" signature="Request()" >
+        <return type="net.http.Request" />
+      </method>
+      <method name="Response" signature="Response()" >
+        <return type="github.com.labstack.echo.Response" />
+      </method>
+      <method name="Params" signature="Params()" >
+        <return type="github.com.gobuffalo.buffalo.ParamValues" />
+      </method>
+      <method name="Param" signature="Param(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="QueryParam" signature="QueryParam(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="QueryParams" signature="QueryParams()" >
+        <return type="net.url.Values" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="FormValue" signature="FormValue(go.string)" >
+        <return type="go.string" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="FormParams" signature="FormParams()" >
+        <return type="net.url.Values,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="FormFile" signature="FormFile(go.string)" >
+        <return type="mime.multipart.FileHeader,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="MultipartForm" signature="MultipartForm()" >
+        <return type="mime.multipart.Form,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="Cookie" signature="Cookie(go.string)" >
+        <return type="net.http.Cookie,go.error" />
+        <source argpos="-1" kind="user_input" resource="web" >
+          <tags>CWE:784</tags>
+        </source>
+      </method>
+      <method name="Cookies" signature="Cookies()" >
+        <return type="go.slice" elementType="net.http.Cookie" />
+      </method>
+      <method name="Echo" signature="Echo()" >
+        <return type="github.com.labstack.echo.Echo" />
+      </method>
+      <method name="Redirect" signature="Redirect(go.int,go.string)" >
+        <return type="go.error" />
+        <sink argpos="1" kind="open_redirect" resource="web" />
+        <sink kind="execution_after_redirect" argpos="1" resource="web"/>
+      </method>
+      <method name="File" signature="File(go.string)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="Attachment" signature="Attachment(go.string,go.string)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="Inline" signature="Inline(go.string,go.string)" >
+        <return type="go.error" />
+        <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="HTML" signature="HTML(go.int,go.string)" >
+        <return type="go.error" />
+        <sink argpos="1" kind="xss" resource="filesystem" />
+      </method>
+      <method name="JSON" signature="JSON(go.int,go.interface)" >
+        <tags>serialization:1</tags>
+        <return type="go.error" />
+      </method>
+      <method name="JSONPretty" signature="JSONPretty(go.int,go.interface,go.string)" >
+        <tags>serialization:1</tags>
+        <return type="go.error" />
+      </method>
+      <method name="JSONBlob" signature="JSONBlob(go.int,go.slice)" >
+        <tags>serialization:1</tags>
+        <return type="go.error" />
+      </method>
+      <method name="JSONP" signature="JSONP(go.int,go.interface)" alias="JSONPBlob" >
+        <tags>serialization:1</tags>
+        <sink argpos="1" kind="some_injection" resource="web" />
+        <sink argpos="2" kind="jsonp_hijacking" resource="web" />
+      </method>
+      <method name="SetCookie" signature="SetCookie(net.http.Cookie)" >
+        <sink argpos="0" kind="header_manipulation" resource="web" />
+      </method>
+      <method name="Bind" signature="Bind(go.interface)" >
+        <source argpos="0" kind="user_input" resource="web" />
+      </method>
+    </class>
+    <class name="github.com.labstack.echo.Response" >
+      <field name="Writer" type="net.http.ResponseWriter" />
+    </class>
+    <class name="github.com.labstack.echo.Echo" >
+      <field name="Server" type="net.http.Server" />
+      <field name="TLSServer" type="net.http.Server" />
+      <field name="Logger" type="github.com.labstack.echo.Logger" />
+
+      <method name="AcquireContext" signature="AcquireContext()" >
+        <return type="github.com.labstack.echo.Context" />
+      </method>
+      <method name="ServeHTTP" signature="ServeHTTP(net.http.ResponseWriter,net.http.Request)" >
+        <return type="go.error" />
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+      </method>
+      <method name="Start" signature="Start(go.string)" >
+        <return type="go.error" />
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+        <sink argpos="0" kind="resource_injection" resource="network" />
+      </method>
+      <method name="Any" signature="Any(go.string,github.com.labstack.echo.HandlerFunc,...github.com.labstack.echo.MiddlewareFunc)"
+              alias="CONNECT,DELETE,GET,File,HEAD,OPTIONS,PATCH,POST,PUT,TRACE" >
+        <tags>route:1</tags>
+      </method>
+    </class>
+    <class name="github.com.labstack.echo.Logger" >
+      <method name="Output" signature="Output()" >
+        <return type="io.Writer" />
+      </method>
+      <method name="Fatal" signature="Fatal(go.interface)"
+              alias="Panic, Print, Printj, Warn, Warnj, Panicj, Error, Debug, Info, Errorj, Debugj, Infoj" >
+        <tags>write</tags>
+        <return type="go.error" />
+        <sink argpos="0,1,2" kind="log_forging" resource="other" />
+      </method>
+      <method name="Fatalf" signature="Fatalf(go.string, go.interface)" alias="Panicf, Printf" >
+        <tags>write</tags>
+        <return type="go.error" />
+        <sink argpos="0" kind="format_injection" resource="other" />
+        <sink argpos="1,2,3" kind="log_forging" resource="other" />
+      </method>
+      <method name="Bind" signature="Bind(go.interface)" >
+        <return type="go.error" />
+        <source argpos="0" kind="user_input" resource="web" />
+      </method>
+    </class>
+
+    <function name="github.com.labstack.echo.New" signature="github.com.labstack.echo.New()" >
+      <return type="github.com.labstack.echo.Echo" />
+    </function>
+  </module>
+
+  <module name="github.com.labstack.echo.middleware" >
+    <function name="github.com.labstack.echo.middleware.CSRF" signature="github.com.labstack.echo.middleware.CSRF(go.slice)" >
+      <tags>csrfFilter</tags>
+    </function>
+    <function name="github.com.labstack.echo.middleware.CSRFWithConfig" signature="github.com.labstack.echo.middleware.CSRFWithConfig(github.com.labstack.echo.middleware..CSRFConfig)" >
+      <tags>csrfFilter</tags>
+    </function>
+  </module>
+</library>

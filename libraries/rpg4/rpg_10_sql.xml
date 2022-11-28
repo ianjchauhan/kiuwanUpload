@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="iseries.sql" technology="rpg4">
+
+  <description>SQL libraries for RPG</description>
+
+  <module name="iseries.database.sqlcli">
+    <description url="https://www.ibm.com/support/knowledgecenter/SSEPEK_12.0.0/odbc/src/tpc/db2z_hdapi.html">X/Open CLI / DB2 ODBC</description>
+
+    <function name="SQLConnect" alias="SQLConnectW">
+      <description>Connect to database</description>
+      <sink kind="resource_injection" resource="database" argpos="1"/>
+      <sink kind="hardcoded_credentials" resource="database" argpos="3"/>
+      <sink kind="hardcoded_password" resource="database" argpos="5"/>
+    </function>
+    <function name="SQLDriverConnect">
+      <description>Connect to database using connection string</description>
+      <sink kind="connection_string_injection" resource="database" argpos="2"/>
+    </function>
+    <function name="SQLExecDirect">
+      <description>Execute SQL statement</description>
+      <sink kind="sql_injection" argpos="1"/>
+    </function>
+    <function name="SQLPrepare" alias="SQLPrepareW">
+      <description>Prepare SQL statement</description>
+      <sink kind="sql_injection" argpos="1"/>
+    </function>
+    <function name="SQLError" alias="SQLErrorW">
+      <description>Retrieve error info</description>
+      <source kind="sensitive_error_info" resource="database" argpos="5"/>
+    </function>
+    <function name="SQLBindCol">
+      <description>Bind column to variable</description>
+      <source kind="database_input" resource="database" argpos="3"/>
+    </function>
+    <function name="SQLBindParameter">
+      <description>Bind parameter to variable (calls to stored procedures)</description>
+      <!-- out param when arg#3 is SQL_PARAM_INPUT_OUTPUT or SQL_PARAM_OUTPUT -->
+      <source kind="database_input" resource="database" argpos="7"/>
+    </function>
+    <function name="SQLGetCol" alias="SQLGetData">
+      <description>Retrieve one column data</description>
+      <source kind="database_input" resource="database" argpos="3"/>
+    </function>
+    <function name="SQLGetSubString" alias="SQLGetSubStringW">
+      <description>Get substring from LOB</description>
+      <source kind="database_input" resource="database" argpos="6"/>
+    </function>
+  </module>
+  
+  <module name="JDBCR4">
+    <description url="http://scottklement.com/presentations/External%20Databases%20from%20RPG.pdf">Scott Klement's JDBCR4</description>
+    <function name="JDBC_Connect" match="name" >
+      <tags>password:2,username:3</tags>
+      <sink argpos="0,1" kind="connection_string_injection" resource="database" />
+    </function>
+    <function name="JDBC_ConnProp" match="name" >
+      <sink argpos="0,1" kind="connection_string_injection" resource="database" />
+    </function>
+    <function name="JDBC_setProp" match="name" >
+      <tags>credential_key:1,credential_value:2</tags>
+    </function>
+  </module>
+
+</library>

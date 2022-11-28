@@ -1,0 +1,718 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="Internet_Protocols_Support" technology="python">
+
+  <description url="https://docs.python.org/3/library/internet.html">Internet Protocols (Python 3)</description>
+
+  <module name="urllib" standard="python3">
+    <module name="request" >
+      <function name="urlopen" signature="urlopen(url, data=None, [timeout, ]*, cafile=None, capath=None, cadefault=False, context=None)" >
+        <return type="http.client.HTTPResponse" />
+        <sink argpos="0" kind="insecure_transport" resource="web" />
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        <source argpos="-1" kind="user_input" resource="network"/>
+      </function>
+      <function name="install_opener" signature="install_opener(opener)" >
+        <return type="NoneType" />
+      </function>
+      <function name="build_opener" signature="build_opener([handler, ...])" >
+        <return type="urllib.request.OpenerDirector" />
+      </function>
+      <function name="pathname2url" signature="pathname2url(path)" >
+        <return type="str" />
+      </function>
+      <function name="url2pathname" signature="url2pathname(path)" >
+        <return type="str" />
+      </function>
+      <function name="getproxies" signature="getproxies()">
+        <return type="dict" />
+      </function>
+      <function name="urlretrieve" signature="urlretrieve(url, filename=None, reporthook=None, data=None)" >
+        <return type="" />
+      </function>
+      <function name="urlcleanup" signature="urlcleanup()">
+      </function>
+
+      <class name="Request" >
+        <field name="full_url" type="str"/>
+        <field name="type" type="str"/>
+        <field name="host" type="str"/>
+        <field name="origin_req_host" type="str"/>
+        <field name="selector" type="str"/>
+        <field name="data" type="object"/>
+        <field name="unverifiable" type="bool"/>
+        <field name="method" type="object"/>
+
+        <function name="get_method" signature="get_method()" >
+          <return type="str" />
+        </function>
+        <function name="add_header" signature="add_header(key, val)" >
+          <tags>open_redirect: 0</tags>
+          <return type="NoneType" />
+          <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+        </function>
+        <function name="add_unredirected_header" signature="add_unredirected_header(key, header)" >
+          <return type="NoneType" />
+        </function>
+        <function name="has_header" signature="has_header(header)" >
+          <return type="bool" />
+        </function>
+        <function name="remove_header" signature="remove_header(header)" >
+          <return type="NoneType" />
+        </function>
+        <function name="get_full_url" signature="get_full_url()" >
+          <return type="str" />
+        </function>
+        <function name="set_proxy" signature="set_proxy(host, type)" >
+          <return type="NoneType" />
+          <sink argpos="0" kind="resource_injection" resource="web" />
+        </function>
+        <function name="get_header" signature="get_header(header_name, default=None)" >
+          <return type="object" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </function>
+        <function name="header_items" signature="header_items()" >
+          <return type="list" />
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </function>
+
+      </class>
+
+      <class name="OpenerDirector" >
+        <function name="add_handler" signature="add_handler(handler)" >
+          <return type="NoneType" />
+        </function>
+        <function name="open" signature="open(url, data=None[, timeout])" >
+          <return type="http.client.HTTPResponse" />
+          <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        </function>
+        <function name="error" signature="error(proto, *args)" >
+          <return type="object" />
+        </function>
+      </class>
+
+      <class name="BaseHandler" >
+        <function name="add_parent" signature="add_parent(director)" >
+          <return type="NoneType" />
+        </function>
+        <function name="close" signature="close()" >
+          <return type="" />
+        </function>
+        <function name="default_open" signature="default_open(req)" >
+          <return type="object" />
+        </function>
+        <function name="protocol_open" signature="protocol_open(req)" >
+          <return type="object" />
+        </function>
+        <function name="unknown_open" signature="unknown_open(req)" >
+          <return type="object" />
+        </function>
+        <function name="http_error_default" signature="http_error_default(req, fp, code, msg, hdrs)" >
+          <return type="http.client.HTTPResponse" />
+        </function>
+        <function name="http_error_nnn" signature="http_error_nnn(req, fp, code, msg, hdrs)" >
+          <return type="int" />
+        </function>
+        <function name="protocol_request" signature="protocol_request(req)" >
+          <return type="urllib.request.Request" />
+        </function>
+        <function name="protocol_response" signature="protocol_response(req, response)" >
+          <return type="http.client.HTTPResponse" />
+        </function>
+      </class>
+
+      <class name="HTTPDefaultErrorHandler" supertypes="urllib.request.BaseHandler" />
+
+      <class name="HTTPRedirectHandler" supertypes="urllib.request.BaseHandler" >
+        <function name="redirect_request" signature="redirect_request(req, fp, code, msg, hdrs, newurl)" >
+          <return type="urllib.request.Request" />
+          <sink argpos="0,1,2" kind="open_redirect" resource="web" />
+        </function>
+        <function name="http_error_301" signature="http_error_301(req, fp, code, msg, hdrs)" >
+          <return type="NoneType" />
+        </function>
+        <function name="http_error_302" signature="http_error_302(req, fp, code, msg, hdrs)" >
+          <return type="NoneType" />
+        </function>
+        <function name="http_error_303" signature="http_error_303(req, fp, code, msg, hdrs)" >
+          <return type="NoneType" />
+        </function>
+        <function name="http_error_307" signature="http_error_307(req, fp, code, msg, hdrs)" >
+          <return type="NoneType" />
+        </function>
+      </class>
+
+      <class name="HTTPCookieProcessor" supertypes="urllib.request.BaseHandler" >
+        <tags>CWE:784</tags>
+        <field name="cookiejar" type="http.cookiejar.CookieJar" >
+          <source argpos="-1" kind="user_input" resource="web"/>
+        </field>
+      </class>
+
+      <class name="ProxyHandler" supertypes="urllib.request.BaseHandler" >
+        <function name="protocol_open" signature="protocol_open(request)" >
+          <return type="" />
+        </function>
+      </class>
+
+      <class name="HTTPPasswordMgr" >
+        <function name="add_password" signature="add_password(realm, uri, user, passwd)" >
+          <return type="NoneType" />
+        </function>
+        <function name="find_user_password" signature="find_user_password(realm, authuri)" >
+          <return type="tuple" />
+          <sink argpos="0, 1" kind="security_decision" resource="web"/>
+        </function>
+      </class>
+
+      <class name="HTTPPasswordMgrWithDefaultRealm" supertypes="urllib.request.HTTPPasswordMgr" >
+        <function name="add_password" signature="add_password(realm, uri, user, passwd, is_authenticated=False)" >
+          <return type="NoneType" />
+          <sink argpos="0, 1, 2, 3" kind="security_decision" resource="web"/>
+        </function>
+        <function name="find_user_password" signature="find_user_password(realm, authuri)" >
+          <return type="tuple" />
+          <sink argpos="0, 1, 2, 3" kind="security_decision" resource="web"/>
+        </function>
+        <function name="update_authenticated" signature="update_authenticated(self, uri, is_authenticated=False)" >
+          <return type="NoneType" />
+          <sink argpos="0, 1" kind="security_decision" resource="web"/>
+        </function>
+        <function name="is_authenticated" signature="is_authenticated(self, authuri)" >
+          <return type="bool" />
+          <sink argpos="0, 1" kind="security_decision" resource="web"/>
+        </function>
+      </class>
+
+      <class name="HTTPPasswordMgrWithPriorAuth" supertypes="urllib.request.HTTPPasswordMgrWithDefaultRealm" />
+
+      <class name="AbstractBasicAuthHandler" >
+        <function name="http_error_auth_reqed" signature="http_error_auth_reqed(authreq, host, req, headers)" >
+          <return type="NoneType" />
+          <sink argpos="1" kind="resource_injection" resource="web" />
+        </function>
+      </class>
+
+      <class name="HTTPBasicAuthHandler" supertypes="urllib.request.AbstractBasicAuthHandler, urllib.request.BaseHandler" >
+        <function name="http_error_401" signature="http_error_401(req, fp, code, msg, hdrs)" >
+          <return type="NoneType" />
+        </function>
+      </class>
+
+      <class name="ProxyBasicAuthHandler" supertypes="urllib.request.AbstractBasicAuthHandler, urllib.request.BaseHandler" >
+        <function name="http_error_407" signature="http_error_407(req, fp, code, msg, hdrs)" >
+          <return type="NoneType" />
+        </function>
+      </class>
+
+      <class name="AbstractDigestAuthHandler" >
+        <function name="http_error_auth_reqed" signature="http_error_auth_reqed(authreq, host, req, headers)" >
+          <return type="NoneType" />
+          <sink argpos="1" kind="resource_injection" resource="web" />
+        </function>
+      </class>
+
+      <class name="HTTPDigestAuthHandler" supertypes="urllib.request.BaseHandler, urllib.request.AbstractDigestAuthHandler" >
+        <function name="http_error_401" signature="http_error_401(req, fp, code, msg, hdrs)" >
+          <return type="NoneType" />
+        </function>
+      </class>
+
+      <class name="ProxyDigestAuthHandler" supertypes="urllib.request.BaseHandler, urllib.request.AbstractDigestAuthHandler" >
+        <function name="http_error_407" signature="http_error_407(req, fp, code, msg, hdrs)" >
+          <return type="NoneType" />
+        </function>
+      </class>
+
+      <class name="HTTPHandler" supertypes="urllib.request.AbstractHTTPHandler" >
+        <function name="http_open" signature="http_open(req)" >
+          <return type="http.client.HTTPResponse" />
+        </function>
+      </class>
+
+      <class name="HTTPSHandler" supertypes="urllib.request.AbstractHTTPHandler" >
+        <function name="https_open" signature="https_open(req)" >
+          <return type="http.client.HTTPResponse" />
+        </function>
+      </class>
+
+      <class name="FileHandler" supertypes="urllib.request.BaseHandler" >
+        <function name="file_open" signature="file_open(req)" >
+          <return type="object" />
+        </function>
+      </class>
+
+      <class name="DataHandler" supertypes="urllib.request.BaseHandler" >
+        <function name="data_open" signature="data_open(req)" >
+          <return type="object" />
+        </function>
+      </class>
+
+      <class name="FTPHandler" supertypes="urllib.request.BaseHandler" >
+        <function name="ftp_open" signature="ftp_open(req)" >
+          <return type="object" />
+        </function>
+      </class>
+
+      <class name="CacheFTPHandler" supertypes="urllib.request.FTPHandler" >
+        <function name="setTimeout" signature="setTimeout(t)" >
+          <return type="NoneType" />
+        </function>
+        <function name="setMaxConns" signature="setMaxConns(m)" >
+          <return type="NoneType" />
+        </function>
+      </class>
+
+      <class name="UnknownHandler" supertypes="urllib.request.BaseHandler" >
+        <function name="unknown_open" signature="unknown_open()" >
+          <return type="http.client.HTTPResponse" />
+        </function>
+      </class>
+
+      <class name="HTTPErrorProcessor" supertypes="urllib.request.BaseHandler" >
+        <function name="http_response" signature="http_response()" >
+          <return type="http.client.HTTPResponse" />
+        </function>
+        <function name="https_response" signature="https_response()" >
+          <return type="http.client.HTTPResponse" />
+        </function>
+      </class>
+
+      <class name="URLopener" >
+        <function name="open" signature="open(fullurl, data=None)" >
+          <return type="http.client.HTTPResponse" />
+          <sink argpos="0" kind="insecure_transport" resource="web" />
+          <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        </function>
+        <function name="open_unknown" signature="open_unknown(fullurl, data=None)" >
+          <return type="http.client.HTTPResponse" />
+          <sink argpos="0" kind="insecure_transport" resource="web" />
+          <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        </function>
+        <function name="retrieve" signature="retrieve(url, filename=None, reporthook=None, data=None)" >
+          <return type="tuple" />
+          <sink argpos="0" kind="insecure_transport" resource="web" />
+          <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        </function>
+
+        <field name="version" type="str" />
+      </class>
+
+      <class name="FancyURLopener" >
+        <function name="prompt_user_passwd" signature="prompt_user_passwd(host, realm)" >
+          <return type="tuple" />
+          <sink argpos="0" kind="resource_injection" resource="web" />
+        </function>
+      </class>
+
+      <class name="addinfourl" supertypes="urllib.response.addinfo'" >
+        <function name="info" signature="info()" >
+          <return type="str" />
+        </function>
+        <function name="geturl" signature="geturl()" >
+          <return type="str" />
+        </function>
+      </class>
+
+      <class name="addinfo" />
+
+    </module>
+
+
+    <module name="error" >
+      <class name="URLError" supertypes="OSError" />
+
+      <class name="HTTPError" supertypes="urllib.error.URLError, urllib.response.addinfourl" >
+        <field name="code" type="int" />
+        <field name="reason" type="str" />
+        <field name="headers" type="str" />
+      </class>
+
+      <class name="ContentTooShortError" supertypes="URLError" />
+    </module>
+
+
+    <module name="robotparser" >
+      <class name="RobotFileParser" >
+        <function name="set_url" signature="set_url(url)" >
+          <return type="NoneType" />
+          <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+        </function>
+        <function name="read" signature="read()" >
+          <return type="NoneType" />
+        </function>
+        <function name="parse" signature="parse(lines)" >
+          <return type="NoneType" />
+        </function>
+        <function name="can_fetch" signature="can_fetch(useragent, url)" >
+          <return type="bool" />
+        </function>
+        <function name="mtime" signature="mtime())" >
+          <return type="int" />
+        </function>
+        <function name="modified" signature="modified()" >
+          <return type="object" />
+        </function>
+        <function name="crawl_delay" signature="crawl_delay(useragent)" >
+          <return type="object" />
+        </function>
+        <function name="request_rate" signature="request_rate(useragent)" >
+          <return type="object" />
+        </function>
+      </class>
+    </module>
+
+
+    <module name="parse" >
+      <function name="urlparse" signature="urlparse(urlstring, scheme='', allow_fragments=True)" >
+        <return type="urllib.parse.ParseResult" />
+      </function>
+      <function name="parse_qs" signature="parse_qs(qs, keep_blank_values=False, strict_parsing=False, encoding='utf-8', errors='replace')" >
+        <return type="dict" />
+      </function>
+      <function name="parse_qsl" signature="parse_qsl(qs, keep_blank_values=False, strict_parsing=False, encoding='utf-8', errors='replace')" >
+        <return type="list" />
+      </function>
+      <function name="urlunparse" signature="urlunparse(parts)" >
+        <return type="str" />
+      </function>
+      <function name="urlsplit" signature="urlsplit(urlstring, scheme='', allow_fragments=True)" >
+        <return type="urllib.parse.SplitResult" />
+      </function>
+      <function name="urlunsplit" signature="urlunsplit(parts)" >
+        <return type="str" />
+      </function>
+      <function name="urljoin" signature="urljoin(base, url, allow_fragments=True)" >
+        <return type="str" />
+      </function>
+      <function name="urldefrag" signature="urldefrag(url)" >
+        <return type="urllib.parse.DefragResult" />
+      </function>
+
+      <function name="quote" signature="quote(string, safe='/', encoding=None, errors=None)" >
+        <return type="str" />
+      </function>
+      <function name="quote_plus" signature="quote_plus(string, safe='', encoding=None, errors=None)" >
+        <return type="str" />
+      </function>
+      <function name="quote_from_bytes" signature="quote_from_bytes(bytes, safe='/')" >
+        <return type="str" />
+      </function>
+      <function name="unquote" signature="unquote(string, encoding='utf-8', errors='replace')" >
+        <return type="str" />
+      </function>
+      <function name="unquote_plus" signature="unquote_plus(string, encoding='utf-8', errors='replace')" >
+        <return type="str" />
+      </function>
+      <function name="unquote_to_bytes" signature="unquote_to_bytes(string)" >
+        <return type="bytes" />
+      </function>
+      <function name="urlencode" signature="urlencode(query, doseq=False, safe='', encoding=None, errors=None, quote_via=quote_plus)" >
+        <return type="str" />
+      </function>
+
+
+      <class name="SplitResult" supertypes="urllib.parse._NetlocResultMixinStr'" >
+        <function name="geturl" signature="geturl()" >
+          <return type="str" />
+        </function>
+      </class>
+
+      <class name="DefragResult" supertypes="urllib.parse._ResultMixinStr" />
+      <class name="ParseResult" supertypes="urllib.parse._NetlocResultMixinStr" />
+      <class name="SplitResult" supertypes="urllib.parse._NetlocResultMixinStr'" />
+      <class name="DefragResultBytes" supertypes="urllib.parse._ResultMixinBytes" />
+      <class name="ParseResultBytes" supertypes="urllib.parse._NetlocResultMixinBytes" />
+      <class name="SplitResultBytes" supertypes="urllib.parse._NetlocResultMixinBytes" />
+
+      <class name="_NetlocResultMixinStr" supertypes="urllib.parse._ResultMixinBytes" />
+      <class name="_ResultMixinBytes"/>
+    </module>
+  </module>
+
+  <module name="http" standard="python3">
+    <class name="http.HTTPStatus" supertypes="enum.IntEnum" />
+
+    <module name="client" >
+      <class name="HTTPConnection" >
+        <function name="request" signature="request(method, url, body=None, headers={}, *, encode_chunked=False)" >
+          <return type="http.client.HTTPConnection" />
+          <sink argpos="1" kind="http_parameter_pollution" resource="web"/>
+        </function>
+        <function name="getresponse" signature="getresponse()" >
+          <return type="http.client.HTTPResponse" />
+          <source argpos="-1" kind="user_input" resource="web" />
+        </function>
+        <function name="set_debuglevel" signature="set_debuglevel(level)" >
+          <return type="NoneType" />
+        </function>
+        <function name="set_tunnel" signature="set_tunnel(host, port=None, headers=None)" >
+          <return type="NoneType" />
+          <sink argpos="0, 1" paramNames="host, port" kind="resource_injection" resource="network" />
+        </function>
+        <function name="connect" signature="connect()" >
+          <return type="NoneType" />
+        </function>
+        <function name="close" signature="close()" >
+          <return type="NoneType" />
+        </function>
+        <function name="putrequest" signature="putrequest(method, url, skip_host=False, skip_accept_encoding=False)" >
+          <return type="NoneType" />
+          <sink argpos="1" kind="http_parameter_pollution" resource="web"/>
+        </function>
+        <function name="putheader" signature="putheader(header, argument[, ...])" >
+          <return type="NoneType" />
+        </function>
+        <function name="endheaders" signature="endheaders(message_body=None, *, encode_chunked=False)" >
+          <return type="NoneType" />
+        </function>
+        <function name="send" signature="send(data)" >
+          <return type="NoneType" />
+        </function>
+      </class>
+
+      <class name="HTTPSConnection" supertypes="http.client.HTTPConnection" />
+
+      <class name="HTTPResponse" supertypes="io.BufferedIOBase" >
+        <function name="read" signature="read([amt])" >
+          <return type="bytes" />
+          <source argpos="-1" kind="user_input" resource="web" />
+        </function>
+        <function name="readinto" signature="readinto(b)" >
+          <return type="NoneType" />
+          <source argpos="0" kind="user_input" resource="web" />
+        </function>
+        <function name="getheader" signature="getheader(name, default=None)" >
+          <return type="str" />
+          <source argpos="-1" kind="user_input" resource="web" />
+        </function>
+        <function name="getheaders" signature="getheaders()" >
+          <return type="list" />
+          <source argpos="-1" kind="user_input" resource="web" />
+        </function>
+        <function name="fileno" signature="fileno()" >
+          <return type="object" />
+          <source argpos="-1" kind="user_input" resource="web" />
+        </function>
+
+        <field name="msg" type="http.client.HTTPMessage" />
+        <field name="version" type="str" />
+        <field name="status" type="str" />
+        <field name="reason" type="str" />
+        <field name="debuglevel" type="int" />
+        <field name="closed" type="bool" />
+      </class>
+
+      <class name="HTTPMessage" supertypes="email.message.Message" />
+
+      <class name="HTTPException" supertypes="Exception" />
+      <class name="NotConnected" supertypes="http.client.HTTPException" />
+      <class name="InvalidURL" supertypes="http.client.HTTPException" />
+      <class name="UnknownProtocol" supertypes="http.client.HTTPException" />
+      <class name="UnknownTransferEncoding" supertypes="http.client.HTTPException" />
+      <class name="UnimplementedFileMode" supertypes="http.client.HTTPException" />
+      <class name="IncompleteRead" supertypes="http.client.HTTPException" />
+      <class name="ImproperConnectionState" supertypes="http.client.HTTPException" />
+      <class name="CannotSendRequest" supertypes="http.client.ImproperConnectionState" />
+      <class name="CannotSendHeader" supertypes="http.client.ImproperConnectionState" />
+      <class name="ResponseNotReady" supertypes="http.client.ImproperConnectionState" />
+      <class name="BadStatusLine" supertypes="http.client.HTTPException" />
+      <class name="LineTooLong" supertypes="http.client.HTTPException" />
+      <class name="RemoteDisconnected" supertypes="ConnectionResetError, http.client.BadStatusLine" />
+      <class name="ResponseNotReady" supertypes="http.client.ImproperConnectionState" />
+
+      <member name="HTTP_PORT" type="int" />
+      <member name="HTTPS_PORT" type="int" />
+      <member name="responses" type="dict" />
+    </module>
+  </module>
+
+  <module name="cgi" standard="python3">
+    <class name="FieldStorage">
+      <constructor name="FieldStorage" signature="FieldStorage()" match="name" />
+
+      <field name="*" type="cgi.FieldStorage" >
+        <source argpos="-1" kind="user_input"/>
+      </field>
+      <field name="value" type="str" >
+        <source argpos="-1" kind="user_input"/>
+      </field>
+
+      <method name="getValue" signature="getValue()" >
+        <return type="str" />
+        <source argpos="-1" kind="user_input"/>
+      </method>
+      <method name="getlist" signature="getlist(name)" >
+        <return type="list" />
+        <source argpos="-1" kind="user_input"/>
+      </method>
+      <method name="getfirst" signature="(name[, default])" >
+        <return type="str" />
+        <source argpos="-1" kind="user_input"/>
+      </method>
+    </class>
+    <function name="parse" signature="parse(fp=None, environ=os.environ, keep_blank_values=False, strict_parsing=False)"/>
+    <function name="parse_qs" signature="parse_qs(qs, keep_blank_values=False, strict_parsing=False)"/>
+    <function name="parse_qsl" signature="parse_qsl(qs, keep_blank_values=False, strict_parsing=False)"/>
+    <function name="parse_multipart" signature="parse_multipart(fp, pdict)"/>
+    <function name="parse_header" signature="parse_header(string)"/>
+    <function name="test" signature="test()" />
+    <function name="print_environ" signature="print_environ()"/>
+    <function name="print_form" signature="print_form(form)"/>
+    <function name="print_directory()" signature="print_directory()"/>
+    <function name="print_environ_usage" signature="print_environ_usage()"/>
+    <function name="escape" signature="escape(s, quote=False)">
+      <return type="str"/>
+      <neutralization argpos="0" kind="string" />
+    </function>
+  </module>
+
+  <module name="smtplib" standard="python3">
+    <class name="SMTP" >
+      <constructor name="SMTP" signature="SMTP([host[, port[, local_hostname[, timeout]]]])" >
+        <sink argpos="0" kind="server_insecure_transport" />
+        <sink argpos="0,1" kind="ssrf" />
+       </constructor>
+      <function name="connect" signature="connect(host='localhost', port=0)" >
+        <return type="tuple" />
+        <sink argpos="0, 1" paramNames="host, port" kind="resource_injection" resource="network" />
+      </function>
+      <function name="login" signature="login(user, password, *, initial_response_ok=True)" >
+        <return type="bool" />
+      </function>
+      <function name="sendmail" signature="sendmail(from_addr, to_addrs, msg, mail_options=[], rcpt_options=[])" >
+        <return type="bool" />
+        <sink argpos="0,1,2,3,4,5" kind="header_manipulation" resource="web" />
+        <sink argpos="2" kind="mail_command_injection" resource="os" />
+      </function>
+       <function name="auth" signature="auth(mechanism, authobject, *, initial_response_ok=True)" >
+        <return type="bool" />
+         <sink argpos="0, 1, 2, 3" kind="security_decision" resource="web"/>
+      </function>
+      <function name="send_message" signature="send_message(msg, from_addr=None, to_addrs=None, mail_options=[], rcpt_options=[])" >
+        <return type="bool" />
+        <sink argpos="0,1,2,3,4,5" kind="header_manipulation" resource="web" />
+      </function>
+      <function name="docmd" signature="docmd(cmd[, argstring])" >
+        <sink argpos="0" kind="command_injection" resource="os" />
+      </function>
+    </class>
+
+    <class name="SMTP__SSL" supertypes="smtplib.SMTP" />
+    <class name="LMTP" supertypes="smtplib.SMTP" >
+      <constructor name="LMTP" signature="LMTP([host[, port[, local_hostname]]])" >
+        <sink argpos="0" kind="server_insecure_transport" />
+        <sink argpos="0,1" kind="ssrf" />
+      </constructor>
+    </class>
+  </module>
+
+  <module name="BaseHTTPServer" standard="python3">
+    <class name="HTTPServer" supertypes="SocketServer.TCPServer" >
+      <constructor name="HTTPServer" signature="HTTPServer(server_address, RequestHandlerClass)" >
+        <sink argpos="0" kind="server_insecure_transport" resource="web" />
+        <sink argpos="0" kind="ssrf" resource="web" />
+      </constructor>
+    </class>
+    <class name="BaseHTTPRequestHandler" supertypes="SocketServer.TCPServer" >
+      <field name="client_address" type="builtins.tuple" />
+      <field name="server" type="BaseHTTPServer.HTTPServer" />
+      <field name="path" type="builtins.string" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="headers" type="builtins.dict" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="rfile" type="builtins.file" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="wfile" type="BaseHTTPServer.wfile" />
+
+      <constructor name="BaseHTTPRequestHandler" signature="BaseHTTPRequestHandler(request, client_address, server)" >
+        <sink argpos="0" kind="server_insecure_transport" resource="web" />
+        <sink argpos="1" kind="ssrf" resource="web" />
+      </constructor>
+
+      <method name="send_response" signature="send_response(code[,message])" >
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+      <method name="send_header" signature="send_header(keyword, value)" >
+        <tags>open_redirect: 0</tags>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+    </class>
+
+    <class name="wfile" supertypes="io.BufferedIOBase" >
+      <method name="write" signature="write(str)" match="name" >
+        <return type="NoneType" />
+        <sink argpos="0" kind="xss" resource="web" />
+      </method>
+    </class>
+  </module>
+
+  <module name="CGIHTTPServer" standard="python3">
+    <class name="CGIHTTPServer" supertypes="SimpleHTTPServer.SimpleHTTPRequestHandler" >
+      <constructor name="CGIHTTPRequestHandler" signature="CGIHTTPRequestHandler(request, client_address, server)" >
+        <sink argpos="0" kind="server_insecure_transport" resource="web" />
+        <sink argpos="1" kind="ssrf" resource="web" />
+      </constructor>
+    </class>
+  </module>
+
+  <module name="SimpleHTTPServer" standard="python3">
+    <class name="SimpleHTTPRequestHandler" supertypes="BaseHTTPServer.BaseHTTPRequestHandler" >
+      <constructor name="SimpleHTTPRequestHandler" signature="SimpleHTTPRequestHandler(request, client_address, server)" >
+        <sink argpos="0" kind="server_insecure_transport" resource="web" />
+      </constructor>
+    </class>
+  </module>
+
+  <module name="SocketServer" standard="python3">
+    <class name="TCPServer">
+      <constructor name="TCPServer" signature="TCPServer(server_address, RequestHandlerClass, bind_and_activate=True)" >
+        <sink argpos="0" kind="server_insecure_transport" resource="web" />
+        <sink argpos="0" kind="ssrf" resource="web" />
+      </constructor>
+    </class>
+    <class name="UDPServer">
+      <constructor name="UDPServer" signature="UDPServer(server_address, RequestHandlerClass, bind_and_activate=True)" >
+        <sink argpos="0" kind="server_insecure_transport" resource="web" />
+        <sink argpos="0" kind="ssrf" resource="web" />
+      </constructor>
+    </class>
+    <class name="BaseServer">
+      <constructor name="BaseServer" signature="BaseServer(server_address, RequestHandlerClass)" >
+        <sink argpos="0" kind="server_insecure_transport" resource="web" />
+        <sink argpos="0" kind="ssrf" resource="web" />
+      </constructor>
+    </class>
+    <class name="UnixStreamServer">
+      <constructor name="UnixStreamServer" signature="UnixStreamServer(server_address, RequestHandlerClass, bind_and_activate=True)">
+        <sink argpos="0" kind="ssrf" resource="web" />
+      </constructor>
+    </class>
+    <class name="UnixDatagramServer">
+      <constructor name="UnixDatagramServer" signature="UnixDatagramServer(server_address, RequestHandlerClass, bind_and_activate=True)">
+        <sink argpos="0" kind="ssrf" resource="web" />
+      </constructor>
+    </class>
+  </module>
+
+  <module name="ftplib" >
+    <class name="FTP" >
+      <constructor name="FTP" signature="FTP(host, user, passwd, acct, timeout=None, source_address=None, *, enconding='utf-8')" match="name" >
+        <tags>username:1, password:2</tags>
+        <sink argpos="0" paramNames="host" kind="insecure_transport" resource="network" >
+          <tags>insecure:ftp</tags>
+        </sink>
+      </constructor>
+    </class>
+    <class name="FTP_TLS" >
+      <constructor name="FTP" signature="FTP(host, user, passwd, acct, timeout=None, source_address=None, *, enconding='utf-8')" match="name" >
+        <tags>username:1, password:2</tags>
+      </constructor>
+    </class>
+  </module>
+
+</library>

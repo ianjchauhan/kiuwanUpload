@@ -1,0 +1,839 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric"
+    version="1.1">
+
+  <metric id="OPT.fanin" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COUPLING" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.LOWER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.NAMESPACE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="20.00" meaning="good" />
+        <threshold from="20.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET">
+        <internal-name id="OPT.ASPNET.COUPLING.COUPLING" />
+        <java-class>com.optimyth.aspnet.metrics.FaninFanoutMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <internal-name id="OPT.CPP.COUPLING.FINF" />
+        <java-class>com.als.cpp.metrics.FanInCppMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+
+      </language-parser>
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.COUPLING.FINF" />
+        <java-class>com.optimyth.csharp.metrics.FanInCsharpMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.COUPLING.FINF" />
+        <java-class>com.als.java.metrics.FanInJavaMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL">
+        <internal-name id="OPT.NATURAL.COUPLING.COUPLING" />
+        <java-class>com.optimyth.qaking.natural.metrics.CouplingMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <internal-name id="OPT.OBJECTIVEC.COUPLING.FINF" />
+        <java-class>com.optimyth.qaking.objectivec.metrics.FanInObjectiveCMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <internal-name id="OPT.PHP.COUPLING.FINF" />
+        <java-class>com.optimyth.qaking.php.metrics.FanInMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.COUPLING.FINF" />
+        <java-class>com.optimyth.vbnet.metrics.FanInVBnetMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+      <!-- Code examples for each language parser -->
+    <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET">
+        <code-example name="metricCodeExampleAspnet" result-value="1">
+<![CDATA[
+'File in which the call is done to other one
+<%@ Control Language="C#" AutoEventWireup="true" CodeFile="cnt_cabecera.ascx.cs" Inherits="Controls_cnt_cabecera" %>   'CALL FAN IN 1
+<script type="text/javascript" src="../Resources/Scripts/JScript.js"></script>
+<table style="width:760px">
+     <tr>
+        <td align="left" style="width: 90%">
+            <img id="ImgLogo" alt="imagen" src="../Resources/img/t_bfax.jpg" />&nbsp;
+            <asp:Label ID="LbTituloPagina" runat="server" CssClass="titulo" Text="Burofax"></asp:Label></td>
+        <td align="right" style="width:10%">
+            <asp:Button ID="BtnCerrar" runat="server" Text="Cerrar" CssClass="boton" OnClientClick="javascript:top.cierrasesion()" /></td>
+        </tr>
+</table>
+'File cnt_cabecera.ascx.cs
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+
+public partial class Controls_cnt_cabecera : System.Web.UI.UserControl
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+}
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+        <code-example name="metricCodeExampleCpp" result-value="2">
+<![CDATA[
+//FILE: EntityManager.cpp
+
+#include "EntityManager.h"
+#include "EntitySystem.h"
+#include "SystemManager.h"
+#include "BitSize.h"
+#include "World.h"
+#include "Component.h"
+#include "Entity.h"
+
+namespace artemis {
+  EntityManager::EntityManager(World& world) : componentsByType(64) {
+    this->world = &world;
+
+    nextAvailableId = 0;
+    count = 0;
+    uniqueEntityId = 0;
+    totalCreated = 0;
+    totalRemoved = 0;
+  };
+
+  void EntityManager::addComponent(Entity &e, Component * c) {
+    ComponentType type = ComponentTypeManager::getTypeFor(typeid(*c));
+
+    if(type.getId() >= componentsByType.getCapacity()) {
+      componentsByType.set(type.getId(), NULL);
+    }
+
+  };
+}
+
+
+//FILE: ComponentType.c
+
+#include <bitset>
+#include "BitSize.h"
+
+namespace artemis {
+	class ComponentType {
+
+  public:
+    ComponentType(){};
+    std::bitset<BITSIZE> getBit() {return var;};
+    int getId() {return var;};
+    static void reset() {};
+
+  private:
+    static std::bitset<BITSIZE> nextBit;
+    static int nextId;
+    std::bitset<BITSIZE> bit;
+    int id;
+    void init() {};
+
+
+	};
+}
+
+
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="metricCodeExampleCsharp" result-value="1">
+<![CDATA[
+//FILE: AddTree.cs
+using System;
+using System.Collections;
+using Deepcode.DataTax;
+
+namespace Deepcode.Extensions
+{
+	public class AddTree
+	{
+		private AddTree [] GetSubnodesArray()
+		{
+			DataTaxonomyTree tree = new DataTaxonomyTree();
+			tree.GetPath("paths");
+			AddinTreeNode node = this;
+			int index = node.Children.Count;
+			AddinTreeNode[] sortedNodes = new AddinTreeNode[index];
+			Hashtable  visited   = new Hashtable(index);
+			Hashtable  ancestor = new Hashtable(index);
+
+			return sortedNodes;
+		}
+	}
+}
+
+//FILE: DataTaxonomyTree.cs
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Data;
+using System.Data.SqlClient;
+
+namespace Deepcode.DataTax
+{
+	public class DataTaxonomyTree : Deepcode.Flux.Core.Data.BaseManager
+	{
+		#region Constructors
+		public DataTaxonomyTree() : base() { }
+		public DataTaxonomyTree(SqlConnection CurrentConnection) : base(CurrentConnection) { }
+		public DataTaxonomyTree(SqlConnection CurrentConnection, SqlTransaction CurrentTransaction) : base(CurrentConnection, CurrentTransaction) { }
+		#endregion
+
+		public DataTaxonomyNode GetPath(string path)
+		{
+			// Process the path - change backslash to forward slash
+			string Path2 = path.Replace('\\', '/');
+			// Split the path on it's elements
+			string [] Elements = Path2.Split('/');
+
+			// Start searching at the root
+			int CurrentParentID = -1;
+			DataTaxonomyNode CurrentNode = null;
+
+
+			// Return the last successful result
+			return CurrentNode;
+		}
+	}
+}
+]]>
+        </code-example>
+      </language-parser>
+
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="metricCodeExampleJava" result-value="2">
+<![CDATA[
+//FILE: FanInJava2.java
+
+package com.opt.fanin2;
+
+import com.opt.fanin.FanInJava1;
+
+public class FanInJava2{
+	int j;
+	int i;
+
+	FanInJava2(){
+		FanInJava1 f1 = new FanInJava1();
+		i=f1.geti();
+		j = FanInJava1.suma(i,j);
+	}
+}
+
+
+//FILE: FanInJava1.java
+
+package com.opt.fanin;
+
+public class FanInJava1{
+	int j;
+	int i;
+
+	FanInJava1(){
+		i=0;
+		j=0;
+	}
+
+	public int geti(){
+		return i;
+	}
+
+	public int getj(){
+		return j;
+	}
+
+	public void seti(int i){
+		this.i = i;
+	}
+
+	public void setj(int j){
+		this.j = j;
+	}
+
+	public static int suma(int i, int j){
+		return i+j;
+	}
+
+}
+]]>
+        </code-example>
+      </language-parser>
+
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL">
+        <code-example name="metricCodeExampleNatural" result-value="1">
+<![CDATA[
+     *file IC19530N.NLP
+0340 *
+0350 DEFINE DATA LOCAL
+0360 *
+0370 1 PMTRO-IC19530N
+0380   2 P-COD-PROVINCI                  (N2)
+0390   2 P-NUM-RESOLUCION                (N11)
+0400   2 P-REG-SICOSS                    (N12)
+0410   2 P-FEC-VALINTER                  (N8)
+0420   2 P-DEL-BAJA                      (A40)
+0430   2 P-COD-USUARIO                   (A8)
+0440   2 P-COD-PROGRAMA                  (A8)
+0450   2 P-COD-RETORNO                   (N4)
+0460 END-DEFINE
+0470 *
+0480 INPUT P-COD-PROVINCI
+0490 INPUT P-NUM-RESOLUCION
+0500 INPUT P-REG-SICOSS
+0510 INPUT P-FEC-VALINTER
+0520 INPUT P-DEL-BAJA
+0530 INPUT P-COD-USUARIO
+0540 *
+0550 MOVE *PROGRAM TO P-COD-PROGRAMA
+0560 *
+0570 CALLNAT 'IC19530N' PMTRO-IC19530N           FAN IN 1
+0580 *
+0590 END
+     *file   IC19530N.NLP
+0350 DEFINE DATA PARAMETER
+0360 *
+0370 1 PMTRO-REGISTRO
+0380   2 P-COD-PROVINCI                  (N2)
+0390   2 P-NUM-RESOLUCION                (N11)
+0400   2 P-REG-SICOSS                    (N12)
+0410   2 P-FEC-VALINTER                  (N8)
+0420   2 P-DEL-BAJA                      (A40)
+0430   2 P-COD-USUARIO                   (A8)
+0440   2 P-COD-PROGRAMA                  (A8)
+0450   2 P-COD-RETORNO                   (N4)
+0460 *
+0470 LOCAL  USING ZZB3145L
+0480 *
+0490 LOCAL
+0500 1 ICUBMDAT-VIEW VIEW OF ICUBMDAT
+0510   2 BM-COD-TIPOREG
+0520   2 BM-COD-PROVINCI
+0530   2 BM-NUM-INVENTA
+0540   2 BM-DEL-OBSBAJA
+0550   2 REDEFINE BM-DEL-OBSBAJA
+0560     3 BM-INVEN-OBSBAJA              (A40)
+0570     3 BM-INTER-OBSBAJA              (A40)
+0580   2 BM-NUM-REGSICOSS
+0590   2 BM-FEC-BAJAINT
+0600   2 BM-FEC-VALINTER
+0610   2 BM-IMP-VALAQIVA
+0620   2 BM-NUM-ORDEN-SEC
+0630   2 BM-IMP-AMORACU
+0640   2 BM-OTR-USUARIO
+0650   2 BM-FEC-MVTO
+0660   2 BM-COD-ESTAOBJ
+0670 *
+0680 1 ICUBMBAJ VIEW OF ICUBMBAJ
+0690   2 BA-COD-ESTADO
+0700   2 BA-COD-TIPBAJA
+0710   2 BA-DEL-OBSBAJA
+0720   2 REDEFINE BA-DEL-OBSBAJA
+0730     3 BA-DEL-OBSINV                 (A40)
+0740     3 BA-DEL-OBSINT                 (A40)
+0750   2 BA-IMP-TOTAMOR
+0760   2 BA-IMP-AMORCAL
+0770   2 BA-COD-USUMOD
+0780   2 BA-FEH-TIMESTMP
+0790   2 BA-COD-PRGMOD
+0800   2 BA-IND-BLOQUEO
+0810 *
+0820 1 PMTRO-IC00007N
+0830   2 P-TIP-PETICION                (A1)
+0840   2 P-COD-PROVIN                  (N2)
+0850   2 P-NUM-INVENTA                 (N7)
+0860   2 PS-IMP-CUOTA-EJER             (P13,2)
+0870   2 PS-IMP-CUOTA-BAJA             (P13,2)
+0880   2 PS-RETORNO                    (N1)
+0890 *
+0900 1 W-CONTA-ET                      (N2)
+0910 1 W-TIP-BAJA                      (A1)
+0920 1 W-DEL-OBSINV                    (A40)
+0930 1 W-ISN-BAJA                      (P10)
+0940 1 SW-SALIR                        (L)
+0950 *
+0960 1 SD-RESOLUCION                   (A21)
+0970 1 REDEFINE SD-RESOLUCION
+0980   2 SD-REG-RESOLUCION             (A1)
+0990   2 SD-PROV-RESOLUCION            (N2)
+1000   2 SD-SEC-RESOLUCION             (N11)
+1010   2 SD-INVEN-RESOLUCION           (N7)
+1020 *
+1030 1 W-BA-SPD-RESOLU                 (B13)
+1040 1 REDEFINE W-BA-SPD-RESOLU
+1050   2 W-BA-COD-PROVINCI             (N2)
+1060   2 W-BA-NUM-PROPUESTA            (N11)
+1070 *
+1080 END-DEFINE
+1090 *
+1100 INCLUDE ZZB3145C
+1110 *
+1120 MOVE 2910 TO P-COD-RETORNO /* ACCION NO REALIZADA
+1130 *
+1140 PERFORM ACCESO-RESOLUCION
+1150 *
+1160 PERFORM ACTUALIZAR-BBMM
+1170 IF SW-SALIR /** EN CASO DE ERROR
+1180   ESCAPE ROUTINE
+1190 END-IF
+1200 *
+1210 PERFORM ACTUALIZAR-RESOLUCION
+1220 *
+1230 END TRANSACTION
+1240 *
+1250 MOVE 2909 TO P-COD-RETORNO /* ACCION REALIZADA
+1260 *
+1270 **
+1280 DEFINE SUBROUTINE ACCESO-RESOLUCION
+1290 **
+1300 *
+1310 RESET W-TIP-BAJA W-DEL-OBSINV W-ISN-BAJA
+1320 *
+1330 MOVE P-COD-PROVINCI    TO  W-BA-COD-PROVINCI
+1340 MOVE P-NUM-RESOLUCION  TO  W-BA-NUM-PROPUESTA
+1350 *
+1360 FIND ICUBMBAJ WITH BA-SPD-RESOLU EQ W-BA-SPD-RESOLU
+1370   MOVE BA-COD-TIPBAJA TO W-TIP-BAJA
+1380   MOVE BA-DEL-OBSINV  TO W-DEL-OBSINV
+1390   MOVE *ISN           TO W-ISN-BAJA
+1400 END-FIND
+1410 *
+1420 END-SUBROUTINE /* ACCESO-RESOLUCION
+1430 *
+1440 **
+1450 DEFINE SUBROUTINE ACTUALIZAR-BBMM
+1460 **
+1470 *
+1480 RESET SD-RESOLUCION
+1490 MOVE '0'               TO  SD-REG-RESOLUCION
+1500 MOVE P-COD-PROVINCI    TO  SD-PROV-RESOLUCION
+1510 MOVE P-NUM-RESOLUCION  TO  SD-SEC-RESOLUCION
+1520 *
+1530 RESET W-CONTA-ET SW-SALIR
+1540 R1. READ ICUBMDAT-VIEW BY BM-SPD-RESOLUCION EQ SD-RESOLUCION
+1550 *
+1560   IF  BM-COD-TIPOREG   NE SD-REG-RESOLUCION   OR
+1570       BM-COD-PROVINCI  NE SD-PROV-RESOLUCION  OR
+1580       BM-NUM-ORDEN-SEC NE SD-SEC-RESOLUCION
+1590     ESCAPE BOTTOM
+1600   END-IF
+1610 *
+1620   MOVE P-REG-SICOSS    TO BM-NUM-REGSICOSS
+1630   MOVE P-FEC-VALINTER  TO BM-FEC-BAJAINT BM-FEC-VALINTER
+1640 *
+1650   MOVE W-TIP-BAJA      TO BM-COD-ESTAOBJ
+1660   MOVE W-DEL-OBSINV    TO BM-INVEN-OBSBAJA
+1670 *
+1680   IF P-DEL-BAJA  NE ' '
+1690     MOVE P-DEL-BAJA    TO BM-INTER-OBSBAJA
+1700   END-IF
+1710 *
+1720   MOVE P-COD-USUARIO   TO BM-OTR-USUARIO
+1730   MOVE *DATN           TO BM-FEC-MVTO
+1740   ADD 1 TO W-CONTA-ET
+1750   UPDATE(R1.)
+1760 *
+1770   IF BM-IMP-AMORACU NE BM-IMP-VALAQIVA
+1780     RESET PMTRO-IC00007N
+1790     MOVE 'M'             TO P-TIP-PETICION
+1800     MOVE BM-COD-PROVINCI TO P-COD-PROVIN
+1810     MOVE BM-NUM-INVENTA  TO P-NUM-INVENTA
+1820     ADD 1 TO W-CONTA-ET
+1830     CALLNAT 'IC00007N' PMTRO-IC00007N
+1840     IF PMTRO-IC00007N.PS-RETORNO NE 0
+1850       MOVE TRUE TO SW-SALIR
+1860       BACKOUT TRANSACTION
+1870       ESCAPE ROUTINE
+1880     END-IF
+1890   END-IF
+1900   IF W-CONTA-ET > 50
+1910     RESET W-CONTA-ET
+1920     END TRANSACTION
+1930   END-IF
+1940 END-READ
+1950 *
+1960 END-SUBROUTINE /* ACTUALIZAR-BBMM
+1970 *
+1980 *
+1990 **
+2000 DEFINE SUBROUTINE ACTUALIZAR-RESOLUCION
+2010 **
+2020 *
+2030 BAJ. GET ICUBMBAJ W-ISN-BAJA
+2040 BA-COD-ESTADO     :=  '40'
+2050 IF P-DEL-BAJA  NE ' '
+2060   MOVE P-DEL-BAJA   TO BA-DEL-OBSINT
+2070 END-IF
+2080 *
+2090 BA-IMP-TOTAMOR     := BA-IMP-TOTAMOR + BA-IMP-AMORCAL
+2100 BA-COD-USUMOD     :=  P-COD-USUARIO
+2110 BA-FEH-TIMESTMP   :=  *TIMX
+2120 BA-COD-PRGMOD     :=  P-COD-PROGRAMA
+2130 RESET BA-IND-BLOQUEO
+2140 UPDATE (BAJ.)
+2150 *
+2160 ADD 1 TO W-CONTA-ET
+2170 *
+2180 END-SUBROUTINE /* ACTUALIZAR-RESOLUCION
+2190 *
+2200 END
+
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+        <code-example name="metricCodeExampleObjectiveC" result-value="1"><![CDATA[
+// File MyClass.m
+#import "MYClass.h"
+
+@implementation MYClass
+
+- (RETurn1)initWithDataProvider:(MYDataProvider *)provider {
+  self = [super init];
+  if (self) {
+    // ...
+  }
+  return self;
+}
+
+@end
+
+// File RETurn1.h
+@interface RETurn1
+
+  NSObject *_privateObject;
+
+@end
+        ]]></code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+        <code-example name="metricCodeExamplePhp" result-value="1">
+<![CDATA[
+//FILE: FanInPhp3.php
+<?php
+
+abstract class FanInClass3
+{
+
+    public function runJob(FanInClass2 $var , FanInClass1 $result)
+    {
+        $var->runJob(this,$result);
+
+        if ($result !== NULL) {
+            $result->startTest($test);
+        }
+    }
+}
+
+//FILE: FanInPhp1.php
+<?php
+
+abstract class FanInClass1
+{
+
+    public function startTest(FanInClass2 $var)
+    {
+        $var->runJob(this,$result);
+
+        $this->process($pipes[0], $job);
+        fclose($pipes[0]);
+
+
+    }
+}
+
+]]>
+        </code-example>
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="metricCodeExampleVbnet" result-value="1"><![CDATA[
+'FILE: file1.vb
+Imports Pac.P.Paquete2
+
+Namespace Pac.P.Paquete1
+
+	Class MyClassOne
+
+		Private Const PREDICATE_NODE As New NodePredicate()
+
+		 Public Sub Method1()
+			 Dim mc2 As New MyClassTwo();
+			 mc2.doSomething();
+			 doSomething()
+		 End Sub
+
+		 Public Function method2() As Integer
+				doSomething()
+		 End Function
+
+		 Public i As Integer
+
+		 Private Class innerClass
+
+		   Public Sub method()
+				doSomething()
+		   End Sub
+
+		   Function method2() As Boolean
+				Dim predicate As New NodePredicate()
+		   End Function
+		 End Class
+
+	End Class
+
+End Namespace
+
+'FILE: file2.vb
+
+Namespace Pac.P.Paquete2
+
+	Class MyClassTwo
+
+		Private Const PREDICATE_NODE As New NodePredicate()
+
+		 Public Sub Method1()
+			 doSomething()
+		 End Sub
+
+		 Public Function method2() As Integer
+				doSomething()
+		 End Function
+
+		 Public i As Integer
+
+		 Private Class innerClass
+
+		   Public Sub method()
+				doSomething()
+		   End Sub
+
+		   Function method2() As Boolean
+				Dim predicate As New NodePredicate()
+		   End Function
+		 End Class
+
+	End Class
+
+End Namespace
+        ]]></code-example>
+      </language-parser>
+
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Fan-In]]></name>
+
+      <description>
+<![CDATA[
+Los valores de fan-in y fan-out estructural miden las relaciones entre ficheros y entre funciones/procedimientos. Es una medida de la complejidad de la estructura estática del código (en tiempo de diseño).
+
+Un fichero depende de otro si lo requiere para poder compilar o ejecutarse. Puede que llame a funciones/procedimientos en otro fichero, lea/escriba sus variables, acceda a sus constantes, o use su clase, interfaz, UDT o declaraciones de enumeraciones (esto depende de la implementación de cada lenguajes en particular). En nuestro caso, fan-in mide las llamadas entrantes a la función/procedimiento desde otras funciones/procedimientos externos.
+
+Un fan-in elevado indica que el procedimiento está siendo muy usado, mientras que un fan-in bajo significa todo lo contrario. Que un elemento tenga un fan-in igual a 0 indica que, aparentemente, no se está utilizando en el sistema, pero antes de considerarlo "código muerto" hay que descartar otros usos potenciales (como ejecución "dinámica" ejecutada por reflexión, o uso por sistemas externos en el caso de librerías). Otros casos normales son los puntos de entrada de sistema, que también tendrán fan-in igual a 0 ya que en el sistema analizado nadie los invoca.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+      <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET">
+<![CDATA[
+Mide el número de llamadas realizadas en los ficheros del sistema analizado a cada programa (fichero). Las llamadas se realizan utilizando etiquetas que incluyan ficheros .ascx (<%@ Control Language="C#" AutoEventWireup="true" CodeFile="cnt_cabecera.ascx.cs" Inherits="Controls_cnt_cabecera" %>)
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+Mide el número de llamadas realizadas en los ficheros del sistema analizado a cada programa (fichero).
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+Mide el número de llamadas realizadas en los ficheros del sistema analizado a cada programa (fichero).
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+Mide el número de llamadas realizadas en los ficheros del sistema analizado a cada programa (fichero).
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL">
+<![CDATA[
+Mide el número de llamadas realizadas en los ficheros del sistema analizado a cada programa (fichero). Las llamadas se realizan utilizando el comando CALLNAT e indicando en los parámetros el fichero al que se hace referencia.
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+<![CDATA[
+Mide el número de llamadas realizadas en los ficheros del sistema analizado a cada programa (fichero).
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+Mide el número de llamadas realizadas en los ficheros del sistema analizado a cada programa (fichero).
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+Mide el número de llamadas realizadas en los ficheros del sistema analizado a cada programa (fichero).
+]]>
+        </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[Fan-In]]></name>
+
+      <description>
+<![CDATA[
+Structural fan-in and fan-out values measure the relationships between files and between functions/procedures. They measure the complexity of the static (design-time) structure of code.
+
+A file depends on another file if it requires the other file to compile or run. It may call functions/procedures in other file, read/write its variables, access its constants, or use its class, interface, UDT or enum declarations (this depends on the particular implementation language). Fan-in measures, in this case, incoming calls to the target function/procedure from external functions/procedures.
+
+A high fan-in indicates a heavily used procedure, while a low fan-in is the opposite. An element with fan-in=0 indicates no apparent reuse of the element in the system, but before considering it as "dead code", other potential usages ("dynamic" execution by reflection, usage in event callbacks, usage by external systems in the case of libraries) should be discarded. In other cases, system entry-points have low or zero fan-in, as no one calls them in the analyzed system. This is normal.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ASPNET">
+<![CDATA[
+It measures the number of calls realized in the files of the system analyzed to every program (file). The calls are realized using tags that include files .ascx (<%@ Control Language="C#" AutoEventWireup="true" CodeFile="cnt_cabecera.ascx.cs" Inherits="Controls_cnt_cabecera" %>)
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CPP">
+<![CDATA[
+It measures the number of calls realized in the files of the system analyzed to every program (file).
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+<![CDATA[
+It measures the number of calls realized in the files of the system analyzed to every program (file).
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+<![CDATA[
+It measures the number of calls realized in the files of the system analyzed to every program (file).
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.NATURAL">
+<![CDATA[
+It measures the number of calls realized in the files of the system analyzed to every program (file). The calls are realized using the command CALLNAT and indicating in the parameters the file to which one refers
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.OBJECTIVEC">
+<![CDATA[
+It measures the number of calls realized in the files of the system analyzed to every program (file).
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.PHP">
+<![CDATA[
+It measures the number of calls realized in the files of the system analyzed to every program (file).
+]]>
+        </implementation-description>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+<![CDATA[
+It measures the number of calls realized in the files of the system analyzed to every program (file).
+]]>
+        </implementation-description>
+
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

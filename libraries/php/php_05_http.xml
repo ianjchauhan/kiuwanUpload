@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="php_crypto" technology="php">
+  <description url="https://php.uz/manual/en/book.http.php">PHP HTTP Extension</description>
+
+  <function name="http_redirect" signature="http_redirect(string $url, array $params, bool $session = false, int $status = 0)">
+    <return type="bool"/>
+    <sink kind="open_redirect" argpos="0" neutralizer="open_redirect" resource="web"/>
+    <sink kind="execution_after_redirect" argpos="0" resource="web"/>
+  </function>
+
+  <function name="http_build_cookie" signature="http_build_cookie(array $cookie)">
+    <return type="string"/>
+  </function>
+  <function name="http_parse_cookie" signature="http_parse_cookie(string $cookie, int $flags, array $allowed_extras)">
+    <return type="object"/>
+    <propagate from="0" to="-1"/>
+  </function>
+
+  <function name="http_build_url" signature="http_build_url(string $url, mixed $parts, int $flags, array &amp;$new_url)">
+    <return type="string"/>
+    <propagate from="0,1" to="-1"/>
+  </function>
+
+  <function name="http_request" signature="http_request(int $method, string $url, string $body, array $options, array &amp;$info)">
+    <tags>http.method:0, url:1</tags>
+    <source argpos="-1" kind="network_input" resource="web"/>
+  </function>
+  <function name="http_get" signature="http_get(string $url, array $options, array &amp;$info)">
+    <tags>http.method:GET, url:0</tags>
+    <return type="string"/>
+    <source argpos="-1" kind="network_input" resource="web"/>
+    <sink kind="ssrf" argpos="0"/>
+  </function>
+  <function name="http_head" signature="http_get(string $url, array $options, array &amp;$info)">
+    <tags>http.method:HEAD, url:0</tags>
+    <return type="string"/>
+    <source argpos="-1" kind="network_input" resource="web"/>
+    <sink kind="ssrf" argpos="0"/>
+  </function>
+  <function name="http_post_data" signature="http_post_data(string $url, string $data, array $options, array &amp;$info)" alias="http_post_fields">
+    <tags>http.method:POST, url:0</tags>
+    <return type="string"/>
+    <source argpos="-1" kind="network_input" resource="web"/>
+    <sink kind="ssrf" argpos="0"/>
+  </function>
+  <function name="http_put_data" signature="http_post_data(string $url, string $data, array $options, array &amp;$info)" alias="http_put_file, http_put_stream">
+    <tags>http.method:PUT, url:0</tags>
+    <return type="string"/>
+    <source argpos="-1" kind="network_input" resource="web"/>
+    <sink kind="ssrf" argpos="0"/>
+  </function>
+
+  <function name="http_send_data" signature="http_send_data(string $data)">
+    <!-- Could be if content-type were html... The payload effect depends on how the browser will process data -->
+    <!--sink kind="xss" argpos="0" paramNames="data" resource="web"/-->
+  </function>
+  <function name="http_send_stream" signature="http_send_stream(resource $stream)">
+    <!-- Could be if content-type were html... The payload effect depends on how the browser will process data -->
+    <!--sink kind="xss" argpos="0" paramNames="stream" resource="web"/-->
+  </function>
+
+  <function name="http_parse_message" signature="http_parse_message(string $message)">
+    <return type="object"/>
+  </function>
+  <function name="http_parse_headers" signature="http_parse_headers(string $header)">
+    <return type="array"/>
+  </function>
+  <function name="http_parse_message" signature="http_parse_message(string $message)">
+    <return type="object"/>
+  </function>
+
+
+  <function name="http_get_request_body_stream">
+    <return type="resource"/>
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </function>
+  <function name="http_get_request_body">
+    <return type="string"/>
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </function>
+  <function name="http_get_request_headers">
+    <return type="array"/>
+    <source argpos="-1" kind="user_input" resource="web"/>
+  </function>
+
+  <module name="pecl_http.v1">
+    <description>pecl_http v1 API</description>
+
+    <class name="HttpMessage">
+      <constructor name="HttpMessage" signature="HttpMessage(string $message)"></constructor>
+      <method name="factory" signature="factory(string $raw_message, string $class_name)" instance="false" alias="fromString"/>
+      <method name="getHeaders" signature="getHeaders()"><return type="array"/></method>
+      <method name="getBody" signature="getBody()"><return type="string"/></method>
+    </class>
+
+    <class name="HttpRequest" supertypes="HttpMessage">
+      <constructor name="HttpRequest" signature="HttpRequest(string $url, int $request_method = HTTP_METH_GET, array $options)">
+        <sink kind="ssrf" argpos="0"/>
+        <sink kind="resource_injection" argpos="1" resource="web"/>
+      </constructor>
+      <method name="addCookies" signature="addCookies(array $cookies)"></method>
+      <method name="setUrl" signature="setUrl(string $url)"><sink kind="ssrf" argpos="0"/></method>
+
+      <method name="getRawResponseMessage" signature="getRawResponseMessage()">
+        <return type="string"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+      <method name="getResponseBody" signature="getResponseBody()">
+        <return type="string"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+      <method name="getResponseCode" signature="getResponseCode()"><return type="int"/></method>
+      <method name="getResponseCookies" signature="getResponseCookies(int $flags, array $allowed_extras)">
+        <return type="array"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+      <method name="getResponseData" signature="getResponseData()">
+        <return type="array"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+      <method name="getResponseHeader" signature="getResponseHeader(string $name)">
+        <return type="mixed"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+      <method name="getResponseMessage" signature="getResponseMessage()">
+        <return type="HttpResponse"/>
+      </method>
+      <method name="getResponseStatus" signature="getResponseStatus()">
+        <return type="string"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+      <method name="send" signature="send()">
+        <return type="HttpResponse"/>
+      </method>
+    </class>
+
+    <class name="HttpResponse" supertypes="HttpMessage">
+      <method name="getBody" signature="getBody()">
+        <return type="string"/>
+        <source kind="network_input" resource="web" argpos="-1"/>
+      </method>
+      <method name="getStream" signature="getStream()">
+        <return type="resource"/>
+        <source kind="network_input" resource="web" argpos="-1"/>
+      </method>
+      <method name="getHeader" signature="getHeader(string $header)">
+        <return type="string"/>
+        <source kind="network_input" resource="web" argpos="-1"/>
+      </method>
+      <method name="getHeaders" signature="getHeaders()">
+        <return type="array"/>
+        <source kind="network_input" resource="web" argpos="-1"/>
+      </method>
+      <method name="getRequestBody" signature="getRequestBody()">
+        <return type="string"/>
+      </method>
+      <method name="getRequestBodyStream" signature="getRequestBodyStream()">
+        <return type="resource"/>
+      </method>
+      <method name="getResponseStatus" signature="getResponseStatus()">
+        <return type="string"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+
+      <method name="redirect" signature="redirect(string $url, bool $session, int $status)">
+        <sink kind="open_redirect" argpos="0" resource="web" neutralizer="open_redirect"/>
+        <sink kind="execution_after_redirect" argpos="0" resource="web"/>
+      </method>
+    </class>
+
+  </module>
+
+  <module name="pecl_http.v2">
+    <description>pecl_http v2 API</description>
+
+    <class name="http.Message">
+      <method name="addBody" signature="addBody(http.Message.Body $body)"><return type="$self"/></method>
+      <method name="addHeader" signature="addHeader(string $name, mixed $value)"><return type="$self"/></method>
+      <method name="addHeaders" signature="addHeaders(array $headers, bool $append)"><return type="$self"/></method>
+      <method name="detach" signature="detach()"><return type="$self"/></method>
+      <method name="getBody" signature="getBody()"><return type="http.Message.Body"/></method>
+      <method name="getHeader" signature="getHeader(string $header)"><return type="string"/></method>
+      <method name="getHeaders" signature="getHeaders()"><return type="array"/></method>
+    </class>
+
+    <class name="http.Client">
+      <constructor name="Client" signature="Client(string $driver)"></constructor>
+      <method name="addCookies" signature="addCookies(array $cookies)" alias="setCookies"><return type="http.Client"/></method>
+      <method name="addSslOptions" signature="addSslOptions(array $ssl_options)"><return type="http.Client"/></method>
+      <method name="attach" signature="attach(SplObserver observer)"><return type="http.Client"/></method>
+      <method name="configure" signature="configure(array $configuration)"><return type="http.Client"/></method>
+      <method name="dequeue" signature="dequeue(http.Client.Request $request)" alias="enqueue, requeue"><return type="http.Client"/></method>
+      <method name="enablePipelining" signature="enablePipelining(bool $enable)"><return type="http.Client"/></method>
+      <method name="getCookies" signature="getCookies()" alias="getOptions, getSslOptions"><return type="array"/></method>
+      <method name="getResponse" signature="getResponse(http.Client.Request $request)">
+        <return type="http.Client.Response"/>
+      </method>
+      <method name="getProgressInfo" signature="getProgressInfo()" alias="getTransferInfo"><return type="object"/></method>
+      <method name="notify" signature="notify(http.Client.Request $request)"><return type="http.Client"/></method>
+      <method name="reset" signature="reset()"><return type="http.Client"/></method>
+      <method name="send" signature="send()"><return type="http.Client"/></method>
+      <method name="wait" signature="wait(float $timeout)"><return type="http.Client"/></method>
+    </class>
+
+    <class name="http.Client.Curl"></class>
+
+    <class name="http.Client.Request" supertypes="http.Message">
+      <constructor name="Request" signature="Request(string $meth, string $url, array $headers, http.Message.Body $body)">
+        <tags>http.method:0, url:1</tags>
+        <sink kind="resource_injection" argpos="0" resource="web"/>
+        <sink kind="ssrf" argpos="1"/>
+      </constructor>
+      <method name="addQuery" signature="addQuery(mixed $query_data)"><return type="$self"/></method>
+      <method name="addSslOptions" signature="addSslOptions(array $ssl_options)"><return type="$self"/></method>
+      <method name="getContentType" signature="getContentType" alias="getQuery"><return type="string"/></method>
+      <method name="getOptions" signature="getOptions()" alias="getSslOptions"><return type="array"/></method>
+      <method name="setContentType" signature="setContentType(string $content_type)" alias="setOptions,setQuery,setSslOptions">
+        <return type="$self"/>
+      </method>
+    </class>
+
+    <class name="http.Client.Response" supertypes="http.Message">
+      <method name="getBody" signature="getBody()">
+        <return type="http.Message.Body"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+      <method name="getHeader" signature="getHeader(string $header)">
+        <return type="string"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+      <method name="getHeaders" signature="getHeaders()">
+        <return type="array"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+      <method name="getResponseStatus" signature="getResponseStatus()">
+        <return type="string"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+    </class>
+    
+  </module>
+
+
+</library>

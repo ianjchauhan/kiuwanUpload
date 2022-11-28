@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="scala" name="scalatra" standard="Scalatra">
+
+  <description url="https://scalatra.org/">Scala Web micro-framework</description>
+
+  <!-- https://javadoc.io/doc/org.scalatra/scalatra-unidoc_2.12/2.6.0 -->
+  <module name="org.scalatra" >
+    <class name="org.scalatra.CoreDsl" kind="trait" supertypes="org.scalatra.ScalatraContext" >
+      <method name="after" signature="after()" />
+      <method name="before" signature="before()" />
+      <method name="delete" signature="delete()" alias="get,head,options,patch,post,put">
+        <return type="org.scalatra.Route" />
+      </method>
+      <method name="error" signature="error()" />
+    </class>
+    <class name="org.scalatra.SessionSupport" kind="trait" >
+      <method name="session" signature="session()" >
+        <return type="javax.servlet.http.HttpSession" />
+      </method>
+    </class>
+    <class name="org.scalatra.SweetCookies" kind="trait" >
+      <method name="get" signature="get()" >
+        <tags>CWE:784</tags>
+        <return type="scala.String" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+    <class name="org.scalatra.CookieContext" kind="trait" >
+      <method name="cookies" signature="cookies()" >
+        <return type="org.scalatra.SweetCookies" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+    </class>
+    <class name="org.scalatra.ScalatraContext" kind="trait" supertypes="org.scalatra.SessionSupport,org.scalatra.CookieContext">
+      <field name="request" type="javax.servlet.http.HttpServletRequest" />
+      <field name="response" type="javax.servlet.http.HttpServletResponse" />
+      <field name="servletContext" type="javax.servlet.ServletContext" />
+    </class>
+    <class name="org.scalatra.ScalatraBase" kind="trait" supertypes="org.scalatra.ScalatraContext,org.scalatra.CoreDsl" >
+      <method name="params" signature="params()" >
+        <return type="org.scalatra.util.MultiMapHeadView" />
+        <source argpos="-1" kind="user_input" resource="web" />
+      </method>
+      <method name="redirect" signature="redirect()">
+        <sink argpos="0" kind="open_redirect" resource="web" />
+        <sink argpos="0" kind="execution_after_redirect" resource="web" />
+        <sink argpos="0" kind="insecure_transport" resource="web" />
+      </method>
+    </class>
+    <class name="org.scalatra.servlet.ServletBase" kind="trait" supertypes="org.scalatra.ScalatraBase"/>
+    <class name="org.scalatra.ScalatraServlet" kind="trait" supertypes="org.scalatra.servlet.ServletBase"/>
+    <class name="org.scalatra.servlet.FileUploadSupport" kind="trait" supertypes="org.scalatra.servlet.ServletBase"/>
+    <class name="org.scalatra.scalate.ScalateSupport" kind="trait" supertypes="org.scalatra.servlet.ServletBase">
+      <method name="jade" signature="jade()" >
+        <return type="String" />
+        <sink argpos="1" kind="xss" resource="web" />
+        <sink argpos="1" kind="privacy_violation" resource="web" />
+      </method>
+      <method name="scaml" signature="scaml()" >
+        <return type="String" />
+        <sink argpos="1" kind="xss" resource="web" />
+        <sink argpos="1" kind="privacy_violation" resource="web" />
+      </method>
+      <method name="ssp" signature="ssp()" >
+        <return type="String" />
+        <sink argpos="1" kind="xss" resource="web" />
+        <sink argpos="1" kind="privacy_violation" resource="web" />
+      </method>
+      <method name="mustache" signature="mustache()" >
+        <return type="String" />
+        <sink argpos="1" kind="xss" resource="web" />
+        <sink argpos="1" kind="privacy_violation" resource="web" />
+      </method>
+    </class>
+
+    <class name="org.scalatra.servlet.HttpServletRequestReadOnly" supertypes="javax.servlet.http.HttpServletRequestWrapper" />
+  </module>
+</library>

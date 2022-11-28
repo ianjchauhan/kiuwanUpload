@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="io">
+
+  <module name="io" >
+    <description url="https://pkg.go.dev/io">Provides basic interfaces to I/O primitives</description>
+
+    <globalObject name="Discard" type="io.writer" />
+
+    <class name="io.ByteReader" kind="interface" >
+      <method name="ReadByte" signature="ReadByte()">
+        <return type="go.byte,go.error" />
+      </method>
+    </class>
+
+    <class name="io.ByteScanner" kind="interface" supertypes="io.ByteReader" >
+      <method name="UnreadByte" signature="UnreadByte()">
+        <return type="go.error" />
+      </method>
+    </class>
+
+    <class name="io.ByteWriter" kind="interface" >
+      <method name="WriteByte" signature="WriteByte(go.byte)">
+        <return type="go.error" />
+      </method>
+    </class>
+
+    <class name="io.Closer" kind="interface" >
+      <method name="Close" signature="Close()">
+        <return type="go.error" />
+      </method>
+    </class>
+
+    <class name="io.LimitedReader" kind="interface" >
+      <field name="R" elementType="io.Reader" />
+      <field name="N" elementType="io.Reader" />
+
+      <method name="Read" signature="Read(go.byte)">
+        <return type="go.int,go.error" />
+      </method>
+    </class>
+
+    <class name="io.PipeReader" kind="interface" supertypes="io.ReadCloser" >
+      <method name="CloseWithError" signature="CloseWithError(go.error)">
+        <return type="go.error" />
+      </method>
+    </class>
+
+    <class name="io.PipeWriter" kind="interface" supertypes="io.Closer,io.Writer" >
+      <method name="CloseWithError" signature="CloseWithError(go.error)">
+        <return type="go.error" />
+      </method>
+    </class>
+
+    <class name="io.ReadCloser" kind="interface" supertypes="io.Closer,io.Reader" />
+    <class name="io.ReadSeeker" kind="interface" supertypes="io.Seeker,io.Reader" />
+    <class name="io.ReadWriteCloser" kind="interface" supertypes="io.Write,io.Reader,io.Closer" />
+    <class name="io.ReadWriteSeeker" kind="interface" supertypes="io.Write,io.Reader,io.Seeker" />
+
+    <class name="io.Reader" kind="interface" >
+      <method name="Read" signature="Read(go.slice)" >
+        <return type="go.int,go.error" />
+      </method>
+    </class>
+
+    <function name="io.LimitReader" signature="io.LimitReader(io.Reader,go.int64)" >
+      <return type="io.Reader" />
+    </function>
+
+    <function name="io.MultiReader" signature="io.MultiWriter(...io.Reader)" >
+      <return type="io.Reader" />
+    </function>
+
+    <function name="io.TeeReader" signature="io.TeeReader(io.Reader,io.Writer)" >
+      <return type="io.Reader" />
+    </function>
+
+    <class name="io.ReaderAt" kind="interface" >
+      <method name="ReadAt" signature="ReadAt(go.slice,go.int64)" >
+        <return type="go.int,go.error" />
+      </method>
+    </class>
+
+    <class name="io.ReaderFrom" kind="interface" >
+      <method name="ReadFrom" signature="ReaderFrom(io.Reader)" >
+        <return type="go.int64,go.error" />
+      </method>
+    </class>
+
+    <class name="io.RuneReader" kind="interface" >
+      <method name="ReadRune" signature="ReadRune()" >
+        <return type="go.rune,go.int,go.error" />
+      </method>
+    </class>
+
+    <class name="io.RuneScanner" kind="interface" supertypes="io.RuneReader" >
+      <method name="UnreadRune" signature="UnreadRune()" >
+        <return type="go.error" />
+      </method>
+    </class>
+
+    <class name="io.SectionReader" kind="struct" supertypes="io.Read,io.Seek,io.ReaderAt" >
+      <method name="NewSectionReader" signature="NewSectionReader(io.ReaderAt,go.int64,go.int64)" >
+        <return type="*io.SectionReader" />
+      </method>
+      <method name="Size" signature="Size()" >
+        <return type="go.int64" />
+      </method>
+    </class>
+
+    <class name="io.Seeker" kind="interface" >
+      <method name="Seek" signature="Seek(go.int64, go.int)">
+        <return type="go.int64,go.error" />
+      </method>
+    </class>
+
+    <class name="io.StringWriter" kind="interface" >
+      <method name="WriteString" signature="WriteString(go.string)">
+        <return type="go.int64,go.error" />
+      </method>
+    </class>
+
+    <function name="io.WriteString" signature="io.WriteString(io.Writer,go.string)">
+      <return type="go.int,go.error" />
+      <sink argpos="1" kind="xss" resource="web" >
+        <checker id="WriteStringSinkChecker" />
+      </sink>
+    </function>
+
+    <class name="io.Writer" kind="interface" >
+      <method name="Write" signature="Write(go.byte)">
+        <return type="go.int,go.error" />
+      </method>
+    </class>
+
+    <class name="io.WriteCloser" kind="interface" supertypes="strings.Writer,strings.Closer" />
+    <class name="io.WriteSeeker" kind="interface" supertypes="strings.Writer,strings.Seeker" />
+
+    <class name="io.WriterAt" kind="interface" >
+      <method name="WriteAt" signature="WriteAt(go.slice, go.int64)" >
+        <return type="go.int,go.error" />
+      </method>
+    </class>
+
+    <class name="io.WriterTo" kind="interface" >
+      <method name="WriteTo" signature="WriteTo(go.Writer)" >
+        <return type="go.int64,go.error" />
+      </method>
+    </class>
+
+    <function name="io.MultiWriter" signature="io.MultiWriter(...io.Writer)" >
+      <return type="io.Writer" />
+    </function>
+    <function name="io.ReadFull" signature="io.ReadFull(io.Reader,go.slice)" >
+      <return type="go.int,go.error" />
+      <source argpos="-1" kind="file_input" resource="filesystem" />
+    </function>
+  </module>
+
+  <module name="io.ioutil" >
+    <description url="https://pkg.go.dev/io/ioutil">Implements some I/O utility functions</description>
+
+    <function name="io.ioutil.NopCloser" signature="io.ioutil.NopCloser(io.Reader)" >
+      <return type="io.ReadCloser" />
+    </function>
+    <function name="io.ioutil.ReadAll" signature="io.ioutil.ReadAll(io.Reader)" >
+      <return type="go.slice,go.error" elementType="go.byte" />
+      <source argpos="-1" kind="file_input" resource="filesystem" />
+    </function>
+    <function name="io.ioutil.ReadDir" signature="io.ioutil.ReadDir(go.string)" >
+      <return type="go.slice,go.error" elementType="os.FileInfo"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      <source argpos="-1" kind="file_input" resource="filesystem" />
+    </function>
+    <function name="io.ioutil.ReadFile" signature="io.ioutil.ReadFile(go.string)" >
+      <return type="go.slice,go.error" elementType="go.byte" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+      <source argpos="-1" kind="file_input" resource="filesystem" />
+    </function>
+    <function name="io.ioutil.TempDir" signature="io.ioutil.TempDir(go.string,go.string)" >
+      <return type="go.string,go.error" />
+    </function>
+    <function name="io.ioutil.TempFile" signature="io.ioutil.TempFile(go.string,go.string)" >
+      <return type="*os.File,go.error" />
+    </function>
+    <function name="io.ioutil.WriteFile" signature="io.ioutil.WriteFile(go.string,go.slice,os.FileMode)" >
+      <return type="go.error" />
+    </function>
+  </module>
+</library>

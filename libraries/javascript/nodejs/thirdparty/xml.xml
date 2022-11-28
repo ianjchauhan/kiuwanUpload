@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs.xml" standard="nodejs.xml">
+
+  <description>XML, YAML and serialization libraries for Node.js</description>
+
+  <module name="nodejs/libxmljs" standard="libxmljs" >
+    <description url="https://github.com/libxmljs/libxmljs#readme">Wrapper over C++ libxml2 library</description>
+    <class name="nodejs/libxmljs">
+      <field name="Document" type="nodejs/libxmljs.Document"/>
+      <function name="Document">
+        <return type="nodejs/libxmljs.Document"/>
+      </function>
+      <function name="parseXml" alias="parseXmlString">
+        <return type="nodejs/libxmljs.Document"/>
+        <sink kind="xml_injection" resource="other" argpos="0"/>
+      </function>
+      <function name="parseHtml" alias="parseHtmlString, parseHtmlFragment">
+        <return type="nodejs/libxmljs.Document"/>
+      </function>
+      <function name="SaxParser">
+        <return type="nodejs/libxmljs.SaxParser"/>
+      </function>
+    </class>
+
+    <class name="nodejs/libxmljs.Document">
+      <function name="fromXml">
+        <return type="nodejs/libxmljs.Document"/>
+        <sink kind="xml_injection" resource="other" argpos="0"/>
+      </function>
+      <function name="fromHtml" alias="fromHtmlFragment">
+        <return type="nodejs/libxmljs.Document"/>
+      </function>
+    </class>
+
+    <class name="nodejs/libxmljs.SaxParser">
+      <function name="parseString"/>
+    </class>
+  </module>
+
+  <module name="nodejs/node-expat" standard="node-expat" >
+    <description url="https://github.com/astro/node-expat">XML SAX parser (libexpat) binding for node.js</description>
+    <class name="nodejs/node-expat.Parser">
+     <function name="write" alias="parse,end">
+       <sink kind="xml_injection" resource="other" argpos="0"/>
+     </function>
+    </class>
+    <class name="nodejs/node-expat">
+      <function name="Parser"><return type="nodejs/node-expat.Parser"/></function>
+      <function name="createParser"><return type="nodejs/node-expat.Parser"/></function>
+    </class>
+  </module>
+
+  <module name="nodejs/xpath" standard="xpath" >
+    <description url="https://github.com/goto100/xpath">DOM 3 Xpath implemention and helper for node.js</description>
+    <class name="nodejs/xpath.XPathEvaluator">
+      <function name="evaluate"><return type="Object"/></function>
+      <function name="evaluateNumber"><return type="Number"/></function>
+      <function name="evaluateBoolean"><return type="Boolean"/></function>
+      <function name="evaluateNodeSet"><return type="nodejs/xpath.XNodeSet"/></function>
+      <function name="select"><return type="Array"/></function>
+      <function name="select1"><return type="Object"/></function>
+    </class>
+    <class name="nodejs/xpath">
+      <function name="#module#"><!-- direct call on exported object is same as select() -->
+        <sink kind="xpath_injection" resource="other" argpos="0"/>
+      </function>
+      <function name="select" alias="select1">
+        <sink kind="xpath_injection" resource="other" argpos="0"/>
+      </function>
+      <function name="parse">
+        <return type="nodejs/xpath.XPathEvaluator"/>
+        <sink kind="xpath_injection" resource="other" argpos="0"/>
+      </function>
+      <function name="useNamespaces">
+        <return type="function:select"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/xpath.js" standard="xpath" >
+    <!--Alias for xpath module-->
+    <class name="nodejs/xpath.js" supertypes="nodejs/xpath"/>
+  </module>
+  
+  <module name="nodejs/fontoxpath" standard="fontoxpath" >
+    <description url="https://www.npmjs.com/package/fontoxpath"> XPath3 and XQuery3 engine for XML nodes</description>
+    <class name="nodejs/fontoxpath">
+      <function name="evaluateXPath" alias="evaluateXPathToNodes,evaluateXPathToFirstNode,evaluateXPathToBoolean,evaluateXPathToNumber,evaluateXPathToNumbers">
+        <sink kind="xpath_injection" resource="other" argpos="0"/>
+      </function>
+      <function name="precompileXPath">
+        <return type="Promise"/>
+        <sink kind="xpath_injection" resource="other" argpos="0"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/js-yaml" standard="js-yaml">
+    <description url="https://github.com/nodeca/js-yaml">YAML 1.2 parser / writer for JavaScript</description>
+    <class name="nodejs/js-yaml">
+      <function name="load" alias="safeLoad,loadAll,safeLoadAll">
+        <sink kind="code_injection_deserialization" resource="other" argpos="0"/>
+      </function>
+      <function name="dump" alias="safeDump"><propagate from="0" to="-1"/></function>
+    </class>
+  </module>
+  
+  <module name="nodejs/node-serialize" standard="node-serialize" >
+    <description url="https://github.com/luin/serialize">Serialize an object (including its functions) into JSON</description>
+    <class name="nodejs/node-serialize">
+      <function name="unserialize">
+        <!-- See https://opsecx.com/index.php/2017/02/08/exploiting-node-js-deserialization-bug-for-remote-code-execution/ -->
+        <sink kind="code_injection_deserialization" resource="other" argpos="0"/>
+      </function>
+      <function name="serialize"><propagate from="0" to="-1"/></function>
+    </class>
+  </module>
+
+  <module name="nodejs/serialize-to-js" standard="serialize-to-js" >
+    <description url="https://github.com/commenthol/serialize-to-js" >Serialization library</description>
+    <class name="nodejs/serialize-to-js">
+      <function name="deserialize">
+        <!-- See https://opsecx.com/index.php/2017/02/08/exploiting-node-js-deserialization-bug-for-remote-code-execution/ -->
+        <!-- Patched since 1.1.0? https://github.com/commenthol/serialize-to-js/issues/1 -->
+        <sink kind="code_injection_deserialization" resource="other" argpos="0"/>
+      </function>
+      <function name="serialize" alias="serializeToModule"><propagate from="0" to="-1"/></function>
+    </class>
+  </module>
+
+</library>

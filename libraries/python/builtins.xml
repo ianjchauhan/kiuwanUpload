@@ -1,0 +1,888 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="builtins" technology="python">
+
+  <description>Python built-ins</description>
+
+  <module name="builtins">
+    <description url="https://docs.python.org/3/library/functions.html">Python 2.x and 3.x built-in functions and types</description>
+    <!-- See also https://docs.python.org/2/library/ -->
+    <function name="abs" signature="abs(x)">
+      <return type="object" />
+    </function>
+    <function name="all" signature="all(iterable)">
+      <return type="bool" />
+    </function>
+    <function name="any" signature="any(iterable)">
+      <return type="bool" />
+    </function>
+    <function name="ascii" signature="ascii(object)">
+      <return type="str" />
+    </function>
+    <function name="bin" signature="bin(x)">
+      <return type="str" />
+    </function>
+    <function name="bool" signature="bool(x)">
+      <return type="bool"/>
+    </function>
+    <function name="bytearray" signature="bytearray(source,encoding,errors)" match="name">
+      <return type="bytearray"/>
+    </function>
+    <function name="bytes" signature="bytes(source,encoding,errors)" match="name">
+      <return type="bytes"/>
+    </function>
+    <function name="callable" signature="callable(object)">
+      <return type="bool" />
+    </function>
+    <function name="chr" signature="chr(i)">
+      <return type="str" />
+    </function>
+    <function name="classmethod" signature="classmethod(function)"/>
+    <function name="cmp" signature="cmp(x, y)"/>
+    <function name="compile" signature="compile(source, filename, mode, flags=0, dont_inherit=False, optimize=-1)"/>
+    <function name="delattr" signature="delattr(object, name)">
+      <return type="NoneType" />
+    </function>
+    <function name="dir" signature="dir([object])">
+      <return type="list" />
+    </function>
+    <function name="divmod" signature="divmod(a, b)">
+      <return type="tuple" />
+    </function>
+    <function name="enumerate" signature="enumerate(iterable, start=0)">
+      <return type="enumerate" />
+    </function>
+    <function name="eval" signature="eval(expression, globals=None, locals=None)">
+      <return type="object" />
+      <sink argpos="0" kind="code_injection" resource="environment" />
+    </function>
+    <function name="execfile" signature="execfile(filename[, globals[, locals]])"/>
+    <function name="exec" signature="exec(object[, globals[, locals]])">
+      <return type="NoneType"/>
+      <sink argpos="0" kind="code_injection" resource="environment" />
+    </function>
+    <function name="filter" signature="filter(function, iterable)"/>
+    <function name="format" signature="format(value[, format_spec])"/>
+    <function name="getattr" signature="getattr(object, name[, default])">
+      <sink argpos="0,1" kind="unsafe_reflection" resource="other"/>
+    </function>
+    <function name="globals" signature="globals()">
+      <return type="dict"/>
+    </function>
+    <function name="hasattr" signature="hasattr(object, name)"/>
+    <function name="hash" signature="hash(object)">
+      <return type="int" />
+    </function>
+    <function name="help" signature="help([object])"/>
+    <function name="hex" signature="hex(x)"/>
+    <function name="id" signature="id(object)">
+      <return type="int" />
+    </function>
+    <function name="input" signature="input([prompt])">
+      <return type="str" />
+      <source argpos="-1" kind="user_input"/>
+    </function>
+    <function name="isinstance" signature="isinstance(object, classinfo)">
+      <return type="bool" />
+    </function>
+    <function name="issubclass" signature="issubclass(class, classinfo)">
+      <return type="bool" />
+    </function>
+    <function name="iter" signature="iter(object[, sentinel])"/>
+    <function name="len" signature="len(s)">
+      <return type="int" />
+    </function>
+    <function name="locals" signature="locals()"/>
+    <function name="map" signature="map(function, iterable, ...)">
+      <neutralization argpos="-1" kind="*">
+        <checker id="builtins.mapChecker" />
+      </neutralization>
+    </function>
+    <function name="max" signature="max(iterable, *[, key, default])"/>
+    <function name="min" signature="min(iterable, *[, key, default])"/>
+    <function name="next" signature="next(iterator[, default])"/>
+    <function name="oct" signature="oct(x)"/>
+
+    <function name="open" signature="open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True, opener=None)">
+      <return type="file" />
+      <sink argpos="0, 1, 2" kind="path_traversal" resource="web" />
+      <propagate from="0,1,2" to="-1" />
+    </function>
+
+    <function name="ord" signature="ord(c)"/>
+    <function name="pow" signature="pow(x, y[, z])"/>
+    <function name="print" signature="print(*objects, sep=' ', end='\n', file=sys.stdout, flush=False)">
+      <return type="NoneType" />
+      <!-- Probably no command injection, and for log_forging might produce too-many low-risk positives -->
+      <!--<sink argpos="0" kind="command_injection"/>-->
+      <!--<sink argpos="0" kind="log_forging"/>-->
+      <sink argpos="0,1,2" kind="information_leak"/>
+      <sink argpos="0,1,2" kind="error_details"/>
+    </function>
+    <function name="raw_input" signature="raw_input([prompt])">
+      <return type="str" />
+      <source argpos="-1" kind="user_input"/>
+    </function>
+    <function name="reduce" signature="reduce(function, iterable[, initializer])"/>
+    <function name="reload" signature="reload(module)"/>
+    <function name="repr" signature="repr(object)">
+      <return type="str" />
+    </function>
+    <function name="reversed" signature="reversed(seq)"/>
+    <function name="round" signature="round(number[, ndigits])">
+      <return type="float" />
+    </function>
+    <function name="setattr" signature="setattr(object, name, value)"/>
+    <function name="sorted" signature="sorted(iterable[, key][, reverse])">
+      <return type="list" />
+    </function>
+    <function name="staticmethod" signature="staticmethod(function)"/>
+    <function name="sum" signature="sum(iterable[, start])"/>
+    <function name="super" signature="super([type[, object-or-type]])"/>
+    <function name="type" signature="type(obj)" match="name">
+      <return type="type"/>
+    </function>
+    <function name="unichr" signature="unichr(i)"/>
+    <function name="vars" signature="vars([object])"/>
+    <function name="zip" signature="zip(*iterables)"/>
+    <function name="__import__" signature="__import__(name, globals=None, locals=None, fromlist=(), level=0)"/>
+
+    <!--class name="basestring"/--><!-- currently an alias for str -->
+    <class name="bool" supertypes="int"/>
+
+    <class name="bytearray">
+      <tags>mutable</tags>
+      <method name="fromhex" signature="fromhex(string)">
+        <return type="bytearray" />
+      </method>
+      <method name="hex" signature="hex()">
+        <return type="str" />
+      </method>
+      <method name="count" signature="count(sub[, start[, end]])">
+        <return type="int" />
+      </method>
+      <method name="decode" signature="decode(encoding='utf-8', errors='strict')">
+        <return type="str" />
+      </method>
+      <method name="endswith" signature="endswith(suffix[, start[, end]])">
+        <return type="bool" />
+      </method>
+      <method name="find" signature="find(sub[, start[, end]])">
+        <return type="int" />
+      </method>
+      <method name="index" signature="index(sub[, start[, end]])">
+        <return type="int" />
+      </method>
+      <method name="join" signature="join(iterable)">
+        <return type="bytearray" />
+      </method>
+      <method name="maketrans" signature="maketrans(from, to)">
+        <return type="dict" />
+      </method>
+      <method name="partition" signature="partition(sep)">
+        <return type="tuple" />
+      </method>
+      <method name="replace" signature="replace(old, new[, count])">
+        <return type="bytearray" />
+        <neutralization argpos="-1" kind="string" />
+        <propagate from="1" to="-1" />
+      </method>
+      <method name="rfind" signature="rfind(sub[, start[, end]])">
+        <return type="int" />
+      </method>
+      <method name="rindex" signature="rindex(sub[, start[, end]])">
+        <return type="int" />
+      </method>
+      <method name="rpartition" signature="rpartition(sep)">
+        <return type="tuple" />
+      </method>
+      <method name="startswith" signature="startswith(prefix[, start[, end]])">
+        <return type="bool" />
+      </method>
+      <method name="translate" signature="translate(table, delete=b'')">
+        <return type="bytearray" />
+      </method>
+      <method name="center" signature="center(width[, fillbyte])">
+        <return type="bytearray" />
+      </method>
+      <method name="ljust" signature="ljust(width[, fillbyte])">
+        <return type="bytearray" />
+      </method>
+      <method name="lstrip" signature="lstrip([chars])">
+        <return type="bytearray" />
+      </method>
+      <method name="rjust" signature="rjust(width[, fillbyte]))">
+        <return type="bytearray" />
+      </method>
+      <method name="rsplit" signature="rsplit(sep=None, maxsplit=-1)">
+        <return type="list" />
+        <sink argpos="0" paramNames="sep" kind="regex_dos"/>
+      </method>
+      <method name="rstrip" signature="rstrip([chars])">
+        <return type="bytearray" />
+      </method>
+      <method name="split" signature="split(sep=None, maxsplit=-1)">
+        <return type="bytearray" />
+        <sink argpos="0" paramNames="sep" kind="regex_dos"/>
+      </method>
+      <method name="strip" signature="strip([chars])">
+        <return type="bytearray" />
+      </method>
+      <method name="capitalize" signature="capitalize()">
+        <return type="bytearray" />
+      </method>
+      <method name="expandtabs" signature="expandtabs(tabsize=8)">
+        <return type="bytearray" />
+      </method>
+      <method name="isalnum" signature="isalnum()">
+        <return type="bool" />
+      </method>
+      <method name="isalpha" signature="isalpha()">
+        <return type="bool" />
+      </method>
+      <method name="isdigit" signature="isdigit()">
+        <return type="bool" />
+      </method>
+      <method name="islower" signature="islower()">
+        <return type="bool" />
+      </method>
+      <method name="isspace(" signature="isspace(()">
+        <return type="bool" />
+      </method>
+      <method name="isupper" signature="isupper()">
+        <return type="bool" />
+      </method>
+      <method name="lower" signature="lower()">
+        <return type="bytearray" />
+      </method>
+      <method name="splitlines" signature="splitlines(keepends=False)">
+        <return type="list" />
+      </method>
+      <method name="swapcase" signature="swapcase()">
+        <return type="bytearray" />
+      </method>
+      <method name="title" signature="title()">
+        <return type="bytearray" />
+      </method>
+      <method name="upper" signature="upper()">
+        <return type="bytearray" />
+      </method>
+      <method name="zfill" signature="zfill(width)">
+        <return type="bytearray" />
+      </method>
+    </class>
+
+    <class name="bytes">
+      <method name="fromhex" signature="fromhex(string)">
+        <return type="bytes" />
+      </method>
+      <method name="hex" signature="hex()">
+        <return type="str" />
+      </method>
+      <method name="count" signature="count(sub[, start[, end]])">
+        <return type="int" />
+      </method>
+      <method name="decode" signature="decode(encoding='utf-8', errors='strict')">
+        <return type="str" />
+      </method>
+      <method name="endswith" signature="endswith(suffix[, start[, end]])">
+        <return type="bool" />
+      </method>
+      <method name="find" signature="find(sub[, start[, end]])">
+        <return type="int" />
+      </method>
+      <method name="index" signature="index(sub[, start[, end]])">
+        <return type="int" />
+      </method>
+      <method name="join" signature="join(iterable)">
+        <return type="bytes" />
+      </method>
+      <method name="maketrans" signature="maketrans(from, to)">
+        <return type="dict" />
+      </method>
+      <method name="partition" signature="partition(sep)">
+        <return type="tuple" />
+      </method>
+      <method name="replace" signature="replace(old, new[, count])">
+        <return type="bytes" />
+        <neutralization argpos="-1" kind="string" />
+        <propagate from="1" to="-1" />
+      </method>
+      <method name="rfind" signature="rfind(sub[, start[, end]])">
+        <return type="int" />
+      </method>
+      <method name="rindex" signature="rindex(sub[, start[, end]])">
+        <return type="int" />
+      </method>
+      <method name="rpartition" signature="rpartition(sep)">
+        <return type="tuple" />
+      </method>
+      <method name="startswith" signature="startswith(prefix[, start[, end]])">
+        <return type="bool" />
+      </method>
+      <method name="translate" signature="translate(table, delete=b'')">
+        <return type="bytes" />
+      </method>
+      <method name="center" signature="center(width[, fillbyte])">
+        <return type="bytes" />
+      </method>
+      <method name="ljust" signature="ljust(width[, fillbyte])">
+        <return type="bytes" />
+      </method>
+      <method name="lstrip" signature="lstrip([chars])">
+        <return type="bytes" />
+      </method>
+      <method name="rjust" signature="rjust(width[, fillbyte]))">
+        <return type="bytes" />
+      </method>
+      <method name="rsplit" signature="rsplit(sep=None, maxsplit=-1)">
+        <return type="list" />
+        <sink argpos="0" paramNames="sep" kind="regex_dos"/>
+      </method>
+      <method name="rstrip" signature="rstrip([chars])">
+        <return type="bytes" />
+      </method>
+      <method name="split" signature="split(sep=None, maxsplit=-1)">
+        <return type="bytes" />
+        <sink argpos="0" paramNames="sep" kind="regex_dos"/>
+      </method>
+      <method name="strip" signature="strip([chars])">
+        <return type="bytes" />
+      </method>
+      <method name="capitalize" signature="capitalize()">
+        <return type="bytes" />
+      </method>
+      <method name="expandtabs" signature="expandtabs(tabsize=8)">
+        <return type="bytes" />
+      </method>
+      <method name="isalnum" signature="isalnum()">
+        <return type="bool" />
+      </method>
+      <method name="isalpha" signature="isalpha()">
+        <return type="bool" />
+      </method>
+      <method name="isdigit" signature="isdigit()">
+        <return type="bool" />
+      </method>
+      <method name="islower" signature="islower()">
+        <return type="bool" />
+      </method>
+      <method name="isspace(" signature="isspace(()">
+        <return type="bool" />
+      </method>
+      <method name="isupper" signature="isupper()">
+        <return type="bool" />
+      </method>
+      <method name="lower" signature="lower()">
+        <return type="bytes" />
+      </method>
+      <method name="splitlines" signature="splitlines(keepends=False)">
+        <return type="list" />
+      </method>
+      <method name="swapcase" signature="swapcase()">
+        <return type="bytes" />
+      </method>
+      <method name="title" signature="title()">
+        <return type="bytes" />
+      </method>
+      <method name="upper" signature="upper()">
+        <return type="bytes" />
+      </method>
+      <method name="zfill" signature="zfill(width)">
+        <return type="bytes" />
+      </method>
+    </class>
+
+    <class name="complex"/>
+
+    <class name="dict">
+      <method name="copy" signature="copy()">
+        <return type="set" />
+      </method>
+      <method name="clear" signature="clear()">
+        <return type="NoneType" />
+      </method>
+      <method name="get" signature="get(key[, default])">
+        <tags>remote_host_key</tags>
+      </method>
+      <method name="items" signature="items()">
+        <return type="dict_items" />
+      </method>
+      <method name="keys" signature="keys()">
+        <return type="dict_keys" />
+      </method>
+      <method name="pop" signature="pop(key[, default])">
+        <return type="object" />
+      </method>
+      <method name="popitem" signature="popitem()">
+        <return type="tuple" />
+      </method>
+      <method name="setdefault" signature="setdefault(key[, default])">
+        <return type="obj" />
+      </method>
+      <method name="update" signature="update(other)">
+        <return type="NoneType" />
+      </method>
+      <method name="values" signature="values()">
+        <return type="dict_values" />
+      </method>
+    </class>
+
+    <class name="file" >
+      <description url="https://docs.python.org/2/library/stdtypes.html#bltin-file-objects">Python2 </description>
+      <constructor name="file" signature="file(name[, mode[, buffering]])">
+        <sink argpos="0" kind="path_traversal" resource="web" />
+        <propagate from="0,1,2" to="-1" />
+      </constructor>
+
+      <method name="close" signature="close()" match="name" />
+      <method name="flush" signature="flush()" match="name" />
+      <method name="fileno" signature="fileno()" match="name" />
+      <method name="isatty" signature="isatty()" match="name" />
+      <method name="next" signature="next()" match="name" >
+        <return type="iterator" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="read" signature="read([size])" match="name" >
+        <return type="bytes" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="readline" signature="readline([size])" match="name" >
+        <return type="bytes" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="readlines" signature="readlines([sizehint])" match="name" >
+        <return type="bytes" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="xreadlines" signature="xreadlines()" match="name" >
+        <return type="bytes" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="seek" signature="seek(offset[, whence])" match="name" />
+      <method name="tell" signature="tell()" match="name" />
+      <method name="truncate" signature="truncate([size])" match="name" />
+      <method name="write" signature="write(str)" match="name" >
+        <return type="NoneType" />
+      </method>
+      <method name="writelines" signature="writelines(sequence)" match="name" >
+        <return type="NoneType" />
+      </method>
+
+    </class>
+
+    <class name="float" supertypes="numbers.Real">
+      <method name="as_integer_ratio" signature="as_integer_ratio()">
+        <return type="tuple" />
+      </method>
+      <method name="is_integer" signature="is_integer()">
+        <return type="bool" />
+      </method>
+      <method name="hex" signature="hex()">
+        <return type="str" />
+      </method>
+      <method name="fromhex" signature="fromhex(s)">
+        <return type="float" />
+      </method>
+    </class>
+
+    <class name="frozenset" supertypes="set"/>
+
+    <class name="int" supertypes="numbers.Integral">
+      <method name="bit_length" signature="bit_length()">
+        <return type="int" />
+      </method>
+      <method name="to_bytes" signature="to_bytes(length, byteorder, *, signed=False)">
+        <return type="bytearray" />
+      </method>
+      <method name="from_bytes" signature="from_bytes(bytes, byteorder, *, signed=False)">
+        <return type="int" />
+      </method>
+    </class>
+
+    <class name="list" supertypes="collections.abc.Sequence, collections.abc.MutableSequence">
+      <method name="sort" signature="sort(*, key=None, reverse=None)"/>
+    </class>
+
+    <class name="memoryview">
+      <method name="tobytes" signature="to_bytes()">
+        <return type="bytes" />
+      </method>
+      <method name="hex" signature="hex()">
+        <return type="str" />
+      </method>
+      <method name="tolist" signature="tolist()">
+        <return type="list" />
+      </method>
+      <method name="release" signature="release()">
+        <return type="NoneType" />
+      </method>
+      <method name="cast" signature="cast(format[, shape])">
+        <return type="memoryview" />
+      </method>
+
+      <field name="obj" type="object" />
+      <field name="nbytes" type="int" />
+      <field name="readonly" type="bool" />
+      <field name="format" type="str" />
+      <field name="itemsize" type="bytes" />
+      <field name="ndim" type="int" />
+      <field name="shape" type="tuple" />
+      <field name="strides" type="tuple" />
+      <field name="suboffsets" type="object" />
+      <field name="c_contiguous" type="bool" />
+      <field name="f_contiguous" type="bool" />
+      <field name="contiguous" type="bool" />
+    </class>
+
+    <class name="object"/>
+    <class name="property"/>
+    <class name="range" supertypes="collections.abc.Sequence"/>
+
+    <class name="set">
+      <method name="isdisjoint" signature="isdisjoint(other)">
+        <return type="bool" />
+      </method>
+      <method name="issubset" signature="issubset(other)">
+        <return type="bool" />
+      </method>
+      <method name="issuperset" signature="issuperset(other)">
+        <return type="bool" />
+      </method>
+      <method name="union" signature="union(*others)">
+        <return type="set" />
+      </method>
+      <method name="intersection" signature="intersection(*others)">
+        <return type="set" />
+      </method>
+      <method name="difference" signature="difference(*others)">
+        <return type="set" />
+      </method>
+      <method name="symmetric_difference" signature="symmetric_difference(other)">
+        <return type="set" />
+      </method>
+      <method name="copy" signature="copy()">
+        <return type="set" />
+      </method>
+      <method name="update" signature="update(*others)">
+        <return type="NoneType" />
+      </method>
+      <method name="intersection_update" signature="intersection_update(*others)">
+        <return type="set" />
+      </method>
+      <method name="difference_update" signature="difference_update(*others)">
+        <return type="set" />
+      </method>
+      <method name="symmetric_difference_update" signature="symmetric_difference_update(other)">
+        <return type="set" />
+      </method>
+      <method name="add" signature="add(elem)">
+        <return type="NoneType" />
+      </method>
+      <method name="remove" signature="remove(elem)">
+        <return type="NoneType" />
+      </method>
+      <method name="discard" signature="discard(elem)">
+        <return type="NoneType" />
+      </method>
+      <method name="pop" signature="pop()">
+        <return type="object" />
+      </method>
+      <method name="clear" signature="clear()">
+        <return type="NoneType" />
+      </method>
+    </class>
+
+    <class name="slice"/>
+
+    <class name="str" alias="basestring">
+      <method name="capitalize" signature="capitalize()">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="casefold" signature="casefold()">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="center" signature="center(width[, fillchar])">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="count" signature="count(sub[, start[, end]])">
+        <return type="int" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="encode" signature="encode(encoding='utf-8', errors='strict')">
+        <return type="bytes" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="endswith" signature="endswith(suffix[, start[, end]])">
+        <return type="bool" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="expandtabs" signature="expandtabs(tabsize=8)">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="find" signature="find(sub[, start[, end]])">
+        <return type="int" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="format" signature="format(*args, **kwargs)">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+        <propagate from="0, 1, 2, 3, 4" to="-2" />
+        <sink argpos="0,1" kind="format_injection" resource="formatstr" />
+      </method>
+      <method name="format_map" signature="format_map(mapping)">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="index" signature="index(sub[, start[, end]])">
+        <return type="int" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="isalnum" signature="isalnum()">
+        <return type="bool" />
+      </method>
+      <method name="isalpha" signature="isalpha()">
+        <return type="bool" />
+      </method>
+      <method name="isdecimal" signature="isdecimal()">
+        <return type="bool" />
+      </method>
+      <method name="isdigit" signature="isdigit()">
+        <return type="bool" />
+      </method>
+      <method name="isidentifier" signature="isidentifier()">
+        <return type="bool" />
+      </method>
+      <method name="islower" signature="islower()">
+        <return type="bool" />
+      </method>
+      <method name="isnumeric" signature="isnumeric()">
+        <return type="bool" />
+      </method>
+      <method name="isprintable" signature="isprintable()">
+        <return type="bool" />
+      </method>
+      <method name="isspace(" signature="isspace(()">
+        <return type="bool" />
+      </method>
+      <method name="istitle" signature="istitle()">
+        <return type="bool" />
+      </method>
+      <method name="isupper" signature="isupper()">
+        <return type="bool" />
+      </method>
+      <method name="join" signature="join(iterable)">
+        <return type="str" />
+        <propagate from="-2,0" to="-1" />
+      </method>
+      <method name="ljust" signature="ljust(width[, fillchar])">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="lower" signature="lower()">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="lstrip" signature="lstrip([chars])">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="maketrans" signature="maketrans(x[, y[, z]])">
+        <return type="dict" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="partition" signature="partition(sep)">
+        <return type="tuple" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="replace" signature="replace(old, new[, count])">
+        <return type="str" />
+        <neutralization argpos="-1" kind="string" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="rfind" signature="rfind(sub[, start[, end]])">
+        <return type="int" />
+      </method>
+      <method name="rindex" signature="rindex(sub[, start[, end]])">
+        <return type="int" />
+      </method>
+      <method name="rjust" signature="rjust(width[, fillchar])">
+        <return type="str" />
+      </method>
+      <method name="rpartition" signature="rpartition(sep)">
+        <return type="tuple" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="rpartition" signature="rpartition(sep)">
+        <return type="tuple" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="rsplit" signature="rsplit(sep=None, maxsplit=-1)">
+        <return type="list" />
+        <propagate from="-2" to="-1" />
+        <sink argpos="0" paramNames="sep" kind="regex_dos"/>
+      </method>
+      <method name="rstrip" signature="rstrip([chars])">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="split" signature="split(sep=None, maxsplit=-1)">
+        <return type="list" />
+        <propagate from="-2" to="-1" />
+        <sink argpos="0" paramNames="sep" kind="regex_dos"/>
+      </method>
+      <method name="splitlines" signature="splitlines([keepends])">
+        <return type="list" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="startswith" signature="startswith(prefix[, start[, end]])">
+        <return type="bool" />
+      </method>
+      <method name="startswith" signature="startswith(prefix[, start[, end]])">
+        <return type="bool" />
+      </method>
+      <method name="strip" signature="strip([chars])">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="swapcase" signature="swapcase()">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="title" signature="title()">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="translate" signature="translate(table)">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="upper" signature="upper()">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+      <method name="zfill" signature="zfill(width)">
+        <return type="str" />
+        <propagate from="-2" to="-1" />
+      </method>
+    </class>
+
+    <class name="tuple" supertypes="collections.abc.Sequence" />
+    <class name="type"/>
+    <!-- in python2, unicode and str were different and subclassed basestring; in python3, str == unicode, and basestring removed  -->
+    <class name="unicode" supertypes="str"/>
+    <class name="xrange"/>
+
+    <member name="False" type="bool"/>
+    <member name="True" type="bool"/>
+    <member name="None" type="NoneType"/>
+    <member name="NotImplemented" type="NotImplementedType"/>
+    <member name="Ellipsis" type="ellipsis"/>
+    <member name="__debug__" type="bool"/>
+
+    <class name="BaseException" >
+      <field name="args" type="tuple" />
+
+      <method name="with_traceback" signature="with_traceback(tb)" >
+        <return type="BaseException" />
+      </method>
+    </class>
+
+    <class name="Exception" supertypes="BaseException" />
+    <class name="ArithmeticError" supertypes="Exception" />
+    <class name="BufferError" supertypes="Exception" />
+    <class name="LookupError" supertypes="Exception" />
+    <class name="AssertionError" supertypes="Exception" />
+    <class name="AttributeError" supertypes="Exception" />
+    <class name="EOFError" supertypes="Exception" />
+    <class name="FloatingPointError" supertypes="ArithmeticError" />
+    <class name="GeneratorExit" supertypes="BaseException" />
+    <class name="ImportError" supertypes="Exception" />
+    <class name="ModuleNotFoundError" supertypes="ImportError" />
+    <class name="IndexError" supertypes="LookupError" />
+    <class name="KeyError" supertypes="LookupError" />
+    <class name="KeyboardInterrupt" supertypes="BaseException" />
+    <class name="MemoryError" supertypes="Exception" />
+    <class name="NameError" supertypes="Exception" />
+    <class name="NotImplementedError" supertypes="RuntimeError" />
+
+    <class name="OSError" supertypes="Exception" >
+      <field name="errno" type="int" />
+      <field name="winerror" type="object" />
+      <field name="strerror" type="object" />
+      <field name="filename" type="object" />
+      <field name="filename2" type="object" />
+    </class>
+
+    <class name="OverflowError" supertypes="ArithmeticError" />
+    <class name="RecursionError" supertypes="RuntimeError" />
+    <class name="ReferenceError" supertypes="Exception" />
+    <class name="RuntimeError" supertypes="Exception" />
+    <class name="StopIteration" supertypes="Exception" />
+    <class name="StopAsyncIteration" supertypes="Exception" />
+    <class name="SyntaxError" supertypes="Exception" />
+    <class name="IndentationError" supertypes="SyntaxError" />
+    <class name="TabError" supertypes="IndentationError" />
+    <class name="SystemError" supertypes="Exception" />
+
+    <class name="SystemExit" supertypes="BaseException" >
+      <field name="code" type="object" />
+    </class>
+
+    <class name="TypeError" supertypes="Exception" />
+    <class name="UnboundLocalError" supertypes="NameError" />
+
+    <class name="UnicodeError" supertypes="ValueError" >
+      <field name="encoding" type="str" />
+      <field name="reason" type="str" />
+      <field name="object" type="object" />
+      <field name="start" type="int" />
+      <field name="end" type="int" />
+    </class>
+
+    <class name="UnicodeEncodeError" supertypes="UnicodeError" />
+    <class name="UnicodeDecodeError" supertypes="UnicodeError" />
+    <class name="UnicodeTranslateError" supertypes="UnicodeError" />
+    <class name="ValueError" supertypes="Exception" />
+    <class name="ZeroDivisionError" supertypes="ArithmeticError" />
+    <class name="IOError" supertypes="Exception" />
+    <class name="WindowsError" supertypes="Exception" />
+
+    <class name="BlockingIOError" supertypes="OSError" >
+      <field name="characters_written" type="int" />
+    </class>
+
+    <class name="ChildProcessError" supertypes="OSError" />
+    <class name="ConnectionError" supertypes="OSError" />
+    <class name="BrokenPipeError" supertypes="ConnectionError" />
+    <class name="ConnectionAbortedError" supertypes="ConnectionError" />
+    <class name="ConnectionRefusedError" supertypes="ConnectionError" />
+    <class name="ConnectionResetError" supertypes="ConnectionError" />
+    <class name="FileExistsError" supertypes="OSError" />
+    <class name="FileNotFoundError" supertypes="OSError" />
+    <class name="InterruptedError" supertypes="OSError" />
+    <class name="IsADirectoryError" supertypes="OSError" />
+    <class name="NotADirectoryError" supertypes="OSError" />
+    <class name="PermissionError" supertypes="OSError" />
+    <class name="ProcessLookupError" supertypes="OSError" />
+    <class name="TimeoutError" supertypes="OSError" />
+    <class name="Warning" supertypes="Exception" />
+    <class name="UserWarning" supertypes="Warning" />
+    <class name="DeprecationWarning" supertypes="Warning" />
+    <class name="PendingDeprecationWarning" supertypes="Warning" />
+    <class name="SyntaxWarning" supertypes="Warning" />
+    <class name="RuntimeWarning" supertypes="Warning" />
+    <class name="FutureWarning" supertypes="Warning" />
+    <class name="ImportWarning" supertypes="Warning" />
+    <class name="UnicodeWarning" supertypes="Warning" />
+    <class name="BytesWarning" supertypes="Warning" />
+    <class name="ResourceWarning" supertypes="Warning" />
+
+  </module>
+
+</library>

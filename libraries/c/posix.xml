@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="posix" standard="posix" technology="cpp">
+  <description url="https://pubs.opengroup.org/onlinepubs/9699919799/functions/contents.html">POSIX C standard library</description>
+
+  <header name="unistd.h">
+    <globalObject name="optarg" type="char*"/>
+    <globalObject name="optind" type="int"/>
+    <globalObject name="opterr" type="int"/>
+    <globalObject name="optopt" type="int"/>
+
+    <function name="alarm" signature="unsigned int alarm(unsigned int seconds)">
+      <description>
+        Causes the system to generate a SIGALRM signal for the process after the number of real-time seconds specified by seconds have elapsed.
+        If seconds is 0, a pending alarm request, if any, is cancelled.
+      </description>
+      <errorProcessing kind="none"/>
+    </function>
+    <function name="brk" signature="int brk(void* addr)">
+      <description>Change the amount of space allocated for the calling process.</description>
+      <tags>memory allocation</tags>
+      <parametersSet>0</parametersSet>
+      <errorProcessing kind="errno"/>
+    </function>
+
+    <function name="chroot" signature="int chroot(const char* path)">
+      <description>
+        Causes the named directory to become the root directory; that is, the starting point for path searches for pathnames beginning with /.
+        The process' working directory is unaffected by chroot().
+      </description>
+      <errorProcessing kind="errno"/>
+      <sink argpos="0" resource="filesystem" kind="path_traversal"/>
+    </function>
+
+    <!-- POSIX file operations -->
+    <function name="canonicalize_file_name" signature="char* canonicalize_file_name (const char* name)" standard="gnu">
+      <tags>path-canonicalization:-1</tags>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="close" signature="int fclose(int fildes)">
+      <tags>fileop</tags>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="fchdir" signature="int fchdir(int fildes)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="fchmodat" signature="int chmod(int fd, const char *path, mode_t mode, int flag)">
+      <sink argpos="1" kind="path_traversal" resource="filesystem" />
+    </function>
+    <function name="fsync" signature="int fsync(int fildes)">
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="ftruncate" signature="int ftruncate(int fildes, off_t length)">
+      <description>truncate a file to a specified length</description>
+      <errorProcessing kind="errno"/>
+    </function>
+    <function name="getcwd" signature="char *getcwd(char *buf, size_t size)">
+      <tags>dest:0, maxsize:1</tags>
+      <parametersSet>0</parametersSet>
+      <source resource="filesystem" kind="system_information" argpos="-1,0"/>
+    </function>
+    <function name="mktemp" signature="FILE* mktemp(FILE *template)">
+      <tags>fileop, tempfile, unsafe</tags>
+    </function>
+    <function name="mkstemp" signature="FILE* mktemp(FILE *template)">
+      <description>
+        Function recomended, when available and used correctly, by CERT-C FIO21, to create temporary files in shared directories
+      </description>
+      <tags>fileop, tempfile</tags>
+    </function>
+    <function name="pread" signature="size_t pread(int filedes, void* buf, size_t nbyte, off_t offset)">
+      <tags>fileop, dest:1, maxsize:2</tags>
+      <parametersSet>0</parametersSet>
+      <errorProcessing kind="errno"/>
+      <source argpos="1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="read" signature="size_t read(int filedes, void* buf, size_t nbyte)">
+      <tags>fileop, dest:1, maxsize:2</tags>
+      <parametersSet>0</parametersSet>
+      <errorProcessing kind="errno"/>
+      <source argpos="1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="realpath" signature="char *realpath(char* file_name, char* resolved_name)">
+      <tags>path-canonicalization:-1</tags>
+      <errorProcessing kind="errno"/>
+      <propagate from="0" to="1,-1"/>
+    </function>
+    <function name="truncate" signature="int truncate(const char* path, off_t length)">
+      <description>truncate a file to a specified length</description>
+      <errorProcessing kind="errno"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="write" signature="size_t write(int fildes, const void *buf, size_t nbyte)">
+      <tags>directIO,file write,src:1,dest:0</tags>
+      <sink argpos="1" resource="filesystem" kind="filewrite"/>
+    </function>
+    <function name="pwrite" signature="size_t pwrite(int fildes, const void *buf, size_t nbyte, off_t offset)">
+      <tags>directIO,file write,src:1,dest:0</tags>
+      <sink argpos="1" resource="filesystem" kind="filewrite"/>
+    </function>
+
+    <!-- system info -->
+    <function name="gethostname" signature="int gethostname(char *name, size_t namelen)">
+      <source argpos="0" resource="environment" kind="system_information"/>
+    </function>
+    <function name="gethostid" signature="long gethostid(void)">
+      <source argpos="0" resource="environment" kind="system_information"/>
+    </function>
+    <function name="confstr" signature="size_t confstr(int name, char *buf, size_t len)">
+      <description>Configuration strings, including PATH and ENV</description>
+      <errorProcessing kind="errno"/>
+      <source argpos="1" resource="environment" kind="system_information"/>
+    </function>
+    <function name="sysconf" signature="long sysconf(int name)">
+      <errorProcessing kind="errno"/>
+    </function>
+
+    <!-- old unix crypto -->
+    <function name="crypt" signature="char* crypt(char* key, char* salt)">
+      <tags>key_derivation, weak.crypto.algo, password:0, data:0, salt:1, cipherText:-1</tags>
+      <sink argpos="0" kind="hardcoded_password" resource="crypto"/>
+      <sink argpos="1" kind="hardcoded_salt" resource="crypto"/>
+      <neutralization kind="encryption" argpos="-1" resource="crypto"/>
+    </function>
+    <function name="encrypt" signature="void encrypt(char block[64], int edflag)">
+      <tags>cipher, encrypt, decrypt, weak.crypto.algo, data:0, cipherText:0</tags>
+      <errorProcessing kind="errno"/>
+      <neutralization kind="encryption" argpos="0" resource="crypto"/>
+    </function>
+    <function name="setkey" signature="void setkey(char *key)">
+      <tags>key:0</tags>
+      <sink argpos="0" kind="hardcoded_key" resource="crypto"/>
+    </function>
+
+    <!-- exec* - Variations: e = envp l=variadic args p=PATH used v=argv[] -->
+    <function name="execl" signature="execl(const char *path, const char *arg0, ...)" alias="execle, _texecl, _execl, _wexecl">
+      <errorProcessing kind="errno"/>
+      <sink kind="command_injection" argpos="0" resource="os"/>
+    </function>
+    <function name="execlp" signature="execlp(const char *file, const char *arg0, ...)" alias="_texeclp, _execlp, _wexeclp">
+      <description>As this calls shell, all args are vulnerable by using shell metachars</description>
+      <errorProcessing kind="errno"/>
+      <sink kind="command_injection" argpos="0, 1, 2" resource="os"/>
+    </function>
+    <function name="execv" signature="execv(const char *path, char *argv[])" alias="_texecv, _execv, _wexecv">
+      <errorProcessing kind="errno"/>
+      <sink kind="command_injection" argpos="0" resource="os"/>
+    </function>
+    <function name="execve" signature="execve(const char *path, char *argv[], char *envp[])" alias="_texecve, _execve, _wexecve">
+      <errorProcessing kind="errno"/>
+      <sink kind="command_injection" argpos="0" resource="os"/>
+    </function>
+    <function name="execvp" signature="execvp(const char *file, const char *arg0[])" alias="_texecvp, _execvp, _wexecvp">
+      <description>As this calls shell, all args are vulnerable by using shell metachars</description>
+      <errorProcessing kind="errno"/>
+      <sink kind="command_injection" argpos="0, 1" resource="os"/>
+    </function>
+    <function name="execvpe" signature="execvp(const char *file, const char *arg0[], const char *envp)" alias="_texecvpe, _execvpe, _wexecvpe">
+      <description>As this calls shell, all args are vulnerable by using shell metachars</description>
+      <errorProcessing kind="errno"/>
+      <sink kind="command_injection" argpos="0, 1" resource="os"/>
+    </function>
+    <function name="fexecve" signature="int fexecve(int fd, char *argv[], char *envp[])">
+      <errorProcessing kind="errno"/>
+    </function>
+
+    <!-- process control -->
+    <function name="fork" signature="pid_t fork()" alias="vfork"></function>
+    <function name="pipe" signature="int pipe(int filedes[2])"></function>
+    <function name="waitpid" signature="pid_t waitpid(pid_t pid, int *status, int options)"></function>
+    <function name="wait" signature="pid_t wait(int *status)"></function>
+    <function name="wait3" signature="pid_t wait3(int *status, int options, rusage *usage)"></function>
+    <function name="wait4" signature="pid_t wait4(pid_t pid, int *status, int options, rusage *usage)"></function>
+    <function name="sleep" signature="unsigned sleep(unsigned seconds)"></function>
+
+    <!-- setters for user/group ID -->
+    <function name="setuid"    signature="int setuid(uid_t id)" alias="seteuid"></function>
+    <function name="setgid"    signature="int setgid(gid_t id)" alias="setegid"></function>
+    <function name="setreuid"  signature="int setreuid(uid_t ruid, uid_t euid)"></function>
+    <function name="setregid"  signature="int setregid(gid_t rgid, gid_t egid)"></function>
+    <function name="setresuid" signature="int setresuid(uid_t ruid, uid_t euid, uid_t suid)"></function>
+    <function name="setresgid" signature="int setresgid(gid_t rgid, gid_t egid, gid_t sgid)"></function>
+
+    <function name="setsid"  signature="pid_t setsid(void)" alias="setpgrp, getpgrp"></function>
+    <function name="getsid"  signature="pid_t getsid(pid_t pid)"></function>
+    <function name="setpgid" signature="int setpgid(pid_t pid, pid_t pgid)"></function>
+
+    <!-- other -->
+    <function name="swab" signature="void swab(void *src, void *dest, size_t nbytes)">
+      <description>Copy nbytes bytes, which are pointed to by src, to the object pointed to by dest, exchanging adjacent bytes</description>
+      <tags>src:0, dest:1, maxsize:1</tags>
+      <parametersSet>1</parametersSet>
+      <propagate from="0" to="1"/>
+    </function>
+
+  </header>
+  
+  <header name="syslog.h">
+    <function name="openlog" signature="void openlog(const char *ident, int logopt, int facility)">
+      <description>
+        Set process attributes that affect subsequent calls to syslog().
+        The ident argument is a string that is prepended to every message.
+        The logopt argument indicates logging options.
+      </description>
+    </function>
+    
+    <function name="syslog" signature="void syslog(int priority, const char *message, ...)">
+      <description>
+        Send a message to an implementation-defined logging facility, which may log it in an implementation-defined system log,
+        write it to the system console, forward it to a list of users, or forward it to the logging facility on another host over the network.
+        The logged message shall include a message header and a message body. The message header contains at least a timestamp and a tag string.
+
+        The message body is generated from the message and following arguments in the same manner as if these were arguments to printf(),
+        except that the additional conversion specification %m shall be recognized; it shall convert no arguments, shall cause the output
+        of the error message string associated with the value of errno on entry to syslog(), and may be mixed with argument specifications
+        of the "%n$" form. If a complete conversion specification with the m conversion specifier character is not just %m, the behavior is undefined.
+        A trailing newline may be added if needed.
+      </description>
+      <sink resource="formatstr" argpos="1" kind="format_injection"/>
+    </function>
+    
+    <function name="setlogmask" signature="int setlogmask(int maskpri)">
+      <description>
+        Set the log priority mask for the current process to maskpri and return the previous mask.
+        If the maskpri argument is 0, the current log mask is not modified.
+      </description>
+    </function>
+
+    <function name="closelog" signature="void closelog(void)">
+      <description>close any open file descriptors allocated by previous calls to openlog() or syslog()</description>
+    </function>
+
+  </header>
+
+  <header name="regex.h">
+    <function name="regcomp" signature="regcomp(regex_t *preg, const char *regex, int cflags)" >
+      <return type="int" />
+      <!-- moved here because ReDos injection happens at string in #2 param; but yes, DoS itself happens in regexec() -->
+      <sink argpos="1" kind="regex_dos" resource="other" />
+    </function>
+    <function name="regexec" signature="regexec(const regex_t *preg, const char *string, size_t nmatch, regmatch_t pmatch[], int eflags)" >
+      <return type="int" />
+      <neutralization argpos="1" kind="string"/>
+    </function>
+
+    <!-- old bsd regex, deprecated -->
+    <function name="re_comp" signature="re_comp(const char *regex)" standard="bsd">
+      <tags>deprecated, deprecatedBy:regcomp</tags>
+      <return type="char*"/>
+      <sink argpos="0" kind="regex_dos" resource="other" />
+    </function>
+    <function name="re_exec" signature="re_exec(const char *string)" standard="bsd">
+      <tags>deprecated, deprecatedBy:regexec</tags>
+      <return type="int"/>
+      <neutralization argpos="0" kind="string"/>
+    </function>
+
+    <!-- gnu extensions -->
+    <function name="re_compile_pattern" standard="gnu" signature=
+      "re_compile_pattern(const char *regex, const int regex_size, struct re_pattern_buffer *pattern_buffer)">
+      <return type="char*"/>
+      <sink argpos="0" kind="regex_dos" resource="other" />
+    </function>
+    <function name="re_match" standard="gnu" signature=
+      "re_match(struct re_pattern_buffer *pattern_buffer, const char *string, const int size, const int start, struct re_registers *regs)">
+      <return type="int"/>
+      <neutralization argpos="1" kind="string"/>
+    </function>
+    <function name="re_search" standard="gnu" signature=
+      "re_search (struct re_pattern_buffer *pattern_buffer, const char *string, const int size, const int start, const int range, struct re_registers *regs)">
+      <return type="int"/>
+      <neutralization argpos="1" kind="string"/>
+    </function>
+    <function name="re_match_2" standard="gnu" alias="re_search_2" signature=
+      "re_match_2(struct re_pattern_buffer *buffer, const char *string1, const int size1, const char *string2, const int size2, const int start, struct re_registers *regs, const int stop)">
+      <return type="int"/>
+      <neutralization argpos="1,3" kind="string"/>
+    </function>
+
+    <!-- System V regcmp -->
+    <function name="regcmp" signature="regcmp(const char *string, ...)" standard="systemV">
+      <return type="char *"/>
+      <sink argpos="0" kind="regex_dos" resource="other" />
+    </function>
+    <function name="regex" signature="regex(const char *re, const char *subject , ...)" standard="systemV">
+      <return type="char *"/>
+      <neutralization argpos="1" kind="string"/>
+    </function>
+
+  </header>
+
+  <header name="dlfcn.h">
+    <function name="dlopen" signature="void *dlopen(const char *file, int mode)" match="name">
+      <tags>open, handle:-1</tags>
+      <sink kind="process_control" argpos="0" resource="filesystem"/>
+    </function>
+    <function name="dlsym" signature="void *dlsym(void *handle, const char *name)">
+      <sink kind="unsafe_reflection" argpos="1" resource="other"/>
+    </function>
+    <function name="dlclose" signature="int dlclose(void *handle)">
+      <tags>close, handle:0</tags>
+    </function>
+  </header>
+
+  <header name="alloca.h" standard="gnulib">
+    <function name="alloca" signature="void* alloca(size_t sz)">
+      <tags>memory allocation,abortOnFailure,stack,nullptr:-1,memsize:0</tags>
+      <source resource="memory" argpos="-1" kind="memory_allocation"/>
+    </function>
+  </header>
+
+</library>

@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="cpp.streams" standard="streams" technology="cpp">
+
+  <description url="https://en.cppreference.com/w/cpp/io">C++ Streams library</description>
+
+  <type name="streamsize" supertypes="ssize_t"></type>
+
+  <class name="ios_base">
+    <constructor name="ios_base" signature="ios_base()"/>
+    <constructor name="ios_base" signature="ios_base(const ios_base&amp;)"/>
+  </class>
+
+  <class name="basic_ios" supertypes="ios_base">
+    <constructor name="basic_ios" signature="basic_ios()"/>
+    <constructor name="basic_ios" signature="basic_ios(basic_streambuf*)"/>
+
+    <method name="tie" signature="tie()">
+      <return type="basic_ostream*"/>
+    </method>
+    <method name="tie_2" signature="tie(basic_ostream*)">
+      <return type="basic_ostream*"/>
+    </method>
+    <method name="rdbuf" signature="rdbuf()">
+      <return type="basic_streambuf*"/>
+      <propagate from="-2" to="-1"/>
+    </method>
+    <method name="rdbuf_2" signature="rdbuf(basic_streambuf*)">
+      <return type="basic_streambuf*"/>
+      <propagate from="0" to="-2"/>
+    </method>
+  </class>
+
+  <type name="ios" supertypes="basic_ios" itemType="char"/>
+  <type name="wios" supertypes="basic_ios" itemType="wchar_t"/>
+
+  <class name="basic_streambuf" supertypes="basic_ios">
+    <constructor name="basic_streambuf" signature="basic_streambuf()"/>
+    <constructor name="basic_streambuf" signature="basic_streambuf(const basic_streambuf&amp;)"/>
+    <method name="setbuf" signature="setbuf(char_type*, streamsize)" alias="pubsetbuf">
+      <return type="basic_streambuf*"/>
+      <propagate from="-2" to="0"/>
+    </method>
+    <method name="snextc" signature="snextd()" alias="sgetc, sbumpc, sungetc">
+      <tags>read</tags>
+      <return type="int_type"/>
+      <propagate from="-2" to="-1"/>
+    </method>
+    <method name="sgetn" signature="sgetn(char_type*, streamsize)" alias="xsgetn">
+      <tags>read</tags>
+      <return type="streamsize"/>
+      <propagate from="-2" to="0"/>
+    </method>
+    <method name="sputc" signature="sputc(char_type)" alias="sputbackc">
+      <tags>write</tags>
+      <return type="int_type"/>
+      <propagate from="0" to="-2"/>
+    </method>
+    <method name="sputn" signature="sputn(const char_type*, streamsize)" alias="xsputn">
+      <tags>write</tags>
+      <return type="streamsize"/>
+      <propagate from="0" to="-2"/>
+    </method>
+    <method name="pubsync" signature="pubsync()" alias="sync">
+      <return type="int"/>
+    </method>
+  </class>
+
+  <type name="streambuf" supertypes="basic_streambuf" itemType="char"/>
+  <type name="wstreambuf" supertypes="basic_streambuf" itemType="wchar_t"/>
+
+  <class name="basic_istream" supertypes="basic_ios">
+    <constructor name="basic_istream" signature="basic_istream(basic_streambuf*)"/>
+    <method name="operator_>>" signature="operator_>>()" match="name">
+      <tags>read</tags>
+      <return type="basic_istream&amp;"/>
+      <propagate from="-2" to="0"/>
+    </method>
+    <method name="get" signature="get()">
+      <tags>read</tags>
+      <return type="int_type"/>
+      <propagate from="-2" to="-1"/>
+    </method>
+    <method name="get_2" signature="get(char_type&amp;)" match="numargs">
+      <tags>read</tags>
+      <return type="basic_istream&amp;"/>
+      <propagate from="-2" to="0"/>
+    </method>
+    <method name="get_3" signature="get(char_type*, streamsize)" match="numargs">
+      <tags>read</tags>
+      <return type="basic_istream&amp;"/>
+      <propagate from="-2" to="0"/>
+    </method>
+    <method name="get_4" signature="get(char_type*, streamsize, char_type)" match="numargs">
+      <tags>read</tags>
+      <return type="basic_istream&amp;"/>
+      <propagate from="-2" to="0"/>
+    </method>
+    <method name="unget" signature="unget()">
+      <return type="basic_istream&amp;"/>
+    </method>
+    <method name="putback" signature="putback(char_type)">
+      <propagate from="0" to="-2"/>
+    </method>
+    <method name="getline" signature="getline(char_type*, streamsize)" match="name">
+      <tags>read</tags>
+      <return type="basic_istream&amp;"/>
+      <propagate from="-2" to="0"/>
+    </method>
+    <method name="ignore" signature="ignore(streamsize, int_type)" match="name">
+      <return type="basic_istream&amp;"/>
+    </method>
+    <method name="read" signature="read(char_type*, streamsize)">
+      <tags>read</tags>
+      <return type="basic_istream&amp;"/>
+      <propagate from="-2" to="0"/>
+    </method>
+    <method name="readsome" signature="readsome(char_type*, streamsize)">
+      <tags>read</tags>
+      <return type="streamsize"/>
+      <propagate from="-2" to="0"/>
+    </method>
+    <method name="gcount" signature="gcount()"><return type="streamsize"/></method>
+    <method name="tellg" signature="tellg"><return type="pos_type"/></method>
+    <method name="seekg" signature="seekg(pos_type)" match="name"><return type="basic_istream&amp;"/></method>
+  </class>
+
+  <type name="istream" supertypes="basic_istream" itemType="char"/>
+  <type name="wistream" supertypes="basic_istream" itemType="wchar_t"/>
+
+  <class name="basic_ostream" supertypes="basic_ios">
+
+    <method name="operator_&lt;&lt;" signature="operator_&lt;&lt;()" match="name">
+      <tags>write</tags>
+      <return type="basic_ostream&amp;"/>
+      <propagate from="0" to="-2"/>
+    </method>
+    <method name="put" signature="put(char_type)">
+      <tags>write</tags>
+      <return type="basic_ostream&amp;"/>
+      <propagate from="0" to="-2"/>
+    </method>
+    <method name="write" signature="write(const char_type*, streamsize)">
+      <tags>write</tags>
+      <return type="basic_ostream&amp;"/>
+      <propagate from="0" to="-2"/>
+    </method>
+    <method name="tellp" signature="tellp"><return type="pos_type"/></method>
+    <method name="seekp" signature="seekp(pos_type)" match="name"><return type="basic_ostream&amp;"/></method>
+    <method name="flush" signature="flush()"><return type="basic_ostream&amp;"/></method>
+  </class>
+
+  <function name="endl" signature="endl(basic_ostream&amp;)">
+   <return type="basic_ostream&amp;"/>
+  </function>
+
+  <type name="ostream" supertypes="basic_ostream" itemType="char"/>
+  <type name="wostream" supertypes="basic_ostream" itemType="wchar_t"/>
+
+  <class name="basic_iostream" supertypes="basic_istream, basic_ostream">
+    <constructor name="basic_iostream" signature="basic_istream(basic_streambuf*)"/>
+  </class>
+
+  <class name="basic_filebuf" supertypes="basic_streambuf">
+    <constructor name="basic_filebuf" signature="basic_filebuf()"/>
+    <method name="open" signature="open(const char*, ios_base::openmode)">
+      <return type="basic_filebuf*"/>
+      <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+    </method>
+    <method name="close" signature="close()"><return type="basic_filebuf*"/></method>
+    <method name="setbuf" signature="setbuf(char_type*, streamsize)" alias="pubsetbuf">
+      <return type="basic_streambuf*"/>
+      <propagate from="-2" to="0"/>
+    </method>
+    <method name="snextc" signature="snextd()" alias="sgetc, sbumpc, sungetc">
+      <tags>read</tags>
+      <return type="int_type"/>
+      <source kind="file_input" argpos="-1" resource="filesystem"/>
+    </method>
+    <method name="sgetn" signature="sgetn(char_type*, streamsize)" alias="xsgetn">
+      <tags>read</tags>
+      <return type="streamsize"/>
+      <propagate from="-2" to="0"/>
+      <source kind="file_input" argpos="0" resource="filesystem"/>
+    </method>
+    <method name="sputc" signature="sputc(char_type)" alias="sputbackc">
+      <tags>write</tags>
+      <return type="int_type"/>
+      <propagate from="0" to="-2"/>
+      <sink kind="file_output" argpos="-2" resource="filesystem"/>
+    </method>
+    <method name="sputn" signature="sputn(const char_type*, streamsize)" alias="xsputn">
+      <tags>write</tags>
+      <return type="streamsize"/>
+      <propagate from="0" to="-2"/>
+      <sink kind="file_output" argpos="-2" resource="filesystem"/>
+    </method>
+  </class>
+
+  <class name="basic_ifstream" supertypes="basic_istream">
+    <constructor name="basic_ifstream" signature="basic_ifstream()" match="numargs"/>
+    <constructor name="basic_ifstream" signature="basic_ifstream(const char*)" match="numargs">
+      <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+    </constructor>
+    <constructor name="basic_ifstream" signature="basic_ifstream(const char*, ios_base.openmode)" match="numargs">
+      <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+    </constructor>
+    <method name="open" signature="open(const char*, ios_base.openmode)" match="name">
+      <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+    </method>
+    <method name="close" signature="close()"></method>
+    <method name="operator_>>" signature="operator_>>()" match="name">
+      <tags>read</tags>
+      <return type="basic_ifstream&amp;"/>
+      <source argpos="0" kind="file_input" resource="filesystem"/>
+    </method>
+    <method name="get" signature="get()">
+      <tags>read</tags>
+      <return type="int_type"/>
+      <propagate from="-2" to="-1"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </method>
+    <method name="get_2" signature="get(char_type&amp;)" match="numargs">
+      <tags>read</tags>
+      <return type="basic_istream&amp;"/>
+      <propagate from="-2" to="0"/>
+      <source argpos="0" kind="file_input" resource="filesystem"/>
+    </method>
+    <method name="get_3" signature="get(char_type*, streamsize)" match="numargs">
+      <tags>read</tags>
+      <return type="basic_istream&amp;"/>
+      <propagate from="-2" to="0"/>
+      <source argpos="0" kind="file_input" resource="filesystem"/>
+    </method>
+    <method name="get_4" signature="get(char_type*, streamsize, char_type)" match="numargs">
+      <tags>read</tags>
+      <return type="basic_istream&amp;"/>
+      <propagate from="-2" to="0"/>
+      <source argpos="0" kind="file_input" resource="filesystem"/>
+    </method>
+    <method name="getline" signature="getline(char_type*, streamsize)" match="name">
+      <tags>read</tags>
+      <return type="basic_istream&amp;"/>
+      <propagate from="-2" to="0"/>
+      <source argpos="0" kind="file_input" resource="filesystem"/>
+    </method>
+    <method name="read" signature="read(char_type*, streamsize)">
+      <tags>read</tags>
+      <return type="basic_istream&amp;"/>
+      <propagate from="-2" to="0"/>
+      <source argpos="0" kind="file_input" resource="filesystem"/>
+    </method>
+    <method name="readsome" signature="readsome(char_type*, streamsize)">
+      <tags>read</tags>
+      <return type="streamsize"/>
+      <propagate from="-2" to="0"/>
+      <source argpos="0" kind="file_input" resource="filesystem"/>
+    </method>
+  </class>
+
+  <type name="ifstream" supertypes="basic_ifstream" itemType="char"/>
+  <type name="wifstream" supertypes="basic_ifstream" itemType="wchar_t"/>
+
+  <class name="basic_ofstream" supertypes="basic_ostream">
+    <constructor name="basic_ofstream" signature="basic_ofstream(const char*)" match="numargs">
+      <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+    </constructor>
+    <constructor name="basic_ofstream" signature="basic_ofstream(const char*, ios_base.openmode)" match="numargs">
+      <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+    </constructor>
+    <method name="open" signature="open(const char*, ios_base::openmode)" match="name">
+      <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+    </method>
+    <method name="operator_&lt;&lt;" signature="operator_&lt;&lt;()" match="name">
+      <tags>write</tags>
+      <return type="basic_ostream&amp;"/>
+      <propagate from="0" to="-2"/>
+      <sink kind="file_output" argpos="0" resource="filesystem"/>
+    </method>
+    <method name="put" signature="put(char_type)">
+      <tags>write</tags>
+      <return type="basic_ostream&amp;"/>
+      <propagate from="0" to="-2"/>
+      <sink kind="file_output" argpos="0" resource="filesystem"/>
+    </method>
+    <method name="write" signature="write(const char_type*, streamsize)">
+      <tags>write</tags>
+      <return type="basic_ostream&amp;"/>
+      <propagate from="0" to="-2"/>
+      <sink kind="file_output" argpos="0" resource="filesystem"/>
+    </method>
+  </class>
+
+  <type name="ofstream" supertypes="basic_ofstream" itemType="char"/>
+  <type name="wofstream" supertypes="basic_ofstream" itemType="wchar_t"/>
+
+  <class name="basic_fstream" supertypes="basic_ifstream, basic_ofstream">
+    <constructor name="basic_fstream" signature="basic_fstream()" match="numargs"/>
+    <constructor name="basic_fstream" signature="basic_fstream(const char*)" match="numargs">
+      <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+    </constructor>
+    <constructor name="basic_fstream" signature="basic_fstream(const char*, ios_base.openmode)" match="numargs">
+      <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+    </constructor>
+  </class>
+
+  <type name="fstream" supertypes="basic_ofstream" itemType="char"/>
+  <type name="wfstream" supertypes="basic_ofstream" itemType="wchar_t"/>
+
+  <class name="basic_stringbuf" supertypes="basic_streambuf">
+    <constructor name="basic_stringbuf" signature="basic_stringbuf()"/>
+    <constructor name="basic_stringbuf" signature="basic_stringbuf(const basic_string&amp;)"/>
+    <constructor name="basic_stringbuf" signature="basic_stringbuf(const basic_string&amp;, ios_base.openmode)"/>
+    <method name="str" signature="str()" match="name">
+      <return type="basic_string"/>
+      <propagate from="-2" to="-1"/>
+    </method>
+    <method name="view" signature="view()">
+      <return type="basic_string_view"/>
+      <propagate from="-2" to="-1"/>
+    </method>
+  </class>
+  
+  <class name="basic_istringstream" supertypes="basic_istream, basic_stringbuf">
+    <constructor name="basic_istringstream" signature="basic_istringstream()"/>
+    <constructor name="basic_istringstream" signature="basic_istringstream(const string&amp;)"/>
+    <constructor name="basic_istringstream" signature="basic_istringstream(const string&amp;, ios_base.openmode)"/>
+  </class>
+  <class name="basic_ostringstream" supertypes="basic_ostream, basic_stringbuf">
+    <constructor name="basic_ostringstream" signature="basic_ostringstream()"/>
+    <constructor name="basic_ostringstream" signature="basic_ostringstream(const string&amp;)"/>
+    <constructor name="basic_ostringstream" signature="basic_ostringstream(const string&amp;, ios_base.openmode)"/>
+  </class>
+  <class name="basic_stringstream" supertypes="basic_iostream, basic_stringbuf">
+    <constructor name="basic_stringstream" signature="basic_stringstream()"/>
+    <constructor name="basic_stringstream" signature="basic_stringstream(const string&amp;)"/>
+    <constructor name="basic_stringstream" signature="basic_stringstream(const string&amp;, ios_base.openmode)"/>
+  </class>
+  
+  <type name="istringstream" supertypes="basic_istringstream" itemType="char"/>
+  <type name="wistringstream" supertypes="basic_istringstream" itemType="wchar_t"/>
+  <type name="ostringstream" supertypes="basic_ostringstream" itemType="char"/>
+  <type name="wostringstream" supertypes="basic_ostringstream" itemType="wchar_t"/>
+  <type name="stringstream" supertypes="basic_stringstream" itemType="char"/>
+  <type name="wstringstream" supertypes="basic_stringstream" itemType="wchar_t"/>
+  
+  <type name="stringbuf" supertypes="basic_streambuf" itemType="char" alias="strstreambuf">
+    <method name="str" signature="str()" match="name">
+      <return type="char*"/>
+      <propagate from="-2" to="-1"/>
+    </method>
+  </type>
+  
+  <class name="istrstream" supertypes="basic_istream">
+    <constructor name="istrstream" signature="istrstream(char*)"></constructor>
+    <constructor name="istrstream" signature="istrstream(char*, streamsize)"></constructor>
+    <method name="rdbuf" signature="rdbuf()"><return type="strstreambuf*"/></method>
+    <method name="str" signature="str()"><return type="char*"/></method>
+  </class>
+
+  <class name="ostrstream" supertypes="basic_ostream">
+    <constructor name="ostrstream" signature="ostrstream()"></constructor>
+    <constructor name="ostrstream" signature="ostrstream(char*)"></constructor>
+    <constructor name="ostrstream" signature="ostrstream(char*, streamsize)"></constructor>
+    <method name="rdbuf" signature="rdbuf()"><return type="strstreambuf*"/></method>
+    <method name="str" signature="str()"><return type="char*"/></method>
+  </class>
+
+  <class name="strstream" supertypes="basic_istream, basic_ostream">
+    <constructor name="strstream" signature="strstream()"></constructor>
+    <constructor name="strstream" signature="strstream(char*, int)"></constructor>
+    <constructor name="strstream" signature="strstream(char*, int, ios_base.openmode)"></constructor>
+  </class>
+  
+  <class name="basic_syncbuf" supertypes="basic_streambuf">
+    <method name="get_wrapped" signature="get_wrapped()"><return type="basic_streambuf*"/></method>
+    <method name="emit" signature="emit()"><return type="bool"/></method>
+  </class>
+
+  <type name="syncbuf" supertypes="basic_syncbuf" itemType="char"/>
+  <type name="wsyncbuf" supertypes="basic_syncbuf" itemType="wchar_t"/>
+
+  <class name="basic_osyncstream" supertypes="basic_ostream">
+    <method name="rdbuf" signature="rdbuf()"><return type="basic_syncbuf*"/></method>
+    <method name="get_wrapped()" signature="get_wrapped()"><return type="basic_streambuf*"/></method>
+    <method name="emit" signature="emit()"></method>
+  </class>
+
+  <type name="osyncstream" supertypes="basic_osyncstream" itemType="char"/>
+  <type name="wosyncstream" supertypes="basic_osyncstream" itemType="wchar_t"/>
+
+  <globalObject name="cin" type="istream"/>
+  <globalObject name="cout" type="ostream" alias="cerr, clog"/>
+  <globalObject name="wcin" type="wistream"/>
+  <globalObject name="wcout" type="wostream" alias="wcerr, wclog"/>
+
+</library>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+  <description>AIM rules for transactsql language</description>
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-transactsql.xml"/>
+
+  <!--
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location" value="database/aim.transactsql.properties"/>
+  </bean>
+  -->
+
+  <bean id="aim.transactsql.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>T-SQL parser</description>
+    <property name="filter" ref="aim.transactsql.filter"/>
+    <property name="languageSupport" ref="ls_transactsql"/>
+  </bean>
+
+  <!-- Rules -->
+  <bean id="aim.transactsql.rule" class="com.optimyth.apm.builder.rules.transactsql.TransactSqlBuilderRule">
+    <description>T-SQL rule</description>
+    <property name="active" value="${aim.transactsql.rule.active}"/>
+    <property name="databaseCallback" ref="aim.transactsql.callback"/>
+    <property name="databaseResolver" ref="aim.transactsql.dbresolver"/>
+    <property name="dbType" value="${aim.transactsql.database.dbname}"/>
+    <property name="caseSensitive" value="${aim.transactsql.caseSensitive}"/>
+    <property name="filter" ref="aim.transactsql.filter"/>
+  </bean>
+
+  <bean id="aim.transactsql.callback" class="com.optimyth.apm.builder.rules.sql.BasicDatabaseCallback">
+    <description>T-SQL rule callback</description>
+    <property name="caseSensitive" value="${aim.transactsql.caseSensitive}"/>
+    <property name="resolveArtifacts" value="${aim.common.resolveArtifacts}"/>
+    <property name="excludePredicate" ref="aim.common.excludeDatabaseItems"/>
+  </bean>
+
+  <bean id="aim.transactsql.dbresolver" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.transactsql.dbresolver.default"/>
+    <property name="objectType" value="com.optimyth.apm.builder.rules.sql.DatabaseResolver"/>
+    <property name="key" value="${aim.transactsql.dbresolver}"/>
+    <property name="map"><map>
+      <entry key="directories" value-ref="aim.transactsql.dbresolver.directories"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.transactsql.dbresolver.default" class="com.optimyth.apm.builder.rules.sql.BasicDatabaseResolver">
+    <property name="database" value="${aim.transactsql.database}"/>
+  </bean>
+
+  <bean id="aim.transactsql.dbresolver.directories" class="com.optimyth.apm.builder.rules.sql.DirectoriesDatabaseResolver">
+    <property name="database" value="${aim.transactsql.database}"/>
+    <property name="databasesDirectory" value="${aim.transactsql.databasesDirectory}"/>
+  </bean>
+
+  <!-- Filters -->
+
+  <bean id="aim.transactsql.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.transactsql.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.transactsql.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.transactsql.filter.pattern"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.transactsql.filter.default" parent="ls_transactsql_matcher"/>
+
+  <bean id="aim.transactsql.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.transactsql.filter.pattern}"/>
+  </bean>
+
+</beans>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="google.guava" standard="Google_Guava" technology="java">
+
+  <description url="https://github.com/google/guava">Google's Core Library for Java</description>
+
+  <class name="com.google.common.hash.HashCode" kind="abstract_class">
+    <method name="asBytes" signature="asBytes()"><return type="byte[]"/></method>
+    <method name="asInt" signature="asInt()"><return type="int"/></method>
+    <method name="asLong" signature="asLong()" alias="padToLong"><return type="long"/></method>
+    <method name="toString" signature="toString()"><return type="java.lang.String"/></method>
+    <method name="fromBytes" signature="fromBytes(byte[])"><return type="com.google.common.hash.HashCode"/></method>
+    <method name="fromInt" signature="fromInt(int)"><return type="com.google.common.hash.HashCode"/></method>
+    <method name="fromLong" signature="fromLong(lng)"><return type="com.google.common.hash.HashCode"/></method>
+    <method name="fromString" signature="fromString(java.lang.String)"><return type="com.google.common.hash.HashCode"/></method>
+    <method name="writeBytesTo" signature="writeBytesTo(byte[],int,int)">
+      <propagate from="-2" to="0"/>
+    </method>
+  </class>
+
+  <class name="com.google.common.hash.PrimitiveSink" kind="interface">
+    <tags>hash</tags>
+    <method name="putBoolean" signature="putBoolean(boolean)" match="name" alias="putByte,putChar,putDouble,putFloat,putShort,putInt,putLong">
+      <return type="com.google.common.hash.PrimitiveSink"/>
+    </method>
+    <method name="putBytes" signature="putBytes(byte[])" match="name">
+      <return type="com.google.common.hash.PrimitiveSink"/>
+    </method>
+    <method name="putString" signature="putString(java.lang.CharSequence,java.nio.charset.Charset)">
+      <return type="com.google.common.hash.PrimitiveSink"/>
+    </method>
+    <method name="putUnencodedChars" signature="putUnencodedChars(java.lang.CharSequence)">
+      <return type="com.google.common.hash.PrimitiveSink"/>
+    </method>
+  </class>
+
+  <class name="com.google.common.hash.Hasher" kind="interface" supertypes="com.google.common.hash.PrimitiveSink">
+    <tags>hash</tags>
+    <method name="hash" signature="hash()">
+      <return type="com.google.common.hash.HashCode"/>
+      <neutralization argpos="-1" kind="hash" resource="crypto"/>
+    </method>
+    <method name="putObject" signature="putObject(java.lang.Object,com.google.common.hash.Funnel)">
+      <return type="com.google.common.hash.Hasher"/>
+    </method>
+  </class>
+
+  <class name="com.google.common.hash.HashFunction" kind="interface">
+    <tags>hash</tags>
+    <method name="newHasher" signature="newHasher()" match="name">
+      <return type="com.google.common.hash.Hasher"/>
+    </method>
+    <method name="hashInt" signature="hashInt(int)" match="name" alias="hashLong">
+      <tags>hash,data:0</tags>
+      <return type="com.google.common.hash.HashCode"/>
+      <neutralization argpos="0" kind="hash" resource="crypto"/>
+    </method>
+    <method name="hashBytes" signature="hashBytes(byte[])" match="name">
+      <tags>hash,data:0</tags>
+      <return type="com.google.common.hash.HashCode"/>
+      <neutralization argpos="0" kind="hash" resource="crypto"/>
+    </method>
+    <method name="hashString" signature="hashString(java.lang.CharSequence,java.nio.charset.Charset)">
+      <tags>hash,data:0</tags>
+      <return type="com.google.common.hash.HashCode"/>
+      <neutralization argpos="0" kind="hash" resource="crypto"/>
+    </method>
+    <method name="hashUnencodedChars" signature="hashUnencodedChars(java.lang.CharSequence)">
+      <tags>hash,data:0</tags>
+      <return type="com.google.common.hash.HashCode"/>
+      <neutralization argpos="0" kind="hash" resource="crypto"/>
+    </method>
+  </class>
+  
+  <class name="com.google.common.hash.Hashing">
+    <method name="adler32" signature="adler32()" instance="false" match="name"
+            alias="crc32,crc32c,farmHashFingerprint64,goodFastHash,murmur3_128,murmur3_32">
+      <!-- Non crypto hashes -->
+      <tags>hash,algo:method,weak-hash</tags>
+      <return type="com.google.common.hash.HashFunction"/>
+      <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+    </method>
+    <method name="md5" signature="md5()" alias="sha1" instance="false">
+      <!-- Not enough secure in present time -->
+      <tags>hash,algo:method,weak-hash</tags>
+      <return type="com.google.common.hash.HashFunction"/>
+      <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+    </method>
+    <method name="sha256" signature="sha256()" alias="sha384,sha512,sipHash" instance="false">
+      <!-- deemed robust enough for crypto -->
+      <tags>hash,algo:method</tags>
+      <return type="com.google.common.hash.HashFunction"/>
+      <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+    </method>
+    <method name="hmacMd5" signature="hmacMd5(byte[])" match="numargs" alias="hmacSha1" instance="false">
+      <tags>hmac,algo:method,weak-hash</tags>
+      <return type="com.google.common.hash.HashFunction"/>
+      <sink argpos="0" kind="hardcoded_key"/>
+      <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+    </method>
+    <method name="hmacSha256" signature="hmacSha256(byte[])" match="numargs" alias="hmacSha512" instance="false">
+      <tags>hmac,algo:method</tags>
+      <return type="com.google.common.hash.HashFunction"/>
+      <sink argpos="0" kind="hardcoded_key"/>
+      <sink kind="weak_hash_algorithm" argpos="-1" resource="crypto"/>
+    </method>
+    <method name="combineOrdered" signature="combineOrdered(java.lang.Iterable)" alias="combineUnordered" instance="false">
+      <return type="com.google.common.hash.HashCode"/>
+    </method>
+    <method name="concatenating" signature="concatenating()" match="name" instance="false">
+      <return type="com.google.common.hash.HashFunction"/>
+    </method>
+  </class>
+  
+  <class name="com.google.common.base.Preconditions">
+    <method name="checkNotNull" signature="checkNotNull()" match="name" instance="false">
+      <tags>npe:0</tags>
+    </method>
+    <method name="checkArgument" signature="checkArgument()" match="name" instance="false">
+      <tags>npeBoolean:0</tags>
+    </method>
+    <method name="checkState" signature="checkState()" match="name" instance="false">
+      <tags>npeBoolean:0</tags>
+    </method>
+  </class>
+  
+</library>

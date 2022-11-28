@@ -1,0 +1,963 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.database" standard="database" technology="java">
+
+  <description>Common database libraries for Java</description>
+
+  <!-- Common JDBC drivers, for popular DBMSs -->
+
+  <module name="mysql.connector.java" standard="jdbc.mysql">
+    <description url="https://dev.mysql.com/doc/connector-j/8.0/en/">MySQL Connector/J</description>
+    <class name="com.mysql.cj.jdbc.Driver" supertypes="java.sql.Driver"/>
+
+    <class name="com.mysql.cj.jdbc.MysqlDataSource" supertypes="javax.sql.DataSource">
+      <method name="setUser" signature="setUser(java.lang.String)"><tags>username:0</tags><sink kind="hardcoded_credentials" argpos="0" resource="database"/></method>
+      <method name="setPassword" signature="setPassword(java.lang.String)"><tags>password:0</tags><sink kind="hardcoded_credentials" argpos="0" resource="database"/></method>
+      <method name="setAllowMultiQueries" signature="setAllowMultiQueries(boolean)"></method>
+    </class>
+    <class name="com.mysql.cj.jdbc.MysqlConnectionPoolDataSource" supertypes="com.mysql.cj.jdbc.MysqlDataSource"/>
+  </module>
+
+  <module name="oracle.jdbc" standard="jdbc.oracle">
+    <description url="https://docs.oracle.com/en/database/oracle/oracle-database/20/jajdb/">Oracle JDBC API</description>
+
+    <class name="oracle.jdbc.datasource.OracleCommonDataSource" kind="interface" supertypes="javax.sql.CommonDataSource">
+      <method name="getURL" signature="getURL()" alias="getDatabaseName, getRoleName">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="getUser" signature="getUser()" alias="getPassword, getDatabaseName, getRoleName">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getPassword" signature="getPassword()" alias="getDatabaseName, getRoleName">
+        <tags>sensitive_info, credential, password</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+
+      <method name="setURL" signature="setURL(java.lang.String)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setDatabaseName" signature="setDatabaseName(java.lang.String)" alias="setRoleName">
+        <sink kind="configuration_setting_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+    <class name="oracle.jdbc.datasource.OracleDataSource" kind="interface" alias="oracle.jdbc.pool.OracleDataSource"
+           supertypes="oracle.jdbc.datasource.OracleCommonDataSource, javax.sql.DataSource">
+
+    </class>
+    <class name="oracle.jdbc.datasource.OracleConnectionPoolDataSource" kind="interface"
+           supertypes="oracle.jdbc.datasource.OracleCommonDataSource, javax.sql.ConnectionPoolDataSource">
+    </class>
+    <class name="oracle.jdbc.datasource.OracleXADataSource" kind="interface" supertypes="javax.sql.XADataSource">
+    </class>
+
+    <class name="oracle.jdbc.datasource.OraclePooledConnection" kind="interface" supertypes="javax.sql.PooledConnection"></class>
+
+  </module>
+
+  <module name="org.apache.derby.jdbc" standard="jdbc.derby">
+    <description url="https://db.apache.org/derby/docs/10.15/publishedapi/org.apache.derby.tools/org/apache/derby/jdbc/package-summary.html">Apache Derby JDBC Driver</description>
+    <class name="org.apache.derby.jdbc.BasicClientDataSource40" supertypes="javax.sql.DataSource">
+      <method name="getUser" signature="getUser()">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getPassword" signature="getPassword()">
+        <tags>sensitive_info, credential, password</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getDatabaseName" signature="getDatabaseName()" alias="getServerName">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setDatabaseName" signature="setDatabaseName(java.lang.String)" alias="setServerName">
+        <sink kind="configuration_setting_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setPortName" signature="setPortName(int)">
+        <sink kind="configuration_setting_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+    <class name="org.apache.derby.jdbc.ClientDataSource" supertypes="org.apache.derby.jdbc.BasicClientDataSource40, javax.sql.DataSource, javax.naming.Referenceable">
+    </class>
+    <class name="org.apache.derby.jdbc.ClientConnectionPoolDataSource" supertypes="org.apache.derby.jdbc.ClientDataSource, javax.sql.ConnectionPoolDataSource"></class>
+    <class name="org.apache.derby.jdbc.ClientXADataSource" supertypes="org.apache.derby.jdbc.ClientDataSource, javax.sql.XADataSource"></class>
+
+    <class name="org.apache.derby.jdbc.BasicEmbeddedDataSource40" supertypes="org.apache.derby.jdbc.BasicClientDataSource40, javax.sql.DataSource"></class>
+    <class name="org.apache.derby.jdbc.EmbeddedDataSource" supertypes="org.apache.derby.jdbc.BasicEmbeddedDataSource40, javax.sql.DataSource, javax.naming.Referenceable"></class>
+    <class name="org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource" supertypes="org.apache.derby.jdbc.EmbeddedDataSource, javax.sql.ConnectionPoolDataSource"></class>
+    <class name="org.apache.derby.jdbc.EmbeddedXADataSource" supertypes="org.apache.derby.jdbc.EmbeddedDataSource, javax.sql.XADataSource"></class>
+
+    <class name="org.apache.derby.jdbc.ClientDriver" supertypes="java.sql.Driver"></class>
+  </module>
+
+  <module name="org.h2.jdbcx" standard="jdbc.h2">
+    <description url="http://www.h2database.com/javadoc/org/h2/jdbcx/JdbcDataSource.html">H2 JDBC driver</description>
+
+    <class name="org.h2.jdbcx.JdbcDataSource" supertypes="javax.sql.DataSource, javax.sql.ConnectionPoolDataSource, javax.sql.XADataSource, javax.naming.Referenceable">
+      <method name="getURL" signature="getURL()" alias="getUrl">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getUser" signature="getUser()">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getPassword" signature="getPassword()">
+        <tags>sensitive_info, credential, password</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="setURL" signature="setURL(java.lang.String)" alias="setUrl">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="org.hsqldb.jdbc" standard="jdbc.hsqldb">
+    <description url="http://hsqldb.org/">HSQLDB JDBC Driver</description>
+    
+    <class name="org.hsqldb.jdbc.JDBCCommonDataSource" kind="abstract_class" supertypes="javax.sql.CommonDataSource">
+      <method name="getURL" signature="getURL()" alias="getUrl, getDatabase, getDatabaseName, getServerName">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getUser" signature="getUser()">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getPassword" signature="getPassword()">
+        <tags>sensitive_info, credential, password</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="setURL" signature="setUser(java.lang.String)" alias="setUrl, setDatabase, setDatabaseName">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+    </class>
+
+    <class name="org.hsqldb.jdbc.JDBCDataSource" supertypes="org.hsqldb.jdbc.JDBCCommonDataSource, javax.sql.DataSource, javax.naming.Referenceable"></class>
+    <class name="org.hsqldb.jdbc.pool.JDBCPooledDataSource" supertypes="org.hsqldb.jdbc.JDBCCommonDataSource, javax.sql.ConnectionPoolDataSource, javax.naming.Referenceable"></class>
+    <class name="org.hsqldb.jdbc.pool.JDBCXADataSource" supertypes="org.hsqldb.jdbc.JDBCCommonDataSource, javax.sql.XADataSource, javax.naming.Referenceable"></class>
+    
+    <class name="com.ibm.db2.jcc.DB2Driver" supertypes="java.sql.Driver">
+      <method name="changeDB2Password" signature="changeDB2Password(java.lang.String, java.lang.String, java.lang.String, java.lang.String)">
+        <tags>username:0, password:1</tags>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="hardcoded_credentials" argpos="1,2,3"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="com.ibm.db2.jcc" standard="jdbc.db2">
+    <description url="https://www.ibm.com/support/knowledgecenter/SSEPGG_11.5.0/com.ibm.db2.luw.apdv.java.doc/src/tpc/imjcc_rjvjdb2o.html">DB2 JDBC Driver</description>
+
+    <class name="com.ibm.db2.jcc.DB2Connection" supertypes="java.sql.Connection"></class>
+    <class name="com.ibm.db2.jcc.DB2PooledConnection" supertypes="javax.sql.PooledConnection">
+      <method name="getDB2Connection" signature="getDB2Connection(byte[], java.lang.String, java.lang.String, java.lang.String, byte[], java.lang.String, java.util.Properties)">
+        <tags>username:0, password:1</tags>
+        <return type="com.ibm.db2.jcc.DB2Connection"/>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="database"/>
+      </method>
+    </class>
+
+    <class name="com.ibm.db2.jcc.DB2BaseDataSource" kind="abstract_class" supertypes="javax.sql.CommonDataSource">
+      <method name="getAccessToken" signature="getAccessToken()"
+              alias="getApiKey, getClientUser, getDatabaseName, getKerberosServerPrincipal, getServerName, getSsid, getSslCertLocation, getSslCipherSuites, getSslKeyStoreLocation, getSslKeyStorePassword, getSslTrustStoreLocation, getSslTrustStorePassword, getSysSchema">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" resource="database" argpos="-1"/>
+      </method>
+      <method name="getUser" signature="getUser()">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" resource="database" argpos="-1"/>
+      </method>
+      <method name="getPassword" signature="getPassword()">
+        <tags>sensitive_info, credential, password</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" resource="database" argpos="-1"/>
+      </method>
+      <method name="getEncryptionAlgorithm" signature="getEncryptionAlgorithm()" alias="getSecurityMechanism">
+        <return type="int"/>
+        <source kind="sensitive_info" resource="database" argpos="-1"/>
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setAccessToken" signature="setAccessToken(java.lang.String"
+              alias="setApiKey, setClientUser, setDatabaseName, setKerberosServerPrincipal, setServerName, setSsid, setSslCertLocation, setSslCipherSuites, setSslKeyStoreLocation, setSslKeyStorePassword, setSslTrustStoreLocation, setSslTrustStorePassword, setSysSchema">
+        <sink kind="configuration_setting_injection" resource="database" argpos="0"/>
+      </method>
+    </class>
+    <class name="com.ibm.db2.jcc.DB2SimpleDataSource" supertypes="com.ibm.db2.jcc.DB2BaseDataSource, javax.sql.DataSource, javax.naming.Referenceable"></class>
+    <class name="com.ibm.db2.jcc.DB2ConnectionPoolDataSource" supertypes="com.ibm.db2.jcc.DB2BaseDataSource, javax.sql.ConnectionPoolDataSource, javax.naming.Referenceable">
+      <method name="getDB2PooledConnection" signature="getDB2PooledConnection(java.lang.String, java.lang.String, java.util.Properties)">
+        <tags>username:0, password:1</tags>
+        <return type="com.ibm.db2.jcc.DB2PooledConnection"/>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="database"/>
+      </method>
+    </class>
+    <class name="com.ibm.db2.jcc.DB2XADataSource" supertypes="com.ibm.db2.jcc.DB2BaseDataSource, javax.sql.XADataSource, javax.naming.Referenceable">
+      <method name="getDb2TrustedXAConnection" signature="getDb2TrustedXAConnection(java.lang.String, java.lang.String, java.util.Properties)" alias="getDB2XAConnection">
+        <tags>username:0, password:1</tags>
+        <return type="java.lang.Object[]"/>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="database"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="com.informix.jdbc" standard="jdbc.informix">
+    <description url="https://javadoc.io/static/com.ibm.informix/jdbc/4.50.2.fix-1/com/informix/jdbcx/package-summary.html">Informix JDBC Driver</description>
+    
+    <class name="com.informix.jdbcx.IfxCoreDataSource">
+      <method name="getDatabaseName" signature="getDatabaseName()" 
+              alias="getIfxIFXHOST, getIfxIFXHOST_SECONDARY, getIfxINFORMIXSERVER_SECONDARY, getIfxLDAP_USER, getIfxLDAP_PASSWD, getIfxPATH, getRoleName, getServerName">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getUser" signature="getUser()">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getPassword" signature="getPassword()">
+        <tags>sensitive_info, credential, password</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="setDatabaseName" signature="setDatabaseName(java.lang.String)"
+              alias="setIfxIFXHOST, setIfxIFXHOST_SECONDARY, setIfxINFORMIXSERVER_SECONDARY, setIfxLDAP_USER, setIfxLDAP_PASSWD, setIfxPATH, setRoleName, setServerName, setTrustStorePassword">
+        <sink kind="configuration_setting_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+    </class>
+
+    <class name="com.informix.jdbcx.IfxDataSource" supertypes="com.informix.jdbcx.IfxCoreDataSource, javax.sql.DataSource, javax.naming.Referenceable">
+      <constructor name="IfxDataSource" signature="IfxDataSource(java.lang.String)">
+        <sink kind="configuration_setting_injection" argpos="0" resource="database"/>
+      </constructor>
+      <method name="getCPDS" signature="getCPDS()"><return type="com.informix.jdbcx.IfxConnectionPoolDataSource"/></method>
+    </class>
+    <class name="com.informix.jdbcx.IfxConnectionPoolDataSource" supertypes="com.informix.jdbcx.IfxCoreDataSource, javax.sql.ConnectionPoolDataSource, javax.naming.Referenceable"></class>
+    <class name="com.informix.jdbcx.IfxXADataSource" supertypes="com.informix.jdbcx.IfxCoreDataSource, javax.sql.XADataSource, javax.naming.Referenceable"></class>
+
+  </module>
+
+  <module name="com.microsoft.sqlserver.jdbc" standard="jdbc.sqlserver">
+    <description url="https://javadoc.io/doc/com.microsoft.sqlserver/mssql-jdbc/latest/index.html">SQL-Server JDBC Driver</description>
+
+    <class name="com.microsoft.sqlserver.jdbc.ISQLServerDataSource" supertypes="javax.sql.CommonDataSource">
+      <method name="getAccessToken" signature="getAccessToken()"
+              alias="getAuthentication, getClientKey, getDatabaseName, getDomain, getFailoverPartner, getHostnameInCertificate, getInstanceName, getKeyStoreLocation, getServerName, getTrustStore, getURL, getWorkstationID">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" resource="database" argpos="-1"/>
+      </method>
+      <method name="getUser" signature="getUser()">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getPassword" signature="getPassword()" alias="getClientKeyPassword, getKeyStoreSecret​, getTrustStorePassword">
+        <tags>sensitive_info, credential, password</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="setAccessToken" signature="getAccessToken()"
+              alias="setAuthentication, setApplicationName, setApplicationIntent, setClientKey, setDatabaseName, setDomain, setFailoverPartner, setHostnameInCertificate, setInstanceName, setKeyStoreLocation, setServerName, setTrustStore, setURL, setWorkstationID">
+        <return type="java.lang.String"/>
+        <sink kind="configuration_setting_injection" resource="database" argpos="-1"/>
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)" alias="setClientKeyPassword, setKeyStoreSecret​, setTrustStorePassword">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+    </class>
+    <class name="com.microsoft.sqlserver.jdbc.SQLServerDataSource" supertypes="com.microsoft.sqlserver.jdbc.ISQLServerDataSource, javax.sql.DataSource, javax.naming.Referenceable"></class>
+    <class name="com.microsoft.sqlserver.jdbc.SQLServerConnectionPoolDataSource" supertypes="com.microsoft.sqlserver.jdbc.SQLServerDataSource, javax.sql.ConnectionPoolDataSource"></class>
+    <class name="com.microsoft.sqlserver.jdbc.SQLServerXADataSource" supertypes="com.microsoft.sqlserver.jdbc.SQLServerConnectionPoolDataSource, javax.sql.XADataSource"/>
+  </module>
+
+  <module name="org.mariadb.jdbc" standard="jdbc.mariadb">
+    <description url="https://javadoc.io/doc/org.mariadb.jdbc/mariadb-java-client/latest/index.html">MariaDB JDBC Driver</description>
+    <class name="org.mariadb.jdbc.MariaDbDataSource" supertypes="javax.sql.DataSource, javax.sql.ConnectionPoolDataSource, javax.sql.XADataSource">
+      <constructor name="MariaDbDataSource" signature="MariaDbDataSource(java.lang.String)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </constructor>
+      <constructor name="MariaDbDataSource" signature="MariaDbDataSource(java.lang.String, int, java.lang.String)">
+        <sink kind="configuration_setting_injection" argpos="0,1,2" resource="database"/>
+      </constructor>
+
+      <method name="getDatabaseName" signature="getDatabaseName()"
+              alias="getPort, getPortNumber, getServerName, getUser, getUserName">
+        <tags>sensitive_info</tags>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="getUser" signature="getUser()" alias="getUserName">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+
+      <method name="setUser" signature="setUser(java.lang.String)" alias="setUserName"><tags>username:0</tags><sink kind="hardcoded_credentials" argpos="0" resource="database"/></method>
+      <method name="setPassword" signature="setPassword(java.lang.String)"><tags>password:0</tags><sink kind="hardcoded_credentials" argpos="0" resource="database"/></method>
+      <method name="setUrl" signature="setUrl(java.lang.String)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setDatabaseName" signature="setDatabaseName(java.lang.String)" alias="setServerName">
+        <sink kind="configuration_setting_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setPort" signature="setPort(int)" alias="setPortNumber">
+        <sink kind="configuration_setting_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+  </module>
+  
+  <module name="org.postgresql" standard="jdbc.postresql">
+    <description url="https://jdbc.postgresql.org/documentation/publicapi/index.html">Official PostgreSQL JDBC Driver</description>
+    <class name="org.postgresql.Driver" supertypes="java.sql.Driver"/>
+    
+    <class name="org.postgresql.ds.common.BaseDataSource">
+      <method name="getApplicationName" signature="getApplicationName()" alias="getCurrentSchema, getDatabaseName, getServerName, getSslCert, getSslKey, getSslRootCert">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" resource="database" kind="sensitive_info"/>
+      </method>
+      <method name="getUser" signature="getUser()">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" resource="database" kind="sensitive_info"/>
+      </method>
+      <method name="getPassword" signature="getPassword()" alias="getSslPassword">
+        <tags>sensitive_info, credential, password</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" resource="database" kind="sensitive_info"/>
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setApplicationName" signature="setApplicationName(java.lang.String)" alias="setCurrentSchema, setDatabaseName, setServerName, setSslCert, setSslKey, setSslRootCert, setSslPassword">
+        <sink kind="configuration_setting_injection" resource="database" argpos="0"/>
+      </method>
+    </class>
+    <class name="org.postgresql.ds.PGSimpleDataSource" supertypes="org.postgresql.ds.common.BaseDataSource, javax.sql.DataSource, javax.naming.Referenceable"></class>
+    <class name="org.postgresql.jdbc3.Jdbc3SimpleDataSource" supertypes="org.postgresql.ds.PGSimpleDataSource"></class>
+    <class name="org.postgresql.jdbc2.optional.SimpleDataSource" supertypes="org.postgresql.ds.PGSimpleDataSource"></class>
+    <class name="org.postgresql.ds.PGConnectionPoolDataSource" supertypes="org.postgresql.ds.common.BaseDataSource, javax.sql.ConnectionPoolDataSource, javax.naming.Referenceable"></class>
+    <class name="org.postgresql.jdbc2.optional.ConnectionPool" supertypes="org.postgresql.ds.PGConnectionPoolDataSource"></class>
+    <class name="org.postgresql.jdbc3.Jdbc3ConnectionPool" supertypes="org.postgresql.ds.PGConnectionPoolDataSource"></class>
+    <class name="org.postgresql.ds.PGPoolingDataSource" supertypes="org.postgresql.ds.common.BaseDataSource, javax.sql.DataSource, javax.naming.Referenceable"></class>
+    <class name="org.postgresql.jdbc3.Jdbc3PoolingDataSource" supertypes="org.postgresql.ds.PGPoolingDataSource"></class>
+    <class name="org.postgresql.jdbc2.optional.PoolingDataSource" supertypes="org.postgresql.ds.PGPoolingDataSource"></class>
+    <class name="org.postgresql.xa.PGXADataSource" supertypes="org.postgresql.ds.common.BaseDataSource, javax.sql.XADataSource, javax.naming.Referenceable"></class>
+  </module>
+
+  <module name="com.impossibl.postgres.jdbc" standard="jdbc.postgresql">
+    <description url="https://impossibl.github.io/pgjdbc-ng/">PGJDBC-NG - PostgreSQL JDBC Driver</description>
+    
+    <class name="com.impossibl.postgres.jdbc.PGDriver" supertypes="java.sql.Driver"/>
+    
+    <class name="com.impossibl.postgres.jdbc.AbstractDataSource" supertypes="javax.sql.CommonDataSource">
+      <method name="getUrl" signature="getUrl()" 
+              alias="getUrl, getHost, getApplicationName, getDatabaseName, getDatabaseUrl, getServerAddresses, getServerLocalName, getServerName, getSqlTraceFile, getSslCaCertificateFile, getSslCertificateFile, getSslHomeDir, getSslKeyFile">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getUser" signature="getUser()">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getPassword" signature="getPassword()" alias="getSslKeyPassword">
+        <tags>sensitive_info, credential, password</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="setUrl" signature="setUrl(java.lang.String)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setHost" signature="setHost(java.lang.String)" 
+              alias="setApplicationName, setDatabaseName, setDatabaseUrl, setServerAddresses, setServerLocalName, setServerName, setSqlTraceFile, setSslCaCertificateFile, setSslCertificateFile, setSslHomeDir, setSslKeyFile, setSslKeyPassword">
+        <sink kind="configuration_setting_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+    </class>
+    
+    <class name="com.impossibl.postgres.jdbc.PGDataSource" supertypes="com.impossibl.postgres.jdbc.AbstractDataSource, javax.sql.DataSource, javax.naming.Referenceable"></class>
+    <class name="com.impossibl.postgres.jdbc.PGConnectionPoolDataSource" supertypes="com.impossibl.postgres.jdbc.AbstractDataSource, javax.sql.ConnectionPoolDataSource, javax.naming.Referenceable"></class>
+    <class name="com.impossibl.postgres.jdbc.xa.PGXADataSource" supertypes="com.impossibl.postgres.jdbc.AbstractDataSource, javax.sql.XADataSource, javax.naming.Referenceable"></class>
+  </module>
+  
+  <module name="com.sap.dbtech.jdbc" standard="jdbc.MaxDB">
+    <description url="https://maxdb.sap.com/doc/7_7/46/7bc36ee97150d1e10000000a155369/content.htm">SAP MaxDB JDBC Driver</description>
+    <class name="com.sap.dbtech.jdbc.DriverSapDB" supertypes="java.sql.Driver"></class>
+    <class name="com.sap.dbtech.jdbcext.DataSourceSapDB" supertypes="javax.sql.DataSource">
+      <method name="getDatabaseName" signature="getDatabaseName()" alias="getServerName, getPort,getUrl">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getUser" signature="getUser()">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getPassword" signature="getPassword()">
+        <tags>sensitive_info, credential, password</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="setUrl" signature="setUrl(java.lang.String)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setDatabaseName" signature="setDatabaseName(java.lang.String)" match="name" alias="setPort, setServerName, setTrace, setTransport">
+        <sink kind="configuration_setting_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="org.sqlite" standard="jdbc.sqlite">
+    <description url="https://github.com/xerial/sqlite-jdbc">SQLite JDBC Driver</description>
+
+    <class name="org.sqlite.SQLiteConnection" supertypes="java.sql.Connection, java.lang.AutoCloseable">
+      <constructor name="SQLiteConnection" signature="SQLiteConnection(org.sqlite.core.DB)"></constructor>
+      <constructor name="SQLiteConnection_2" signature="SQLiteConnection(java.lang.String, java.lang.String)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="path_traversal" argpos="1" resource="filesystem"/>
+      </constructor>
+      <constructor name="SQLiteConnection_3" signature="SQLiteConnection(java.lang.String, java.lang.String, java.util.Properties)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="path_traversal" argpos="1" resource="filesystem"/>
+      </constructor>
+    </class>
+    <class name="org.sqlite.jdbc3.JDBC3Connection" supertypes="org.sqlite.SQLiteConnection"/>
+    <class name="org.sqlite.jdbc4.JDBC4Connection" supertypes="org.sqlite.jdbc3.JDBC3Connection"/>
+    <class name="org.sqlite.jdbc4.JDBC4PooledConnection" supertypes="javax.sql.PooledConnection"/>
+    <class name="org.sqlite.javax.SQLitePooledConnection" supertypes="org.sqlite.jdbc4.JDBC4PooledConnection">
+      <method name="getConnection" signature="getConnection()"><return type="java.sql.Connection"/></method>
+      <method name="getPhysicalConn" signature="getPhysicalConn()"><return type="org.sqlite.SQLiteConnection"/></method>
+    </class>
+
+    <class name="org.sqlite.SQLiteConfig">
+      <method name="createConnection" signature="createConnection(java.lang.String)">
+        <return type="org.sqlite.SQLiteConnection"/>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+    <class name="org.sqlite.JDBC" supertypes="java.sql.Driver">
+      <method name="createConnection" signature="createConnection(java.lang.String, java.util.Properties)" instance="false">
+        <return type="org.sqlite.SQLiteConnection"/>
+      </method>
+    </class>
+    <class name="org.sqlite.SQLiteDataSource" supertypes="javax.sql.DataSource">
+      <method name="getConfig" signature="getConfig()"><return type="org.sqlite.SQLiteConfig"/></method>
+      <method name="getDatabaseName" signature="getDatabaseName()" alias="getUrl">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="setConfig" signature="setConfig(org.sqlite.SQLiteConfig)"></method>
+      <method name="setUrl" signature="setUrl(java.lang.String)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="getConnection" signature="getConnection()"><return type="org.sqlite.SQLiteConnection"/></method>
+      <method name="getConnection_2" signature="getConnection(java.lang.String, java.lang.String)">
+        <!-- sqlite does not use username/password, so hardcoded password is irrelevant here -->
+        <return type="org.sqlite.SQLiteConnection"/>
+      </method>
+    </class>
+    <class name="org.sqlite.javax.SQLiteConnectionPoolDataSource" supertypes="org.sqlite.SQLiteDataSource, javax.sql.ConnectionPoolDataSource">
+      <method name="getPooledConnection" signature="getPooledConnection()"><return type="org.sqlite.javax.SQLitePooledConnection"/></method>
+      <method name="getPooledConnection_2" signature="getPooledConnection(java.lang.String, java.lang.String)">
+        <!-- sqlite does not use username/password, so hardcoded password is irrelevant here -->
+        <return type="org.sqlite.javax.SQLitePooledConnection"/>
+      </method>
+    </class>
+  </module>
+  
+  <module name="com.sybase.jdbc4" standard="jdbc.sybase">
+    <description url="">Sybase jConnect - Sybase JDBC Driver</description>
+    <class name="com.sybase.jdbc.SybDriver" supertypes="java.sql.Driver"/>
+    <class name="com.sybase.jdbc4.jdbc.SybDataSource" supertypes="javax.sql.DataSource">
+      <method name="getServerName" signature="getServerName()" alias="getDatabaseName(), getPortNumber">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="getUser" signature="getUser()">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getPassword" signature="getPassword()">
+        <tags>sensitive_info, credential, password</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setServerName" signature="setServerName(java.lang.String)" match="name" alias="setDatabaseName, setPortNumber">
+        <sink kind="configuration_setting_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+    <class name="com.sybase.jdbc4.jdbc.SybXADataSource" supertypes="com.sybase.jdbc4.jdbc.SybDataSource, javax.sql.XADataSource"></class>
+  </module>
+
+  <module name="net.sourceforge.jtds" standard="jdbc.jtds">
+    <description url="https://github.com/milesibastos/jTDS">jTDS - JDBC Driver for SQL Server and Sybase</description>
+
+    <class name="net.sourceforge.jtds.jdbc" supertypes="java.sql.Driver"/>
+    <class name="net.sourceforge.jtds.jdbcx.JtdsDataSource" supertypes="javax.sql.DataSource, javax.sql.ConnectionPoolDataSource, javax.sql.XADataSource, javax.naming.Referenceable">
+      <method name="getServerName" signature="getServerName()"
+              alias="getDatabaseName(), getDomain, getInstance, getPortNumber, getMacAddress, getAppName, getLogFile, getSsl, getBufferDir, getBindAddress">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="getUser" signature="getUser()">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="getPassword" signature="getPassword()">
+        <tags>sensitive_info, credential, password</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setServerName" signature="setServerName(java.lang.String)" match="name"
+              alias="setDatabaseName, setDomain, setInstance, setPortNumber, setMacAddress, setAppName, setSsl, setBindAddress">
+        <sink kind="configuration_setting_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setLogFile" signature="setLogFile(java.lang.String)" alias="setBufferDir">
+        <sink kind="path_traversal" resource="filesystem" argpos="0"/>
+      </method>
+    </class>
+  </module>
+
+  <!-- Connection pool libraries -->
+
+  <module name="HikariCP">
+    <description url="https://github.com/brettwooldridge/HikariCP">JDBC connection pool</description>
+    
+    <class name="com.zaxxer.hikari.HikariConfig">
+      <constructor name="HikariConfig" signature="HikariConfig(java.lang.String)">
+        <sink kind="path_traversal" argpos="0" resource="filesystem"/>
+      </constructor>
+      <constructor name="HikariConfig_2" signature="HikariConfig(java.util.Properties)">
+      </constructor>
+      <method name="copyStateTo" signature="copyStateTo(com.zaxxer.hikari.HikariConfig)">
+        <propagate from="-2" to="0"/>
+      </method>
+      <method name="getDataSource" signature="getDataSource()"><return type="javax.sql.DataSource"/></method>
+      <method name="getCatalog" signature="getCatalog()" alias="getSchema, getJdbcUrl, getUsername, getPassword, getDataSourceJNDI">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="setCatalog" signature="setCatalog(java.lang.String)" alias="setSchema">
+        <sink kind="configuration_setting_injection" argpos="-1" resource="database"/>
+      </method>
+      <method name="setJdbcUrl" signature="setJdbcUrl(java.lang.String)">
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setConnectionInitSql" signature="setConnectionInitSql(java.lang.String)" alias="setConnectionTestQuery">
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setUsername" signature="setUsername(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="addDataSourceProperty" signature="addDataSourceProperty(java.lang.String, java.lang.String)">
+        <sink kind="configuration_setting_injection" argpos="0,1" resource="database"/>
+      </method>
+      <method name="setDataSource" signature="setDataSource(javax.sql.DataSource)"></method>
+      <method name="setDataSourceClassName" signature="setDataSourceClassName(java.lang.String)" alias="setDriverClassName">
+        <sink argpos="0" kind="unsafe_reflection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="com.zaxxer.hikari.HikariDataSource" supertypes="com.zaxxer.hikari.HikariConfig, javax.sql.DataSource, java.io.Closeable, java.lang.AutoCloseable">
+      <constructor name="HikariDataSource" signature="HikariDataSource(com.zaxxer.hikari.HikariConfig)"></constructor>
+      <method name="evictConnection" signature="evictConnection(java.sql.Connection)"/>
+    </class>
+    
+  </module>
+
+  <module name="apache.commons.dbcp" standard="Apache_Commons_DBCP">
+    <description url="http://commons.apache.org/proper/commons-dbcp/">JDBC connection pool</description>
+
+    <class name="org.apache.commons.dbcp2.ConnectionFactory" kind="interface"
+           alias="org.apache.commons.dbcp.ConnectionFactory">
+      <method name="createConnection" signature="createConnection()"><return type="java.sql.Connection"/></method>
+    </class>
+
+    <class name="org.apache.commons.dbcp2.BasicDataSource" supertypes="javax.sql.DataSource, java.lang.AutoCloseable"
+           alias="org.apache.commons.dbcp.BasicDataSource">
+
+      <method name="close" signature="close()"></method>
+      <method name="evict" signature="evict()"></method>
+      <method name="getAbandonedLogWriter" signature="getAbandonedLogWriter()" ><return type="java.io.PrintWriter" /></method>
+
+      <method name="log" signature="log(java.lang.String)" >
+        <sink argpos="0" kind="log_forging"/>
+      </method>
+      <method name="log" signature="log(java.lang.String,java.lang.Throwable)" >
+        <sink argpos="0" kind="log_forging"/>
+      </method>
+
+      <!-- getting properties -->
+      <method name="getConnectionFactoryClassName" signature="getConnectionFactoryClassName()"><return type="java.lang.String"/></method>
+      <method name="getConnectionInitSqls" signature="getConnectionInitSqls()"><return type="java.util.List" elementType="java.lang.String"/></method>
+      <method name="getConnectionInitSqlsAsArray" signature="getConnectionInitSqlsAsArray()"><return type="java.lang.String[]"/></method>
+      <method name="getDriverClassLoader" signature="getDriverClassLoader()"><return type="java.lang.ClassLoader"/></method>
+      <method name="getDefaultCatalog" signature="getDefaultCatalog()" alias="getDefaultSchema, getDriverClassName, getUrl">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source kind="sensitive_info" resource="database" argpos="-1"/>
+      </method>
+      <method name="getPassword" signature="getPassword()" >
+        <tags>sensitive_info,credential,password</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="getUsername" signature="getUsername()" >
+        <tags>sensitive_info,credential,username</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+
+      <!-- setting properties -->
+      <method name="addConnectionProperty" signature="addConnectionProperty(java.lang.String, java.lang.String)">
+        <sink kind="configuration_setting_injection" argpos="0,1" resource="database"/>
+      </method>
+      <method name="setConnectionFactoryClassName" signature="setConnectionFactoryClassName(java.lang.String)" alias="setDriverClassName">
+        <sink kind="configuration_setting_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setConnectionInitSqls" signature="setConnectionInitSqls(java.util.Collection)" alias="setValidationQuery">
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setDefaultCatalog" signature="setDefaultCatalog(java.lang.String)" alias="setDefaultSchema">
+        <sink kind="configuration_setting_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="setUrl" signature="setUrl(java.lang.String)">
+        <sink kind="connection_string_injection" resource="database" argpos="0"/>
+      </method>
+      <method name="setUsername" signature="setUsername(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.dbcp2.managed.BasicManagedDataSource" supertypes="org.apache.commons.dbcp2.BasicDataSource"
+           alias="org.apache.commons.dbcp.managed.BasicManagedDataSource">
+      <method name="getTransactionManager" signature="getTransactionManager()" ><return type="javax.transaction.TransactionManager" /></method>
+      <method name="getTransactionSynchronizationRegistry" signature="getTransactionSynchronizationRegistry()" ><return type="javax.transaction.TransactionSynchronizationRegistry" /></method>
+      <method name="getXaDataSource" signature="getXaDataSource()" >
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String" />
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="getXaDataSourceInstance" signature="getXaDataSourceInstance()" ><return type="javax.sql.XADataSource" /></method>
+    </class>
+
+    <class name="org.apache.commons.dbcp2.BasicDataSourceFactory" supertypes="javax.naming.spi.ObjectFactory"
+           alias="org.apache.commons.dbcp.BasicDataSourceFactory">
+      <method name="createDataSource" signature="createDataSource(java.util.Properties)" ><return type="org.apache.commons.dbcp2.BasicDataSource" /></method>
+    </class>
+
+    <class name="org.apache.commons.dbcp2.DataSourceConnectionFactory" supertypes="org.apache.commons.dbcp2.ConnectionFactory"
+           alias="org.apache.commons.dbcp.DataSourceConnectionFactory">
+      <constructor name="DataSourceConnectionFactory" signature="DataSourceConnectionFactory(javax.sql.DataSource, java.lang.String, java.lang.String)" match="name">
+        <tags>username:1, password:2</tags>
+        <sink kind="hardcoded_credentials" argpos="1,2" resource="database"/>
+      </constructor>
+      <method name="getDataSource" signature="getDataSource()"><return type="javax.sql.DataSource"/></method>
+      <method name="getUserName" signature="getUserName()">
+        <tags>sensitive_info,credential,username</tags>
+        <return type="java.lang.String"/><source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="getUserPassword" signature="getUserPassword()">
+        <tags>sensitive_info,credential,password</tags>
+        <return type="char[]"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.dbcp2.DriverConnectionFactory" supertypes="org.apache.commons.dbcp2.ConnectionFactory"
+           alias="org.apache.commons.dbcp.DriverConnectionFactory">
+      <constructor name="DriverConnectionFactory" signature="DriverConnectionFactory(java.sql.Driver, java.lang.String, java.util.Properties)">
+        <sink kind="connection_string_injection" resource="database" argpos="1"/>
+      </constructor>
+      <method name="getConnectionString" signature="getConnectionString()">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="getDriver" signature="getDriver()"><return type="java.sql.Driver"/></method>
+    </class>
+    
+    <class name="org.apache.commons.dbcp2.DriverManagerConnectionFactory" supertypes="org.apache.commons.dbcp2.ConnectionFactory"
+           alias="org.apache.commons.dbcp.DriverManagerConnectionFactory">
+      <constructor name="DriverManagerConnectionFactory" signature="DriverManagerConnectionFactory(java.lang.String)">
+        <sink kind="connection_string_injection" resource="database" argpos="0"/>
+      </constructor>
+      <constructor name="DriverManagerConnectionFactory_2" signature="DriverManagerConnectionFactory(java.lang.String, java.util.Properties)">
+        <sink kind="connection_string_injection" resource="database" argpos="0"/>
+      </constructor>
+      <constructor name="DriverManagerConnectionFactory_3" signature="DriverManagerConnectionFactory(java.lang.String, java.lang.String, java.lang.String)">
+        <tags>username:0, password:1</tags>
+        <sink kind="connection_string_injection" resource="database" argpos="0"/>
+        <sink kind="hardcoded_credentials" argpos="1,2" resource="database"/>
+      </constructor>
+      <method name="getConnectionUri" signature="getConnectionUri()">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/><source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="getUserName" signature="getUserName()">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/><source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+    </class>
+
+    <class name="org.apache.commons.dbcp2.Jdbc41Bridge" >
+      <method name="getPseudoColumns" signature="getPseudoColumns(java.sql.DatabaseMetaData,java.lang.String,java.lang.String,java.lang.String,java.lang.String)" >
+        <return type="java.sql.ResultSet" />
+      </method>
+      <method name="getSchema" signature="getSchema(java.sql.Connection)">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/><source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="setSchema" signature="setSchema(java.sql.Connection,java.lang.String)" >
+        <sink kind="configuration_setting_injection" argpos="1" resource="database" />
+      </method>
+      <method name="getParentLogger" signature="getParentLogger(javax.sql.CommonDataSource)" >
+        <return type="java.util.logging.Logger" />
+      </method>
+    </class>
+
+    <class name="org.apache.commons.dbcp2.PoolingDriver" supertypes="java.sql.Driver" alias="org.apache.commons.dbcp.PoolingDriver">
+      <method name="closePool" signature="closePool(java.lang.String)"><sink kind="resource_injection" argpos="0"/></method>
+      <method name="getConnectionPool" signature="getConnectionPool(java.lang.String)" ><return type="org.apache.commons.pool2.ObjectPool" /></method>
+      <method name="invalidateConnection" signature="invalidateConnection(java.sql.Connection)"></method>
+      <method name="registerPool" signature="registerPool(java.lang.String, org.apache.commons.pool2.ObjectPool)"></method>
+    </class>
+
+    <class name="org.apache.commons.dbcp2.managed.XAConnectionFactory" supertypes="org.apache.commons.dbcp2.ConnectionFactory"
+           alias="org.apache.commons.dbcp.managed.XAConnectionFactory">
+      <method name="getTransactionRegistry" signature="getTransactionRegistry()" >
+        <return type="org.apache.commons.dbcp2.managed.TransactionRegistry" />
+      </method>
+    </class>
+
+    <class name="org.apache.commons.dbcp2.managed.DataSourceXAConnectionFactory" supertypes="org.apache.commons.dbcp2.managed.XAConnectionFactory"
+           alias="org.apache.commons.dbcp.managed.DataSourceXAConnectionFactory">
+      <constructor name="DataSourceXAConnectionFactory" signature="DataSourceXAConnectionFactory(javax.transaction.TransactionManager, javax.sql.XADataSource, java.lang.String, java.lang.String)" match="name">
+        <tags>username:2, password:3</tags>
+        <sink kind="hardcoded_credentials" argpos="2,3" resource="database"/>
+      </constructor>
+      <method name="getUserName" signature="getUserName()" alias="getUsername">
+        <tags>sensitive_info, credential, username</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="getUserPassword" signature="getUserPassword()">
+        <tags>sensitive_info, credential, password</tags>
+        <return type="char[]"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="setUserName" signature="setUserName(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="getTransactionRegistry" signature="getTransactionRegistry()" ><return type="org.apache.commons.dbcp2.managed.TransactionRegistry" /></method>
+      <method name="getXaDataSource" signature="getXaDataSource()"><return type="javax.sql.XADataSource"/></method>
+    </class>
+
+    <class name="org.apache.commons.dbcp2.managed.LocalXAConnectionFactory" supertypes="org.apache.commons.dbcp2.managed.XAConnectionFactory"
+           alias="org.apache.commons.dbcp.managed.LocalXAConnectionFactory"/>
+
+    <class name="org.apache.commons.dbcp2.cpdsadapter.DriverAdapterCPDS" alias="org.apache.commons.dbcp.cpdsadapter.DriverAdapterCPDS"
+           supertypes="java.io.Serializable, javax.naming.Referenceable, javax.naming.spi.ObjectFactory, javax.sql.ConnectionPoolDataSource" />
+    <class name="org.apache.commons.dbcp2.datasources.InstanceKeyDataSource"
+           supertypes="java.io.Serializable, java.lang.AutoCloseable, javax.naming.Referenceable, javax.sql.DataSource" />
+    <class name="org.apache.commons.dbcp2.datasources.PerUserPoolDataSource" alias="org.apache.commons.dbcp.datasources.PerUserPoolDataSource"
+           supertypes="org.apache.commons.dbcp2.datasources.InstanceKeyDataSource" />
+    <class name="org.apache.commons.dbcp2.datasources.SharedPoolDataSource" supertypes="org.apache.commons.dbcp2.datasources.InstanceKeyDataSource" />
+
+    <class name="org.apache.commons.dbcp2.DelegatingConnection" supertypes="java.sql.Connection">
+      <method name="getDelegate" signature="getDelegate()"><return type="java.sql.Connection"/></method>
+    </class>
+    <class name="org.apache.commons.dbcp2.managed.ManagedConnection" supertypes="org.apache.commons.dbcp2.DelegatingConnection"/>
+    <class name="org.apache.commons.dbcp2.PoolableConnection" supertypes="org.apache.commons.dbcp2.DelegatingConnection"/>
+    <class name="org.apache.commons.dbcp2.PoolingConnection" supertypes="org.apache.commons.dbcp2.DelegatingConnection"/>
+    
+    <class name="org.apache.commons.dbcp2.managed.TransactionRegistry" >
+      <method name="getXAResource" signature="getXAResource(java.sql.Connection)" ><return type="javax.transaction.xa.XAResource" /></method>
+      <method name="getActiveTransactionContext" signature="getActiveTransactionContext()" ><return type="org.apache.commons.dbcp2.managed.TransactionContext" /></method>
+    </class>
+
+    <class name="org.apache.commons.dbcp2.PoolingDataSource" supertypes="javax.sql.DataSource, java.lang.AutoCloseable" alias="org.apache.commons.dbcp.PoolingDataSource"/>
+    <class name="org.apache.commons.dbcp2.managed.ManagedDataSource" supertypes="org.apache.commons.dbcp2.PoolingDataSource" alias="org.apache.commons.dbcp.managed.ManagedDataSource"/>
+  </module>
+
+  <module name="c3p0" standard="c3p0">
+    <description url="https://github.com/swaldman/c3p0">c3p0 - JDBC Connection pool</description>
+
+    <class name="com.mchange.v2.c3p0.PooledDataSource" kind="interface" supertypes="javax.sql.DataSource"></class>
+
+    <class name="com.mchange.v2.c3p0.AbstractComboPooledDataSource" kind="abstract_class"
+           supertypes="com.mchange.v2.c3p0.PooledDataSource, javax.sql.DataSource">
+      <method name="getUser" signature="getUser()"
+              alias="getPassword, getJdbcUrl, getDriverClass, getUserOverridesAsString, getOverrideDefaultUser, getOverrideDefaultPassword">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="database"/>
+      </method>
+      <method name="setDriverClass" signature="setDriverClass(java.lang.String)">
+        <sink argpos="0" kind="unsafe_reflection" resource="other"/>
+      </method>
+      <method name="setJdbcUrl" signature="setJdbcUrl(java.lang.String)">
+        <sink kind="connection_string_injection" argpos="-1" resource="database"/>
+      </method>
+      <method name="setUser" signature="setUser(java.lang.String)"
+              alias="setUserOverridesAsString, setOverrideDefaultUser">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)" alias="setOverrideDefaultPassword">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPreferredTestQuery" signature="setPreferredTestQuery(java.lang.String)"
+              alias="setAutomaticTestTable">
+        <sink kind="sql_injection" argpos="0" resource="database"/>
+      </method>
+    </class>
+
+    <class name="com.mchange.v2.c3p0.ComboPooledDataSource"
+           supertypes="com.mchange.v2.c3p0.AbstractComboPooledDataSource">
+    </class>
+
+    <class name="com.mchange.v2.c3p0.DataSources">
+      <method name="destroy" signature="destroy(javax.sql.DataSource)" alias="forceDestroy" instance="false"></method>
+      <method name="pooledDataSource" signature="pooledDataSource(javax.sql.DataSource)" instance="false" match="name">
+        <return type="javax.sql.DataSource"/>
+      </method>
+      <method name="unpooledDataSource" signature="unpooledDataSource(java.lang.String, java.lang.String, java.lang.String)" match="name">
+        <tags>username:0, password:1</tags>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+        <sink kind="hardcoded_credentials" argpos="1,2" resource="database"/>
+      </method>
+    </class>
+  </module>
+
+  <!-- -->
+
+</library>

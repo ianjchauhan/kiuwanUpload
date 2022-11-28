@@ -1,0 +1,782 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.playframework" standard="Play_Framework" technology="java">
+
+  <description url="https://www.playframework.com/">Web framework for Java and Scala</description>
+
+  <module name="play">
+    <description url="https://www.playframework.com/documentation/2.8.x/api/java/play/package-summary.html">
+      Play main package
+    </description>
+
+    <class name="play.Application" kind="interface">
+      <method name="asScala" signature="asScala()" alias="getWrappedApplication"><return type="play.api.Application"/></method>
+      <method name="classloader" signature="classloader()"><return type="java.lang.ClassLoader"/></method>
+      <method name="config" signature="config()"><return type="com.typesafe.config.Config"/></method>
+      <method name="configuration" signature="configuration()"><tags>deprecated</tags><return type="play.Configuration"/></method>
+      <method name="injector" signature="injector()"><return type="play.inject.Injector"/></method>
+      <method name="path" signature="path()"><return type="java.io.File"/></method>
+      <method name="getFile" signature="getFile(java.lang.String)">
+        <return type="java.io.File"/>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="resource" signature="resource(java.lang.String)">
+        <return type="java.net.URL"/>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="resourceAsStream" signature="resourceAsStream(java.lang.String)">
+        <return type="java.io.InputStream"/>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+    </class>
+
+    <class name="play.DefaultApplication" supertypes="play.Application"/>
+
+    <class name="play.Mode" kind="enum">
+      <field name="DEV" alias="TEST,PROD" type="play.Mode" instance="false"/>
+    </class>
+
+    <class name="play.Environment">
+      <method name="asScala" signature="asScala()" alias="underlying"><return type="play.api.Environment"/></method>
+      <method name="classLoader" signature="classLoader()"><return type="java.lang.ClassLoader"/></method>
+      <method name="rootPath" signature="rootPath()"><tags>sensitive_info</tags><return type="java.io.File"/><source argpos="-1" kind="sensitive_info" resource="filesystem"/></method>
+      <method name="getExistingFile" signature="getExistingFile(java.lang.String)" alias="getFile">
+        <return type="java.io.File"/>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="resource" signature="resource(java.lang.String)">
+        <return type="java.net.URL"/>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="resourceAsStream" signature="resourceAsStream(java.lang.String)">
+        <return type="java.io.InputStream"/>
+        <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+
+      <method name="isDev" signature="isDev()" alias="isProd,isTest"><return type="boolean"/></method>
+      <method name="mode" signature="mode()"><return type="play.Mode"/></method>
+      <method name="simple" signature="simple()"><return type="play.Environment"/></method>
+    </class>
+  </module>
+
+  <module name="play.libs">
+    <description url="https://www.playframework.com/documentation/2.8.x/api/java/play/libs/package-summary.html">
+      Play libraries: akka, concurrent, crypto, exception, jcache, openid, reflect, streams, typedmap, ws
+    </description>
+
+    <class name="play.libs.typedmap.TypedMap" supertypes="java.util.Map">
+      <method name="asScala" signature="asScala()" alias="underlying"><return type="play.api.libs.typedmap.TypedMap"/></method>
+      <method name="create" signature="create(play.libs.typedmap.TypedEntry...)"><return type="play.libs.typedmap.TypedMap"/></method>
+      <method name="create" signature="empty()"><return type="play.libs.typedmap.TypedMap"/></method>
+      <method name="getOptional" signature="getOptional(play.libs.typedmap.TypedKey)"><return type="java.util.Optional"/></method>
+    </class>
+
+    <class name="play.libs.Json">
+      <method name="asciiStringify" signature="asciiStringify(com.fasterxml.jackson.databind.JsonNode)" alias="stringify" instance="false">
+        <return type="java.lang.String"/>
+        <neutralization argpos="0" kind="json_injection" resource="web"/>
+      </method>
+      <method name="parse" signature="parse(java.lang.String)" match="name" instance="false">
+        <return type="com.fasterxml.jackson.databind.JsonNode"/>
+        <propagate from="0" to="-1"/>
+        <sink argpos="0" kind="json_injection" resource="other" />
+      </method>
+      <method name="fromJson" signature="fromJson(com.fasterxml.jackson.databind.JsonNode,java.lang.Class)" instance="false">
+        <return type="java.lang.Object"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="toJson" signature="toJson(java.lang.Object)" instance="false">
+        <return type="com.fasterxml.jackson.databind.JsonNode"/>
+        <propagate from="0" to="-1"/>
+        <sink argpos="0" kind="json_injection" resource="other" />
+      </method>
+    </class>
+
+    <class name="play.libs.Jsonp" supertypes="scala.Serializable" >
+      <method name="Jsonp" signature="Jsonp(java.lang.String, java.lang.String)" >
+        <return type="play.api.libs.Jsonp" />
+        <sink argpos="0" kind="some_injection" resource="web" />
+        <sink argpos="1" kind="jsonp_hijacking" resource="web" />
+      </method>
+    </class>
+
+    <!-- play.libs.ws -->
+    <class name="play.libs.ws.WSAuthScheme" kind="enum">
+      <field name="BASIC" type="play.libs.ws.WSAuthScheme"/>
+      <field name="DIGEST" type="play.libs.ws.WSAuthScheme"/>
+      <field name="KERBEROS" type="play.libs.ws.WSAuthScheme"/>
+      <field name="NONE" type="play.libs.ws.WSAuthScheme"/>
+      <field name="NTLM" type="play.libs.ws.WSAuthScheme"/>
+      <field name="SPNEGO" type="play.libs.ws.WSAuthScheme"/>
+    </class>
+
+    <class name="play.libs.ws.WSResponse">
+      <method name="asByteArray" signature="asByteArray()"><return type="byte[]"/><source argpos="-1" kind="other_input" resource="web" /></method>
+      <method name="asJson" signature="asJson()"><return type="com.fasterxml.jackson.databind.JsonNode"/><source argpos="-1" kind="other_input" resource="web" /></method>
+      <method name="asXml" signature="asXml()"><return type="org.w3c.dom.Document"/><source argpos="-1" kind="other_input" resource="web" /></method>
+      <method name="getAllHeaders" signature="getAllHeaders()" alias="getHeaders"><return type="java.util.Map"/><source argpos="-1" kind="other_input" resource="web" /></method>
+      <method name="getBody" signature="getBody()"><return type="java.lang.String"/><source argpos="-1" kind="other_input" resource="web" /></method>
+      <method name="getBody_2" signature="getBody(play.libs.ws.BodyReadable)"><return type="java.lang.Object"/><source argpos="-1" kind="other_input" resource="web" /></method>
+      <method name="getBodyAsBytes" signature="getBodyAsBytes()"><return type="byte[]"/><source argpos="-1" kind="other_input" resource="web" /></method>
+      <method name="getBodyAsSource" signature="getBodyAsSource()"><return type="akka.stream.javadsl.Source"/><source argpos="-1" kind="other_input" resource="web" /></method>
+      <method name="getBodyAsStream" signature="getBodyAsStream()"><return type="java.io.InputStream"/><source argpos="-1" kind="other_input" resource="web" /></method>
+      <method name="getContentType" signature="getContentType()"><return type="java.lang.String"/><source argpos="-1" kind="other_input" resource="web" /></method>
+      <method name="getCookie" signature="getCookie(java.lang.String)"><return type="play.libs.ws.WSCookie"/><source argpos="-1" kind="other_input" resource="web" /></method>
+      <method name="getCookies" signature="getCookies()"><return type="java.util.List" elementType="play.libs.ws.WSCookie"/><source argpos="-1" kind="other_input" resource="web" /></method>
+      <method name="getSingleHeader" signature="getSingleHeader(java.lang.String)"><return type="java.lang.String"/><source argpos="-1" kind="other_input" resource="web" /></method>
+      <method name="getHeaderValues" signature="getSingleHeader(java.lang.String)"><return type="java.util.List" elementType="java.lang.String"/><source argpos="-1" kind="other_input" resource="web" /></method>
+      <method name="getStatus" signature="getStatus()"><return type="int"/></method>
+      <method name="getStatusText" signature="getStatusText()"><return type="java.lang.String"/><source argpos="-1" kind="other_input" resource="web" /></method>
+    </class>
+
+    <class name="play.libs.ws.WSRequest">
+      <method name="addCookie" signature="addCookie(play.mvc.Http.Cookie)"><return type="play.libs.ws.WSRequest"/></method>
+      <method name="addCookies" signature="addCookies(play.libs.ws.WSCookie...)" alias="setCookies"><return type="play.libs.ws.WSRequest"/></method>
+      <method name="addHeader" signature="addHeader(java.lang.String,java.lang.String)" alias="setHeader">
+        <tags>header.name:0,header.value:1</tags>
+        <return type="play.libs.ws.WSRequest"/>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="addQueryParameter" signature="addQueryParameter(java.lang.String,java.lang.String)" alias="setQueryParameter">
+        <return type="play.libs.ws.WSRequest"/>
+        <sink argpos="0,1" kind="http_parameter_pollution" resource="web"/>
+      </method>
+      <method name="setQueryString" signature="setQueryString(java.lang.String)">
+        <return type="play.libs.ws.WSRequest"/>
+        <sink argpos="0" kind="http_parameter_pollution" resource="web"/>
+      </method>
+      <method name="setAuth" signature="setAuth(java.lang.String,java.lang.String,play.libs.ws.WSAuthScheme)" match="name">
+        <tags>sensitive_info,credential,username:0,password:1</tags>
+        <return type="play.libs.ws.WSRequest"/>
+        <sink argpos="0,1" kind="resource_injection" resource="web"/>
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="setBody" signature="setBody(play.libs.ws.BodyWritable)" match="numargs">
+        <return type="play.libs.ws.WSRequest"/>
+      </method>
+      <method name="setContentType" signature="setContentType(java.lang.String)">
+        <tags>header.name:Content-Type,header.value:1</tags>
+        <return type="play.libs.ws.WSRequest"/>
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setMethod" signature="setMethod(java.lang.String)">
+        <return type="play.libs.ws.WSRequest"/>
+        <sink argpos="0" kind="process_control" resource="web"/>
+      </method>
+      <method name="setRequestFilter" signature="setRequestFilter(play.libs.ws.WSRequestFilter)">
+        <return type="play.libs.ws.WSRequest"/>
+      </method>
+      <method name="setRequestTimeout" signature="setRequestTimeout(long)">
+        <return type="play.libs.ws.WSRequest"/>
+      </method>
+      <method name="sign" signature="sign(play.libs.ws.WSSignatureCalculator)">
+        <return type="play.libs.ws.WSRequest"/>
+      </method>
+
+      <method name="get" signature="get()" alias="delete,execute,head,options,stream">
+        <return type="java.util.concurrent.CompletionStage" elementType="play.libs.ws.WSResponse"/>
+      </method>
+      <method name="post" signature="post()" alias="patch,put">
+        <return type="java.util.concurrent.CompletionStage" elementType="play.libs.ws.WSResponse"/>
+      </method>
+
+      <method name="getHeaders" signature="getHeaders()" alias="getQueryParameters"><return type="java.util.Map"/></method>
+      <method name="getPassword" signature="getPassword()">
+        <tags>sensitive_info,credential,password</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="web"/>
+      </method>
+      <method name="getUsername" signature="getUsername()" alias="getUsername">
+        <tags>sensitive_info,credential,username</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="web"/>
+      </method>
+      <method name="getUrl" signature="getUrl()">
+        <tags>sensitive_info,url</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="web"/>
+      </method>
+    </class>
+
+    <class name="play.libs.ws.WSClient">
+      <method name="asScala" signature="asScala()"><return type="play.api.libs.ws.WSClient"/></method>
+      <method name="close" signature="close()"/>
+      <method name="getUnderlying" signature="getUnderlying()"><return type="java.lang.Object"/></method>
+      <method name="url" signature="url(java.lang.String)">
+        <return type="play.libs.ws.WSRequest"/>
+        <sink argpos="0" kind="ssrf" resource="web"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="play.http">
+    <description url="https://www.playframework.com/documentation/2.8.x/api/java/play/http/package-summary.html">Play HTTP API</description>
+    <class name="play.http.HttpEntity">
+      <method name="chunked" signature="chunked(akka.stream.javadsl.Source,java.lang.String)" instance="false"><return type="play.http.HttpEntity"/></method>
+      <method name="fromContent" signature="fromContent(play.twirl.api.Content,java.lang.String)" instance="false"><return type="play.http.HttpEntity"/></method>
+      <method name="fromString" signature="fromString(java.lang.String,java.lang.String)" instance="false"><return type="play.http.HttpEntity"/></method>
+
+      <method name="as" signature="as(java.lang.String)"><return type="play.http.HttpEntity"/></method>
+      <method name="asScala" signature="asScala()"><return type="play.api.http.HttpEntity"/></method>
+      <method name="consumeData" signature="consumeData(akka.stream.Materializer)"></method>
+      <method name="contentLength" signature="contentLength()"><return type="long"/></method>
+      <method name="contentLength" signature="contentType()"><return type="java.lang.String"/></method>
+      <method name="dataStream" signature="dataStream()"><return type="akka.stream.javadsl.Source"/></method>
+      <method name="isKnownEmpty" signature="isKnownEmpty()"><return type="boolean"/></method>
+    </class>
+
+    <class name="play.http.HttpEntity.Chunked" supertypes="play.http.HttpEntity">
+      <constructor name="Chunked" signature="Chunked(akka.stream.javadsl.Source, java.util.Optional)"></constructor>
+      <method name="chunks" signature="chunks()"><return type="akka.stream.javadsl.Source"/></method>
+    </class>
+    <class name="play.http.HttpEntity.Streamed" supertypes="play.http.HttpEntity">
+      <constructor name="Streamed" signature="Streamed(akka.stream.javadsl.Source, java.util.Optional, java.util.Optional)"></constructor>
+      <method name="data" signature="data()"><return type="akka.stream.javadsl.Source"/></method>
+    </class>
+    <class name="play.http.HttpEntity.Strict" supertypes="play.http.HttpEntity">
+      <constructor name="Strict" signature="Strict(akka.util.ByteString, java.util.Optional)"></constructor>
+      <method name="data" signature="data()"><return type="akka.util.ByteString"/></method>
+    </class>
+
+  </module>
+
+  <module name="play.mvc">
+    <description url="https://www.playframework.com/documentation/2.8.x/api/java/play/mvc/package-summary.html">
+      Play Controller/Action/Result API for handling HTTP requests
+    </description>
+
+    <class name="play.mvc.Http.Headers">
+      <method name="addHeader" signature="addHeader(java.lang.String,java.lang.String)">
+        <tags>header.name:0,header.value:1</tags>
+        <return type="play.mvc.Http.Headers"/>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="asScala" signature="asScala()"><return type="play.api.mvc.Headers"/></method>
+      <method name="get" signature="get(java.lang.String)"><return type="java.lang.String"/><source argpos="-1" kind="user_input" resource="web"/></method>
+      <method name="getAll" signature="getAll(java.lang.String)"><return type="java.util.List" elementType="java.lang.String"/><source argpos="-1" kind="user_input" resource="web"/></method>
+      <method name="remove" signature="remove(java.lang.String)"><return type="play.mvc.Http.Headers"/></method>
+      <method name="toMap" signature="toMap()"><return type="java.util.Map"/><source argpos="-1" kind="user_input" resource="web"/></method>
+    </class>
+
+    <!-- play.mvc.Http class and inner classes -->
+    <class name="play.mvc.Http">
+      <field name="Context" type="play.mvc.Http.Context" />
+    </class>
+    <class name="play.mvc.Http.Context">
+      <method name="current" signature="current()" >
+        <return type="play.mvc.Http.Context" />
+      </method>
+      <method name="request" signature="request()" >
+        <return type="play.mvc.Http.Request" />
+      </method>
+    </class>
+
+    <class name="play.mvc.Http.Session" supertypes="java.util.HashMap">
+      <method name="clear" signature="clear()"/>
+      <method name="remove" signature="remove(java.lang.String)"/>
+      <method name="put" signature="put(java.lang.String,java.lang.String)">
+        <sink argpos="0,1" kind="trust_boundary" resource="web"/>
+      </method>
+      <method name="putAll" signature="putAll(java.util.Map)">
+        <sink argpos="0" kind="trust_boundary" resource="web"/>
+      </method>
+    </class>
+
+    <class name="play.mvc.Http.Cookie.SameSite" kind="enum">
+      <field name="LAX" type="play.mvc.Http.Cookie.SameSite" instance="false"/>
+      <field name="STRICT" type="play.mvc.Http.Cookie.SameSite" instance="false"/>
+    </class>
+
+    <class name="play.mvc.Http.CookieBuilder">
+      <method name="build" signature="build()"><return type="play.mvc.Http.Cookie"/></method>
+      <method name="withName" signature="withName(java.lang.String)"><tags>setCookie,cookie.name:0</tags><return type="play.mvc.Http.CookieBuilder"/></method>
+      <method name="withValue" signature="withValue(java.lang.String)"><tags>setCookie,cookie.value:0</tags><return type="play.mvc.Http.CookieBuilder"/></method>
+      <method name="withDomain" signature="withDomain(java.lang.String)"><tags>setCookie,cookie.domain:0</tags><return type="play.mvc.Http.CookieBuilder"/></method>
+      <method name="withPath" signature="withPath(java.lang.String)"><tags>setCookie,cookie.path:0</tags><return type="play.mvc.Http.CookieBuilder"/></method>
+      <method name="withMaxAge" signature="withMaxAge(java.lang.Integer)"><tags>setCookie,cookie.maxAge:0</tags><return type="play.mvc.Http.CookieBuilder"/></method>
+      <method name="withHttpOnly" signature="withHttpOnly(boolean)"><tags>setCookie,cookie.httpOnly:0</tags><return type="play.mvc.Http.CookieBuilder"/></method>
+      <method name="withSecure" signature="withSecure(boolean)"><tags>setCookie,cookie.secure:0</tags><return type="play.mvc.Http.CookieBuilder"/></method>
+      <method name="withSameSite" signature="withSameSite(play.mvc.Http.Cookie.SameSite)"><tags>setCookie,cookie.sameSite:0</tags><return type="play.mvc.Http.CookieBuilder"/></method>
+    </class>
+
+    <class name="play.mvc.Http.Cookie">
+      <constructor name="Cookie" signature="Cookie(java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, boolean, boolean, play.mvc.Http.Cookie.SameSite)" match="name">
+        <tags>setCookie,cookie.name:0, cookie.value:1, cookie.maxAge:2, cookie.path:3, cookie.domain:4:, cookie.secure:5, cookie.httpOnly:6, cookie.sameSite:7</tags>
+      </constructor>
+      <method name="builder" signature="builder(java.lang.String, java.lang.String)">
+        <tags>setCookie,cookie.name:0, cookie.value:1</tags>
+        <return type="play.mvc.Http.CookieBuilder"/>
+      </method>
+    </class>
+
+    <class name="play.mvc.Http.Cookies" kind="interface" supertypes="java.lang.Iterable">
+      <method name="get" signature="get(java.lang.String)"><return type="play.mvc.Http.Cookie"/></method>
+    </class>
+
+    <class name="play.mvc.Http.RequestHeader" kind="interface">
+      <method name="_underlyingHeader" signature="_underlyingHeader()"><tags>deprecated,use:asScala</tags><return type="play.api.mvc.RequestHeader"/></method>
+      <method name="asScala" signature="asScala()"><return type="play.api.mvc.RequestHeader"/></method>
+
+      <method name="acceptedTypes" signature="acceptedTypes()" alias="acceptLanguages"><return type="java.util.List"/></method>
+      <method name="accepts" signature="accepts(java.lang.String)"><return type="boolean"/></method><!-- could be neutralization for mime-related vulns -->
+
+      <method name="addAttr" signature="addAttr(play.mvc.TypedKey,java.lang.Object)">
+        <return type="play.mvc.Http.RequestHeader"/>
+        <sink argpos="1" kind="trust_boundary" resource="web"/>
+      </method>
+      <method name="attrs" signature="attrs()">
+        <return type="play.libs.typedmap.TypedMap"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="tags" signature="tags()">
+        <tags>deprecated,use:attrs</tags>
+        <return type="java.util.Map"/>
+      </method>
+
+      <method name="charset" signature="charset()"><return type="java.lang.String"/></method>
+      <method name="clientCertificateChain" signature="clientCertificateChain()"><return type="java.util.List"/></method>
+      <method name="contentType" signature="contentType()"><return type="java.lang.String"/></method>
+      <method name="cookie" signature="cookie(java.lang.String)">
+        <tags>CWE:784</tags>
+        <return type="play.mvc.Http.Cookie"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="cookies" signature="cookies()">
+        <tags>CWE:784</tags>
+        <return type="play.mvc.Http.Cookies"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+
+      <method name="getHeader" signature="getHeader(java.lang.String)">
+        <tags>deprecated,use:header</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getHeaders" signature="getHeaders()">
+        <return type="play.mvc.Http.Headers"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="header" signature="header(java.lang.String)">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="headers" signature="headers()">
+        <tags>deprecated,use:getHeaders</tags>
+        <return type="java.lang.Map"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+
+      <method name="host" signature="host()" alias="remoteAddress"><return type="java.lang.String"/></method>
+      <method name="method" signature="method()"><return type="java.lang.String"/></method>
+      <method name="path" signature="path()" alias="uri">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="queryString" signature="queryString()">
+        <return type="java.util.Map"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getQueryString" signature="getQueryString(java.lang.String)">
+        <return type="java.lang.Object"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="version" signature="version()"><return type="java.lang.String"/></method>
+
+      <method name="withAttrs" signature="withAttrs(play.libs.typedmap.TypedMap)">
+        <return type="play.mvc.Http.RequestHeader"/>
+        <sink argpos="1" kind="trust_boundary" resource="web"/>
+      </method>
+      <method name="withBody" signature="withBody(play.mvc.Http.RequestBody)"><return type="play.mvc.Http.Request"/></method>
+
+      <method name="secure" signature="secure()"><return type="boolean"/></method>
+    </class>
+
+    <class name="play.mvc.Http.RequestBody">
+      <method name="as" signature="as(java.lang.Class)"><return type="java.lang.Object"/></method>
+      <method name="asBytes" signature="asBytes()"><return type="akka.util.ByteString"/></method>
+      <method name="asFormUrlEncoded" signature="asFormUrlEncoded()"><return type="java.util.Map"/></method>
+      <method name="asJson" signature="asJson()"><return type="com.fasterxml.jackson.databind.JsonNode"/></method>
+      <method name="asMultipartFormData" signature="asMultipartFormData()"><return type="play.mvc.Http.MultipartFormData"/></method>
+      <method name="asRaw" signature="asRaw()"><return type="play.mvc.Http.RawBuffer"/></method>
+      <method name="asText" signature="asText()"><return type="java.lang.String"/></method>
+      <method name="asXml" signature="asXml()"><return type="org.w3c.dom.Document"/></method>
+    </class>
+
+    <class name="play.mvc.Http.Request" kind="interface" supertypes="play.mvc.Http.RequestHeader">
+      <method name="_underlyingRequest" signature="_underlyingRequest()"><tags>deprecated,use:asScala</tags><return type="play.api.mvc.Request"/></method>
+      <method name="asScala" signature="asScala()"><return type="play.api.mvc.Request"/></method>
+      <method name="adddAttr" signature="addAttr(play.mvc.TypedKey,java.lang.Object)"><return type="play.mvc.Http.Request"/></method>
+      <method name="body" signature="body()">
+        <return type="play.mvc.Http.RequestBody"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="username" signature="username()"><return type="java.lang.String"/></method>
+      <method name="withAttrs" signature="withAttrs(play.libs.typedmap.TypedMap)"><return type="play.mvc.Http.Request"/></method>
+      <method name="withUsername" signature="withUsername(java.lang.String)">
+        <tags>deprecated,use:withAttrs</tags>
+        <return type="play.mvc.Http.Request"/>
+      </method>
+    </class>
+
+    <class name="play.mvc.Http.RequestImpl" supertypes="play.mvc.Http.Request"/>
+
+    <class name="play.mvc.Http.Response">
+      <method name="cookie" signature="cookie(java.lang.String)"><return type="play.mvc.Http.Cookie"/></method>
+      <method name="cookies" signature="cookies()"><return type="java.util.Collection" elementType="play.mvc.Http.Cookie"/></method>
+      <method name="discardCookie" signature="discardCookie()" match="name"/>
+      <method name="getHeaders" signature="getHeaders()"><return type="java.util.Map"/></method>
+      <method name="setContentType" signature="setContentType(java.lang.String)">
+        <tags>deprecated,use:Result.as</tags>
+      </method>
+      <method name="setCookie" signature="setCookie(play.mvc.Http.Cookie)">
+        <tags>header.name:Cookie, header.value:1</tags>
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setCookie" signature="setCookie(java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, boolean, boolean, play.mvc.Http.Cookie.SameSite)">
+        <tags>deprecated,use:setCookie(Cookie),setCookie,cookie.name:0, cookie.value:1, cookie.maxAge:2, cookie.path:3, cookie.domain:4:, cookie.secure:5, cookie.httpOnly:6, cookie.sameSite:7</tags>
+      </method>
+      <method name="setHeader" signature="setHeader(java.lang.String,java.lang.String)">
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+    </class>
+
+    <class name="play.mvc.Result">
+      <constructor name="Result" signature="Result(int,play.http.HttpEntity)" match="fullsignature">
+        <sink argpos="1" kind="xss" resource="web"/>
+      </constructor>
+      <constructor name="Result_2" signature="Result(int,java.util.Map)" match="fullsignature">
+        <sink argpos="1" kind="header_manipulation" resource="web"/>
+      </constructor>
+      <constructor name="Result_3" signature="Result(int,java.util.Map,play.http.HttpEntity)" match="fullsignature">
+        <sink argpos="1" kind="header_manipulation" resource="web"/>
+        <sink argpos="2" kind="xss" resource="web"/>
+      </constructor>
+      <constructor name="Result_4" signature="Result(int,java.lang.String,java.util.Map,play.http.HttpEntity)" match="fullsignature">
+        <sink argpos="1,2" kind="header_manipulation" resource="web"/>
+        <sink argpos="3" kind="xss" resource="web"/>
+      </constructor>
+      <constructor name="Result_5" signature="Result(play.mvc.ResponseHeader,play.http.HttpEntity)" match="fullsignature">
+        <sink argpos="1" kind="xss" resource="web"/>
+      </constructor>
+      <constructor name="Result_6" signature="Result(play.mvc.ResponseHeader,play.http.HttpEntity,play.mvc.Http.Session,play.mvc.Http.Flash,java.util.List)" match="fullsignature">
+        <sink argpos="1" kind="xss"/>
+        <sink argpos="4" kind="header_manipulation" resource="web"/>
+      </constructor>
+
+      <method name="as" signature="as(java.lang.String)"><return type="play.mvc.Result"/></method>
+      <method name="asScala" signature="asScala()"><return type="play.api.mvc.Result"/></method>
+      <method name="body" signature="body()"><return type="play.http.HttpEntity"/></method>
+      <method name="charset" signature=""><return type="java.lang.String"/></method>
+      <method name="contentType" signature="contentType()"><return type="java.lang.String"/></method>
+      <method name="cookie" signature="cookie(java.lang.String)"><return type="play.mvc.Http.Cookie"/></method>
+      <method name="cookies" signature="cookies()"><return type="play.mvc.Http.Cookies"/></method>
+      <method name="flash" signature="flash()"><return type="play.mvc.Http.Flash"/></method>
+      <method name="getHeader" signature="getHeader()"><return type="play.mvc.ResponseHeader"/></method>
+      <method name="header" signature="header()"><return type="java.lang.String"/></method>
+      <method name="headers" signature="headers()"><return type="java.util.Map"/></method>
+      <method name="reasonPhrase" signature="reasonPhrase()"><return type="java.lang.String"/></method>
+      <method name="redirectLocation" signature="redirectLocation()"><return type="java.lang.String"/></method>
+      <method name="session" signature="session()"><return type="play.mvc.Http.Session"/></method>
+      <method name="status" signature="status()"><return type="int"/></method>
+      <method name="withCookies" signature="withCookies(play.mvc.Http.Cookie...)">
+        <tags>header.name:Cookie</tags>
+        <return type="play.mvc.Result"/>
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="withHeader" signature="withHeader(java.lang.String,java.lang.String)">
+        <tags>header.name:0,header.value:1</tags>
+        <return type="play.mvc.Result"/>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="withHeaders" signature="withHeaders(java.lang.String...)">
+        <return type="play.mvc.Result"/>
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+    </class>
+
+    <class name="play.mvc.StatusHeader" supertypes="play.mvc.Result">
+      <constructor name="StatusHeader" signature="StatusHeader(int)"/>
+
+      <method name="chunked" signature="chunked(play.mvc.Results.Chunks)" match="name"><return type="play.mvc.Result"/></method>
+      <method name="sendEntity" signature="sendEntity(play.http.HttpEntity)" match="name"><return type="play.mvc.Result"/></method>
+      <method name="sendFile" signature="sendFile(java.io.File, boolean, java.lang.String)" match="name"><return type="play.mvc.Result"/></method>
+      <method name="sendInputStream" signature="sendInputStream(java.io.InputStream, long)" match="name"><return type="play.mvc.Result"/></method>
+      <method name="sendJson" signature="sendJson(com.fasterxml.jackson.databind.JsonNode, java.lang.String)" match="name"><return type="play.mvc.Result"/></method>
+      <method name="sendPath" signature="sendPath(java.nio.file.Path, boolean, java.lang.String)" match="name"><return type="play.mvc.Result"/></method>
+      <method name="sendResource" signature="sendResource(java.lang.String, java.lang.ClassLoader, boolean, java.lang.String)" match="name"><return type="play.mvc.Result"/></method>
+    </class>
+
+    <class name="play.mvc.Results.Status" supertypes="play.mvc.StatusHeader"></class>
+
+    <class name="play.mvc.Results" kind="abstract_class">
+      <method name="ok" signature="ok(java.lang.String)" match="name" instance="false"
+              alias="badRequest,created,forbidden,internalServerError,notAcceptable,notFound,paymentRequired,unauthorized,unsupportedMediaType">
+        <tags></tags>
+        <return type="play.mvc.Result"/>
+        <sink argpos="0" kind="xss" resource="web"/>
+      </method>
+      <method name="status" signature="status(int,java.lang.String)" match="name" instance="false">
+        <tags></tags>
+        <return type="play.mvc.Results"/>
+        <sink argpos="1" kind="xss" resource="web"/>
+      </method>
+      <method name="redirect" signature="redirect(java.lang.String)" match="numargs" instance="false"
+              alias="found,movedPermanently,permanentRedirect,seeOther,temporaryRedirect">
+        <tags></tags>
+        <return type="play.mvc.Results"/>
+        <sink argpos="0" kind="open_redirect" resource="web"/>
+        <sink kind="execution_after_redirect" argpos="-1" resource="web"/>
+      </method>
+    </class>
+
+    <class name="play.mvc.Http.Context">
+      <method name="current" signature="current()" instance="false">
+        <return type="play.mvc.Http.Context"/>
+      </method>
+      <method name="_requestHeader" signature="_requestHeader()"><return type="play.api.mvc.RequestHeader"/></method>
+      <method name="changeLang" signature="changeLang(java.lang.String)" match="numargs"><return type="boolean"/></method>
+      <method name="setTransientLang" signature="setTransientLang(java.lang.String)" match="numargs"/>
+      <method name="lang" signature="lang()"><return type="play.i18n.Lang"/></method>
+      <!--method name="clearLang" signature="clearLang()" alias="clearTransientLang"></method-->
+      <method name="fileMimeTypes" signature="fileMimeTypes()"><return type="play.mvc.FileMimeTypes"/></method>
+      <method name="flash" signature="flash()"><return type="play.mvc.Http.Flash"/></method>
+      <method name="id" signature="id()">
+        <tags>sensitive_info</tags>
+        <return type="long"/>
+        <source argpos="-1" kind="sensitive_info" resource="web"/>
+      </method>
+      <method name="messages" signature="messages()"><return type="play.i18n.Messages"/></method>
+      <method name="request" signature="request()"><return type="play.mvc.Http.Request"/></method>
+      <method name="response" signature="response()"><return type="play.mvc.Http.Response"/></method>
+      <method name="session" signature="session()"><return type="play.mvc.Http.Session"/></method>
+      <method name="withRequest" signature="withRequest(play.mvc.Http.Request)">
+        <return type="play.mvc.Http.Context"/>
+      </method>
+    </class>
+
+    <class name="play.mvc.Http.WrappedContext" supertypes="play.mvc.Http.Context"/>
+
+    <class name="play.mvc.PlayController" kind="interface"></class>
+
+    <class name="play.mvc.Controller" kind="abstract_class" supertypes="play.mvc.PlayController, play.mvc.Results">
+      <!-- Fields in Play 1.x -->
+      <field name="flash" type="play.mvc.Scope.Flash"/>
+      <field name="params" type="play.mvc.Scope.Params"/>
+      <field name="renderArgs" type="play.mvc.Scope.RenderArgs"/>
+      <field name="request" type="play.mvc.Http.Request"/>
+      <field name="response" type="play.mvc.Http.Response"/>
+      <field name="routeArgs" type="play.mvc.Scope.RouteArgs"/>
+      <field name="session" type="play.mvc.Scope.Session"/>
+      <field name="validation" type="play.data.validation.Validation"/>
+
+      <method name="changeLang" signature="changeLang(java.lang.String)" match="numargs"><return type="boolean"/></method>
+      <method name="lang" signature="lang()"><return type="play.i18n.Lang"/></method>
+      <!--method name="clearLang" signature="clearLang()"></method-->
+
+      <method name="ctx" signature="ctx()"><return type="play.mvc.Http.Context"/></method>
+
+      <method name="flash" signature="flash()"><return type="play.mvc.Http.Flash"/></method>
+      <method name="flash_2" signature="flash(java.lang.String)"><return type="java.lang.String"/></method>
+      <method name="flash_3" signature="flash(java.lang.String,java.lang.String)">
+        <tags>CWE:501, stateChange</tags>
+        <sink argpos="0,1" kind="trust_boundary" resource="web"/>
+      </method>
+
+      <method name="request" signature="request()"><return type="play.mvc.Http.Request"/></method>
+      <method name="response" signature="response()"><return type="play.mvc.Http.Response"/></method>
+
+      <method name="session" signature="session()"><return type="play.mvc.Http.Session"/></method>
+      <method name="session_2" signature="session(java.lang.String)"><return type="java.lang.String"/></method>
+      <method name="session_3" signature="session(java.lang.String,java.lang.String)">
+        <tags>CWE:501, stateChange</tags>
+        <sink argpos="0,1" kind="trust_boundary" resource="web"/>
+      </method>
+    </class>
+
+    <class name="play.mvc.Action" kind="abstract_class" supertypes="play.mvc.Results">
+      <field name="precursor" alias="delegate" type="play.mvc.Action"/>
+      <field name="configuration" type="java.lang.Object"/>
+      <field name="annotatedElement" type="java.lang.reflect.AnnotatedElement"/>
+      <method name="call" signature="call(play.mvc.Http.Context)"><return type="java.util.concurrent.CompletionStage" elementType="play.mvc.Result"/></method>
+    </class>
+    <class name="play.mvc.Action.Simple" kind="abstract_class" supertypes="play.mvc.Action"/>
+    <class name="play.filters.csrf.AddCSRFTokenAction" supertypes="play.mvc.Action"/>
+    <class name="play.filters.csrf.RequireCSRFCheckAction" supertypes="play.mvc.Action"/>
+    <!-- @Cached(  key = ... ) -->
+    <class name="play.cache.CachedAction" supertypes="play.mvc.Action"/>
+    <!-- @Security.Authenticated -->
+    <class name="play.mvc.Security.AuthenticatedAction" supertypes="play.mvc.Action"/>
+    <class name="play.db.ebean.TransactionalAction" supertypes="play.mvc.Action"/>
+    <class name="play.db.jpa.TransactionalAction" supertypes="play.mvc.Action"/>
+  </module>
+
+  <module name="play.db">
+    <description url="https://www.playframework.com/documentation/2.8.x/api/java/play/db/package-summary.html">Play JDBC database access API</description>
+
+    <class name="play.db.ConnectionCallable">
+      <method name="call" signature="call(java.sql.Connection)"><return type="java.lang.Object"/></method>
+    </class>
+
+    <class name="play.db.Database" kind="interface">
+      <method name="getConnection" signature="getConnection()" match="name"><return type="java.sql.Connection"/></method>
+      <method name="getDataSource" signature="getDataSource()"><return type="javax.sql.DataSource"/></method>
+      <method name="getName" signature="getName()"><return type="java.lans.String"/></method>
+      <method name="getUrl" signature="getUrl()"><tags>sensitive_info</tags><return type="java.lang.String"/><source argpos="-1" kind="sensitive_info" resource="database"/></method>
+      <method name="withConnection" signature="withConnection(play.db.ConnectionCallable)"/>
+      <method name="withConnection_2" signature="withConnection(boolean, play.db.ConnectionCallable)"/>
+      <method name="withTransaction" signature="withTransaction(play.db.ConnectionCallable)"/>
+    </class>
+    <class name="play.db.DefaultDatabase" supertypes="play.db.Database"/>
+
+    <class name="play.db.Databases">
+      <method name="createFrom" signature="createFrom(java.lang.String,java.lang.String)" instance="false" match="name">
+        <return type="play.db.Database"/>
+        <sink argpos="0,1,2,3" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="inMemory" signature="inMemory()" instance="false" match="name" alias="inMemoryWith"><return type="play.db.Database"/></method>
+    </class>
+
+    <class name="play.db.ConnectionPool" kind="interface">
+      <method name="close" signature="close(javax.sql.DataSource)"/>
+      <method name="create" signature="create(java.lang.String,com.typesafe.config.Config,play.Environment)">
+        <return type="javax.sql.DataSource"/>
+      </method>
+    </class>
+    <class name="play.db.DefaultConnectionPool" supertypes="play.db.ConnectionPool"/>
+
+    <class name="play.db.ConnectionPoolComponents" kind="interface">
+      <method name="connectionPool" signature="connectionPool()"><return type="play.db.ConnectionPool"/></method>
+    </class>
+
+    <class name="play.db.DBApi" kind="interface">
+      <method name="getDatabase" signature="getDatabase(java.lang.String)"><return type="play.db.Database"/></method>
+      <method name="getDatabases" signature="getDatabases()"><return type="java.util.List" elementType="play.db.Database"/></method>
+      <method name="shutdown" signature="shutdown()"/>
+    </class>
+    <class name="play.db.DefaultDBApi" supertypes="play.db.DBApi"/>
+
+    <class name="play.db.DBComponents" kind="interface" supertypes="play.components.ConfigurationComponents,play.db.ConnectionPoolComponents">
+      <method name="applicationLifecycle" signature="applicationLifecycle()"><return type="play.inject.ApplicationLifecycle"/></method>
+      <method name="database" signature="database(java.lang.String)"><return type="play.db.Database"/></method>
+      <method name="databases" signature="databases()"><return type="java.util.List" elementType="play.db.Database"/></method>
+      <method name="dbApi" signature="dbApi()"><return type="play.db.DBApi"/></method>
+      <method name="environment" signature="environment()"><return type="play.Environment"/></method>
+    </class>
+
+    <!-- play.db.jpa -->
+    <class name="play.db.jpa.JPAApi" kind="interface">
+      <method name="em" signature="em()"><return type="javax.persistence.EntityManager"/></method>
+      <method name="em_2" signature="em(java.lang.String)">
+        <return type="javax.persistence.EntityManager"/>
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="start" signature="start()"><return type="play.db.jpa.JPAApi"/></method>
+      <method name="shutdown" signature="shutdown()"/>
+      <method name="withTransaction" signature="withTransaction(java.util.function.Function)"></method>
+      <method name="withTransaction_2" signature="withTransaction(java.lang.String, java.util.function.Function)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="withTransaction_3" signature="withTransaction(java.lang.String, boolean, java.util.function.Function)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </method>
+    </class>
+    <class name="play.db.jpa.DefaultJPAApi" supertypes="play.db.jpa.JPAApi"/>
+
+    <class name="play.db.jpa.JPA">
+      <tags>deprecated,use:play.db.jpa.JPAApi</tags>
+      <method name="bindForSync" signature="bindForSync(javax.persistence.EntityManager)" instance="false"></method>
+      <method name="createFor" signature="createFor(java.lang.String,java.lang.String)" instance="false" match="name"><return type="play.db.jpa.JPAApi"/></method>
+      <method name="em" signature="em()" instance="false"><return type="javax.persistence.EntityManager"/></method>
+    </class>
+
+    <class name="play.db.jpa.JPAEntityManagerContext" supertypes="java.lang.ThreadLocal">
+      <method name="em" signature="em()"><return type="javax.persistence.EntityManager"/></method>
+    </class>
+
+    <class name="play.db.jpa.JPAComponents" kind="interface" supertypes="play.db.DBComponents">
+      <method name="jpaApi" signature="jpaApi()"><return type="play.db.jpa.JPAApi"/></method>
+      <method name="jpaConfig" signature="jpaConfig()"><return type="play.db.jpa.JPAConfig"/></method>
+    </class>
+  </module>
+
+  <module name="play.data">
+    <description url="https://www.playframework.com/documentation/2.8.x/api/java/play/db/package-summary.html">
+      Play data manipulation helpers, for HTTP form handling
+    </description>
+
+    <!-- play forms -->
+    <class name="play.data.Form">
+      <method name="allErrors" signature="allErrors()">
+        <return type="java.util.List" elementType="play.data.validation.ValidationError"/>
+      </method>
+      <method name="apply" signature="apply(java.lang.String)" alias="field">
+        <return type="play.data.Form.Field"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="bind" signature="bind(java.util.Map,java.lang.String...)" match="name">
+        <return type="play.data.Form"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="bindFromRequest" signature="bindFromRequest(java.lang.String...)" match="name">
+        <return type="play.data.Form"/>
+        <!--source argpos="-1" kind="user_input" resource="web"/-->
+      </method>
+      <method name="data" signature="data()">
+        <tags>deprecated,use:rawData</tags>
+        <return type="java.util.Map"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="rawdata" signature="rawData()">
+        <return type="java.util.Map"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="discardErrors" signature="discardErrors()" alias="discardingErrors"/>
+      <method name="error" signature="error(java.lang.String)" alias="getError"><return type="play.data.validation.ValidationError"/></method>
+      <method name="errors" signature="errors()"><return type="java.util.Map"/></method>
+      <method name="errors_2" signature="errors(java.lang.String)"><return type="java.util.List" elementType="play.data.validation.ValidationError"/></method>
+      <method name="errorsAsJson" signature="errorsAsJson()" match="name"><return type="com.fasterxml.jackson.databind.JsonNode"/></method>
+      <method name="fill" signature="fill(java.lang.Object)">
+        <return type="play.data.Form"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="get" signature="get()" alias="value">
+        <return type="java.lang.Object"/>
+        <!--propagate from="-2" to="-1"/-->
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getBackedType" signature="getBackedType()"><return type="java.lang.Class"/></method>
+      <method name="globalError" signature="globalError()" alias="getGlobalError"><return type="play.data.validation.ValidationError"/></method>
+      <method name="globalErrors" signature="globalErrors()"><return type="java.util.List" elementType="play.data.validation.ValidationError"/></method>
+      <method name="hasErrors" signature="hasErrors()" alias="hasGlobalErrors">
+        <return type="boolean"/>
+        <!--neutralization argpos="-2" kind="*"/-->
+      </method>
+      <method name="requestData" signature="requestData(play.mvc.Http.Request)">
+        <return type="java.util.Map"/>
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="withError" signature="withError(java.lang.String,java.lang.String)" match="name"><return type="play.data.Form"/></method>
+      <method name="withGlobalError" signature="withError(java.lang.String)" match="name"><return type="play.data.Form"/></method>
+      <method name="reject" signature="withError(java.lang.String,java.lang.String)" match="name">
+        <tags>deprecated,use:withError|withGlobalError</tags>
+      </method>
+    </class>
+    <class name="play.data.DynamicForm" supertypes="play.data.Form"/>
+
+    <class name="play.data.FormFactory">
+      <method name="form" signature="form()"><return type="play.data.DynamicForm"/></method>
+      <method name="form_2" signature="form(java.lang.Class)"><return type="play.data.Form"/></method>
+      <method name="form_3" signature="form(java.lang.String,java.lang.Class)"><return type="play.data.Form"/></method>
+      <method name="form_3" signature="form(java.lang.String,java.lang.Class,java.lang.Class...)"><return type="play.data.Form"/></method>
+    </class>
+  </module>
+
+</library>

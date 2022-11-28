@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="clones" default="run" basedir=".">
+
+  <import file="analyzerCommon.xml" />
+
+  <target name="run">
+    <if>
+      <and>
+        <not><equals arg1="${language}" arg2="bytecode"/></not>
+        <not><equals arg1="${language}" arg2="groovy"/></not>
+        <not><equals arg1="${language}" arg2="other"/></not>
+        <not><equals arg1="${language}" arg2="sql"/></not>
+        <not><equals arg1="${language}" arg2="xml"/></not>
+      </and>
+      <then>
+        <language.info property="extensions" softwareName="${softwareName}" technology="${language}" />
+        <run.clone.detector
+          language="${language}"
+          paths="${sourcePaths}" extensions="${extensions}"
+          bomFile="${bomFile}" bomFormat="${bomFormat}"
+        />
+      </then>
+      <else>
+        <echo>Technology ${language} not supported for clone detection. Skipped.</echo>
+      </else>
+    </if>
+  </target>
+
+</project>

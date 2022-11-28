@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+  <description>AIM configuration module for Cobol.</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-javascript.xml"/>
+
+  <bean id="aim.javascript.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">  <!-- apparently, testing use only -->
+    <description>javascript parser</description>
+    <property name="filter" ref="aim.typescript.filter"/>
+    <property name="languageSupport" ref="ls_javascript"/>  <!-- defined in qaking-tech-javascript.xml -->
+  </bean>
+  
+  <!-- Filters -->
+  <bean id="aim.typescript.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.typescript.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.typescript.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.typescript.filter.pattern"/>
+    </map></property>
+  </bean>
+  
+  <bean id="aim.typescript.filter.default" parent="ls_javascript_matcher"/>   <!-- defined in qaking-tech-javascript.xml -->
+  
+  <bean id="aim.typescript.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.typescript.filter.pattern}"/>
+  </bean>
+  
+  <!-- Rules -->
+  <bean id="aim.typescript.rule" class="com.optimyth.apm.builder.rules.javascript.TypescriptBuilderRule">
+    <property name="active" value="${aim.typescript.rule.active}"/>
+    <property name="filter" ref="aim.typescript.filter"/>
+    <property name="callback" ref="aim.typescript.callback"/>
+    <property name="resolver" ref="aim.typescript.resolver"/>
+    <property name="ignoreFolderNames" value="${aim.typescript.ignore.folders}"/>
+    <property name="ignoreCaseFolderNames" value="${aim.typescript.ignore.case.folders}"/>
+  </bean>
+  
+  <!-- Callback -->
+  <bean id="aim.typescript.callback" class="com.optimyth.apm.builder.rules.javascript.BasicTypescriptCallback">
+    <property name="application" value="${aim.typescript.software}"/>
+    <property name="addCodeToRelations" value="${aim.typescript.addCodeToRelations}"/>
+    <property name="resolveArtifacts" value="${aim.typescript.resolveArtifacts}"/>
+    <property name="language" value="javascript"/>
+  </bean>  
+  
+  <!-- Resolvers -->
+  <bean id="aim.typescript.resolver" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="key" value="${aim.typescript.resolver}"/> 
+    <property name="objectType" value="com.optimyth.apm.builder.rules.oo.ClassDepsResolver"/>
+    <property name="defaultValue" ref="aim.typescript.resolver.existing"/> 
+    <property name="map"><map>
+      <entry key="matching" value-ref="aim.typescript.resolver.composite"/> 
+    </map></property>
+  </bean>  
+
+  <bean id="aim.typescript.resolver.abstract" abstract="true">
+    <property name="callback" ref="aim.typescript.callback"/>
+    <property name="classnameFilter">
+      <bean factory-method="getClassFilter" class="com.optimyth.apm.builder.rules.javascript.JavascriptAPI"/>
+    </property>
+  </bean>   
+  
+  <bean id="aim.typescript.resolver.composite" parent="aim.typescript.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.CompositeClassDepsResolver">
+    <property name="resolvers">
+      <list>
+        <ref bean="aim.typescript.resolver.matching" />
+        <ref bean="aim.typescript.resolver.existing" />
+      </list>
+    </property>
+  </bean>   
+    
+  <bean id="aim.typescript.resolver.existing" parent="aim.typescript.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.ExistingClassDepsResolver">
+    <property name="cache"><bean class="com.optimyth.apm.builder.rules.oo.ExistingComponentCache">
+      <constructor-arg value="aim.typescript.existing.cache"/> 
+      <constructor-arg value="512"/>
+    </bean></property>
+    <property name="cacheNon"><bean class="com.optimyth.apm.builder.rules.oo.NonExistingComponentCache">
+      <constructor-arg value="512"/>
+    </bean></property>
+    <property name="typePackageResolution" value="${aim.typescript.type.package.resolver}"/>
+    <property name="customPackage" value="${aim.typescript.custom.package}"/>
+  </bean>  
+  
+   <bean id="aim.typescript.resolver.matching" parent="aim.typescript.resolver.abstract" class="com.optimyth.apm.builder.rules.oo.MatchingPkgClassDepsResolver">
+    <property name="predicate"><bean class="com.optimyth.apm.builder.rules.common.PatternsPredicate">
+      <property name="partialMatch" value="true"/>
+      <property name="regexpPatterns" value="${aim.typescript.matching.patterns}"/>
+    </bean></property>
+    <property name="typePackageResolution" value="${aim.typescript.type.package.resolver}"/>
+    <property name="customPackage" value="${aim.typescript.custom.package}"/>    
+  </bean>
+
+</beans>

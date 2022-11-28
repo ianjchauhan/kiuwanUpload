@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library.database
+  xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  technology="plsql" name="plsql_ora_dbms" standard="PL/SQL_dbms">
+
+  <!-- Oracle DBMS_* packages -->
+  <description url="https://docs.oracle.com/database/121/ARPLS/toc.htm">PL/SQL DBMS Packages</description>
+
+  <package name="dbms_advisor">
+    <procedure name="create_file" signature="create_file(buffer clob, location varchar2, filename varchar2)">
+      <sink argpos="1,2" kind="path_traversal" resource="filesystem"/>
+      <sink argpos="0" kind="file_output" resource="filesystem"/>
+    </procedure>
+  </package>
+
+  <package name="dbms_assert">
+    <description>Package for input validation</description>
+    <function name="enquote_literal" signature="enquote_literal(str varchar2)"
+              alias="qualified_sql_name,schema_name,simple_sql_name,sql_object_name">
+      <return type="varchar2"/>
+      <neutralization argpos="0" kind="string"/>
+    </function>
+    <function name="enquote_name" signature="enquote_name(str varchar2, capitalize boolean)">
+      <return type="varchar2"/>
+      <neutralization argpos="0" kind="string"/>
+    </function>
+  </package>
+
+  <package name="dbms_credential">
+    <procedure name="create_credential" signature="create_credential(credential_name varchar2, username varchar2, password varchar2, database_role varchar2, windows_domain varchar2)">
+      <sink argpos="1,2" kind="hardcoded_credentials" resource="database"/>
+    </procedure>
+  </package>
+
+  <package name="dbms_crypto">
+    <field name="hash_md4" type="pls_integer"><tags>hash:md4, hash_size:128</tags></field>
+    <field name="hash_md5" type="pls_integer"><tags>hash:md5, hash_size:128</tags></field>
+    <field name="hash_sh1" type="pls_integer"><tags>hash:sha1, hash_size:160</tags></field>
+    <field name="hmac_md5" type="pls_integer"><tags>hash:md5, hash_size:128</tags></field>
+    <field name="hmac_sh1" type="pls_integer"><tags>hash:sha1, hash_size:160</tags></field>
+    <field name="encrypt_des" type="pls_integer"><tags>cipher:des, keylen:56</tags></field>
+    <field name="encrypt_3des_2key" type="pls_integer"><tags>cipher:2des, keylen:112</tags></field>
+    <field name="encrypt_3des" type="pls_integer"><tags>cipher:3des, keylen:168</tags></field>
+    <field name="encrypt_aes128" type="pls_integer"><tags>cipher:aes, keylen:128</tags></field>
+    <field name="encrypt_aes192" type="pls_integer"><tags>cipher:aes, keylen:192</tags></field>
+    <field name="encrypt_aes256" type="pls_integer"><tags>cipher:aes, keylen:256</tags></field>
+    <field name="encrypt_rc4" type="pls_integer"><tags>cipher:rc4, keylen:128</tags></field>
+    <field name="des_cbc_pkcs5" type="pls_integer"><tags>cipher:des, keylen:56, mode:cbc, pad:pkcs5</tags></field>
+    <field name="des3_cbc_pkcs5" type="pls_integer"><tags>cipher:3des, keylen:168, mode:cbc, pad:pkcs5</tags></field>
+    <field name="chain_ecb" type="pls_integer"><tags>mode:ecb</tags></field>
+    <field name="chain_cbc" type="pls_integer"><tags>mode:cbc</tags></field>
+    <field name="chain_cfb" type="pls_integer"><tags>mode:cfb</tags></field>
+    <field name="chain_ofb" type="pls_integer"><tags>mode:ofb</tags></field>
+    <field name="pad_pkcs5" type="pls_integer"><tags>pad:pkcs5</tags></field>
+    <field name="pad_none" type="pls_integer"><tags>pad:none</tags></field>
+    <field name="pad_zero" type="pls_integer"><tags>pad:zero</tags></field>
+    <function name="encrypt" signature="encrypt(src raw, typ pls_integer, key raw, iv raw)">
+      <tags>encrypt, algo:typ, key:key, data:src, iv:iv</tags>
+      <return type="raw"/>
+    </function>
+    <function name="decryp" signature="decrypt(src raw, typ pls_integer, key raw, iv raw)">
+      <tags>decrypt, algo:typ, key:key, data:src, iv:iv</tags>
+      <return type="raw"/>
+    </function>
+    <function name="hash" signature="hash(src raw, typ pls_integer)">
+      <tags>hash, algo:typ, data:raw</tags>
+      <return type="raw"/>
+    </function>
+    <function name="mac" signature="mac(src raw, typ pls_integer, key raw)">
+      <tags>hmac, algo:typ, key:key, data:raw</tags>
+      <return type="raw"/>
+    </function>
+    <function name="randombytes" signature="randombytes(number_bytes positive)">
+      <tags>prng</tags>
+      <return type="raw"/>
+    </function>
+    <function name="randominteger" signature="randominteger()">
+      <tags>prng</tags>
+      <return type="binary_integer"/>
+    </function>
+    <function name="randomnumber" signature="randomnumber()">
+      <tags>prng</tags>
+      <return type="number"/>
+    </function>
+  </package>
+  
+  <package name="dbms_obfuscation_toolkit">
+    <tags>deprecated, deprecatedBy:dbms_crypto</tags>
+    <field name="twokeymode" type="pls_integer"><tags>cipher:2des, keylen:112</tags></field>
+    <field name="threekeymode" type="pls_integer"><tags>cipher:3des, keylen:168</tags></field>
+    <function name="desencrypt" signature="desencrypt(input in raw, key in raw, encrypted_data out raw)">
+      <tags>encrypt, cipher:des, keylen: 56, data:input, key:key, mode:ecb</tags>
+      <return type="raw"/>
+    </function>
+    <function name="desdecrypt" signature="desdecrypt(input in raw, key in raw, decrypted_data out raw)">
+      <tags>decrypt, cipher:des, keylen: 56, mode:ecb</tags>
+      <return type="raw"/>
+    </function>
+    <function name="des3encrypt" signature="des3encrypt(input in raw, key in raw, encrypted_data out raw, which in pls_integer, iv in raw)">
+      <tags>encrypt, algo:which, data:input, key:key, iv:iv</tags>
+      <return type="raw"/>
+    </function>
+    <function name="des3decrypt" signature="des3decrypt(input in raw, key in raw, decrypted_data out raw, which in pls_integer, iv in raw)">
+      <tags>encrypt, algo:which, data:input, key:key, iv:iv</tags>
+      <return type="raw"/>
+    </function>
+
+    <function name="desgetkey" signature="des3getkey(seed in raw, key out raw)">
+      <tags>keygen, cipher:des, keylen:56, seed:seed, key:key|-1</tags>
+      <return type="raw"/>
+    </function>
+    <function name="des3getkey" signature="des3getkey(which in pls_integer, seed in raw, key out raw)">
+      <tags>keygen, algo:which, seed:seed, key:key|-1</tags>
+      <return type="raw"/>
+    </function>
+
+    <function name="md5" signature="md5(input in raw, checksum out raw)">
+      <tags>hash, hash:md5, hash_size:128, data:input</tags>
+      <return type="raw"/>
+    </function>
+  </package>
+
+  <package name="dbms_dbfs_content">
+    <description>Filesystem abstraction</description>
+    <!-- Full signatures not documented -->
+    <procedure name="createDirectory" signature="createDirectory(path varchar2)" alias="createFile">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </procedure>
+    <procedure name="createFile" signature="createFile(path varchar2, properties properties_t, content inout blob)">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+      <sink argpos="2" kind="file_output" resource="filesystem"/>
+    </procedure>
+    <procedure name="createLink" signature="createLink(srcPath varchar2, dstPath varchar2)" alias="createReference">
+      <sink argpos="0,1" kind="path_traversal" resource="filesystem"/>
+    </procedure>
+    <procedure name="deleteDirectory" signature="deleteDirectory(path varchar2, filter varchar2)" alias="deleteFile">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </procedure>
+    <procedure name="getPath" signature="getPath(path varchar2, properties properties_t, content out blob)">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+      <source argpos="2" kind="file_input" resource="filesystem"/>
+    </procedure>
+    <procedure name="renamePath" signature="renamePath(oldPath varchar2, newPath varchar2)">
+      <sink argpos="0,1" kind="path_traversal" resource="filesystem"/>
+    </procedure>
+  </package>
+  
+  <package name="dbms_lock">
+    <procedure name="sleep" signature="dbms_lock.sleep(seconds number)">
+      <sink argpos="0" kind="sleep_injection"/>
+    </procedure>
+  </package>
+  
+  <package name="dbms_random">
+   <description>DBMS_RANDOM is not intended for cryptography.</description>
+   <procedure name="seed" signature="seed(val in binary_integer)" alias="initialize">
+     <tags>insecure_random</tags>
+   </procedure>
+    <function name="normal" signature="normal()">
+      <tags>insecure_random</tags>
+      <return type="number"/>
+    </function>
+    <function name="random" signature="random()">
+      <tags>insecure_random</tags>
+      <return type="binary_integer"/>
+    </function>
+    <function name="string" signature="string(opt char, len number)">
+      <tags>insecure_random</tags>
+      <return type="varchar2"/>
+    </function>
+    <function name="value" signature="value(low number, high number)">
+      <tags>insecure_random</tags>
+      <return type="number"/>
+    </function>
+  </package>
+
+  <package name="dbms_scheduler">
+    <procedure name="create_program" signature="create_program(program_name varchar2, program_type varchar2, program_action varchar2, number_of_arguments pls_integer, enabled boolean, comments varchar2)">
+      <sink argpos="2" kind="sql_injection" resource="database">
+        <checker id="plsql.schedulerChecker.sqli"/>
+      </sink>
+      <sink argpos="2" kind="command_injection" resource="os">
+        <checker id="plsql.schedulerChecker.cmdi"/>
+      </sink>
+    </procedure>
+  </package>
+
+  <package name="dbms_job">
+    <procedure name="submit" signature="submit(job out binary_integer, what varchar2, next_date date, interval varchar2, no_parse boolean, instance binary_integer, force boolean)">
+      <sink argpos="1" kind="sql_injection" resource="database"/>
+    </procedure>
+    <procedure name="change" signature="change(job binary_integer, what varchar2, next_date date, interval varchar2, instance binary_integer, force boolean)">
+      <sink argpos="1" kind="sql_injection" resource="database"/>
+    </procedure>
+    <procedure name="what" signature="what(job binary_integer, what varchar2)">
+      <sink argpos="1" kind="sql_injection" resource="database"/>
+    </procedure>
+  </package>
+
+  <package name="dbms_sql">
+    <description>dynamic SQL</description>
+    <procedure name="parse" signature="parse(c integer, statement varchar2, language_flag integer, edition varchar2, apply_crossedition_trigger varchar2, fire_apply_trigger boolean)">
+      <sink argpos="1" kind="sql_injection" resource="database"/>
+    </procedure>
+  </package>
+
+  <package name="dbms_utility">
+    <procedure name="exec_ddl_statement" signature="exec_ddl_statement(parse_string varchar2)">
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </procedure>
+  </package>
+
+  <package name="dbms_xmlquery">
+    <description>Generates XML from database</description>
+    <procedure name="getxml" signature="getxml(sqlQuery varchar2, metaType number)">
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </procedure>
+    <function name="newcontext" signature="newcontext(sqlQuery varchar2)">
+      <return type="dbms_xmlquery.ctxType"/>
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </function>
+  </package>
+
+  <package name="dbms_xmlgen">
+    <description>Generates XML from database</description>
+    <function name="getxml" signature="getxml(sqlQuery varchar2, dtdOrSchema number)">
+      <return type="clob"/>
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </function>
+    <function name="getxmltype" signature="getxmltype(sqlQuery varchar2, dtdOrSchema number)">
+      <return type="XMLType"/>
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </function>
+    <function name="newcontext" signature="newcontext(query varchar2)" alias="newcontextfromhierarchy">
+      <return type="dbms_xmlgen.ctxHandle"/>
+      <sink argpos="0" kind="sql_injection" resource="database"/>
+    </function>
+  </package>
+
+</library.database>

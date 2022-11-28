@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="third_party" standard="third_party" technology="cpp">
+  <description>Common third-party C/C++ libraries</description>
+
+  <module name="pcre.h" standard="pcre">
+    <description url="https://www.pcre.org/original/doc/html/">PCRE regular expression library (libpcre)</description>
+
+    <class name="pcre" kind="struct">
+    </class>
+
+    <function name="pcre_compile" alias="pcre16_compile, pcre32_compile"
+              signature="pcre_compile(const char *pattern, int options, const char **errptr, int *erroffset, const unsigned char *tableptr)">
+      <return type="pcre *"/>
+      <sink argpos="0" kind="regex_dos"/>
+    </function>
+    <function name="pcre_compile2" signature=
+      "pcre_compile2(const char *pattern, int options, int *errorcodeptr, const char **errptr, int *erroffset, const unsigned char *tableptr)">
+      <return type="pcre *"/>
+      <sink argpos="0" kind="regex_dos"/>
+    </function>
+    <function name="pcre_exec" signature=
+      "pcre_exec(const pcre *code, const pcre_extra *extra, const char *subject, int length, int startoffset, int options, int *ovector, int ovecsize)">
+      <return type="int"/>
+      <neutralization argpos="2" kind="string"/>
+    </function>
+    <function name="pcre_dfa_exec" signature="pcre_dfa_exec">
+      <description>This is not ReDos-vulnerable except with possibly lookbehind</description>
+    </function>
+    <function name="pcre_copy_substring" alias="pcre_copy_named_substring" signature=
+      "pcre_copy_substring(const char *subject, int *ovector, int stringcount, int stringnumber, char *buffer, int buffersize)">
+      <return type="int"/>
+      <propagate from="0" to="4"/>
+    </function>
+    <function name="pcre_get_substring" alias="pcre_get_named_substring" signature=
+      "pcre_get_substring(const char *subject, int *ovector, int stringcount, int stringnumber, const char **stringptr)">
+      <return type="int"/>
+      <propagate from="0" to="4"/>
+    </function>
+    <function name="pcre_get_substring_list" signature=
+      "pcre_get_substring_list(const char *subject, int *ovector, int stringcount, const char ***listptr)">
+      <return type="int"/>
+      <propagate from="0" to="3"/>
+    </function>
+  </module>
+
+  <module name="pcre2.h" standard="pcre2">
+    <description url="https://www.pcre.org/current/doc/html/">Version 2 of PCRE</description>
+    <!--
+    <typedef name="PCRE2_SPTR" type="char *"/>
+    <typedef name="PCRE2_SIZE" type="size_t"/>
+    -->
+    <function name="pcre2_compile" signature=
+      "pcre2_compile(PCRE2_SPTR pattern, PCRE2_SIZE length, uint32_t options, int *errorcode, PCRE2_SIZE *erroroffset, pcre2_compile_context *ccontext)">
+      <return type="pcre2_code *"/>
+      <sink argpos="0" kind="regex_dos"/>
+    </function>
+    <function name="pcre2_match" alias="pcre2_dfa_match" signature=
+      "pcre2_match(const pcre2_code *code, PCRE2_SPTR subject, PCRE2_SIZE length, PCRE2_SIZE startoffset, uint32_t options, pcre2_match_data *match_data, pcre2_match_context *mcontext)">
+      <return type="int"/>
+      <neutralization argpos="1" kind="string"/>
+    </function>
+  </module>
+
+  <module name="Poco" standard="POCO">
+    <description url="https://pocoproject.org/docs/index.html">POCO C++ libraries</description>
+    <class name="Poco.ClassLoader">
+      <method name="loadLibrary" signature="loadLibrary(const string&amp; path)" match="name" alias="manifestFor">
+        <sink kind="process_control" argpos="0"/>
+      </method>
+      <method name="create" signature="create(const string&amp; className)" match="name" alias="classFor, findClass, findManifest, instance">
+        <sink kind="unsafe_reflection" argpos="0"/>
+      </method>
+    </class>
+
+    <class name="Poco.SharedLibrary">
+      <constructor name="SharedLibrary" signature="SharedLibrary(const string&amp; path)" match="name">
+        <sink kind="process_control" argpos="0" resource="filesystem"/>
+      </constructor>
+      <method name="load" signature="load(string&amp; path)" match="name">
+        <sink kind="process_control" argpos="0" resource="filesystem"/>
+      </method>
+      <method name="setSearchPath" signature="setSearchPath(const string&amp; path)" match="numargs" instance="false">
+        <sink kind="process_control" argpos="0" resource="filesystem"/>
+      </method>
+      <method name="getSymbol" signature="getSymbol(const string&amp; name)">
+        <sink kind="resource_injection" argpos="0"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="jsoncpp">
+    <description
+      url="https://github.com/open-source-parsers/jsoncpp/">
+      JsonCpp: C++ library for manipulating JSON values, including serialization and deserialization to and from strings.
+    </description>
+
+    <class name="Json.Value">
+       <tags>hasDefaultConstructor</tags>
+      <!-- more detailed spec needed here? -->
+    </class>
+    <class name="Json.Features">
+      <tags>hasDefaultConstructor</tags>
+    </class>
+    <class name="Json.CharReader" kind="interface">
+      <method name="parse" signature="parse(char const *, char const *, Json.Value *, String *)">
+        <tags>read</tags>
+        <return type="bool"/>
+        <propagate from="0" to="2"/>
+        <errorProcessing kind="other">argpos:-1,3</errorProcessing>
+      </method>
+    </class>
+    <class name="Json.CharReader.Factory" kind="abstract_class">
+      <method name="newCharReader" signature="newCharReader()">
+        <return type="Json.CharReader *"/>
+      </method>
+    </class>
+    <class name="Json.CharReaderBuilder" supertypes="Json.CharReader.Factory">
+      <tags>hasDefaultConstructor</tags>
+      <field name="settings" type="Json.Value"/>
+      <constructor name="CharReaderBuilder" signature="CharReaderBuilder()"/>
+      <method name="newCharReader" signature="newCharReader()">
+        <return type="Json.CharReader *"/>
+      </method>
+      <method name="validate" signature="validate(Json.Value *)">
+        <return type="bool"/>
+      </method>
+      <method name="setDefaults" signature="setDefaults(Json.Value *)" instance="false"/>
+      <method name="strictMode" signature="strictMode(Json.Value *)" instance="false"/>
+    </class>
+
+    <class name="Json.StreamWriter" kind="abstract_class">
+      <tags>hasDefaultConstructor</tags>
+      <constructor name="StreamWriter" signature="StreamWriter()"/>
+      <method name="write" signature="write(Json.Value &amp;, Json.OStream *)">
+        <tags>write</tags>
+        <return type="int"/>
+        <propagate from="0" to="1"/>
+      </method>
+    </class>
+    <class name="Json.StreamWriter.Factory" kind="abstract_class">
+      <method name="newStreamWriter" signature="newStreamWriter()">
+        <return type="Json.StreamWriter"/>
+      </method>
+    </class>
+    <class name="Json.StreamWriterBuilder" supertypes="Json.StreamWriterBuilder">
+      <tags>hasDefaultConstructor</tags>
+      <field name="settings" type="Json.Value"/>
+      <constructor name="StreamWriterBuilder" signature="StreamWriterBuilder()"/>
+      <method name="newStreamWriter" signature="newStreamWriter()">
+        <return type="Json.StreamWriter *"/>
+      </method>
+      <method name="validate" signature="validate(Json.Value *)">
+        <return type="bool"/>
+      </method>
+      <method name="setDefaults" signature="setDefaults(Json.Value *)" instance="false"/>
+    </class>
+
+    <class name="Json.IStream" supertypes="istream"/>
+    <class name="Json.IStringStream" supertypes="istringstream"/>
+    <class name="Json.OStream" supertypes="ostream"/>
+    <class name="Json.OStringStream" supertypes="ostringstream"/>
+    <class name="Json.String" supertypes="string"/>
+  </module>
+
+</library>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="martini" standard="Martini">
+
+  <description url="https://github.com/go-martini/martini">Web Framework</description>
+
+  <module name="github.com.go-martini.martini" >
+    <class name="github.com.go-martini.martini.ClassicMartini" kind="struct"
+           supertypes="github.com.go-martini.martini.Martini,github.com.go-martini.martini.Router" />
+    <class name="github.com.go-martini.martini.Context" kind="interface" supertypes="github.com.codegangsta.inject.Injector"></class>
+    <class name="github.com.go-martini.martini.Handler" kind="interface" />
+    <class name="github.com.go-martini.martini.Martini" kind="struct" supertypes="github.com.codegangsta.inject.Injector" >
+      <method name="Run" signature="Run()" >
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+      </method>
+      <method name="RunOnAddr" signature="RunOnAddr(go.string)" >
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+        <sink argpos="0" kind="resource_injection" resource="network" />
+      </method>
+    </class>
+    <class name="github.com.go-martini.martini.ResponseWriter" kind="interface"
+           supertypes="net.http.ResponseWriter,net.http.Flusher,net.http.Hijacker" >
+    </class>
+    <class name="github.com.go-martini.martini.Router" >
+      <method name="Get" signature="Get(go.string,github.com.go-martini.martini.Handler)"
+              alias="Patch,Post,Put,Delete,Options,Head,Any" >
+        <tags>route:1</tags>
+      </method>
+      <method name="AddRoute" signature="AddRoute(go.string,go.string,github.com.go-martini.martini.Handler)" >
+        <tags>route:2,routeMethod:0</tags>
+      </method>
+    </class>
+
+    <function name="github.com.go-martini.martini.NewRouter" signature="github.com.go-martini.martini.NewRouter()" >
+      <return type="github.com.go-martini.martini.Router" />
+    </function>
+    <function name="github.com.go-martini.martini.NewResponseWriter" signature="github.com.go-martini.martini.NewResponseWriter(net.http.ResponseWriter)" >
+      <return type="github.com.go-martini.martini.ResponseWriter" />
+    </function>
+    <function name="github.com.go-martini.martini.New" signature="github.com.go-martini.martini.New()" >
+      <return type="github.com.go-martini.martini.Martini" />
+    </function>
+    <function name="github.com.go-martini.martini.Classic" signature="github.com.go-martini.martini.Classic()" >
+      <return type="github.com.go-martini.martini.ClassicMartini" />
+    </function>
+    <function name="github.com.go-martini.martini.Logger" signature="github.com.go-martini.martini.Logger()" >
+      <return type="github.com.go-martini.martini.Handler" />
+    </function>
+    <function name="github.com.go-martini.martini.Recovery" signature="github.com.go-martini.martini.Recovery()" >
+      <return type="github.com.go-martini.martini.Handler" />
+    </function>
+    <function name="github.com.go-martini.martini.Static" signature="github.com.go-martini.martini.Static(go.string,...github.com.go-martini.martini.StaticOptions)" >
+      <return type="github.com.go-martini.martini.Handler" />
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+  </module>
+
+  <module name="github.com.martini-contrib.csrf" standard="martini-contrib.csrf">
+    <description url="https://pkg.go.dev/github.com/martini-contrib/csrf" >Generates and validates CSRF tokens</description>
+
+    <function name="github.com.martini-contrib.csrf.Generate" signature="github.com.martini-contrib.csrf.Generate" >
+      <tags>csrfFilter</tags>
+    </function>
+  </module>
+</library>

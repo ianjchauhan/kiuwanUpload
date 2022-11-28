@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="thirdparty" standard="JavaScript_libraries">
+  <description>Common third-party JavaScript libraries: Underscore, EJS, SockJS, Stomp</description>
+
+  <globalObject name="_" type="underscore/_">
+    <checker id="underscore"/>
+  </globalObject>
+
+  <class name="underscore/_">
+    <function name="template">
+      <sink kind="server_side_template_injection" argpos="0"/>
+    </function>
+  </class>
+
+  <function name="EJS">
+    <!-- Do not confuse this with ejs.co -->
+    <sink kind="client_side_template_injection" resource="web">
+      <arg pos="0" field="url,text"/>
+    </sink>
+  </function>
+
+  <!-- should we add js-nacl, the NaCl porting? -->
+
+
+  <function name="SockJS">
+    <sink argpos="0" kind="resource_injection"/>
+    <sink argpos="0" kind="ssrf" resource="network"/>
+  </function>
+
+  <class name="Stomp" >
+    <function name="overTCP">
+      <sink argpos="0" kind="resource_injection"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </function>
+    <function name="overWS">
+      <sink argpos="0" kind="resource_injection"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </function>
+    <function name="over">
+      <sink argpos="0" kind="resource_injection"/>
+      <sink argpos="0" kind="ssrf" resource="network"/>
+    </function>
+  </class>
+</library>

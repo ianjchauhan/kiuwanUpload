@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/TP_cookies-js" standard="Cookies_Support">
+  <description>Cookies handling libraries</description>
+
+  <module name="cookies.js" standard="cookies.js" >
+    <description url="https://www.npmjs.com/package/cookie_js">JavaScript API for handling cookies</description>
+
+    <class name="nodejs/cookies-js">
+      <function name="set">
+        <tags>cookie, cookie.name:0, cookie.value:1, cookie.options:2</tags>
+        <return type="nodejs/cookies-js"/>
+        <sink kind="cookie_poisoning" argpos="0,1,2" resource="web"/>
+      </function>
+      <function name="get">
+        <return type="String"/>
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="nodejs/js-cookie" standard="js-cookie" >
+    <description url="https://github.com/js-cookie/js-cookie">JavaScript API for handling cookies</description>
+
+    <!-- Another small cookies package, almost the same API as cookies-js -->
+    <class name="nodejs/js-cookie" supertypes="nodejs/cookies-js">
+      <function name="getJSON">
+        <return type="Object"/>
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+    </class>
+
+    <class name="Cookies" supertypes="nodejs/js-cookie">
+      <function name="noConflict" alias="withConverter">
+        <return type="Cookies"/>
+      </function>
+    </class>
+  </module>
+
+</library>

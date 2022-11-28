@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="go" name="go.http">
+
+  <description>HTTP processing modules</description>
+
+  <module name="github.com.julienschmidt.httprouter" standard="julienschmidt.httprouter">
+    <description url="https://pkg.go.dev/github.com/julienschmidt/httprouter" >High performance HTTP request router</description>
+
+    <class name="github.com.julienschmidt.httprouter.Params" kind="struct" >
+      <method name="ByName" signature="ByName(go.string)" >
+        <return type="go.string" />
+      </method>
+    </class>
+
+    <class name="github.com.julienschmidt.httprouter.Param" kind="struct" >
+      <field name="Key" type="go.string" />
+      <field name="Value" type="go.string" />
+    </class>
+
+    <class name="github.com.julienschmidt.httprouter.Handle" />
+
+    <class name="github.com.julienschmidt.httprouter.Router" kind="struct" >
+      <method name="getParams" signature="getParams()" >
+        <return type="github.com.julienschmidt.httprouter.Params" />
+      </method>
+      <method name="putParams" signature="putParams(github.com.julienschmidt.httprouter.Params)" />
+      <method name="GET" signature="GET(go.string, github.com.julienschmidt.httprouter.Handle)"
+              alias="HEAD, OPTIONS, POST, PUT, PATCH, DELETE" >
+        <tags>route:1</tags>
+      </method>
+      <method name="Handle" signature="Handle(go.string, go.string, github.com.julienschmidt.httprouter.Handle)" >
+        <tags>route:2,routeMethod:0</tags>
+      </method>
+      <method name="Handler" signature="Handle(go.string, go.string, github.com.julienschmidt.httprouter.Handle)" />
+      <method name="HandlerFunc" signature="HandlerFunc(go.string, go.string, github.com.julienschmidt.httprouter.HandlerFunc)" />
+      <method name="ServeFiles" signature="ServeFiles(go.string, go.string, net.http.FileSystem)" />
+      <method name="ServeHTTP" signature="ServeHTTP(net.http.ResponseWriter, net.http.Request)" />
+    </class>
+
+    <function name="github.com.julienschmidt.httprouter.New" signature="github.com.julienschmidt.httprouter.New()" >
+      <return type="github.com.julienschmidt.httprouter.Router" />
+    </function>
+  </module>
+
+  <module name="github.com.aws.aws-lambda-go" standard="aws-lambda-go">
+    <description url="https://github.com/aws/aws-lambda-go" >Support for AWS Lambda functions</description>
+
+    <class name="github.com.aws.aws-lambda-go.events.APIGatewayProxyRequest" >
+      <field name="Resource" type="go.string" />
+      <field name="Path" type="go.string" />
+      <field name="Headers" type="go.slice" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="MultiValueHeaders" type="go.map" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="QueryStringParameters" type="go.slice" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="MultiValueQueryStringParameters" type="go.map" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+      <field name="Body" type="go.string" >
+        <source argpos="-1" kind="user_input" resource="web" />
+      </field>
+    </class>
+  </module>
+
+  <module name="golang.org.x.net.webdav" standard="webdav">
+    <description url="https://pkg.go.dev/golang.org/x/net/webdav" >WebDAV server implementation</description>
+
+    <class name="golang.org.x.net.webdav.Dir" kind="struct" supertypes="go.string" >
+      <method name="Mkdir" signature="Mkdir(context.Context,go.string,os.FileMode)" >
+        <return type="go.error" />
+        <sink argpos="1" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="OpenFile" signature="OpenFile(context.Context,go.string,go.int,os.FileMode)" >
+        <return type="golang.org.x.net.webdav.File,go.error" />
+        <sink argpos="1" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="RemoveAll" signature="RemoveAll(context.Context,go.string)" >
+        <return type="golang.org.x.net.webdav.File,go.error" />
+        <sink argpos="1" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="Rename" signature="Rename(context.Context,go.string,go.string)" >
+        <return type="go.error" />
+        <sink argpos="1" kind="path_traversal" resource="filesystem" />
+      </method>
+    </class>
+    <class name="golang.org.x.net.webdav.File" kind="struct" supertypes="net.http.File,io.Writer" />
+    <class name="golang.org.x.net.webdav.FileSystem" >
+      <method name="Mkdir" signature="Mkdir(context.Context,go.string,os.FileMode)" >
+        <return type="go.error" />
+        <sink argpos="1" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="OpenFile" signature="OpenFile(context.Context,go.string,go.int,os.FileMode)" >
+        <return type="golang.org.x.net.webdav.File,go.error" />
+        <sink argpos="1" kind="path_traversal" resource="filesystem" />
+        <source argpos="-1" kind="file_input" resource="filesystem" />
+      </method>
+      <method name="RemoveAll" signature="RemoveAll(context.Context,go.string)" >
+        <return type="golang.org.x.net.webdav.File,go.error" />
+        <sink argpos="1" kind="path_traversal" resource="filesystem" />
+      </method>
+      <method name="Rename" signature="Rename(context.Context,go.string,go.string)" >
+        <return type="go.error" />
+        <sink argpos="1" kind="path_traversal" resource="filesystem" />
+      </method>
+    </class>
+    <class name="golang.org.x.net.webdav.Handler" kind="struct" >
+      <field name="FileSystem" type="golang.org.x.net.webdav.FileSystem" />
+
+      <method name="ServeHTTP" signature="ServeHTTP(net.http.ResponseWriter,net.http.Request)" >
+        <sink argpos="-2" kind="server_insecure_transport" resource="network" />
+      </method>
+    </class>
+
+    <function name="golang.org.x.net.webdav.NewMemFS" signature="golang.org.x.net.webdav.NewMemFS()" >
+      <return type="golang.org.x.net.webdav.FileSystem" />
+    </function>
+  </module>
+</library>

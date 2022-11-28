@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="browser/WebCryptoAPI" standard="javascript">
+
+  <module name="browser/WebCryptoAPI" standard="WebCryptoAPI">
+    <description url="https://www.w3.org/TR/WebCryptoAPI">Web Cryptography API</description>
+
+    <class name="wca/SubtleCrypto">
+      <!-- See
+      https://www.w3.org/TR/WebCryptoAPI/#subtlecrypto-interface
+      https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto
+      -->
+      <function name="encrypt">
+        <tags>cipher,encrypt,algo:0,key:1,data:2</tags>
+        <parameters>
+          <param type="wca/AlgorithmIdentifier"/>
+          <param type="wca/CryptoKey"/>
+          <param type="BufferSource"/>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="decrypt">
+        <tags>cipher,decrypt,algo:0,key:1,data:2</tags>
+        <parameters>
+          <param type="wca/AlgorithmIdentifier"/>
+          <param type="wca/CryptoKey"/>
+          <param type="BufferSource"/>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="sign">
+        <tags>sign,algo:0,key:1,data:2</tags>
+        <parameters>
+          <param type="wca/AlgorithmIdentifier"/>
+          <param type="wca/CryptoKey"/>
+          <param type="BufferSource"/>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="verify">
+        <tags>verify,algo:0,key:1,signature:2,data:3</tags>
+        <parameters>
+          <param type="wca/AlgorithmIdentifier"/>
+          <param type="wca/CryptoKey"/>
+          <param type="BufferSource"/>
+          <param type="BufferSource"/>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="digest">
+        <tags>hash,algo:0,data:1</tags>
+        <parameters>
+          <param type="wca/AlgorithmIdentifier"/>
+          <param type="BufferSource"/>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="generateKey">
+        <tags>keygen,algo:0,usages:2</tags>
+        <parameters>
+          <param type="wca/AlgorithmIdentifier"/>
+          <param type="boolean"/>
+          <param type="Array"/>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="deriveKey">
+        <tags>keygen,algo:0,key:1,algo2:2,usages:4</tags>
+        <parameters>
+          <param type="wca/AlgorithmIdentifier"/>
+          <param type="wca/CryptoKey"/>
+          <param type="wca/AlgorithmIdentifier"/>
+          <param type="boolean"/>
+          <param type="Array"/>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="deriveBits">
+        <tags>keygen,algo:0,key:1</tags>
+        <parameters>
+          <param type="wca/AlgorithmIdentifier"/>
+          <param type="wca/CryptoKey"/>
+          <param type="Number"/>
+        </parameters>
+      </function>
+      <function name="exportKey">
+        <tags>keyexchange,algo:0,key:1</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="wca/CryptoKey"/>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="importKey">
+        <tags>keygen,key:1,algo:2,usages:4</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="BufferSource"/>
+          <param type="wca/AlgorithmIdentifier"/>
+          <param type="Boolean"/>
+          <param type="Array"/>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="wrapKey">
+        <tags>keyexchange,key:1,wrapKey:2,wrapAlgo:3</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="wca/CryptoKey"/>
+          <param type="wca/CryptoKey"/>
+          <param type="wca/AlgorithmIdentifier"/>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+      <function name="unwrapKey">
+        <tags>keygen,key:1,wrapKey:2,wrapAlgo:3,algo:4,usages:5</tags>
+        <parameters>
+          <param type="String"/>
+          <param type="BufferSource"/>
+          <param type="wca/CryptoKey"/>
+          <param type="wca/AlgorithmIdentifier"/>
+          <param type="wca/AlgorithmIdentifier"/>
+          <param type="Boolean"/>
+          <param type="Array"/>
+        </parameters>
+        <return type="Promise"/>
+      </function>
+    </class>
+
+    <class name="wca/AlgorithmIdentifier">
+      <field name="name" type="String"><tags>algo</tags></field>
+      <field name="length" type="Number"><tags>keylen</tags></field>
+    </class>
+
+    <class name="wca/KeyAlgorithm">
+      <field name="name" type="String"><tags>algo</tags></field>
+      <field name="length" type="Number"><tags>keylen</tags></field>
+    </class>
+
+    <class name="wca/CryptoKey">
+      <field name="type" type="String"><tags>keytype</tags></field><!-- public | private | secret -->
+      <field name="extractable" type="Boolean"/>
+      <field name="algorithm" type="wca/KeyAlgorithm"></field>
+      <field name="usages" type="Array"/>
+    </class>
+
+    <class name="wca/Crypto">
+      <field name="subtle" type="wca/SubtleCrypto"/>
+      <function name="getRandomValues">
+        <!-- trusted (but implementation may be broken ;-) -->
+        <tags>prng</tags>
+        <return type="Array"/>
+      </function>
+    </class>
+  </module>
+
+</library>

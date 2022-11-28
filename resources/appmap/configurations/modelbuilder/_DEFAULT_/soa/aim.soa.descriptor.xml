@@ -1,0 +1,73 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='soa' subtech='soa' descriptor='j2ee/aim.webservice.xml' label='WebService processing in J2EE code'>
+  <description>
+    Discovers generic web services.
+    <br/>
+    Currently this module supports:
+    <ul>
+      <li>WSDL (1.1 or 2.0) files.</li>
+    </ul>
+  </description>
+
+  <dependencies/>
+
+  <properties>
+    <property id='aim.soa.rule.wsdl.active' type='bool'>
+      <name>wsdl.active</name>
+      <example>true</example>
+      <description>If true, service definitions in WSDL descriptors will be discovered.</description>
+    </property>
+
+    <property id='aim.soa.rule.wsdl.createWebServiceMethods' type='bool'>
+      <name>wsdl.createWebServiceMethods</name>
+      <description>
+        If set to true, webservice operations (for service binding in WSDL) will be created, contained in the Web Service.
+      </description>
+    </property>
+
+    <property id='aim.soa.rule.wsdl.software' type='string'>
+      <name>wsdl.software</name>
+      <example>${aim.common.software}</example>
+      <description>
+        Default (fallback) software name for WSDL-related components, when no global
+        or rule-specific software resolver classifies software for WSDL file.
+      </description>
+    </property>
+
+    <property id='aim.soa.rule.wsdl.filter.pattern' type='list' subtype='antPattern'>
+      <name>wsdl.patterns</name>
+      <example>**/*.wsdl</example>
+      <description>Comma-separated list of Ant patterns for WSDL files to process.</description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>configuration,webService,operation</values>
+    <description>
+      For web service descriptors (WSDL), configuration components are created.
+      For each web service found, a webService component is created.
+      <br/>
+      The property <code>wsdl.createWebServiceMethods</code>, when true, controls creation of operations exposed
+      by the web service.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      configuration(wsdl)-configures->webService,
+      webService-contains->operation
+    </values>
+    <description>
+      Creates relations between WSDL file (configuration) and webServices found;
+      optionally each webService may contain the operations that expose.
+    </description>
+  </createdRelations>
+  
+  <importantConfigurations activation="aim.soa.rule.wsdl.active">
+    <alternative>
+      <value>aim.soa.rule.wsdl.createWebServiceMethods=true</value>
+    </alternative>
+  </importantConfigurations>
+
+</block>

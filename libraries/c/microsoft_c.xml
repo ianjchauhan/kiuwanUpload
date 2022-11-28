@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="msvcrt" standard="Win32" technology="cpp">
+
+  <description url="https://docs.microsoft.com/en-us/windows/win32/api/">
+    Microsoft C/C++ extensions (Win32 API)
+  </description>
+
+  <function name="_msize" signature="size_t _msize(void* memblock)">
+    <tags>memory size, pointer:0</tags>
+  </function>
+  
+  <header name="process.h">
+    <function name="_wsystem" signature="_wsystem(const wchar_t* cmd)" alias="_tsystem">
+      <errorProcessing kind="errno"/>
+      <sink argpos="0" resource="environment" kind="command_injection"/>
+    </function>
+  </header>
+
+  <header name="Shellapi.h">
+    <function name="CreateProcess" alias="CreateProcessA, CreateProcessW"
+              signature="bool CreateProcessW(char* appname, char* cmdline, SECURITY_ATTRIBUTES* procAttr, SECURITY_ATTRIBUTES* threadAttr, bool inheritH, unsigned int creationFlags, void* envp, char* currDir, STARTUPINFOW* startupInfo, PROCESS_INFORMATION* procInfo)">
+      <errorProcessing kind="other"/>
+      <sink argpos="0, 1" kind="command_injection" resource="os"/>
+      <sink argpos="7" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="CreateProcessAsUser" alias="CreateProcessAsUserA, CreateProcessAsUserW"
+              signature="bool CreateProcessAsUser(void* userToken, char* appname, char* cmdline, SECURITY_ATTRIBUTES* procAttr, SECURITY_ATTRIBUTES* threadAttr, bool inheritH, unsigned int creationFlags, void* envp, char* currDir, STARTUPINFOW* startupInfo, PROCESS_INFORMATION* procInfo)">
+      <errorProcessing kind="other"/>
+      <sink argpos="1, 2" kind="command_injection" resource="os"/>
+      <sink argpos="8" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="ShellExecute" alias="ShellExecuteA, ShellExecuteW"
+              signature="void* ShellExecuteA(void* hwnd, const char* op, const char* file, const char* params, const char* dir, int showCmd)">
+      <errorProcessing kind="other"/>
+      <sink argpos="2,3" kind="command_injection" resource="os"/>
+      <sink argpos="4" kind="path_traversal" resource="filesystem"/>
+    </function>
+  </header>
+  
+  <header name="libloaderapi.h">
+    <function name="LoadLibrary" signature="HMODULE LoadLibrary(const char *libname)" alias="LoadLibraryA, LoadLibraryW">
+      <sink kind="process_control" argpos="0" resource="filesystem"/>
+    </function>
+  </header>
+  
+  <header name="winbase.h">
+    <function name="SetDllDirectory" signature="bool SetDllDirectory(const char *path)" alias="SetDllDirectoryA, SetDllDirectoryW">
+      <sink kind="process_control" argpos="0" resource="filesystem"/>
+    </function>
+  </header>
+  
+
+</library>

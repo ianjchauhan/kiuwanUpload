@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs/tls" standard="nodejs">
+
+  <module name="nodejs/tls" standard="tls">
+    <description url="https://nodejs.org/api/tls.html">TLS module for Node.js</description>
+
+    <class name="nodejs/tls.TLSSocket" supertypes="nodejs/net.Socket">
+      <function name="TLSSocket"/>
+    </class>
+
+    <class name="nodejs/tls.Server" supertypes="nodejs/net.Server">
+      <function name="listen">
+        <parameters>
+          <param type="Number"/>
+          <param type="String"/>
+        </parameters>
+        <sink kind="configuration_setting_injection" resource="network" argpos="0,1"/>
+      </function>
+    </class>
+
+    <class name="nodejs/tls.Credentials">
+      <field name="pfx" type="String"/>
+      <field name="key" type="String"/>
+      <field name="passphrase" type="String"/>
+      <field name="cert" type="String"/>
+      <field name="ca" type="String"/>
+      <field name="crl" type="String"/>
+      <field name="dhparam" type="String"/>
+    </class>
+
+    <class name="nodejs/tls">
+      <field name="TLSSocket" type="nodejs/tls.TLSSocket"/>
+      <function name="connect">
+        <parameters>
+          <!-- options; dynamic signature, options could be optional and preceded by UX socket path or port:host -->
+          <param type="Object"/>
+          <param type="function()" last="true"/>
+        </parameters>
+        <return type="nodejs/tls.TLSSocket"/>
+
+        <sink kind="ssrf" resource="network">
+          <arg pos="0"/><!-- could be a string (url) -->
+          <arg pos="0" field="host,port,path"/>
+        </sink>
+
+        <sink kind="hardcoded_key">
+          <arg pos="0" field="pfx,key,cert,dhparam,ca,crl"/>
+        </sink>
+
+        <sink kind="hardcoded_password">
+          <arg pos="0" field="passphrase"/>
+        </sink>
+      </function>
+
+      <function name="createServer">
+        <parameters>
+          <!-- both options and connect callback are optional -->
+          <param type="Object"/>
+          <param type="function(nodejs/tls.TLSSocket)" last="true"/>
+        </parameters>
+        <return type="nodejs/tls.Server"/>
+
+        <sink kind="hardcoded_key">
+          <arg pos="0" field="pfx,key,cert,dhparam,ca,crl"/>
+        </sink>
+
+        <sink kind="hardcoded_password">
+          <arg pos="0" field="passphrase"/>
+        </sink>
+      </function>
+
+      <function name="createSecureContext">
+        <parameters>
+          <param type="Object"/>
+        </parameters>
+        <return type="nodejs/tls.Credentials"/>
+      </function>
+    </class>
+  </module>
+
+</library>

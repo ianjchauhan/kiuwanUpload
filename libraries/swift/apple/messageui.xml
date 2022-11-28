@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="swift" name="messageui" standard="swift">
+
+  <description url="https://developer.apple.com/documentation/messageui">Create a user interface for composing email and text messages</description>
+
+  <module name="MessageUI">
+    <member name="MFMailComposeErrorDomain" type="String"/>
+    <member name="MFMailComposeErrorDomain" type="String"/>
+    <member name="MFMessageComposeViewControllerAttachmentAlternateFilename" type="String"/>
+    <member name="MFMessageComposeViewControllerAttachmentAlternateFilename" type="String"/>
+    <member name="MFMessageComposeViewControllerAttachmentURL" type="String"/>
+    <member name="MFMessageComposeViewControllerAttachmentURL" type="String"/>
+    <member name="MFMessageComposeViewControllerTextMessageAvailabilityKey" type="String"/>
+    <member name="MFMessageComposeViewControllerTextMessageAvailabilityKey" type="String"/>
+
+
+    <class kind="enum" name="MessageComposeResult"/>
+
+    <class kind="enum" name="MFMailComposeError.Code"/>
+
+    <class kind="struct" name="MFMailComposeError">
+      <field name="errorCode" type="Int"/>
+      <field name="errorDomain" type="String"/>
+      <field name="errorUserInfo" type="Any]"/>
+      <field name="localizedDescription" type="String"/>
+      <field name="saveFailed" type="MFMailComposeError.Code"/>
+      <field name="sendFailed" type="MFMailComposeError.Code"/>
+    </class>
+
+    <class kind="enum" name="MFMailComposeResult"/>
+
+    <class name="MFMailComposeViewController" supertypes="UINavigationController">
+      <method name="addAttachmentData" signature="addAttachmentData(Data, mimeType: String, fileName: String)">
+        <parameters>
+          <param name="" type="Data"/>
+          <param name="mimeType" type="String"/>
+          <param name="fileName" type="String"/>
+        </parameters>
+        <sink argpos="0" kind="mail_command_injection" resource="network" />
+      </method>
+      <method name="canSendMail" signature="canSendMail()">
+        <return type="Bool"/>
+      </method>
+      <field name="mailComposeDelegate" type="MFMailComposeViewControllerDelegate?"/>
+      <method name="setBccRecipients" signature="setBccRecipients([String]?)">
+        <parameters>
+          <param name="" type="[String]?"/>
+        </parameters>
+        <sink argpos="0" kind="mail_command_injection" resource="network" />
+      </method>
+      <method name="setCcRecipients" signature="setCcRecipients([String]?)">
+        <parameters>
+          <param name="" type="[String]?"/>
+        </parameters>
+        <sink argpos="0" kind="mail_command_injection" resource="network" />
+      </method>
+      <method name="setMessageBody" signature="setMessageBody(String, isHTML: Bool)">
+        <parameters>
+          <param name="" type="String"/>
+          <param name="isHTML" type="Bool"/>
+        </parameters>
+        <sink argpos="0" kind="mail_command_injection" resource="network" />
+      </method>
+      <method name="setPreferredSendingEmailAddress" signature="setPreferredSendingEmailAddress(String)">
+        <parameters>
+          <param name="" type="String"/>
+        </parameters>
+        <sink argpos="0" kind="mail_command_injection" resource="network" />
+      </method>
+      <method name="setSubject" signature="setSubject(String)">
+        <parameters>
+          <param name="" type="String"/>
+        </parameters>
+        <sink argpos="0" kind="mail_command_injection" resource="network" />
+      </method>
+      <method name="setToRecipients" signature="setToRecipients([String]?)">
+        <parameters>
+          <param name="" type="[String]?"/>
+        </parameters>
+        <sink argpos="0" kind="mail_command_injection" resource="network" />
+      </method>
+    </class>
+
+    <class kind="protocol" name="MFMailComposeViewControllerDelegate" supertypes="NSObjectProtocol">
+      <method name="mailComposeController" signature="mailComposeController(MFMailComposeViewController, didFinishWith: MFMailComposeResult, error: Error?)">
+        <parameters>
+          <param name="" type="MFMailComposeViewController"/>
+          <param name="didFinishWith" type="MFMailComposeResult"/>
+          <param name="error" type="Error?"/>
+        </parameters>
+      </method>
+    </class>
+
+    <class name="MFMessageComposeViewController" supertypes="UINavigationController">
+      <field name="MFMessageComposeViewControllerTextMessageAvailabilityDidChange" type="NSNotification.Name"/>
+      <method name="addAttachmentData" signature="addAttachmentData(Data, typeIdentifier: String, filename: String)">
+        <parameters>
+          <param name="" type="Data"/>
+          <param name="typeIdentifier" type="String"/>
+          <param name="filename" type="String"/>
+        </parameters>
+        <return type="Bool"/>
+        <sink argpos="0" kind="mail_command_injection" resource="network" />
+      </method>
+      <method name="addAttachmentURL" signature="addAttachmentURL(URL, withAlternateFilename: String?)">
+        <parameters>
+          <param name="" type="URL"/>
+          <param name="withAlternateFilename" type="String?"/>
+        </parameters>
+        <return type="Bool"/>
+      </method>
+      <field name="attachments" type="Any]]?"/>
+      <field name="body" type="String?"/>
+      <method name="canSendAttachments" signature="canSendAttachments()">
+        <return type="Bool"/>
+      </method>
+      <method name="canSendSubject" signature="canSendSubject()">
+        <return type="Bool"/>
+      </method>
+      <method name="canSendText" signature="canSendText()">
+        <return type="Bool"/>
+      </method>
+      <method name="disableUserAttachments" signature="disableUserAttachments()"/>
+      <method name="isSupportedAttachmentUTI" signature="isSupportedAttachmentUTI(String)">
+        <parameters>
+          <param name="" type="String"/>
+        </parameters>
+        <return type="Bool"/>
+      </method>
+      <field name="message" type="MSMessage?"/>
+      <field name="messageComposeDelegate" type="MFMessageComposeViewControllerDelegate?"/>
+      <field name="recipients" type="[String]?"/>
+      <field name="subject" type="String?"/>
+    </class>
+
+    <class kind="protocol" name="MFMessageComposeViewControllerDelegate" supertypes="NSObjectProtocol">
+      <method name="messageComposeViewController" signature="messageComposeViewController(MFMessageComposeViewController, didFinishWith: MessageComposeResult)">
+        <parameters>
+          <param name="" type="MFMessageComposeViewController"/>
+          <param name="didFinishWith" type="MessageComposeResult"/>
+        </parameters>
+      </method>
+    </class>
+
+
+  </module>
+
+</library>

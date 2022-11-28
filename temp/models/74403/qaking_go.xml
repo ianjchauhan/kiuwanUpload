@@ -1,0 +1,2549 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_go" updated="">
+  <description>EdcastModel</description>
+  <rule name="OPT.GO.SECURITY.AnonymousLdapBind" message="AnonymousLdapBind: Access Control - Anonymous LDAP Bind" class="com.kiuwan.qaking.go.rules.security.AnonymousLdapBind" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.4,ASVS-v4.0.2:13.4.2,ASVS-v4.0.2:4.1.3,ASVS-v4.0.2:4.1.5,ASVS-v4.0.2:7.2.2,ASVS-v4.0.2:8.3.3,ASVS-v4.0.2:8.3.8,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Without proper access control, executing an LDAP statement that contains a user-controlled value can allow an attacker
+to access unauthorized records.
+
+Executing LDAP queries under an anonymous bind, effectively without authentication, can allow an attacker to abuse a
+poorly configured LDAP environment.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package test
+
+import(
+	"net/http"
+	"os"
+	ldap "github.com/go-ldap/ldap/v3"
+)
+
+func simpleLdapInjection(r *http.Request) {
+	l, err := ldap.Dial("tcp", fmt.Sprintf("%s:%d", "ldap.example.com", 389))
+	if err != nil {
+			log.Fatal(err)
+	}
+	defer l.Close()
+
+	controls := []ldap.Control{}
+	controls = append(controls, ldap.NewControlBeheraPasswordPolicy())
+	bindRequest := l.Bind("", password)  // VIOLATION
+}]]></example>
+    <repair><![CDATA[// Do not use an anonymous ldap bind]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/285.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:285,OWASP:2021:A1,PCI-DSS:6.5.8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.CodeInjection" message="CodeInjection: Avoid non-neutralized user-controlled input in dynamic code evaluation" class="com.kiuwan.qaking.go.rules.security.CodeInjection" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.4,ASVS-v4.0.2:5.5.4,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[Scripting engines in allow execution of source code written in different languages.
+
+When the application uses a scripting engine to execute source code that could be altered by an external, untrusted input,
+a potential attacker may force the execution of unintended code (local or even remote code injection). Some scripting
+engines allow execution of system commands which makes this flaw more dangerous, even allowing arbitrary system command
+execution.
+
+Code and data in compiled languages are quite different, but under scripting languages this boundary is much more fuzzy.
+External untrusted input should be passed to the script in the form of "parameters" or "binding variables" so any
+source code injected by a potential attacker will NOT be considered source code by the scripting engine.
+
+This rule checks for libraries like otto, Golpal or go-eek.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid local / remote code injection attacks on scripting engines.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import "github.com/robertkrimen/otto"
+import "github.com/novalagung/go-eek"
+import "github.com/novalagung/golpal"
+
+func main() {
+	code := os.Args[1]
+
+	vm := otto.New()
+	vm.Set("code", code) // VIOLATION
+	vm.Run(`
+			console.log("Result is " + code);
+	`)
+
+	obj := NewEek()
+	output1, _ := obj.Evaluate(ExecVar{ "A": code })  // VIOLATION
+
+	output, err := golpal.New().ExecuteSimple(code) // VIOLATION
+	output, err := golpal.New().Execute(code) // VIOLATION
+	output, err := golpal.New().ExecuteRaw(code) // VIOLATION
+}]]></example>
+    <repair><![CDATA[//Neutralize external input before performing an evaluation on it]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/95.html,http://projects.webappsec.org/w/page/13246933/Improper%20Input%20Handling,https://www.owasp.org/index.php/Code_Injection,http://cwe.mitre.org/data/definitions/94.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:95,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.CommandInjection" message="CommandInjection: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')" class="com.kiuwan.qaking.go.rules.security.CommandInjection" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.5,ASVS-v4.0.2:5.3.8,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[The software constructs all or part of an operating system command using externally-controlled input, but it does not neutralize
+properly that input that could modify the intended command when it is sent to a method that executes the command.
+
+The rule detects a path in code between an user-input statement (source) and a command execution call (sink),
+with command depending on non neutralized input. This allows for an attacker to change the intended command to execute
+or to add a malicious extra command, executed with the application rights.
+
+A neutralization function either validates inputs and report an (neutral) error without allowing command execution,
+or replaces sensitive shell characters in the input to avoid that the resulting command has different semantics.
+If possible, use "accept known good" input validation strategy (whitelist).
+
+It is recommended either: to use API calls instead of external commands, when possible; or to ensure that the application
+runs under a non-privileged account with rights for the intended commands.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import (
+	"log"
+	"os/exec"
+	"runtime"
+	"net/http"
+)
+
+func simpleCommandInjection(r *http.Request) {
+	command := r.URL.Query().Get("comand")
+	cmd := exec.Command(command) // VIOLATION
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before executing a command with it]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/78.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:77,CWE:78,CWETOP25:2021:5,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:31]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.ConnectionStringParameterPollution" message="ConnectionStringParameterPollution: Connection string polluted with untrusted input" class="com.kiuwan.qaking.go.rules.security.ConnectionStringParameterPollution" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.7,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When the connection string for an application resource (like database, remote server, persistence entity manager...) could
+be affected by an untrusted source, not properly neutralized, the application is vulnerable to a Connection String Parameter Pollution attack.
+
+An attack targeted at this vulnerability may use special characters (like ';' or ':') to add unexpected parts to the connection string,
+for example to gain extra privileges, or to deactivate security features.
+
+"Untrusted input" means, in this context, a user-controlled application input, an environment variable, or data fetched
+from an external web source.
+
+It should be suspicious that a connection string depends on untrusted input. Normally the application configuration uses
+a fixed connection string, but other attacks, depending on where the connection string is stored (like an SQL injection or
+path traversal attack) may affect the configuration item. This rule only checks for connection strings that are constructed
+programmatically with untrusted input.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package ConnectionStringParameterPollution
+
+import(
+	"database/sql"
+	"net/http"
+	"govwa/util/database"
+)
+
+var db *sql.DB
+
+func simpleConnectionStringParameterPollution(r *http.Request) {
+  dataSourceName := r.URL.Query().Get("dataSourceName");
+  db, err := sql.Open(driver, dataSourceName)  // VIOLATION
+
+  customerId := r.URL.Query().Get("id")
+  query := "SELECT number, expireDate, cvv FROM creditcards WHERE customerId = " + customerId
+  row, _ := db.QueryContext(ctx, query)
+}]]></example>
+    <repair><![CDATA[// Validate (white-list approach) the untrusted input combined into the connection string.]]></repair>
+    <reference><![CDATA[https://www.blackhat.com/presentations/bh-dc-10/Alonso_Chema/Blackhat-DC-2010-Alonso-Connection-String-Parameter-Pollution-wp.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:15,OWASP:2021:A5,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.CrossSiteRequestForgery" message="CrossSiteRequestForgery: Cross-site request forgery (CSRF)" class="com.kiuwan.qaking.go.rules.security.csrf.CrossSiteRequestForgery" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.3,ASVS-v4.0.2:4.2.2,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[A sensitive operation associated with an web URL may be invoked from
+a request coming from a legitimate, authenticated user (with identity typically encoded in a session ID cookie)
+but where an attacker was able to force the user agent to submit the request.
+
+For an CSRF attack to succeed, various elements must occur together:
+1. Trusted user is logged in the vulnerable webapp
+2. Trusted user agent is tricked by the attacker (e.g. in a web app he controls) to send an HTTP request to the
+   vulnerable URL
+3. The server-side logic under that URL accepts the request as if it was really initiated by the legitimate user,
+   without explicit verification that the user really intended to perform the operation, simply because the
+   session ID cookie for the logged-in user appears in the HTTP request.
+
+The result is that the vulnerable application accepts the operation (controlled by attacker) as if it was submitted
+by the trusted, logged-in, user. This is an abuse of the trust the web application puts on HTTP requests coming from
+logged-in users.
+
+A CSRF vulnerability is a design flaw, where certain web operations (sensitive, as an attacker may gain benefit
+from the legitimate user) are not protected by a control that avoids this kind of attack to succeed. Essentially,
+a CSRF flaw occurs when a web resource performing sensitive operations do not check that the request came from
+from same webapp + same user (the application, at server side, needs to explicitly check the request provenance somehow).
+
+NOTE: Other attacks, like Cross-site WebSocket hijacking (https://www.christian-schneider.net/CrossSiteWebSocketHijacking.html)
+follow the same path and are prevented along the very same techniques.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid CSRF attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[// No "bad code" for CSRF. The lack of anti-CSRF protection
+// in web actions performing sensitive operations is the flaw.]]></example>
+    <repair><![CDATA[Add a particular anti-CSRF control (sometimes in each action class,
+sometimes in webapp configuration.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/352.html,https://en.wikipedia.org/wiki/Cross-site_request_forgery,https://www.owasp.org/index.php/CSRF_Prevention_Cheat_Sheet]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:352,CWETOP25:2021:9,OWASP:2013:A8,PCI-DSS:6.5.1,WASC:9]]></security>
+    </normatives>
+    <properties>
+      <property name="checkStateChange" descname="When true, potential vulnerable sources not performing any state-change operation are not reported." value="true"/>
+      <property name="patterns" descname="ANT patterns, comma-separated, for source files to process. Try to select sensitive operations that need CSRF protection." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.CrossSiteScripting" message="CrossSiteScripting: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')" class="com.kiuwan.qaking.go.rules.security.xss.CrossSiteScripting" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,essential]]></tags>
+    <description><![CDATA[Software places user-controlled input in page content. An attacker could inject browser script code that is executed
+in the client browser. The end-user is the attacked subject, and the software is the vehicle for the attack.
+There are two main kinds of XSS:
+
+* Reflected XSS: Attacker causes victim to supply malicious content to a vulnerable web application, which
+  renders HTML content embedding a malicious script executed in victim's browser. A variation of this is named
+  DOM-based XSS, where the vulnerable software does not generate content depending on user input but include
+  script code that use user-controlled input.
+
+* Persisted XSS: Attacker provides malicious content to vulnerable application. When other user access to
+  vulnerable pages that embed without proper neutralization the attacker content, script code is executed in the
+  victim's browser.
+
+The script executed in the victim's browser could perform malicious activities.
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but user browsers
+generally allow scripting languages (e.g. JavaScript) in their browsers (disabling JavaScript severely limits
+a web site).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import "net/http"
+import "text/template"
+
+func handler1(w http.ResponseWriter, r *http.Request) {
+	param1 := r.URL.Query().Get("param1")
+	tmpl := template.New("hello")
+	tmpl, _ = tmpl.Parse(`{{define "T"}}{{.}}{{end}}`)
+	tmpl.ExecuteTemplate(w, "T", param1)  // VIOLATION
+}]]></example>
+    <repair><![CDATA[package main
+
+import "net/http"
+import "html/template"
+
+func handler2(w http.ResponseWriter, r *http.Request) {
+	param1 := r.URL.Query().Get("param1")
+	tmpl := template.New("hello")
+	tmpl, _ = tmpl.Parse(`{{define "T"}}{{.}}{{end}}`)
+	tmpl.ExecuteTemplate(w, "T", param1)
+}]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/XSS_(Cross_Site_Scripting)_Prevention_Cheat_Sheet,http://cwe.mitre.org/data/definitions/79.html,http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.7,WASC:08]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input,database_input,file_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.FormatStringInjection" message="FormatStringInjection: Exclude unsanitized user input from format strings" class="com.kiuwan.qaking.go.rules.security.FormatStringInjection" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.4.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When the format string is constructed with untrusted input an attacker may produce unexpected application behavior.
+It may cause an exception (which, if not catched, may lead to a denial-of-service condition), or information leak.
+
+Consequently, unsanitized input from untrusted source should never be incorporated into format strings.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[[Avoid denial of service.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package format_string_injection
+
+import "log"
+import (
+  "fmt"
+  "net/http"
+)
+
+func test(req *http.Request) {
+  var format = req.FormValue("FORMAT")
+
+  logger := log.New(&buf, "logger: ", log.Lshortfile)
+  fmt.Printf(format, req.FormValue("value"))  // VIOLATION
+  logger.Printf(format, req.FormValue("value"))  // VIOLATION
+}]]></example>
+    <repair><![CDATA[// Neutralize untrusted input before using it as a format string]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/134.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:134,CWETOP25:2011:23,OWASP:2004:A5,PCI-DSS:6.5.1,WASC:10]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.HardcodedCryptoKey" message="HardcodedCryptoKey: Hardcoded cryptographic keys" class="com.kiuwan.qaking.go.rules.security.HardcodedCryptoKey" technology="GO" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,crypto,essential]]></tags>
+    <description><![CDATA[Never hard-code cryptographic keys (or passwords used to generate them) in your program.
+
+Crypto keys are used for encryption/decryption, for generation of message authentication codes (MAC), during generation
+of password-based encryption keys (the password is the "crypto key" that generates key material for the cipher), and other usages.
+Source code is the worst place for key storage, as any change in keys needs recompilation, and it is easy to reverse-engineer
+an application binary to learn any keys or secrets that may be embedded in it.
+
+Some data used in cryptographic operations (like initial vector for block ciphers, salt for password hashes, etc.)
+are not "private", and it is recommended to generate a good random instance at the origin, and add it to the message
+in plaintext, so the destination may use it. The security depends on properly protecting the "secret" thing
+(private key in a public/private keypair, encryption key in a symmetric cipher, key in an HMAC, etc.).
+
+Long-term cryptographic keys (in contrast with ephemeral ones), are better stored in a safe key storage.
+Private keys in a public/private keypair should NEVER be unprotected (in raw form) and they should be stored in an even
+safer key storage (the impact for a compromise of a private key is typically huge and brutal).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import (
+    "crypto/hmac"
+    "crypto/sha256"
+    "encoding/hex"
+    "fmt"
+)
+
+func main() {
+  secret := "mysecret"
+  data := "data"
+  fmt.Printf("Secret: %s Data: %s\n", secret, data)
+
+  // Create a new HMAC by defining the hash type and the key (as byte array)
+  h := hmac.New(sha256.New, []byte(secret)) // VIOLATION
+
+  // Write Data to it
+  h.Write([]byte(data))
+
+  // Get result and encode as hexadecimal string
+  sha := hex.EncodeToString(h.Sum(nil))
+
+  fmt.Println("Result: " + sha)
+}]]></example>
+    <repair><![CDATA[package main
+
+import (
+    "crypto/hmac"
+    "crypto/sha256"
+    "encoding/hex"
+    "fmt"
+)
+
+func main() {
+  secret := loadFromSafeInput()
+  data := "data"
+  fmt.Printf("Secret: %s Data: %s\n", secret, data)
+
+  // Create a new HMAC by defining the hash type and the key (as byte array)
+  h := hmac.New(sha256.New, []byte(secret))
+
+  // Write Data to it
+  h.Write([]byte(data))
+
+  // Get result and encode as hexadecimal string
+  sha := hex.EncodeToString(h.Sum(nil))
+
+  fmt.Println("Result: " + sha)
+}]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/321.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:321,OWASP-M:2016:M5,OWASP:2021:A2,PCI-DSS:6.3.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.HardcodedIp" message="HardcodedIp: Do not write IP address in source code" class="com.kiuwan.qaking.go.rules.security.HardcodedIp" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality,infoleak]]></tags>
+    <description><![CDATA[Hardcoding an IP address can create a potential security breach if it is discovered by a
+malicious attacker who successfully decompiles the code.
+
+Also maintainability and portability is deteriorated because the IP address must be directly modified into the code.
+
+The customizable parameter ipPattern contains the pattern used to identify the hardcoded IP.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid potential security breaches.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package hardcoded_ip
+
+var ip1 = "127.0.0.1" // OK
+var ip2 = "10.1.2.3" // VIOLATION
+var ip3 = "192.168.1.1" // VIOLATION]]></example>
+    <repair><![CDATA[// get IP address from environment or a project configuration file]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/200.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:200,CWETOP25:2021:20]]></security>
+    </normatives>
+    <properties>
+      <property name="ipPattern" descname="Pattern used to recognize hardcoded IP addresses." value="(.*(^|\s|\\|//)(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\s|:|$).*|^(\p{XDigit}{1,4}(?:\:\p{XDigit}{1,4}){3,7}))"/>
+      <property name="strictMode" descname="When enabled only fully matched strings will be reported." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.HardcodedSalt" message="HardcodedSalt: A hardcoded salt can compromise system security" class="com.kiuwan.qaking.go.rules.security.HardcodedSalt" technology="GO" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,crypto,essential]]></tags>
+    <description><![CDATA[A hardcoded salt can compromise system security in a way that cannot be easily remedied.
+
+Salt, a random set of bytes, is used in password hashing schemes.
+A dictionary attack is an attack in which the attacker attempts to retrieve a cleartext password, by comparing the stored
+hashed password with previously computed values for the most likely password. This attack is made much more difficult by
+the introduction of salt, or random bytes, used in the password hashing function, and appended to the hashed password in
+storage (salt is not secret).
+
+If attackers know the salt value, they can precompute rainbow tables for the application, and more easily reverse hashed
+values.
+
+A random salt (different for each encrypted entry) should be used, instead or a fixed (hardcoded) value.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package hardcoded_salt
+
+import (
+	"encoding/base64"
+	"fmt"
+	"log"
+
+	"golang.org/x/crypto/scrypt"
+)
+
+func main() {
+
+	salt := []byte{0xc8, 0x28, 0xf2, 0x58, 0xa7, 0x6a, 0xad, 0x7b}
+	salt2 := []byte("ABC")
+
+	dk, err := scrypt.Key([]byte("some password"), salt, 1<<15, 8, 1, 32) // VIOLATION
+	dk, err = scrypt.Key([]byte("some password"), salt2, 1<<15, 8, 1, 32) // VIOLATION
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(base64.StdEncoding.EncodeToString(dk))
+}]]></example>
+    <repair><![CDATA[]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/760.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:760,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.HardcodedUsernamePassword" message="HardcodedUsernamePassword: Use of Hard-coded Credentials" class="com.kiuwan.qaking.go.rules.security.HardcodedUsernamePassword" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.4,ASVS-v4.0.2:3.5.2,ASVS-v4.0.2:6.4.1,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,credentials,essential]]></tags>
+    <description><![CDATA[Hardcoded credentials (username / password) are visible to any person reading the source code.
+If the resource protected by such hardcoded credentials is important, this may compromise system security.
+
+With hardcoded credentials, change is difficult. If the target account is compromised, and the software
+is deployed in production, a code change is needed, which forces a redeployment.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credential leakage.
+If an account is compromised, changing credentials in an external repository does not need changes in code plus software deployment.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package harcoded
+
+var CookieUsername = "admin123";    // VIOLATION
+var Password = "dvpassword";     // VIOLATION]]></example>
+    <repair><![CDATA[// Don't hardcode credentials]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/798.html,https://www.kiuwan.com/docs/display/K5/Avoid+hard-coded+or+in-comment+passwords+in+code]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:798,CWETOP25:2021:16,OWASP:2021:A7,PCI-DSS:6.5.3,WASC:01]]></security>
+    </normatives>
+    <properties>
+      <property name="passwordPattern" descname="Regular expression for matching field names containing passwords." value=""/>
+      <property name="usernamePattern" descname="Regular expression for matching field names containing user ids." value=".*(user|username).*|(^|.*_)id(_.*|$)"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.HttpParameterPollution" message="HttpParameterPollution: HTTP parameter pollution (HPP)" class="com.kiuwan.qaking.go.rules.security.HttpParameterPollution" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.1,CWEScope:Integrity,http-parameter-pollution]]></tags>
+    <description><![CDATA[Concatenating untrusted input into path, query string, or parameters for HTTP message
+(in the URL or in the request body) may allow an attacker to override/add unexpected request parameters. Attacker may
+change the intended HTTP request semantics, and may give him/her access to unauthorized data or bypass web application
+firewall validations.
+
+Note: Do not confuse HPP with Server-Side Request Forgery (SSRF), where the attacker has control over the
+full request URL, including host and port. For HPP attack, attacker has control over other parts like the query string
+part of the URL. Remember the format of an HTTP URL: scheme://user:password@host:port/path?query#fragment
+where query is typically param=value&param2=value. HPP is about attackers controlling path, query or fragment,
+while SSRF means controlling scheme, user, password, host or port.
+
+Like other injection issues, with HPP attackers play with "&" to inject additional parameter (similar to the quote
+in SQL injection), "../" to change the path, ";" (to add matrix parameters to URL at different path segments), or "#"
+to remove ending URL characters (like "--" comment delimiter in SQL injection).
+
+Controlling the path typically changes the semantics of the action represented by the HTTP resource.
+Some REST services use request parameter like _method for selecting the HTTP method, which may be subverted by an HPP attack
+(an HTTP header manipulation flaw could also be leveraged with X-HTTP-Method-Override or similar headers in certain frameworks).
+
+For example, imagine a web application that calls to a remote home-banking REST API. The webapp emits
+a (GET) url https://mybank.com/show-balance/account/X/monetaryUnit?date=now to show the balance for the user account X,
+where X is taken from a trusted source, but where monetaryUnit is taken from a cookie, and concatenated without
+any validation or encoding into the URL. An attacker could pass a Cookie request header set to "../../../transfer/X/to/Y?_method=POST#",
+so the vulnerable web application will create https://mybank.com/show-balance/account/X/../../../transfer/X/to/Y?_method=POST#?date=now
+which is equivalent to a POST https://mybank.com/transfer/X/to/Y.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid unexpected behaviour for HTTP parameter pollution attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package parameter_pollution
+
+import "net/http"
+
+func test(req *http.Request) {
+  input := req.FormValue("INPUT")
+  resp, err = http.Get("https://mysite.com/params?input=" + input)   // VIOLATION
+}]]></example>
+    <repair><![CDATA[// Sanitize user inputs before using them into an URL]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/235.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:235,OWASP:2021:A3,PCI-DSS:6.5.6,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.HttpSplitting" message="HttpSplitting: Improper Neutralization of CRLF Sequences in HTTP Headers ('HTTP Response Splitting')" class="com.kiuwan.qaking.go.rules.security.HttpSplitting" technology="GO" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software places user-controlled input in HTTP headers. An attacker could inject line separators (CR/LF sequences)
+that could split the response message generated by the software into two messages. The second response is completely
+under the control of the attacker (intermediate web proxies may cache it), with could produce multiple conditions
+(web defacement, cache poisoning, cross-site scripting or page hijacking, see CWE-113 for full details).
+
+If software needs to generate HTTP headers depending on user-controlled input, such input should be properly
+neutralized (a white-list validation excluding CR/LF is recommended). Please note that cookies are received and
+sent in 'Cookie' header in HTTP messages, so if the software generates a Cookie from user input, the input should
+be properly validated as well.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package test
+
+import(
+  "net/http"
+)
+
+func yourHandler(w http.ResponseWriter, r *http.Request) {
+    value := r.FormValue("level")
+
+    w.Header().Add("header_name", value) // VIOLATION
+    w.Header().Set("header_name", value) // VIOLATION
+}]]></example>
+    <repair><![CDATA[//Neutralize external input before including it into a header]]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/113.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:113,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:25]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.InsecureRandomness" message="InsecureRandomness: Standard pseudo-random number generators cannot withstand cryptographic attacks" class="com.kiuwan.qaking.go.rules.security.InsecureRandomness" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.3.1,ASVS-v4.0.2:2.6.2,ASVS-v4.0.2:2.9.2,ASVS-v4.0.2:6.3.1,ASVS-v4.0.2:6.3.2,ASVS-v4.0.2:6.3.3,CWEScope:Access-Control,CWEScope:Confidentiality,crypto,prng]]></tags>
+    <description><![CDATA[Insecure randomness errors occur when a function that can produce predictable values is used as a source of randomness
+in security-sensitive context.
+
+Computers are deterministic machines, and as such are unable to produce true randomness. Pseudo-Random Number Generators
+(PRNGs) approximate randomness algorithmically, starting with a seed from which subsequent values are calculated.
+
+There are two types of PRNGs: statistical and cryptographic. Statistical PRNGs provide useful statistical properties,
+but their output is highly predictable and forms an easy to reproduce numeric stream that is unsuitable for use in cases
+where security depends on generated values being unpredictable. Cryptographic PRNGs address this problem by generating
+output that is more difficult to predict. For a value to be cryptographically secure, it must be impossible or highly
+improbable for an attacker to distinguish between it and a truly random value. In general, if a PRNG algorithm is not
+advertised as being cryptographically secure, then it is probably a statistical PRNG and should not be used in
+security-sensitive contexts, where its use can lead to serious vulnerabilities such as easy-to-guess temporary passwords,
+predictable cryptographic keys, session hijacking, and DNS spoofing.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Using non predictable keys improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package insecure_randomness
+
+import "fmt"
+import "math/rand"
+
+func main() {
+  fmt.Println("Random Number: ", rand.Intn(1984)) // VIOLATION when checkInSecurityContext is set to false
+}]]></example>
+    <repair><![CDATA[package insecure_randomness
+
+import "fmt"
+import "math/big"
+import "crypto/rand"
+
+
+func main() {
+  rand, err := rand.Int(rand.Reader, big.NewInt(1984))  // OK
+  if err != nil {
+    panic(err)
+  }
+  fmt.Printf("Random Number: %d\n", rand)
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/338.html,http://cwe.mitre.org/data/definitions/330.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:330,CWE:338,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="pattern" descname="Regular expression for detecting when a non-cryptographic PRNG is used in a security context.
+When blank, any non-cryptographic PRNG usage is reported as a rule violation." value="password|passwd|receipt|session|user|key|csrf|token|hash|mac|digest|uuid|guid|crypto|encrypt|decrypt"/>
+      <property name="checkInSecurityContext" descname="When set to true, PRNGs usages are only reported when they are used in a security context." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.InsecureSSL" message="InsecureSSL: Insecure SSL configuration" class="com.kiuwan.qaking.go.rules.security.InsecureSSL" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:9.2.4,CWEScope:Access-Control,CWEScope:Authentication,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,essential,ssl]]></tags>
+    <description><![CDATA[The SSL standard provides guidelines on how to perform proper SSL validation checks on the client side.
+They are not part of the standard, anyway. The implementation of the validation logic is left to the application developer,
+that should setup SSL-related classes adequately.
+
+Creating or configuring proper SSL validation checks is complex, and developers may fail providing a secure
+SSL configuration. No certificate validity checks, no certificate chain signature verification, no or improper
+server hostname validation (with respect to the identity contained in the server certificate) are common flaws
+that this rule tries to discover.
+
+Often, developers provide trust managers for accepting self-signed certificates, or even ignore certificate
+state to allow expired or revoked certificates. Alternatively, the hostname validation is disabled to avoid
+errors when the name in the certificate does not match the target hostname. Android apps often present such flaws.
+
+The problem with flawed SSL configuration is that it may allow man-in-the-middle attacks and other issues,
+see references for full details.
+
+The rule checks for SSL flaw patterns: non-default custom SSL socket factories, and too permissive TrustManagers /
+SSLSocketFactories, or HostnameVerifiers with permissive verification strategies.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid main-in-the-middle and other attacks that proper SSL configuration should avoid.]]></benefits>
+    <inconvenients><![CDATA[Closing the gaps opened by a flawed SSL configuration may produce connection errors with certain hosts.]]></inconvenients>
+    <example><![CDATA[package main
+
+import (
+    "fmt"
+    "net/http"
+    "crypto/tls"
+)
+
+func main() {
+    http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}  // VIOLATION
+    _, err := http.Get("https://golang.org/")
+    if err != nil {
+        fmt.Println(err)
+    }
+}]]></example>
+    <repair><![CDATA[package main
+
+import (
+    "fmt"
+    "net/http"
+    "crypto/tls"
+)
+
+func main() {
+    http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: false}  // VIOLATION
+    _, err := http.Get("https://golang.org/")
+    if err != nil {
+        fmt.Println(err)
+    }
+}]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/297.html,https://cwe.mitre.org/data/definitions/296.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:296,CWE:297,CWE:298,CWE:299,OWASP:2021:A2,OWASP:2021:A7,PCI-DSS:6.5.4,WASC:04]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.InsecureTransport" message="InsecureTransport: Insecure transport" class="com.kiuwan.qaking.go.rules.security.InsecureTransport" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.8.3,ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,ASVS-v4.0.2:6.2.3,ASVS-v4.0.2:6.2.4,ASVS-v4.0.2:6.2.5,ASVS-v4.0.2:6.2.6,ASVS-v4.0.2:6.2.7,ASVS-v4.0.2:9.1.2,ASVS-v4.0.2:9.1.3,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Communications sent over HTTP (Hypertext Transfer Protocol) protocol are in plain text, so they are fully exposed to
+attacks such as man in the middle. This situation is not acceptable when sensible information is being communicated.
+
+Using HTTPS (Hypertext Transfer Protocol Secure) allows to perform encrypted connections between the user and the server
+using SSL (Secure Sockets Layer) or TLS (Transport Layer Security) certificates. These certificates use an asymmetric
+public key infrastructure (PKI) system, which consists in two keys, one of them public distributed to the users, and the
+other private stored into the server.
+
+When a connection to a web page is started the server sends a SSL/ TSL certificate to the user's browser, and then they
+stablish a secure connection.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve security at transport layer, avoiding sensible data (like bank details) interception.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package insecure_transport
+
+import "net/http"
+
+func test() {
+  resp, err = http.Get("http://mysite.com")   // VIOLATION
+}]]></example>
+    <repair><![CDATA[// Use HTTPS protocol]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/311.html,http://cwe.mitre.org/data/definitions/326.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,CWE:326,OWASP:2021:A2,PCI-DSS:6.5.4,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="checkFtpConn" descname="When true then insecure FTP connections are checked too." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.InsufficientKeySize" message="InsufficientKeySize: Weak cryptography, insufficient key length" class="com.kiuwan.qaking.go.rules.security.InsufficientKeySize" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.6.1,ASVS-v4.0.2:1.6.2,ASVS-v4.0.2:1.6.3,ASVS-v4.0.2:1.6.4,ASVS-v4.0.2:2.6.3,ASVS-v4.0.2:2.7.6,ASVS-v4.0.2:2.8.2,ASVS-v4.0.2:2.8.3,ASVS-v4.0.2:2.9.1,ASVS-v4.0.2:6.2.1,ASVS-v4.0.2:6.2.3,ASVS-v4.0.2:6.2.4,ASVS-v4.0.2:6.2.5,ASVS-v4.0.2:6.2.6,ASVS-v4.0.2:6.2.7,ASVS-v4.0.2:6.4.2,ASVS-v4.0.2:9.1.2,ASVS-v4.0.2:9.1.3,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[A robust cryptographic algorithm (like RSA or AES) with a small key length could be vulnerable
+to brute-force type attacks.
+
+For symmetric ciphers, AES-CBC (FIPS 197) is the most often recommended algorithm nowadays, with a block size of at least
+64 bits (128 bits for the better). Recommended minimum key length for AES is 128 bits for most usages, but for long-range
+security, 192 bits or even 256 bits are often recommended.
+
+DES and DESede (or "triple-DES") are, nowadays, not robust enough for most applications. Many algorithms used in the past,
+like Blowfish or RC2, are now deemed insecure.
+
+For asymmetric cryptography ("public key"), the algorithm most often used is RSA. Most experts consider 2048 as the
+most adequate key length for common needs, as its usage in digital signature and other applications demand cryptographic
+robustness for a long period of time. Experts now consider 1024 bits for RSA keys (modulus) not enough secure.
+
+Algorithms based on elliptic curves cryptography (like EC-DSA) typically require smaller key sizes, around 200 bits.
+
+See http://www.keylength.com for an interactive site showing current recommendations in cryptographic algorithms,
+key length and other issues to take into account.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package pki
+
+import (
+	"crypto/dsa"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/rsa"
+	"fmt"
+)
+
+const (
+	RSA_1024      = "RSA_1024"
+	RSA_2048      = "RSA_2048"
+)
+type algorithm string
+
+func CreatePrivateKey(algo algorithm) (privatekey interface{}, err error) {
+	switch algo {
+		case RSA_1024:
+			return rsa.GenerateKey(rand.Reader, 1024) // VIOLATION
+		default:
+			return nil, fmt.Errorf("unrecognized algorithm: %q", algo)
+	}
+
+	return privatekey, nil
+}]]></example>
+    <repair><![CDATA[package pki
+
+import (
+	"crypto/dsa"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/rsa"
+	"fmt"
+)
+
+const (
+	RSA_1024      = "RSA_1024"
+	RSA_2048      = "RSA_2048"
+)
+type algorithm string
+
+func CreatePrivateKey(algo algorithm) (privatekey interface{}, err error) {
+	switch algo {
+		case RSA_2048:
+			return rsa.GenerateKey(rand.Reader, 2048)
+		default:
+			return nil, fmt.Errorf("unrecognized algorithm: %q", algo)
+	}
+
+	return privatekey, nil
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/326.html,http://cwe.mitre.org/data/definitions/320.html,http://cwe.mitre.org/data/definitions/310.html,http://www.keylength.com]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:310,CWE:320,CWE:326,OWASP:2021:A2,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="minKeySize" descname="Comma-separated list of minimum key size per algorithms" value="RSA/2048,DSA/2048,EC/256,AES/128,DiffieHellman/2048"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.InsufficientSessionExpiration" message="InsufficientSessionExpiration: Checks that session expiration interval does not exceed a limit" class="com.kiuwan.qaking.go.rules.security.InsufficientSessionExpiration" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.8.1,ASVS-v4.0.2:2.8.6,ASVS-v4.0.2:3.3.1,ASVS-v4.0.2:3.3.2,ASVS-v4.0.2:3.3.3,ASVS-v4.0.2:3.3.4,ASVS-v4.0.2:3.6.1,ASVS-v4.0.2:3.6.2,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Checks that the session expiration interval does not exceed a maximum interval.
+
+If exceeds the maxExpiration parameter, session lives too muchtime and it is considered a security issue.]]></description>
+    <priority>2</priority>
+    <effort>1</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Controlling session expiration interval improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package session
+
+import (
+  "github.com/gorilla/sessions"
+  "net/http"
+)
+
+var store = sessions.NewCookieStore([]byte(config.Cfg.Sessionkey))
+
+func (self *Self) SetSession(w http.ResponseWriter, r *http.Request, data map[string]string) {
+  session, err := store.Get(r, "SESSION")
+
+  session.Options = &sessions.Options{
+    Path:     "/",
+    MaxAge:   60*60*10,  // VIOLATION
+    HttpOnly: false,
+  }
+}]]></example>
+    <repair><![CDATA[package session
+
+import (
+  "github.com/gorilla/sessions"
+  "net/http"
+)
+
+var store = sessions.NewCookieStore([]byte(config.Cfg.Sessionkey))
+
+func (self *Self) SetSession(w http.ResponseWriter, r *http.Request, data map[string]string) {
+  session, err := store.Get(r, "SESSION")
+
+  session.Options = &sessions.Options{
+    Path:     "/",
+    MaxAge:   60*60,  // OK
+    HttpOnly: false,
+  }
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/613.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:613,OWASP:2021:A7]]></security>
+    </normatives>
+    <properties>
+      <property name="maxExpiration" descname="Max time expiration allowed (seconds)." value="7200"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.JSONInjection" message="JSONInjection: Avoid using non-neutralized user-controlled input into JSON entities - JSON Injection" class="com.kiuwan.qaking.go.rules.security.JSONInjection" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.6,ASVS-v4.0.2:13.3.2,ASVS-v4.0.2:3.5.3,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Unvalidated untrusted input is concatenated to a JSON stream, which is sent as request to a potentially service.
+This allows an attacker to inject tailored content that change the semantics of the original JSON message.
+
+Depending on how the JSON-formatted data is later used, the attacker could execute unexpected dynamic code, or
+escape from authentication or authorization controls. If the resulting JSON string is evaluated in JavaScript
+(JavaScript may eval a string and treat it as an array or JavaScript object), the attacker may add additional
+code (for example, an attack payload like "'}; while(1); //" that could produce a denial-of-service condition.
+
+Note: Do not confuse this issue with JSON (or JavaScript) hijacking, which is a browser-side vulnerability
+where an attacker can steal sensitive information sent as JSON to victim's browser.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid JSON Injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "os"
+    "net/http"
+)
+
+func jsonInjection(r *http.Request) {
+
+    example := r.URL.Query().Get("example")
+    enc := json.NewEncoder(os.Stdout)
+    d := map[string]int{"apple": example, "lettuce": 7}
+    enc.Encode(d) // VIOLATION
+
+    mapD := map[string]int{"apple": example, "lettuce": 7}
+    mapB, _ := json.Marshal(mapD) // VIOLATION
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before parsing it to a JSON]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/345.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.JSONPHijacking" message="JSONPHijacking: Sensitive information exposed through JSONP" class="com.kiuwan.qaking.go.rules.security.JSONPHijacking" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[JSONP is popular useful technology as it allows to perform cross-domain requests but it
+lacks any mechanism to restrict and verify requests origins.
+
+A malicious site might perform a JSONP request in user's behalf and process the JSON response.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import (
+	"net/http"
+	"time"
+
+	"github.com/labstack/echo"
+)
+
+func main() {
+	e := echo.New()
+
+	// JSONP
+	e.GET("/jsonp", func(c echo.Context) error {
+		callback := c.QueryParam("callback")
+		var content struct {
+			Response  string    `json:"response"`
+			Timestamp time.Time `json:"timestamp"`
+			user  string       `json:"user"`
+		}
+		content.Response = "Sent via JSONP"
+		content.Timestamp = time.Now().UTC()
+		content.user = "user: Jhon, ssn:ASDIUMFK48955"
+		return c.JSONP(http.StatusOK, callback, &content) // VIOLATION
+	})
+
+	// Start server
+	e.Logger.Fatal(e.Start(":1323"))
+}
+        }]]></example>
+    <repair><![CDATA[// Do not send sensitive information through JSONP]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/359.html,http://projects.webappsec.org/Information-Leakage]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.LdapInjection" message="LdapInjection: Avoid non-neutralized user-controlled input in LDAP search filters" class="com.kiuwan.qaking.go.rules.security.LdapInjection" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.7,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software constructs all or part of an LDAP query using externally-influenced input, but it does not neutralize or
+    incorrectly neutralizes special elements that could modify the intended LDAP query when sent to LDAP server.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package LdapInjection
+
+import(
+	"net/http"
+	"os"
+	"github.com/go-ldap/ldap/v3"
+)
+
+func simpleLdapInjection(r *http.Request) {
+
+	example := r.URL.Query().Get("example")
+
+  l, err := ldap.Dial("tcp", fmt.Sprintf("%s:%d", "ldap.example.com", 389))
+  if err != nil {
+      log.Fatal(err)
+  }
+  defer l.Close()
+
+  controls := []ldap.Control{}
+  controls = append(controls, ldap.NewControlBeheraPasswordPolicy())
+  bindRequest := ldap.NewSimpleBindRequest("cn=admin,dc=" + example + ",dc=com", "password", controls)
+
+  t, err := l.SimpleBind(bindRequest) // VIOLATION
+}]]></example>
+    <repair><![CDATA[// Neutralize external input (e.g. address) before usage in query]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/90.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:90,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:29]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.LogForging" message="LogForging: Improper Output Neutralization for Logs" class="com.kiuwan.qaking.go.rules.security.LogForging" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:7.3.1,ASVS-v4.0.2:7.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[When the application writes untrusted input to a log destination, a "log forging" attack could be launched to inject
+false log entries, corrupt log entries, or even exploit a vulnerability in an external "log viewer" application.
+
+Corrupted log entries could hinder detection for malicious activity, or implicate another party
+in the commission of a malicious act.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package log_forging
+
+import "log"
+import (
+  "fmt"
+  "net/http"
+)
+
+func test(req *http.Request) {
+  var input = req.FormValue("INPUT")
+
+  logger := log.New(&buf, "logger: ", log.Lshortfile)
+  fmt.Println(input)  // VIOLATION
+  logger.Print(input)  // VIOLATION
+}]]></example>
+    <repair><![CDATA[// Neutralize message with untrusted input, before passing to logging API]]></repair>
+    <reference><![CDATA[https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html,https://cwe.mitre.org/data/definitions/117.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:117,OWASP:2021:A9,PCI-DSS:10.5.2,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.MailCommandInjection" message="MailCommandInjection: Mail Command Injection" class="com.kiuwan.qaking.go.rules.security.MailCommandInjection" technology="GO" active="true">
+    <tags><![CDATA[CWEScope:Integrity]]></tags>
+    <description><![CDATA[Mail command injection vulnerabilities occur when an attacker can influence the commands sent to an SMTP, POP3, or IMAP mail server.
+If the library or the developer fails to safely encode the line breaks, an attacker controlling any of the arguments for these commands
+will be able to inject line breaks and new commands after them.
+
+As line breaks are the usual mechanism that attackers use to change the expected behaviour, this vulnerability
+is considered a special CRLF Injection attack.
+
+What the attacker may launch by exploiting a Mail Command Injection vulnerability include:
+- Generate spam (SMTP). The application acts as a "mail proxy" that attackers may use to create spam messages.
+- Read messages from other users (POP3/IMAP).
+- Abusing a trusted server to send HTML emails with malicious contents.
+- Change authentication or security options, to skip security controls in mail servers.
+
+See "MX Injection: Capturing and Exploiting Hidden Mail Servers", from Vicente Aguilera, for a full description on
+the benefits that an attacker may gain.
+
+The rule checks when vulnerable mail libraries are called with untrusted input, without validation, which might be vulnerable
+to Mail Command Injection attacks.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid Mail Command Injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package MailCommandInjection
+
+import (
+  "log"
+  "net/smtp"
+  "net/http"
+)
+
+func simpleMailCommandInjection(r *http.Request) {
+  subject := r.URL.Query().Get("subject")
+  // Set up authentication information.
+  auth := smtp.PlainAuth("", "user@example.com", "password", "mail.example.com")
+
+  // Connect to the server, authenticate, set the sender and recipient,
+  // and send the email all in one step.
+  to := []string{"recipient@example.net"}
+  msg := []byte("To: recipient@example.net\r\n" +
+    "Subject: "+ subject + "\r\n" +
+    "\r\n" +
+    "This is the email body.\r\n")
+  err := smtp.SendMail("mail.example.com:25", auth, "sender@example.org", to, msg) // VIOLATION
+  if err != nil {
+    log.Fatal(err)
+  }
+}]]></example>
+    <repair><![CDATA[// validate untrusted subject input with a white-list strategy,
+// or at least ensure that line breaks (CR/LF) are removed from subject.]]></repair>
+    <reference><![CDATA[OWASP Testing for IMAP/SMTP injection: https://www.owasp.org/index.php/Testing_for_IMAP/SMTP_Injection_(OTG-INPVAL-011),http://www.webappsec.org/projects/articles/121106.shtml,http://projects.webappsec.org/w/page/13246948/Mail%20Command%20Injection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:93,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:30]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.NonRandomIVWithCBCMode" message="NonRandomIVWithCBCMode: Not using a Random IV with CBC Mode" class="com.kiuwan.qaking.go.rules.security.NonRandomIVWithCBCMode" technology="GO" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity,crypto,essential]]></tags>
+    <description><![CDATA[Not using a random initialization Vector (IV) with Cipher Block Chaining (CBC) Mode causes encryption to be susceptible
+to dictionary attacks.
+
+CBC mode with predictable IV allows a well-known chosen plaintext attack, and is definitely insecure.
+
+Note: For other feedback modes, NIST recommends unpredictable IVs for CFB, and unique (non-repeating, like an increasing
+counter or message number) IVs for OFB, CTR or PCBC, and for GCM plus other authenticated encryption modes, but
+certainly the IV should not be eligible by an attacker.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import (
+  "crypto/aes"
+  "crypto/cipher"
+  "fmt"
+  "crypto/rand"
+  "io"
+  "encoding/base64"
+  "encoding/hex"
+)
+
+func encryptCBCKO(key, plaintext []byte) (ciphertext []byte, err error) {
+  if len(plaintext)%aes.BlockSize != 0 {
+      panic("plaintext is not a multiple of the block size")
+  }
+
+  block, err := aes.NewCipher(key)
+  if err != nil {
+      panic(err)
+  }
+
+  ciphertext = make([]byte, aes.BlockSize+len(plaintext))
+  iv, _ := hex.DecodeString("acfa7a047800b2f221f2c4f7d626eafb")
+  copy(ciphertext[:aes.BlockSize], iv)
+
+  cbc := cipher.NewCBCEncrypter(block, iv)  // VIOLATION
+  cbc.CryptBlocks(ciphertext[aes.BlockSize:], plaintext)
+
+  return
+}]]></example>
+    <repair><![CDATA[package main
+
+import (
+  "crypto/aes"
+  "crypto/cipher"
+  "fmt"
+  "crypto/rand"
+  "io"
+  "encoding/base64"
+  "encoding/hex"
+)
+
+func encryptCBCOK(key, plaintext []byte) (ciphertext []byte, err error) {
+  if len(plaintext)%aes.BlockSize != 0 {
+      panic("plaintext is not a multiple of the block size")
+  }
+
+  block, err := aes.NewCipher(key)
+  if err != nil {
+      panic(err)
+  }
+
+  ciphertext = make([]byte, aes.BlockSize+len(plaintext))
+  iv := ciphertext[:aes.BlockSize]
+  if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+      panic(err)
+  }
+
+  cbc := cipher.NewCBCEncrypter(block, iv)
+  cbc.CryptBlocks(ciphertext[aes.BlockSize:], plaintext)
+
+  return
+}]]></repair>
+    <reference><![CDATA[https://crypto.stackexchange.com/questions/3515/is-using-a-predictable-iv-with-cfb-mode-safe-or-not,http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:329,OWASP:2021:A2,PCI-DSS:3.6.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.NoSQLInjection" message="NoSQLInjection: Improper neutralization of special elements in data query logic (NoSQL injection)" class="com.kiuwan.qaking.go.rules.security.NoSQLInjection" technology="GO" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,NoSQL]]></tags>
+    <description><![CDATA[The application generates a query intended to access or manipulate data in a data store such as a NoSQL database,
+but it does not neutralize or incorrectly neutralizes special elements that can modify the intended logic of the query.
+
+Depending on the capabilities of the query language, an attacker could inject additional login into the query to:
+- Modify the intended selection criteria, thus changing which data entities (e.g., records) are returned, modified, or otherwise manipulated.
+- Append additional commands to the query.
+- Return more or fewer entities than intended.
+- Cause entities to be sorted in an unexpected way.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent NoSQL injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import (
+  "go.mongodb.org/mongo-driver/mongo"
+  "go.mongodb.org/mongo-driver/mongo/options"
+)
+
+func main() {
+  args := os.Args
+  arg := args[1]
+
+  clientOptions := options.Client().ApplyURI("mongodb://mongodb:27017")
+  client, err := mongo.Connect(context.TODO(), clientOptions)
+  collection := client.Database("mydb").Collection("persons")
+  ruan := Person{"Ruan", arg, "Cape Town"}
+  insertResult, err := collection.InsertOne(context.TODO(), ruan) // VIOLATION
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  fmt.Println("Inserted a Single Document: ", insertResult.InsertedID)
+}]]></example>
+    <repair><![CDATA[// Validate external inputs passed as NoSQL filters to ensure that the query semantics does not change]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/943.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:943,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.OpenRedirect" message="OpenRedirect: URL Redirection to Untrusted Site ('Open Redirect')" class="com.kiuwan.qaking.go.rules.security.OpenRedirect" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.5,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[A web application accepts a user-controlled input that specifies a link to an external site, and uses that link in a redirect.
+This is client-side redirect, either by setting the Location header or by calling HttpServletResponse sendRedirect() method.
+
+If the redirect URL is user-controlled (e.g. fetched from HTTP request parameter), an attacker may force an user to
+provide a malicious URL encoded in a link to the vulnerable resource. The browser will redirect to the malicious URL,
+and the attacker may deceive the victim user for phising or other malicious activities.
+
+The rule checks for client-side redirections in server-side code, using servlet API. Redirections based on HTTP
+headers "Location" and "Refresh" are also checked.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Limits phising attacks, and unintended client-side redirections.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package OpenRedirect
+
+import(
+  "net/http"
+)
+
+type Stuff struct{
+    List []string
+}
+
+func checkcheck(w http.ResponseWriter, r *http.Request) {
+
+    newURL := r.URL.Query().Get("newURL")
+
+    sinfo := Stuff{
+        List: some_slice
+    }
+
+    t, err := template.New("").Parse(tpl_ds)
+    checkErr(err)
+    err = r.ParseForm()
+    checkErr(err)
+    err = t.Execute(w, sinfo)
+    checkErr(err)
+
+    if r.Method == "POST" {
+        saveChoice(r.Form["choices"])
+        http.Redirect(w, r, newURL, http.StatusSeeOther) // VIOLATION
+    }
+}]]></example>
+    <repair><![CDATA[package OpenRedirect
+
+import(
+  "net/http"
+)
+
+type Stuff struct{
+    List []string
+}
+
+func checkcheck(w http.ResponseWriter, r *http.Request) {
+    newURL := r.URL.Query().Get("newURL")
+
+    sinfo := Stuff{
+        List: some_slice
+    }
+
+    t, err := template.New("").Parse(tpl_ds)
+    checkErr(err)
+    err = r.ParseForm()
+    checkErr(err)
+    err = t.Execute(w, sinfo)
+    checkErr(err)
+
+    if r.Method == "POST" {
+        saveChoice(r.Form["choices"])
+        http.Redirect(w, r, validate(string), http.StatusSeeOther) // FIXED
+    }
+}
+
+func validate (url string) string {
+    /* add a neutralization here */
+}]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Unvalidated_Redirects_and_Forwards_Cheat_Sheet,http://cwe.mitre.org/data/definitions/601.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:601,CWETOP25:2021:37,OWASP:2013:A10,PCI-DSS:6.5.1,WASC:38]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.PasswordInComments" message="PasswordInComments: Storing passwords or password details in plaintext anywhere in the system or system code can compromise system security" class="com.kiuwan.qaking.go.rules.security.PasswordInComments" technology="GO" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[It is never a good idea to hardcode a password. Storing password details within comments
+is equivalent to hardcoding passwords.
+
+Not only does it allow all of the project's developers to view the password, it also makes fixing the problem extremely
+difficult.
+
+Once the code is in production, the password is now leaked to the outside world and cannot be protected or changed
+without patching the software.
+
+If the account protected by the password is compromised, the owners of the system will be forced to choose between
+security and availability.
+
+The rule checks if there are comments in the code that contain expressions that match with the pattern, so it can lead
+to several false positives and/or false negatives.]]></description>
+    <priority>4</priority>
+    <effort>1</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Ensuring that password is kept in secret improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package test
+
+/**
+ password: someFunnyWorDs   // VIOLATION
+ **/]]></example>
+    <repair><![CDATA[// Do not code passwords in source code comments.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/615.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:615,OWASP:2021:A7,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties>
+      <property name="passwordPattern" descname="Pattern to check for hardcoded passwords in comments. If blank, the default pattern will be used." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.PasswordInConfigurationFile" message="PasswordInConfigurationFile: Use of credentials into configuration file" class="com.kiuwan.qaking.go.rules.security.PasswordInConfigurationFile" technology="GO" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Passwords written into a configuration file which is distributed along with the code are
+visible to any person reading the source code. If the resource protected by such hardcoded credentials is important, this
+may compromise system security.
+
+Configurations files checked by this rule are: properties, yaml, json and conf.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credential leakage.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[[sample.properties]
+my.secret.password=abcdefgh]]></example>
+    <repair><![CDATA[Configuration file should not be distributed along with the project.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/260.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:260,OWASP:2021:A5]]></security>
+    </normatives>
+    <properties>
+      <property name="pattern" descname="Regular expression for matching field names containing credentials." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.PasswordInRedirect" message="PasswordInRedirect: Password Management - Password in Redirect" class="com.kiuwan.qaking.go.rules.security.PasswordInRedirect" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.1.3,ASVS-v4.0.2:3.1.1,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Sending a password as part of an HTTP redirect will cause the password to be displayed,
+logged, or stored in a cache.
+
+An HTTP redirect causes the user's web browser to issue an HTTP GET request. By convention, the parameters associated
+with an HTTP GET are not treated as sensitive data, so web servers log them, proxies cache them, and web browsers do
+not make an effort to conceal them.
+
+Sending a password or other sensitive data as part of a redirect will likely cause the data to be mishandled and
+potentially revealed to an attacker.
+
+The rule checks if there are parts of the redirect chain that contain expressions that match with the pattern, so it can
+lead to several false positives and/or false negatives.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoids sensitive data leakage]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package OpenRedirect
+
+import(
+	"net/http"
+)
+
+type Stuff struct{
+    List []string
+}
+
+func checkcheck(w http.ResponseWriter, r *http.Request) {
+    user := "John"
+    password := "_secret_:O"
+    url := "http://mysite.org"
+    newURL := url + "?user=" + user + "&pass=" + password
+
+    sinfo := Stuff{
+        List: some_slice
+    }
+
+    t, err := template.New("").Parse(tpl_ds)
+    checkErr(err)
+    err = r.ParseForm()
+    checkErr(err)
+    err = t.Execute(w, sinfo)
+    checkErr(err)
+
+    if r.Method == "POST" {
+        saveChoice(r.Form["choices"])
+        http.Redirect(w, r, newURL, http.StatusSeeOther) // VIOLATION
+    }
+}]]></example>
+    <repair><![CDATA[// Do not send passwords as part of an HTTP redirect.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/359.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:598,OWASP:2021:A7,PCI-DSS:6.5.3]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.PathTraversal" message="PathTraversal: Avoid non-neutralized user-controlled input composed in a pathname to a resource" class="com.kiuwan.qaking.go.rules.security.PathTraversal" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.1,ASVS-v4.0.2:12.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software uses external input to construct a pathname that is intended to identify a file or directory
+that is located underneath a restricted parent directory, but the software does not properly neutralize
+special elements within the pathname that can cause the pathname to resolve to a location outside the
+restricted directory.
+
+Under an application server, if the application server configuration does not restrict access to files outside
+certain restricted directories, the attacker may fetch sensitive files, and if the file is written with contents
+controlled by user input, the attacker may change configuration files (like web.xml among others), web contents
+('web defacement'), or libraries (for more insidious code injection attacks). Access to system files
+(the customary /etc/password in Unix/Linux systems) could also allowed with the app server account permissions.
+
+It is recommended, besides ensuring that files depending on user-controlled input do not exit the intended directories,
+that the OS account does have the minimal permissions, to reduce the impact of a successful path traversal attack.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package path_traversal
+
+import(
+	"net/http"
+	"os"
+)
+
+func simplePathTraversal(r *http.Request) {
+	file_name := r.URL.Query().Get("file_name")
+	os.Open(file_name) // VIOLATION
+}]]></example>
+    <repair><![CDATA[// neutralize untrusted input before using it as a path]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/73.html,http://cwe.mitre.org/data/definitions/22.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:22,CWE:73,CWETOP25:2021:8,OWASP:2021:A4,OWASP:2021:A5,PCI-DSS:6.5.8,WASC:33]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.PlaintextStorageOfPassword" message="PlaintextStorageOfPassword: Plaintext Storage of a Password" class="com.kiuwan.qaking.go.rules.security.PlaintextStorageOfPassword" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.7.5,CWEScope:Access-Control,credentials]]></tags>
+    <description><![CDATA[Storing a password in plaintext may result in a system compromise.
+
+Password management issues occur when a password is stored in plaintext in an application's properties or configuration file.
+Storing a plaintext password in a configuration file allows anyone who can read the file access to the password-protected
+resource.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package password
+
+import (
+  "encoding/json"
+  "os"
+  "fmt"
+  "net/url"
+)
+
+type Configuration struct {
+  Password  []string
+}
+
+func test() {
+  file, _ := os.Open("conf.json")
+  defer file.Close()
+  decoder := json.NewDecoder(file)
+  configuration := Configuration{}
+  err := decoder.Decode(&configuration)
+  if err != nil {
+    fmt.Println("error:", err)
+  }
+
+  userInfo := url.UserPassword("admin", configuration.Password) // VIOLATION
+}]]></example>
+    <repair><![CDATA[package password
+
+import (
+	"encoding/json"
+	"os"
+	"fmt"
+	"net/url"
+)
+
+type Configuration struct {
+	Password  []string
+}
+
+var decrypter crypto.Decrypter
+
+func test() {
+	file, _ := os.Open("conf.json")
+	defer file.Close()
+	decoder := json.NewDecoder(file)
+	configuration := Configuration{}
+	err := decoder.Decode(&configuration)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	decrypted := decrypt(configuration.Password)  // Use here a proper encryption / decryption routine
+	userInfo := url.UserPassword("admin", decrypted)
+}]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/256.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:256,OWASP:2021:A4,PCI-DSS:6.3.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.PotentialBlockerStmt" message="PotentialBlockerStmt: Review statements that could lead to a resource exhaustion." class="com.kiuwan.qaking.go.rules.security.PotentialBlockerStmt" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.1.1,CWEScope:Availability,potential-bug]]></tags>
+    <description><![CDATA[Some GO statements can result blocker if they're not used bot proper and carefully:
+ - Select statement will block until one of its cases is executed. For an empty select statement, which doesn't have any
+ cases it will block forever resulting in a deadlock.
+
+ - time.Sleep and time.After functions will block the program until the timeout is reached. In this case, a very high
+  timeout might result into a deadlock too.
+
+ - A sync.WaitGroup is a way to coordinate multiple goroutines by reporting completion. When only one goroutine is in
+ the group and the goroutine establish a block it will also produce a deadlock.
+
+ - A sync.Mutex provides exclusive use of another associated resource. When it's locked twice it results into a block.
+
+ - Empty unbuffered channels will block until there’s something to receive. When the kind of channels are read before
+ receiving any data then it will block forever.
+
+All those specific statement should be reviewed to make sure that they don't represent a potential flaw.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Control flow management</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid DDOS.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import "sync"
+
+func main() {
+  select {}  // VIOLATION empty select blocks forever
+
+  <- time.After(time.Duration(math.MaxInt64)) // VIOLATION
+}
+
+func doubleLockBlocksForever() {
+  m := sync.Mutex()
+  m.Lock()
+  m.Lock() // VIOLATION
+}
+
+func emptyUnbufferedChannelReadBlocksForever() {
+  c := make(chan struct{})
+  <- c  // VIOLATION
+}
+
+func wgWaintingItselfblocksForever() {
+	wg := sync.WaitGroup()
+	wg.Add(1)
+	wg.Wait() // VIOLATION
+}]]></example>
+    <repair><![CDATA[// Ensure that select stmt performs some proper actions.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/400.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:400,CWETOP25:2021:27]]></security>
+    </normatives>
+    <properties>
+      <property name="maxSleepTime" descname="The maximum sleep time allowed by this rule (in ms)(by default 30 s)." value="30000000000"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.PotentialInfiniteLoop" message="PotentialInfiniteLoop: Loop with Unreachable Exit Condition ('Infinite Loop')" class="com.kiuwan.qaking.go.rules.security.PotentialInfiniteLoop" technology="GO" active="true">
+    <tags><![CDATA[CWEScope:Availability,essential,potential-bug]]></tags>
+    <description><![CDATA[The program contains an iteration or loop with an exit condition that cannot be reached, i.e., an infinite loop.
+Such infinite loop conditions are due typically to logical errors in the loop exit conditions and/or loop variables update,
+where the loop exit condition is never reached.
+
+An infinite loop will cause unexpected consumption of resources, such as CPU cycles or memory, and might compromise software
+availability.
+
+NOTE: Rule OPT.GO.SECURITY.UncheckedInputInLoopCondition (CWE-606) checks when an untrusted input, not validated, might
+influence loop termination leading to a denial-of-service condition.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Control flow management</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid DDOS.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+func main() {
+	for { // VIOLATION
+		select {
+		case c <- 0:  // note: no statement, no fallthrough, no folding of cases
+		case c <- 1:
+		}
+	}
+}]]></example>
+    <repair><![CDATA[// Ensure that loop exit condition is ever reached.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/835.html,https://blog.jooq.org/2015/01/16/infinite-loops-or-anything-that-can-possibly-go-wrong-does/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:835,CWETOP25:2020:36]]></security>
+    </normatives>
+    <properties>
+      <property name="allowExplicitInfiniteLoops" descname="Intentional non-empty infinite loops, coded as &quot;while (true)&quot;, are allowed." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.PrivacyViolation" message="PrivacyViolation: Exposure of Private Information ('Privacy Violation')" class="com.kiuwan.qaking.go.rules.security.PrivacyViolation" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[Managing private user information can compromise user privacy.
+
+Privacy violations occur when private user data are stored in an external location, when they are appended to the log or
+when they are sent as plain-text.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package privacy_violation
+
+import "log"
+import (
+  "fmt"
+)
+
+func test() {
+  var ccn = "54614547564534"
+
+  logger := log.New(&buf, "logger: ", log.Lshortfile)
+  fmt.Println(ccn)  // VIOLATION
+  logger.Print(ccn)  // VIOLATION
+}]]></example>
+    <repair><![CDATA[// Avoid exposing sensitive data]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/359.html,https://www.owasp.org/index.php/Privacy_Violation,http://projects.webappsec.org/Information-Leakage]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.ProcessControl" message="ProcessControl: Do not load executables or libraries from untrusted sources" class="com.kiuwan.qaking.go.rules.security.ProcessControl" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.14.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,code-injection,scripting]]></tags>
+    <description><![CDATA[Loading libraries or executables from an untrusted source or in an untrusted environment can cause an application
+to execute malicious code on behalf of an attacker.
+
+Sometimes a developed or third-party library needs to be be run during application execution. For example, the
+windows.NewLazyDLL function provides functionality for loading a library. If the path to the library depends on external
+untrusted input, for example configuration entries, an attacker that could modify the external input could manage to
+execute uninteded code, with the privileges of the application.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid code injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import "sys/windows"
+import "os"
+
+func main() {
+  args := os.Args
+  arg := args[1]
+  mododbc32 = windows.NewLazyDLL(arg) // VIOLATION
+}]]></example>
+    <repair><![CDATA[// Validate the library path, to avoid executing code from an unintended library.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/114.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:114,CWE:494,OWASP:2021:A1,OWASP:2021:A8,PCI-DSS:6.5.8,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.RegexInjection" message="RegexInjection: Prevent denial of service attack through malicious regular expression ('Regex Injection')" class="com.kiuwan.qaking.go.rules.security.RegexInjection" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.1.1,CWEScope:Access-Control,ReDoS]]></tags>
+    <description><![CDATA[If the software creates a regular expression ("pattern", "regex") from untrusted input, an attacker may supply
+malicious input that produces a denial-of-service (DoS) condition during regular expression matching.
+
+Alternatively, if the regular expression is used for input validation, the attacker-controlled regular expression
+may fail to neutralize undesired input, which may bypass the intended restrictions or render useless
+a security control.
+
+The regular expression engine uses backtracking to match input strings, and there are certain regular expressions
+(named "evil regexes") that take exponential time (relative to input size) to match in the worst case.
+
+If the attacker controls also the input to be matched, he/she could craft an input for the evil regex that
+takes an inordinate amount of time to match, consuming resources (like CPU).
+Evil regex typically has a group with repetition, and the repeated group has repetition or alternation with overlapping.
+For example: "(a+)+", "([a-z]+)*", "(a|aa)+" or "(aa|aab?)*".
+
+For example, a "(a+)+" regex will take long computing time when matching "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"
+takes many seconds to complete, and longer strings (with exponential time increase) may lead to DoS conditions.
+
+Please note that regular expressions are often used for security controls and input validation.
+Even OWASP validation regex repository contained some known evil regular expressions.
+Note: Attackers may use tools like Google CodeSearch to find evil regex in open-source code ('CodeSearch hacking').
+
+The rule checks for potential injection of untrusted input into regex APIs.
+
+Note: Attacks like ReDoS are named "directed/intelligent/application" DoS, as an attacker with few resources
+could render unavailable a web application, in contrast with brute-force DoS.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid DoS conditions produced by regular expression injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import "regexp"
+
+func main() {
+  var pattern = os.Args[1]
+
+  regexp.MustCompile(pattern) // VIOLATION
+  regexp.MustCompile("(^([^']*(['][^']*['])?)*)\\s+") //  VIOLATION
+}]]></example>
+    <repair><![CDATA[// Never permit regular expressions to be affected by untrusted input. Use safe regular expressions defined in source code,
+// or in a trusted configuration file.]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS,https://en.wikipedia.org/wiki/ReDoS,https://cwe.mitre.org/data/definitions/400.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:400,CWETOP25:2021:27,OWASP:2004:A9,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.ResourceInjection" message="ResourceInjection: Improper control of resource identifiers (&quot;Resource Injection&quot;)" class="com.kiuwan.qaking.go.rules.security.ResourceInjection" technology="GO" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software takes from an untrusted source the identifier for a system resource (like a port number),
+and allows access to a non-expected resource. Attackers may use the flaw for malicious behaviour,
+for example a port scan, change software configuration, transmit sensitive information to a third-party server,
+etc.
+
+This vulnerability is also known as "Insecure Direct Object Reference" instead of "Resource Injection".
+
+Note: Please note that other rules may check injection flaws for specific resources (like Path Traversal rule for
+filesystem resources, or SSRF for network addresses). This rule reports injection flaws on resource identifiers not
+covered by other rules.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package resource_injection
+
+import "github.com/go-redis/redis/v7"
+import "flag"
+
+func ExampleNewClient() {
+  db := flag.Int64("dv", 0, "DB to use")
+
+  client := redis.NewClient(&redis.Options{
+    Addr:     "localhost:6379",
+    Password: "", // no password set
+    DB:       db,  // use default DB    // VIOLATION
+  })
+
+  pong, err := client.Ping().Result()
+  fmt.Println(pong, err)
+}]]></example>
+    <repair><![CDATA[package resource_injection
+
+import "github.com/go-redis/redis/v7"
+import "flag"
+
+func ExampleNewClient() {
+  db := flag.Int64("dv", 0, "DB to use")
+  var validatedDB = validateDB(db);
+
+  client := redis.NewClient(&redis.Options{
+    Addr:     "localhost:6379",
+    Password: "", // no password set
+    DB:       validatedDB,  // use default DB    // OK
+  })
+
+  pong, err := client.Ping().Result()
+  fmt.Println(pong, err)
+}
+
+func validateDB(db String) {
+  var allowed = getAllowedDBs();
+  var validatedDB = allowed.get(db); // FIXED, whitelist
+}]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Resource_Injection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:99,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.SameOriginMethodExecution" message="SameOriginMethodExecution: Same Origin Method Execution (SOME)" class="com.kiuwan.qaking.go.rules.security.SameOriginMethodExecution" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[SOME is a web application attack which abuses callback endpoints by forcing a victim into
+executing arbitrary scripting methods of any page on the endpoint’s domain.
+
+In example, while JSONP is popular useful technology but it can make a website vulnerable as it uses a callback function
+to get data from third-party services. By manipulating the callback parameter, attacker could execute arbitrary methods
+on the affected website.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import (
+	"net/http"
+	"time"
+
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
+)
+
+func main() {
+	e := echo.New()
+
+	// JSONP
+	e.GET("/jsonp", func(c echo.Context) error {
+		callback := c.QueryParam("callback")
+		var content struct {
+			Response  string    `json:"response"`
+			Timestamp time.Time `json:"timestamp"`
+		}
+		content.Response = "Sent via JSONP"
+		content.Timestamp = time.Now().UTC()
+		return c.JSONP(http.StatusOK, callback, &content) // VIOLATION
+	})
+
+	// Start server
+	e.Logger.Fatal(e.Start(":1323"))
+}]]></example>
+    <repair><![CDATA[// Do not allow user to select the jsonp callback]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/79.html,http://www.benhayak.com/2015/06/same-origin-method-execution-some.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP:2021:A3,PCI-DSS:6.5.7,WASC:08]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input, database_input, file_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.ServerInsecureTransport" message="ServerInsecureTransport: Insecure transport in HTTP servers" class="com.kiuwan.qaking.go.rules.security.ServerInsecureTransport" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[For sensitive applications, a secure transport (like TLS/SSL) provides confidentiality and integrity in communications
+with the server.
+
+The rule demands that HTTP servers use SSL/TLS transport, to ensure server-side authentication,
+confidentiality and integrity of the communications with clients.]]></description>
+    <priority>2</priority>
+    <effort>4</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package server_insecure_transport
+
+import "net/http"
+
+func test() {
+  http.Handle("/foo", fooHandler)
+
+  http.HandleFunc("/bar", func(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
+  })
+
+  log.Fatal(http.ListenAndServe(":8080", nil))  // VIOLATION
+}]]></example>
+    <repair><![CDATA[package server_insecure_transport
+
+import "net/http"
+
+func test() {
+  http.Handle("/foo", fooHandler)
+
+  http.HandleFunc("/bar", func(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
+  })
+
+  log.Fatal(http.ListenAndServeTLS(":8080", nil))  // OK
+}]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP:2021:A2,PCI-DSS:6.5.4,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="onlyHttps" descname="If true, any HTTP server put to listen will be reported as violation, even when an HTTPS server is started." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.ServerSideRequestForgery" message="ServerSideRequestForgery: Creation of requests from a vulnerable server using untrusted input (server side request forgery, SSRF)" class="com.kiuwan.qaking.go.rules.security.ServerSideRequestForgery" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.6.1,ASVS-v4.0.2:5.2.6,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[A server side request forgery vulnerability appears when an attacker can send requests from a vulnerable server to remote services.
+
+SSRF attacks allow accessing, through the vulnerable server, to internal systems located behind a firewall,
+that normally should not be accessible.
+
+There are two kinds of SSRF attacks:
+- Trusted SSRF: we just can send requests to a list of predefined remote services.
+- Remote SSRF: we can send requests to any remote IP and port.
+
+SSRF attacks are commonly used for port scanning and attacking systems from the internal network.
+
+This rule checks if there are connections established using untrusted input data.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent SSRF attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package ssrf
+
+import (
+		"net"
+		"net/http"
+)
+
+func connect(req *http.Request) net.IP {
+		addr := req.FormValue("ADDR")
+		conn, err := net.Dial("udp", addr)    // VIOLATION
+		if err != nil {
+				log.Fatal(err)
+		}
+		defer conn.Close()
+}]]></example>
+    <repair><![CDATA[// Avoid using untrusted input when composing URLs to connect to external services.
+// If needed, validate (in a white-list) the target services from a closed list of allowed endpoints.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/918.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:918,CWETOP25:2021:24,OWASP:2021:A10,PCI-DSS:6.5.8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.SqlInjection" message="SqlInjection: Avoid SQL code formed with non neutralized user input (vulnerable to SQL Injection attacks)" class="com.kiuwan.qaking.go.rules.security.SqlInjection" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[NEVER concatenate untrusted inputs in SQL code.
+
+The best way to avoid SQL injection is to use parameters in the SQL command.
+That way, even unvalidated inputs are considered data and not part of the SQL statement, which is safe
+(unless when executing a flawed stored procedure that builds SQL by concatenation and runs dynamic SQL).
+
+A common use-case is the need to build parts of the SQL statement dynamically, depending on the input provided.
+Try to avoid concatenation of inputs, instead concatenate constant fragments of SQL (literals) with parameter placeholders.
+
+If dynamic SQL is the unique way to build a complex SQL statement, at least validate carefully the inputs to be concatenated,
+accepting only valid inputs (use regular expression patterns, or convert inputs to a primitive data type). This way,
+any attacker payload will be neutralized before reaching the database.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent SQL injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package SqlInjection
+
+import(
+  "database/sql"
+  "net/http"
+  "govwa/util/database"
+)
+
+var db *sql.DB
+
+func simpleSqli(r *http.Request) {
+  customerId := r.URL.Query().Get("id")
+  query := "SELECT number, expireDate, cvv FROM creditcards WHERE customerId = " + customerId
+  row, _ := db.QueryContext(ctx, query) // VIOLATION
+}]]></example>
+    <repair><![CDATA[package SqlInjection
+
+import(
+  "database/sql"
+  "net/http"
+  "govwa/util/database"
+)
+
+var db *sql.DB
+
+func simpleSqli(r *http.Request) {
+  customerId := r.URL.Query().Get("id")
+  validated := validate(customerId)
+  query := "SELECT number, expireDate, cvv FROM creditcards WHERE customerId = " + customerId
+  row, _ := db.QueryContext(ctx, query) // OK; our validate function validates the user input
+}
+
+func validate (text String) String {
+    /* add a neutralization here */
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/89.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:89,CWETOP25:2021:6,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.TooMuchOriginsAllowed" message="TooMuchOriginsAllowed: CORS policy (Cross-origin resource sharing) too broad" class="com.kiuwan.qaking.go.rules.security.TooMuchOriginsAllowed" technology="GO" active="true">
+    <tags><![CDATA[CORS,CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Too much allowed origins in HTML5 Access-Control-Allow-Origin header.
+
+Traditionally, web browsers enforced the Same Origin Policy (SOP) to avoid cross-domain JavaScript to access
+certain contents in web page. This policy prevents a malicious script on one page from obtaining
+access to sensitive data on another web page ("victim") with a different origin. A strict separation between content
+from unrelated sites must be maintained on the browser to prevent loss of data confidentiality or integrity.
+
+Cross-Origin Resource Sharing (CORS) relaxes the SOP. To do this, essentially two HTTP headers (Origin, emitted by client,
+and Access-Control-Allow-Origin, emitted by server).
+
+With Access-Control-Allow-Origin header, server defines which other domains are allowed to access content in its domain
+using cross-origin requests. A too much permissive value (like *) will allow a malicious application to communicate
+with the vulnerable application in unexpected ways, leading to different security problems.
+
+NOTE: CORS is intended to avoid data read from pages coming from other origins, and it is enforced by modern browsers.
+Remember that an attacker has full control over an HTTP request message, so do not rely on CORS Origin header for
+validating the source of a request, or for CSRF protection.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Limits read application data from content coming from hostile origins.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package test
+
+import (
+  "log"
+  "net/http"
+  "encoding/json"
+  "html/template"
+)
+
+func Render(w http.ResponseWriter, data ...interface{}) {
+  w.Header().Set("Access-Control-Allow-Origin", "*")  // VIOLATION
+  w.Header().Set("Access-Control-Allow-Credentials", "true")
+  w.Header().Set("Access-Control-Allow-Methods", "POST, GET")
+  w.Header().Set("Content-Type", "application/json")
+  b, err := json.Marshal(data)
+  if err != nil {
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+    return
+  }
+  w.Write(b)
+}]]></example>
+    <repair><![CDATA[package test
+
+import (
+  "log"
+  "net/http"
+  "encoding/json"
+  "html/template"
+)
+
+func Render(w http.ResponseWriter, data ...interface{}) {
+  w.Header().Set("Access-Control-Allow-Origin", "https://my-site.org")  // OK
+  w.Header().Set("Access-Control-Allow-Credentials", "true")
+  w.Header().Set("Access-Control-Allow-Methods", "POST, GET")
+  w.Header().Set("Content-Type", "application/json")
+  b, err := json.Marshal(data)
+  if err != nil {
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+    return
+  }
+  w.Write(b)
+}]]></repair>
+    <reference><![CDATA[https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties,https://github.com/rs/cors,http://cwe.mitre.org/data/definitions/942.html,https://w3c.github.io/webappsec-cors-for-developers]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:942,OWASP:2021:A5,PCI-DSS:6.5.10,WASC:15]]></security>
+    </normatives>
+    <properties>
+      <property name="disallowedOriginPattern" descname="Regular expression for CORS origins do not considered valid" value="\*|null"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.UnsafeCookie" message="UnsafeCookie: Generate server-side cookies with adequate security properties" class="com.kiuwan.qaking.go.rules.security.UnsafeCookie" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:3.2.3,ASVS-v4.0.2:3.4.1,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Checks that cookies generated server-side have the following security properties:
+
+* Non persistent - Cookie is not stored persistently by the browser (it is hold in memory)
+* Secure - Cookie is sent in HTTP/SSL communications only (more difficult to capture on the net)
+* HttpOnly - Cookie is not accessible by client-side scripts (not all browsers support this)
+* Path - Path should not match a certain patterns that allow transmission to unintended web applications.
+* Domain - Domain should not be too wide so the cookie is sent to unintended servers.
+
+Additionally, the name of any session cookie should be chosen to avoid providing common names that may give clues
+to the attacker about how are sessions handled in the server.
+
+Other rules (like HeaderManipulation) check other conditions, like HTTP Splitting, that could be
+produced when the cookie value depends on user-controlled input non properly neutralized.
+
+NOTE: Not setting domain or path forces browser to send the cookie to the originator's domain and
+application path, so this is considered secure.]]></description>
+    <priority>3</priority>
+    <effort>4</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package UnsafeCookie
+
+import (
+  "net/http"
+)
+
+func badCookie(){
+  cookie := http.Cookie{
+    Path : "/", // VIOLATION
+    Domain : ".com", // VIOLATION
+    Name: "sessionid", // VIOLATION
+    Value: value,
+    Secure: false, // VIOLATION
+    HttpOnly: false, // VIOLATION
+    Expires: 60 * 60 * 24 // VIOLATION
+  }
+}]]></example>
+    <repair><![CDATA[package UnsafeCookie
+
+import (
+  "net/http"
+  "time"
+)
+
+func goodCookie(){
+  cookie := http.Cookie{
+    Path : "/mypath",
+    Domain : "mysite.com",
+    Name: name,
+    Value: value,
+    Secure: true,
+    HttpOnly: true
+  }
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/614.html,http://cwe.mitre.org/data/definitions/539.html,http://projects.webappsec.org/w/page/13246936/Information%20Leakage,http://cwe.mitre.org/data/definitions/1004.html,http://cwe.mitre.org/data/definitions/200.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:1004,CWE:200,CWE:539,CWE:614,CWETOP25:2021:20,PCI-DSS:6.5.3,WASC:13]]></security>
+    </normatives>
+    <properties>
+      <property name="domainPatternToAvoid" descname="Pattern on cookie domains to avoid" value="\.[^\.]+"/>
+      <property name="avoidPersistentCookies" descname="Avoid persistent cookies" value="true"/>
+      <property name="cookieNamePatternToAvoid" descname="Pattern on cookie names to avoid" value=".*SESS(ION)?ID.*"/>
+      <property name="avoidUnsecureCookies" descname="Avoid insecure cookies" value="false"/>
+      <property name="pathPatternToAvoid" descname="Pattern on cookie paths to avoid" value="/"/>
+      <property name="forceHttpOnly" descname="Set HttpOnly" value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.UnsafeReflection" message="UnsafeReflection: Use of Externally-Controlled Input to Select Classes or Code ('Unsafe Reflection')" class="com.kiuwan.qaking.go.rules.security.UnsafeReflection" technology="GO" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,reflection]]></tags>
+    <description><![CDATA[The software uses external input with reflection to select which classes or code to use, but
+it does not prevent the input from selecting improper classes or code.
+
+If the application uses external inputs to determine which class to instantiate or which method to invoke, then an attacker
+could supply values to select unexpected classes or methods. If this occurs, then the attacker could execute code that
+was not intended by the developer. It may bypass authentication or access control checks, or otherwise cause unexpected behaviour.
+
+It the attacker is able to upload files in a location that appears in the classpath, or add new entries to the classpath,
+this flaw could lead to execution of arbitrary code, chosen by the attacker.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Limit potential unexpected code execution, or uncontrolled access to sensitive information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package UnsafeReflection
+
+import "reflection"
+
+func main() {
+  typename := os.Args[1]
+  index := os.Args[2]
+
+  fType := reflect.TypeOf(typename) // VIOLATION
+  fVal := reflect.New(fType)
+  fVal.Elem().Field(index).SetInt(20) // VIOLATION
+}]]></example>
+    <repair><![CDATA[// Validate externally-controlled parameters affecting targets of reflexion code]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Resource_Injection,https://cwe.mitre.org/data/definitions/470.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:470,OWASP:2021:A3,PCI-DSS:6.5.8,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.WeakCryptographicHash" message="WeakCryptographicHash: Weak cryptographic hashes cannot guarantee data integrity" class="com.kiuwan.qaking.go.rules.security.WeakCryptographicHash" technology="GO" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,crypto,hash]]></tags>
+    <description><![CDATA[MD5, SHA-1 and RIPEMD160 are popular cryptographic hash functions often used to verify the integrity of messages, and for other usages.
+Recent advances in cryptanalysis have discovered weaknesses in both algorithms. Consequently, MD5, SHA-1 or RIPEMD160
+should no longer be relied upon in security-critical contexts.
+
+Techniques for breaking MD5 hashes are advanced and widely available enough that the algorithm must not be relied upon for security.
+In the case of SHA-1 or RIPEMD160, current techniques still require a significant amount of computational power and are more difficult to implement.
+However, attackers have found the Achilles heal for the algorithm, and techniques for breaking it will likely lead to the discovery
+of even faster attacks. In particular, Google has reported recently an example of colliding SHA-1 hashes.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve security, by avoiding not allowed access to sensible data or information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import (
+  "fmt"
+  "crypto/sha1"
+  "hash"
+)
+
+func CreateHash(byteStr []byte) []byte {
+  var hashVal hash.Hash
+  hashVal = sha1.New() // VIOLATION
+  hashVal.Write(byteStr)
+
+  var bytes []byte
+
+  bytes = hashVal.Sum(nil)
+  return bytes
+}]]></example>
+    <repair><![CDATA[package main
+
+import (
+  "fmt"
+  "crypto/sha256"
+  "hash"
+)
+
+func CreateHash(byteStr []byte) []byte {
+  var hashVal hash.Hash
+  hashVal = sha256.New() // OK
+  hashVal.Write(byteStr)
+
+  var bytes []byte
+
+  bytes = hashVal.Sum(nil)
+  return bytes
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/328.html,https://en.wikipedia.org/wiki/Hash_function_security_summary]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:328,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:50]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="Comma-separated list of allowed hash functions." value="RIPEMD160, MACTripleDES, SHA256, SHA384, SHA512"/>
+      <property name="forbiddenAlgorithms" descname="List of weak hash functions" value="MD5, SHA1"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.WeakEncryption" message="WeakEncryption: Weak symmetric encryption algorithm" class="com.kiuwan.qaking.go.rules.security.WeakEncryption" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.9.3,ASVS-v4.0.2:6.2.2,ASVS-v4.0.2:8.3.7,CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,cipher,crypto]]></tags>
+    <description><![CDATA[The program uses a weak encryption algorithm that cannot guarantee the confidentiality of sensitive data.
+
+Old encryption algorithms such as DES no longer provide sufficient protection for use with sensitive data.
+Encryption algorithms rely on key size as one of the primary mechanism to ensure cryptographic strength.
+Cryptographic strength is often measured by the time and computational power needed to generate a valid key.
+Advances in computing power have made it possible to obtain small encryption keys in a reasonable amount of time.
+
+For example, the 56-bit key used in DES posed a significant computational hurdle in the 1970's when the algorithm
+was first developed, but today DES can be cracked in less than a day using commonly available equipment.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve security, by avoiding not allowed access to sensible data or information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import (
+	"crypto/des"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+)
+func decrypt(data []byte, passphrase string) []byte {
+	key := []byte(createHash(passphrase))
+	block, err := des.NewCipher(key) // VIOLATION
+	if err != nil {
+		panic(err.Error())
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		panic(err.Error())
+	}
+	nonceSize := gcm.NonceSize()
+	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		panic(err.Error())
+	}
+	return plaintext
+}]]></example>
+    <repair><![CDATA[package main
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+)
+func decrypt(data []byte, passphrase string) []byte {
+	key := []byte(createHash(passphrase))
+	block, err := aes.NewCipher(key) // FIXED
+	if err != nil {
+		panic(err.Error())
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		panic(err.Error())
+	}
+	nonceSize := gcm.NonceSize()
+	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		panic(err.Error())
+	}
+	return plaintext
+}]]></repair>
+    <reference><![CDATA[https://www.securecoding.cert.org/confluence/display/java/MSC61-J.+Do+not+use+insecure+or+weak+cryptographic+algorithms,http://projects.webappsec.org/w/page/13246936/Information%20Leakage,http://cwe.mitre.org/data/definitions/327.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:327,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="Comma-separated list of allowed ciphers." value="DESEDE, AES, IDEA, 3DES, DES3, TRIPLEDES"/>
+      <property name="forbiddenAlgorithms" descname="Comma-separated list of ciphers that should NOT be used." value="DES, RC2, RC4, RC5"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.XPathInjection" message="XPathInjection: Avoid XPath expressions formed with non neutralized user input" class="com.kiuwan.qaking.go.rules.security.XPathInjection" technology="GO" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.10,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[The software uses external input to dynamically construct an XPath expression used to
+retrieve data from an XML database, but it does not neutralize or incorrectly neutralizes that input.
+This allows an attacker to control the structure of the query.
+
+Effect: the attacker will have control over the information selected from the XML database and may use that ability
+to control application flow, modify logic, retrieve unauthorized data, or bypass important checks (e.g. authentication).
+
+This check looks for calls that create or execute an XPath expression, and detects if an untrusted input could
+change the XPath code used at that call.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid Xpath injection attacks produced by non neutralized user inputs.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package main
+
+import (
+  "fmt"
+  "strings"
+  "github.com/antchfx/xmlquery"
+)
+
+func main() {
+  args := os.Args
+  arg := args[1]
+  htmlstr := `<?xml version="1.0" ?>
+    <html>
+    <head>
+     <title>this is a title</title>
+    </head>
+    <body>Hello,World</body>
+    </html>`
+  root, err := xmlquery.Parse(strings.NewReader(htmlstr))
+  if err != nil {
+    panic(err)
+  }
+  title := xmlquery.FindOne(root, arg)  // VIOLATION
+  fmt.Println(title.InnerText())
+}]]></example>
+    <repair><![CDATA[// Validate the ibput before evaluating an xpath expression with it.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/643.html,Prevent XPath Injection: https://www.securecoding.cert.org/confluence/pages/viewpage.action?pageId=62849047,http://projects.webappsec.org/w/page/13247005/XPath%20Injection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:643,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:39]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.GO.SECURITY.XsltInjection" message="XsltInjection: XML Injection (aka Blind XPath Injection)" class="com.kiuwan.qaking.go.rules.security.XsltInjection" technology="GO" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[If the software allows untrusted inputs to control part or all of an XSLT stylesheet,
+an attacker may change the structure and content of resulting XML.
+
+If the resulting XML ends in a browser, the attacker may choose contents to launch cross-site scripting
+attacks, or execute operations at server with victim's identity allowed by the browser's same-origin policy
+(a variant of the cross-site request forgery attack).
+
+The attacker may also use this flaw to launch attacks targeted at the server, like fetching content
+from arbitrary files, running arbitrary Go code, or executing OS commands, when certain XSLT functions
+are not disabled.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XSLT Injection flaws allowing server-side and client-side attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[package xsltInjection
+
+import (
+  "net/http"
+  "io/ioutil"
+  "github.com/jbowtie/gokogiri/xml"
+  "github.com/jbowtie/ratago/xslt"
+
+)
+
+func xsltInjection(r *http.Request, inputXmlFile string, testOptions StylesheetOptions) {
+  thisInput := r.URL.Query().Get("thisInput")
+  realInput := []byte(thisInput)
+  doc, err := Parse(realInput, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+  stylesheet, _ := ParseStylesheet(doc, nil) // VIOLATION
+  output, _ := stylesheet.Process(inputXml, testOptions)
+}]]></example>
+    <repair><![CDATA[// Do not allow external input to select the XSLT stylesheet to use.
+// Instead, let the external input to choose between a fixed set of
+// allowed stylesheets provided by the software.]]></repair>
+    <reference><![CDATA[https://blog.csnc.ch/2015/06/xslt-security-and-server-side-request-forgery/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="GO" technology="GO" active="true" weight="1.0">
+      <description><![CDATA[GO rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="GO" active="true" weight="8.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="GO" active="true" weight="10.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="GO" active="true" weight="5.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="GO" active="true" weight="10.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="GO" active="true" weight="4.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

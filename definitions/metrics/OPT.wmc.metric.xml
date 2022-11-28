@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric"
+    version="1.1">
+
+  <metric id="OPT.wmc" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.SIZE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.SIZE.CODE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.LOWER" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.TYPE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="24.00" meaning="good" />
+        <threshold from="24.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters>
+      <parameter id="metrics">
+        <default-value><![CDATA[wmc]]></default-value>
+      </parameter> 
+    </parameters>
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.CKJM" />
+        <java-class>com.als.java.metrics.ChidamberKemererMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters ref-list="metrics" />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+    <code-examples />
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+      <i18n ref="OPT.LANGUAGE.SPANISH">
+        <name><![CDATA[Número de métodos por clase]]></name>
+        
+        <description>
+<![CDATA[
+WMC es el número de métodos por clase. Las clases deberían tener un número relativamente bajo de métodos. Una clase
+con un número elevado de métodos es posiblemente más específica (o una clase "dios", una mala abstracción), limitando la posibilidad de ser reutilizada.
+
+WMC suele ser un buen predictor del tiempo y esfuerzo necesario para desarrollar y mantener la clase. Un WMC elevado implica
+asimismo mayor fragilidad en clases derivadas. Clases con peores valores de WMC pueden ser objetivos para reestructurarlas
+en clases más pequeñas, en especial cuando su cohesión es baja.
+]]>
+        </description>
+        <implementation-descriptions>
+
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA"><![CDATA[
+Para la implementación de Java los interfaces se tratarán como si fueran clases. Nótese que, teniendo esto en cuenta, aunque Java no tiene herencia múltiple, la métrica se va a comportar como si éste fuera el caso. Pongamos unos ejemplos para ilustrarlo:
+
+a) Una clase C1 que no extienda de ninguna otra ni implemente ningún interfaz: DIT = 1 (todas heredan de 'Object')
+ 
+b) Una clase C2 que extienda de la clase C1, pero no implemente ningún interfaz: DIT = 2
+
+d) Un interfaz I1 que no extienda a ninguno: DIT = 0
+
+e) Un interfaz I2 que extienda del interfaz I1: DIT = 1
+ 
+c) Una clase C3 que extienda de la clase C1, e implemente un interfaz con DIT igual a 3: DIT = 4 (el camino más largo, más uno)
+          ]]></implementation-description>
+
+        </implementation-descriptions>
+        <parameters />
+      </i18n>
+
+      <i18n ref="OPT.LANGUAGE.ENGLISH">
+        <name><![CDATA[Number of methods per class]]></name>
+        
+        <description>
+<![CDATA[
+WMC is the method count for a class. Classes should have a low number of methods. A class with a high number of methods
+is probably too specific (or a "god-class", a bad abstraction), limiting the possibility of reuse.
+
+WMC is usually a predictor of how much time and effort is required to develop and maintain the class.
+A large number of methods also means a greater potential impact on derived classes, since the derived classes inherit
+(some of) the methods of the base class. Search for high WMC values to spot classes that could be restructured into several smaller classes,
+specially when its cohesion is low.
+]]>
+        </description>
+        <implementation-descriptions>
+
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA"><![CDATA[
+In Java's implementation of this metric, interfaces will be treated the same as if they were classes. Note that, with this in mind, although Java does not have multiple inheritance, the metric will behave as if it were the case. Let's see some examples that illustrate this:
+
+a) Class C1 does not extend any other, nor implements any interface: DIT = 1 (all classes inherit from 'Object')
+ 
+b) Class C2 extends class C1, but it does not implement any interface: DIT = 2
+
+d) Interface I1 does not extend any other: DIT = 0
+
+e) Interface I2 extends interface I1: DIT = 1
+ 
+c) Class C3 extends class C1, and implements an interface with value 3 of DIT: DIT = 4 (the longest path, plus one)
+          ]]></implementation-description>
+
+        </implementation-descriptions>
+        <parameters />
+      </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

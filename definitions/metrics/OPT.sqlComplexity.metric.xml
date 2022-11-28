@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.optimyth.com/schema/definitions/metric" 
+    version="1.1">
+
+  <metric id="OPT.sqlComplexity" unit="" aggregation="sum" aggregationScope="program">
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.COMPLEXITY" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.COMPLEXITY" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.TYPE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds />
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+    <!-- Metric implementations for each language parser -->
+    <implementations>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+        <internal-name id="OPT.TRANSACTSQL.COMPLEXITY.COMPLEXITY" />
+        <java-class>com.optimyth.qaking.tsql.metrics.QueryComplexityMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+    </implementations>
+
+    <!-- Code examples for each language parser -->
+    <code-examples>
+    <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+        <code-example name="metricCodeExampleTransactsql" result-value="3">
+<![CDATA[
+/****** Object:  StoredProcedure [dbo].[PR_IMSG_COTA_USUARIO_CARTEIRA]    Script Date: 08/13/2012 11:48:49 ******/
+SET ANSI_NULLS OFF
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+CREATE PROCEDURE [dbo].[PR_IMSG_COTA_USUARIO_CARTEIRA]           --SQL COMPLEXITY 1
+ @p_ID_CADASTRO AS BIGINT = 0 OUTPUT,
+ @p_ID_PARAMETRO AS INT = NULL,
+ @p_CD_USUARIO AS VARCHAR(15) = NULL,
+ @p_CD_USUARIO_ALTERACAO AS VARCHAR(15) = NULL,
+ @p_DT_INCLUSAO AS DATETIME = NULL,
+ @p_DT_EXCLUSAO AS DATETIME = NULL,
+ @p_IC_NOVA AS BIT = 0
+AS
+BEGIN
+DECLARE 
+    @v_ID_PARAMETRO AS INT,
+    @v_CD_USUARIO AS VARCHAR(15),
+    @v_CD_USUARIO_ALTERACAO AS VARCHAR(15),
+    @v_DT_INCLUSAO AS DATETIME,
+    @v_DT_EXCLUSAO AS DATETIME,
+    @v_IC_NOVA AS BIT
+    
+    SET @v_ID_PARAMETRO = @p_ID_PARAMETRO
+    SET @v_CD_USUARIO = @p_CD_USUARIO
+    SET @v_CD_USUARIO_ALTERACAO = @p_CD_USUARIO_ALTERACAO
+    SET @v_DT_INCLUSAO = @p_DT_INCLUSAO
+    SET @v_DT_EXCLUSAO = @p_DT_EXCLUSAO
+    SET @v_IC_NOVA = @p_IC_NOVA
+
+    IF (@p_ID_CADASTRO <> 0)
+    BEGIN
+    
+        UPDATE TBPL_MSG_COTA_USUARIO_CARTEIRA SET CD_USUARIO_ALTERACAO = @v_CD_USUARIO_ALTERACAO, DT_EXCLUSAO = @v_DT_EXCLUSAO 
+        WHERE ID_CADASTRO = @p_ID_CADASTRO      --SQL COMPLEXITY 2
+    
+    END
+    ELSE
+    BEGIN
+    
+        DELETE FROM TBPL_MSG_COTA_USUARIO_CARTEIRA  --SQL COMPLEXITY 3
+    
+        SET @p_ID_CADASTRO = @@IDENTITY
+    
+    END 
+END
+GO
+
+]]>
+        </code-example>
+      </language-parser>
+    </code-examples>
+
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+    <i18n ref="OPT.LANGUAGE.SPANISH">
+      <name><![CDATA[Complejidad SQL]]></name>
+      
+      <description>
+<![CDATA[
+Complejidad de las queries SQL del sistema.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+<![CDATA[
+Se computa un factor de complejidad en las queries de alto nivel (SELECT) o sentencias DML (delete, insert, update), incluyendo queries en declaraciones DDL ( CreateAssemblyStatement, CreateTypeStatement, CreateProcedureStatement, CreateFunctionStatement, CreateTableStatement, CreateViewStatement, CreateTriggerStatement, AlterAssemblyStatement, AlterProcedureStatement, AlterFunctionStatement, AlterTableStatement, AlterTriggerStatement, DropStatement, DropIndexStatement, DropTriggerStatement) pero excluyendo subselects en otras queries o declaraciones DML. Computada a nivel del directorio (base de datos) analizado.
+]]>
+            </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+
+    <i18n ref="OPT.LANGUAGE.ENGLISH">
+      <name><![CDATA[SQL complexity]]></name>
+      
+      <description>
+<![CDATA[
+Complexity of the queries SQL of the system.
+]]>
+      </description>
+
+      <implementation-descriptions>
+
+        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.TRANSACTSQL">
+<![CDATA[
+Calculates a complexity factor in the high-level queries (SELECT) or DML statements (delete, insert, update), including queries in DDL declarations (CreateAssemblyStatement, CreateTypeStatement, CreateProcedureStatement, CreateFunctionStatement, CreateTableStatement, CreateViewStatement, CreateTriggerStatement, AlterAssemblyStatement, AlterProcedureStatement, AlterFunctionStatement, AlterTableStatement, AlterTriggerStatement, DropStatement, DropIndexStatement, DropTriggerStatement) but excluding subselects in other queries or DML declarations. Calculated at analyzed directory level (database).
+]]>
+            </implementation-description>
+
+      </implementation-descriptions>
+      <parameters />
+    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

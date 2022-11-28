@@ -1,0 +1,1811 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="java.j2ee" standard="Java_EE" technology="java">
+
+  <description url="https://www.oracle.com/java/technologies/java-ee-glance.html">APIs in Java Enterprise-Edition (Java EE)</description>
+
+  <!--
+  Specs here:
+  Web: Servlet (in metadata_servlet), WebSocket, JSF (faces), EL (expression language)
+  Web service: JAX-RS (REST, in metadata_jaxrs), JSON-P (JSR-374), JSON-B (JSR-367), JAXB (in metadata_others), JAX-WS (SOAP, JSR-224)
+  Enterprise: CDI, EJB, JPA, JTA, JMS
+
+  Some (JDBC, JNDI) are here, but now belongs to J2SE.
+
+  Potentially pending:
+  WebSocket (https://javaee.github.io/tutorial/websocket.html).
+  JSON-P, JSON.B,
+  JAX-WS
+  CDI (Contexts and Dependency Injection for the Java EE Platform)
+  EJB
+  JTA
+  JMS
+  -->
+
+  <!-- JDBC API -->
+  <module name="java.sql" standard="JDBC">
+    <description url="https://docs.oracle.com/javase/8/docs/technotes/guides/jdbc/">JDBC - Java Database Connectivity</description>
+
+    <class name="java.sql.Driver">
+      <method name="acceptsURL" signature="acceptsURL(java.lang.String)"><return type="boolean"/></method>
+      <method name="connect" signature="connect(java.lang.String, java.util.Properties)">
+        <return type="java.sql.Connection"/>
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="getParentLogger" signature="getParentLogger()"><return type="java.util.logging.Logger"/></method>
+      <method name="getPropertyInfo" signature="getPropertyInfo(java.lang.String,java.util.Properties)" ><return type="java.sql.DriverPropertyInfo[]" /></method>
+    </class>
+
+    <class name="java.sql.DriverManager">
+      <method name="getConnection" signature="getConnection(java.lang.String)" match="numargs" instance="false">
+        <return type="java.sql.Connection"/>
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="getConnection" signature="getConnection(java.lang.String, java.util.Properties)" match="numargs" instance="false">
+        <return type="java.sql.Connection"/>
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="getConnection" signature="getConnection(java.lang.String,java.lang.String,java.lang.String)" match="numargs" instance="false">
+        <tags>username:1, password:2</tags>
+        <return type="java.sql.Connection"/>
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+        <sink argpos="1,2" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="getDriver" signature="getDriver(java.lang.String)">
+        <return type="java.sql.Driver"/>
+        <sink kind="connection_string_injection" argpos="0" resource="database"/>
+      </method>
+      <method name="getDrivers" signature="getDrivers()">
+        <return type="java.util.Enumeration" elementType="java.sql.Driver"/>
+      </method>
+      <method name="drivers" signature="drivers()">
+        <return type="java.util.stream.Stream" elementType="java.sql.Driver"/>
+      </method>
+    </class>
+
+    <class name="java.sql.Connection" kind="interface" supertypes="java.lang.AutoCloseable">
+      <tags>jdbc</tags>
+
+      <method name="abort" signature="abort(java.util.concurrent.Executor)"></method>
+      <method name="close" signature="close()"/>
+      <method name="commit" signature="commit()"/>
+      <method name="rollback" signature="rollback()" match="name"/>
+      <method name="beginRequest" signature="beginRequest()"></method>
+      <method name="endRequest" signature="endRequest()"></method>
+
+      <method name="nativeSQL" signature="nativeSQL(java.lang.String)">
+        <return type="java.lang.String"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="createStatement" signature="createStatement()" match="name">
+        <return type="java.sql.Statement"/>
+      </method>
+      <method name="prepareCall" signature="prepareCall(java.lang.String)">
+        <return type="java.sql.CallableStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareCall_2" signature="prepareCall(java.lang.String, int, int)">
+        <return type="java.sql.CallableStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareCall_3" signature="prepareCall(java.lang.String, int, int, int)">
+        <return type="java.sql.CallableStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareStatement" signature="prepareStatement(java.lang.String)">
+        <return type="java.sql.PreparedStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareStatement_2" signature="prepareStatement(java.lang.String, int)">
+        <return type="java.sql.PreparedStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareStatement_3" signature="prepareStatement(java.lang.String, int[])">
+        <return type="java.sql.PreparedStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareStatement_4" signature="prepareStatement(java.lang.String, int, int)">
+        <return type="java.sql.PreparedStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareStatement_5" signature="prepareStatement(java.lang.String, int, int, int)">
+        <return type="java.sql.PreparedStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="prepareStatement_6" signature="prepareStatement(java.lang.String, java.lang.String[])">
+        <return type="java.sql.PreparedStatement"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+
+      <method name="setCatalog" signature="setCatalog(java.lang.String)" alias="setSchema">
+        <sink argpos="0" kind="configuration_setting_injection" resource="database"/>
+      </method>
+      <method name="setClientInfo" signature="setClientInfo(java.lang.String,java.lang.String)" match="name">
+        <sink argpos="0,1" kind="configuration_setting_injection" resource="database"/>
+      </method>
+      <method name="setShardingKey" signature="setShardingKey(java.sql.ShardingKey)"></method>
+      <method name="setShardingKey_2" signature="setShardingKey(java.sql.ShardingKey,java.sql.ShardingKey)"></method>
+      <method name="setShardingKeyIfValid" signature="setShardingKeyIfValid(java.sql.ShardingKey, int)"><return type="boolean"/></method>
+      <method name="setShardingKeyIfValid_2" signature="setShardingKeyIfValid(java.sql.ShardingKey, java.sql.ShardingKey, int)"><return type="boolean"/></method>
+
+      <method name="getCatalog" signature="getCatalog()">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <sink kind="sensitive_info" resource="database" argpos="-1"/>
+      </method>
+      <method name="getClientInfo" signature="getClientInfo(java.lang.String)">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <sink kind="sensitive_info" resource="database" argpos="-1"/>
+      </method>
+      <method name="getMetadata" signature="getMetadata()">
+        <return type="java.sql.DatabaseMetaData"/>
+      </method>
+      <method name="getWarning" signature="getWarning()">
+        <return type="java.sql.SQLWarning"/>
+      </method>
+    </class>
+
+    <class name="java.sql.Statement" kind="interface" supertypes="java.lang.AutoCloseable">
+      <tags>jdbc, statement</tags>
+      <!-- execute SQL methods -->
+      <method name="addBatch" signature="addBatch(java.lang.String)">
+        <tags>write</tags>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="execute" signature="execute(java.lang.String)" match="name">
+        <tags>write</tags>
+        <return type="boolean"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="executeQuery" signature="executeQuery(java.lang.String)">
+        <tags>read</tags>
+        <return type="java.sql.ResultSet"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="executeUpdate" signature="executeUpdate(java.lang.String)" match="name">
+        <tags>write</tags>
+        <return type="int"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="executeLargeUpdate" signature="executeLargeUpdate(java.lang.String)" match="name">
+        <tags>write</tags>
+        <return type="long"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+
+      <method name="executeBatch" signature="executeBatch()" alias="executeLargeBatch"></method>
+
+      <!-- neutralization methods added in Java9 -->
+      <method name="enquoteIdentifier" signature="enquoteIdentifier(java.lang.String,boolean)">
+        <return type="java.lang.String"/>
+        <neutralization kind="sql_injection" argpos="-1" resource="database"/>
+      </method>
+      <method name="enquoteLiteral" signature="enquoteLiteral(java.lang.String)">
+        <return type="java.lang.String"/>
+        <neutralization kind="sql_injection" argpos="-1" resource="database"/>
+      </method>
+      <method name="enquoteNCharLiteral" signature="enquoteNCharLiteral(java.lang.String)">
+        <return type="java.lang.String"/>
+        <neutralization kind="sql_injection" argpos="-1" resource="database"/>
+      </method>
+      <method name="isSimpleIdentifier" signature="isSimpleIdentifier(java.lang.String)"><return type="boolean"/></method>
+
+      <method name="getConnection" signature="getConnection()"><return type="java.sql.Connection"/></method>
+      <method name="getResultSet" signature="getResultSet()"><return type="java.sql.ResultSet"/></method>
+      <method name="getGeneratedKeys" signature="getGeneratedKeys()"><return type="java.sql.ResultSet"/></method>
+      <method name="getWarnings" signature="getWarnings()"><return type="java.sql.SQLWarning"/></method>
+      <!-- Nothing to do with sql-i
+      <method name="setEscapeProcessing" signature="setEscapeProcessing(boolean)"></method>
+      -->
+    </class>
+
+    <class name="java.sql.PreparedStatement" kind="interface" supertypes="java.sql.Statement">
+      <tags>jdbc, statement</tags>
+      <method name="setString" signature="setString()" match="name"
+              alias="setArray, setAsciiStream, setBigDecimal, setBinaryStream, setBlob, setBoolean, setByte, setBytes, setCharacterStream, setNCharacterStream, setClob, setNClob, setDate, setTime, setTimestamp, setDouble, setFloat, setInt, setShort, setLong, setObject, setNString, setURL, setRef, setRowId, setSQLXML">
+        <tags>potentialPk:</tags>
+      </method>
+    </class>
+
+    <class name="java.sql.CallableStatement" kind="interface" supertypes="java.lang.PreparedStatement">
+      <tags>jdbc, statement</tags>
+    </class>
+
+    <class name="java.sql.ResultSet" kind="interface">
+      <tags>jdbc, cursor</tags>
+      <method name="getString" signature="getString(int)" match="name" alias="getNString">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getArray" signature="getArray(int)" match="name">
+        <return type="java.sql.Array"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getAsciiStream" signature="getAsciiStream(int)" match="name" alias="getBinaryStream">
+        <return type="java.io.InputStream"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getBigDecimal" signature="getBigDecimal(int)" match="name">
+        <return type="java.math.BigDecimal"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getBlob" signature="getBlob(int)" match="name">
+        <return type="java.sql.Blob"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getBoolean" signature="getBoolean(int)" match="name">
+        <return type="boolean"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getByte" signature="getByte(int)" match="name">
+        <return type="byte"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getBytes" signature="getBytes(int)" match="name">
+        <return type="byte[]"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getCharacterStream" signature="getCharacterStream(int)" match="name" alias="getNCharacterStream, getUnicodeStream">
+        <return type="java.io.Reader"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getClob" signature="getClob(int)" match="name" alias="getNClob">
+        <return type="java.sql.Clob"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getDate" signature="getDate(int)" match="name">
+        <return type="java.sql.Date"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getDouble" signature="getDouble(int)" match="name">
+        <return type="double"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getFloat" signature="getFloat(int)" match="name">
+        <return type="float"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getInt" signature="getInt(int)" match="name">
+        <return type="int"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getLong" signature="getLong(int)" match="name">
+        <return type="long"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getObject" signature="getObject(int)" match="name">
+        <return type="java.lang.Object"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getRef" signature="getRef(int)" match="name">
+        <return type="java.sql.Ref"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getRowId" signature="getRowId(int)" match="name">
+        <return type="java.sql.RowId"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getShort" signature="getShort(int)" match="name">
+        <return type="short"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getSQLXML" signature="getSQLXML(int)" match="name">
+        <return type="java.sql.SQLXML"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getTime" signature="getTime(int)" match="name">
+        <return type="java.sql.Time"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getTimestamp" signature="getTimestamp(int)" match="name">
+        <return type="java.sql.Timestamp"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="getURL" signature="getURL(int)" match="name">
+        <return type="java.net.URL"/>
+        <source argpos="-1" kind="database_input" resource="database"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+      <method name="wasNull" signature="wasNull()"><return type="boolean"/></method>
+
+      <method name="updateString" signature="updateString(int, java.lang.String)" match="name"
+              alias="updateArray, updateAsciiStream, updateBigDecimal, updateBinaryStream, updateBlob, updateBoolean, updateByte, updateBytes, updateCharacterStream, updateNCharacterStream, updateClob, updateNClob, updateDate, updateTime, updateTimestamp, updateDouble, updateFloat, updateInt, updateShort, updateLong, updateObject, updateNString, updateURL, updateRef, updateRowId, updateSQLXML">
+        <tags>jdbc, cursor_update, column:0, value:1</tags>
+        <propagate from="1" to="-2"/>
+      </method>
+
+      <method name="getMetadata" signature="getMetadata()"><return type="java.sql.ResultSetMetaData"/></method>
+      <method name="getStatement" signature="getStatement()"><return type="java.sql.Statement"/></method>
+
+      <method name="next" signature="next()" match="name" alias="previous">
+        <tags>jdbc, cursor_position, potential_infinite_loop_neutralizer</tags>
+        <return type="boolean" />
+        <propagate from="-2" to="-1"/>
+      </method>
+
+      <method name="absolute" signature="absolute(int)" alias="relative"></method>
+      <method name="first" signature="first()" alias="last, beforeFirst, afterLast, moveToCurrentRow, moveToInsertRow">
+        <tags>jdbc, cursor_position</tags>
+        <return type="boolean" />
+      </method>
+
+      <method name="insertRow" signature="insertRow()" alias="updateRow, deleteRow">
+        <tags>jdbc, write</tags>
+      </method>
+      <method name="refreshRow" signature="refreshRow()">
+        <tags>jdbc, read</tags>
+      </method>
+
+      <method name="findColumn" signature="findColumn(java.lang.String)"><return type="int"/></method>
+    </class>
+
+    <class name="javax.sql.CommonDataSource" kind="interface">
+      <method name="getLogWriter" signature="getLogWriter()"><return type="java.io.PrintWriter"/></method>
+      <method name="setLogWriter" signature="setLogWriter(java.io.PrintWriter)"/>
+      <method name="getParentLogger" signature="getParentLogger()"><return type="java.util.logging.Logger"/></method>
+      <method name="createShardingKeyBuilder​" signature="createShardingKeyBuilder​()"><return type="java.sql.ShardingKeyBuilder"/></method>
+    </class>
+
+    <class name="javax.sql.DataSource" kind="interface" supertypes="javax.sql.CommonDataSource">
+      <method name="getConnection" signature="getConnection()"><return type="java.sql.Connection"/></method>
+      <method name="getConnection_2" signature="getConnection(java.lang.String, java.lang.String)">
+        <tags>username:0, password:1</tags>
+        <return type="java.sql.Connection"/>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="database"/>
+      </method>
+      <method name="createConnectionBuilder" signature="createConnectionBuilder()">
+        <return type="java.sql.ConnectionBuilder"/>
+      </method>
+    </class>
+
+    <class name="javax.sql.PooledConnection" kind="interface">
+      <method name="getConnection" signature="getConnection()"><return type="java.sql.Connection"/></method>
+      <method name="close" signature="close()"/>
+    </class>
+
+    <class name="javax.sql.XAConnection" kind="interface" supertypes="javax.sql.PooledConnection"/>
+
+    <class name="javax.sql.ConnectionPoolDataSource" kind="interface" supertypes="javax.sql.CommonDataSource">
+      <method name="getPooledConnection" signature="getPooledConnection()"><return type="javax.sql.PooledConnection"/></method>
+      <method name="getPooledConnection_2" signature="getPooledConnection(java.lang.String, java.lang.String)">
+        <tags>username:0, password:1</tags>
+        <return type="javax.sql.PooledConnection"/>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="database"/>
+      </method>
+    </class>
+
+    <class name="javax.sql.XADataSource" kind="interface" supertypes="javax.sql.CommonDataSource">
+      <method name="getXAConnection" signature="getXAConnection()"><return type="javax.sql.XAConnection"/></method>
+      <method name="getXAConnection" signature="getXAConnection(java.lang.String, java.lang.String)">
+        <tags>username:0, password:1</tags>
+        <return type="javax.sql.XAConnection"/>
+        <sink kind="hardcoded_credentials" argpos="0,1" resource="database"/>
+      </method>
+    </class>
+
+    <class name="javax.sql.RowSet" kind="interface" supertypes="java.sql.ResultSet, java.lang.AutoCloseable, java.sql.Wrapper">
+      <tags>jdbc</tags>
+      <method name="execute" signature="execute()"></method>
+      <method name="getUsername" signature="getUsername()" alias="getPassword, getUrl">
+        <tags>sensitive_info</tags>
+        <sink kind="sensitive_info" argpos="-1" resource="database"/>
+      </method>
+      <method name="setCommand" signature="setCommand(java.lang.String)">
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="setUrl" signature="setUrl(java.lang.String)">
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="setUsername" signature="setUsername(java.lang.String)">
+        <tags>username:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setPassword" signature="setPassword(java.lang.String)">
+        <tags>password:0</tags>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="setEscapeProcessing" signature="setEscapeProcessing(boolean)"></method>
+
+      <method name="setArray" signature="setArray()" match="name"
+              alias="setAsciiStream, setBigDecimal, setBinaryStream, setBlob, setBoolean, setByte, setBytes, setCharacterStream, setNCharacterStream, setClob, setNClob, setDate, setTime, setTimestamp, setDouble, setFloat, setInt, setShort, setLong, setObject, setString, setNString, setURL, setRef, setRowId, setSQLXML">
+        <tags>potentialPk:</tags>
+      </method>
+    </class>
+
+    <class name="javax.sql.rowset.CachedRowSet" kind="interface" supertypes="javax.sql.RowSet">
+      <method name="acceptChanges" signature="acceptChanges()">
+        <tags>jdbc, write</tags>
+      </method>
+      <method name="acceptChanges" signature="acceptChanges(java.sql.Connection)">
+        <tags>jdbc, write</tags>
+      </method>
+      <method name="createCopy" signature="createCopy()" alias="createCopyNoConstraints, createCopySchema">
+        <return type="javax.sql.rowset.CachedRowSet"/>
+      </method>
+      <method name="createShared" signature="createShared()">
+        <return type="javax.sql.rowset.RowSet"/>
+      </method>
+      <method name="execute" signature="execute(java.sql.Connection)"></method>
+      <method name="getOriginal" signature="getOriginal()" alias="getOriginalRow">
+        <return type="java.sql.ResultSet"/>
+      </method>
+      <method name="nextPage" signature="nextPage()" alias="previousPage">
+        <tags>jdbc, cursor_position</tags>
+        <return type="boolean"/>
+      </method>
+      <method name="release" signature="release()"></method>
+      <method name="restoreOriginal" signature="restoreOriginal()"></method>
+      <method name="toCollection" signature="toCollection()" match="name">
+        <tags>jdbc, read</tags>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="undoDelete" signature="undoDelete()" alias="undoInsert, undoUpdate"></method>
+    </class>
+    <class name="javax.sql.rowset.WebRowSet" kind="interface" supertypes="javax.sql.CachedRowSet">
+      <method name="readXml" signature="readXml(java.io.Reader)"></method>
+      <method name="writeXml" signature="writeXml(java.io.Writer)"></method>
+      <method name="writeXml_2" signature="writeXml(java.sql.ResultSet, java.io.Writer)"></method>
+    </class>
+    <class name="javax.sql.rowset.FilteredRowSet" kind="interface" supertypes="javax.sql.CachedRowSet">
+      <method name="getFilter" signature="getFilter()"><return type="javax.sql.rowset.Predicate"/></method>
+      <method name="setFilter" signature="setFilter(javax.sql.rowset.Predicate)"></method>
+    </class>
+    <class name="javax.sql.rowset.JoinRowSet" kind="interface" supertypes="javax.sql.CachedRowSet"></class>
+    <class name="javax.sql.rowset.JdbcRowSet" kind="interface" supertypes="javax.sql.RowSet"></class>
+
+    <class name="com.sun.rowset.CachedRowSetImpl" supertypes="javax.sql.rowset.CachedRowSet"/>
+    <class name="com.sun.rowset.FilteredRowSetImpl" supertypes="com.sun.rowset.WebRowSetImpl"></class>
+    <class name="com.sun.rowset.JoinRowSetImpl" supertypes="com.sun.rowset.WebRowSetImpl, javax.sql.rowset.JoinRowSet"/>
+    <class name="com.sun.rowset.JdbcRowSetImpl" supertypes="javax.sql.rowset.JdbcRowSet">
+      <constructor name="JdbcRowSetImpl" signature="JdbcRowSetImpl(java.lang.String url, java.lang.String user, java.lang.String password)">
+        <tags>username:1, password:2</tags>
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+        <sink kind="hardcoded_credentials" argpos="1,2" resource="database"/>
+      </constructor>
+    </class>
+
+    <class name="javax.sql.rowset.RowSetFactory" kind="interface">
+      <method name="createCachedRowSet" signature="createCachedRowSet()">
+        <return type="javax.sql.rowset.CachedRowSet"/>
+      </method>
+      <method name="createFilteredRowSet" signature="createFilteredRowSet()">
+        <return type="javax.sql.rowset.FilteredRowSet"/>
+      </method>
+      <method name="createJdbcRowSet" signature="createJdbcRowSet()">
+        <return type="javax.sql.rowset.JdbcRowSet"/>
+      </method>
+      <method name="createJoinRowSet" signature="createJoinRowSet()">
+        <return type="javax.sql.rowset.JoinRowSet"/>
+      </method>
+      <method name="createWebRowSet" signature="createWebRowSet()">
+        <return type="javax.sql.rowset.WebRowSet"/>
+      </method>
+    </class>
+
+    <class name="javax.sql.rowset.RowSetProvider">
+      <method name="newFactory" signature="newFactory()">
+        <return type="javax.sql.rowset.RowSetFactory"/>
+      </method>
+      <method name="newFactory_2" signature="newFactory(java.lang.String, java.lang.ClassLoader)">
+        <return type="javax.sql.rowset.RowSetFactory"/>
+        <sink kind="resource_manipulation" argpos="0" resource="database"/>
+      </method>
+    </class>
+
+    <class name="java.sql.ShardingKey" kind="interface"></class>
+    <class name="java.sql.ShardingKeyBuilder" kind="interface">
+      <method name="build" signature="build()"><return type="java.sql.ShardingKey"/></method>
+      <method name="subkey" signature="subkey(java.lang.Object, java.sql.SQLType)"><return type="@self"/></method>
+    </class>
+
+    <class name="java.sql.ConnectionBuilder">
+      <method name="build" signature="build()"><return type="java.sql.Connection"/></method>
+      <method name="user" signature="user(java.lang.String)">
+        <tags>username:0</tags>
+        <return type="@self"/>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="password" signature="password(java.lang.String)">
+        <tags>password:0</tags>
+        <return type="@self"/>
+        <sink kind="hardcoded_credentials" argpos="0" resource="database"/>
+      </method>
+      <method name="shardingKey" signature="shardingKey(java.sql.ShardingKey)" alias="superShardingKey​">
+        <return type="@self"/>
+      </method>
+    </class>
+
+  </module>
+
+  <!-- JNDI / LDAP -->
+  <module name="javax.naming" standard="JNDI">
+    <description url="https://docs.oracle.com/javase/tutorial/jndi/overview/index.html">JNDI - Java Naming and Directory Interface</description>
+
+    <class name="javax.naming.ldap.LdapName">
+      <constructor name="LdapName" signature="LdapName(java.lang.String)">
+        <!--sink argpos="0" kind="ldap_injection" resource="other"/-->
+      </constructor>
+    </class>
+
+    <class name="javax.naming.Context" kind="interface">
+      <method name="lookup" signature="lookup(java.lang.String)" match="name">
+        <sink argpos="0" kind="ldap_injection" resource="other"/>
+        <sink argpos="0" kind="connection_string_injection" resource="other"/>
+      </method>
+      <method name="bind" signature="bind(java.lang.String, java.lang.Object)" match="name">
+        <tags>stateChange</tags>
+        <sink argpos="0" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="rebind" signature="rebind(java.lang.String, java.lang.Object)" match="name">
+        <tags>stateChange</tags>
+        <sink argpos="0" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="unbind" signature="rebind(java.lang.String, java.lang.Object)" match="name">
+        <tags>stateChange</tags>
+        <sink argpos="0" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="rename" signature="rebind(java.lang.String, java.lang.String)" match="name">
+        <tags>stateChange</tags>
+        <sink argpos="0,1" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="list" signature="list(java.lang.String)" match="name">
+        <sink argpos="0" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="destroySubcontext" signature="destroySubcontext(java.lang.String)" match="name">
+        <tags>stateChange</tags>
+        <sink argpos="0" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="createSubcontext" signature="createSubcontext(java.lang.String)" match="name">
+        <tags>stateChange</tags>
+        <sink argpos="0" kind="ldap_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="javax.naming.directory.DirContext" kind="interface" supertypes="javax.naming.Context">
+      <method name="getAttributes" signature="getAttributes(java.lang.String)" match="name">
+        <sink argpos="0" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="modifyAttributes" signature="modifyAttributes(java.lang.String)" match="name">
+        <tags>stateChange</tags>
+        <sink argpos="0" kind="ldap_injection" resource="other"/>
+      </method>
+
+      <method name="search" signature="search(javax.naming.Name, javax.naming.directory.Attributes)" match="numargs">
+        <sink argpos="0" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="search_2" signature="search(javax.naming.Name, java.lang.String, javax.naming.directory.SearchControls)" match="numargs">
+        <sink argpos="0,1" kind="ldap_injection" resource="other"/>
+      </method>
+      <method name="search_3" signature="search(javax.naming.Name, java.lang.String, java.lang.Object[], javax.naming.directory.SearchControls)" match="numargs">
+        <sink argpos="0,1" kind="ldap_injection" resource="other"/>
+      </method>
+    </class>
+
+    <class name="javax.naming.directory.InitialDirContext" supertypes="javax.naming.directory.DirContext">
+    </class>
+
+    <class name="javax.naming.ldap.LdapContext" kind="interface" supertypes="javax.naming.directory.DirContext">
+    </class>
+
+    <class name="javax.naming.ldap.InitialLdapContext" supertypes="javax.naming.ldap.LdapContext">
+    </class>
+
+    <class name="javax.naming.event.EventDirContext" kind="interface" supertypes="javax.naming.directory.DirContext"></class>
+
+    <class name="com.sun.jndi.ldap.LdapCtx" supertypes="javax.naming.ldap.LdapContext,javax.naming.event.EventDirContext"></class>
+  </module>
+
+  <!-- JPA -->
+  <module name="javax.persistence" standard="JPA">
+    <description url="https://docs.oracle.com/javaee/7/api/javax/persistence/package-summary.html">Java Persistence API</description>
+
+    <!-- entity - DB mapping -->
+    <annotation name="javax.persistence.Access">
+      <field name="value" type="javax.persistence.AccessType"></field>
+    </annotation>
+    <annotation name="javax.persistence.Basic">
+      <field name="fetch" type="javax.persistence.FetchType"></field>
+      <field name="optional" type="boolean"></field>
+    </annotation>
+    <annotation name="javax.persistence.Column">
+      <field name="name" type="java.lang.String"><tags>orm:columnName</tags></field>
+      <field name="columnDefinition" type="java.lang.String"></field>
+      <field name="length" type="int" alias="precision, scale"></field>
+      <field name="insertable" type="boolean" alias="nullable, unique, updatable"></field>
+      <field name="table" type="java.lang.String"><tags>orm:tableName</tags></field>
+    </annotation>
+    <annotation name="javax.persistence.Enumerated">
+      <field name="value" type="javax.persistence.EnumType"/>
+    </annotation>
+    <annotation name="javax.persistence.Entity">
+      <field name="name" type="java.lang.String"><tags>orm:entityName</tags></field>
+    </annotation>
+    <annotation name="javax.persistence.ForeignKey">
+      <tags>orm:foreignKey</tags>
+      <field name="foreignKeyDefinition" type="java.lang.String"></field>
+      <field name="name" type="java.lang.String"><tags>orm:foreignKeyName</tags></field>
+      <field name="value" type="javax.persistence.ConstraintMode"></field>
+    </annotation>
+    <annotation name="javax.persistence.GeneratedValue">
+      <field name="generator" type="java.lang.String"></field>
+      <field name="strategy" type="javax.persistence.GenerationType"></field>
+    </annotation>
+    <annotation name="javax.persistence.Id"><tags>orm:primaryKey, potentialPk:</tags></annotation>
+    <annotation name="javax.persistence.IdClass"><field name="value" type="java.lang.Class"/></annotation>
+    <annotation name="javax.persistence.Index">
+      <field name="columnList" type="java.lang.String"><tags>orm:indexColumns</tags></field>
+      <field name="name" type="java.lang.String"><tags>orm:indexName</tags></field>
+      <field name="unique" type="boolean"></field>
+    </annotation>
+    <annotation name="javax.persistence.Lob"></annotation>
+    <annotation name="javax.persistence.MapKey">
+      <field name="name" type="java.lang.String"></field>
+    </annotation>
+    <annotation name="javax.persistence.OrderBy">
+      <field name="value" type="java.lang.String"/>
+    </annotation>
+    <annotation name="javax.persistence.OrderColumn">
+      <field name="name" type="java.lang.String"><tags>orm:columnName</tags></field>
+      <field name="columnDefinition" type="java.lang.String"></field>
+      <field name="insertable" type="boolean" alias="nullable, updatable"></field>
+    </annotation>
+    <annotation name="javax.persistence.Table">
+      <field name="name" type="java.lang.String"><tags>orm:tableName</tags></field>
+      <field name="indexes" type="javax.persistence.Index[]"><tags>orm:index</tags></field>
+      <field name="catalog" type="java.lang.String"><tags>orm:catalog</tags></field>
+      <field name="schema" type="java.lang.String"><tags>orm:schema</tags></field>
+      <field name="uniqueConstraints" type="javax.persistence.UniqueConstraint[]"><tags>orm:constraint</tags></field>
+    </annotation>
+    <annotation name="javax.persistence.SecondaryTables">
+      <field name="value" type="javax.persistence.SecondaryTable[]"></field>
+    </annotation>
+    <annotation name="javax.persistence.SecondaryTable">
+      <field name="name" type="java.lang.String"><tags>orm:tableName</tags></field>
+      <field name="foreignKey" type="javax.persistence.ForeignKey"><tags>orm:foreignKey</tags></field>
+      <field name="indexes" type="javax.persistence.Index[]"><tags>orm:index</tags></field>
+      <field name="pkJoinColumns" type="javax.persistence.PrimaryKeyJoinColumn[]"></field>
+      <field name="catalog" type="java.lang.String"><tags>orm:catalog</tags></field>
+      <field name="schema" type="java.lang.String"><tags>orm:schema</tags></field>
+      <field name="uniqueConstraints" type="javax.persistence.UniqueConstraint[]"><tags>orm:constraint</tags></field>
+    </annotation>
+    <annotation name="javax.persistence.Transient"></annotation>
+    <annotation name="javax.persistence.UniqueConstraint">
+      <tags>orm:constraint, orm:constraintType:unique</tags>
+      <field name="name" type="java.lang.String"><tags>orm:constraintName</tags></field>
+      <field name="columnNames" type="java.lang.String[]"><tags>orm:constraintColumns</tags></field>
+    </annotation>
+    <annotation name="javax.persistence.Version"></annotation>
+
+    <!-- mapped queries -->
+    <annotation name="javax.persistence.NamedNativeQueries">
+      <field name="value" type="javax.persistence.NamedNativeQuery[]"/>
+    </annotation>
+    <annotation name="javax.persistence.NamedNativeQuery">
+      <tags>orm:queryType:sql</tags>
+      <field name="name" type="java.lang.String"><tags>orm:queryName</tags></field>
+      <field name="query" type="java.lang.String"><tags>orm:queryCode</tags></field>
+      <field name="hints" type="javax.persistence.QueryHint[]"></field>
+      <field name="resultClass" type="java.lang.Class"></field>
+      <field name="resultSetMapping" type="java.lang.String"></field>
+    </annotation>
+    <annotation name="javax.persistence.NamedQueries">
+      <field name="value" type="javax.persistence.NamedQuery[]"/>
+    </annotation>
+    <annotation name="javax.persistence.NamedQuery">
+      <tags>orm:queryType:jpql</tags>
+      <field name="name" type="java.lang.String"><tags>orm:queryName</tags></field>
+      <field name="query" type="java.lang.String"><tags>orm:queryCode</tags></field>
+      <field name="hints" type="javax.persistence.QueryHint[]"></field>
+      <field name="lockMode" type="javax.persistence.LockModeType"></field>
+    </annotation>
+    <annotation name="javax.persistence.NamedStoredProcedureQueries">
+      <field name="value" type="javax.persistence.NamedStoredProcedureQuery[]"/>
+    </annotation>
+    <annotation name="javax.persistence.NamedStoredProcedureQuery">
+      <tags>orm:queryType:storedProcedure</tags>
+      <field name="name" type="java.lang.String"><tags>orm:queryName</tags></field>
+      <field name="procedureName" type="java.lang.String"><tags>orm:queryCode</tags></field>
+      <field name="hints" type="javax.persistence.QueryHint[]"></field>
+      <field name="parameters" type="javax.persistence.StoredProcedureParameter[]"></field>
+      <field name="resultClass" type="java.lang.Class"></field>
+      <field name="resultSetMappings" type="java.lang.String[]"></field>
+    </annotation>
+
+    <!-- association mapping -->
+    <annotation name="javax.persistence.Embeddable"></annotation>
+    <annotation name="javax.persistence.Embedded"></annotation>
+    <annotation name="javax.persistence.EmbeddedId"><tags>orm:primaryKey, potentialPk:</tags></annotation>
+    <annotation name="javax.persistence.OneToOne">
+      <field name="cascade" type="javax.persistence.CascadeType[]"></field>
+      <field name="fetch" type="javax.persistence.FetchType"></field>
+      <field name="mappedBy" type="java.lang.String"><tags>orm:relationOwner</tags></field>
+      <field name="optional" type="boolean"></field>
+      <field name="orphanRemoval" type="boolean"></field>
+      <field name="targetEntity" type="java.lang.Class"></field>
+    </annotation>
+    <annotation name="javax.persistence.ManyToOne">
+      <field name="cascade" type="javax.persistence.CascadeType[]"></field>
+      <field name="fetch" type="javax.persistence.FetchType"></field>
+      <field name="optional" type="boolean"></field>
+      <field name="targetEntity" type="java.lang.Class"></field>
+    </annotation>
+    <annotation name="javax.persistence.OneToMany">
+      <field name="cascade" type="javax.persistence.CascadeType[]"></field>
+      <field name="fetch" type="javax.persistence.FetchType"></field>
+      <field name="mappedBy" type="java.lang.String"><tags>orm:relationOwner</tags></field>
+      <field name="orphanRemoval" type="boolean"></field>
+      <field name="targetEntity" type="java.lang.Class"></field>
+    </annotation>
+    <annotation name="javax.persistence.ManyToMany">
+      <field name="cascade" type="javax.persistence.CascadeType[]"></field>
+      <field name="fetch" type="javax.persistence.FetchType"></field>
+      <field name="mappedBy" type="java.lang.String"><tags>orm:relationOwner</tags></field>
+      <field name="targetEntity" type="java.lang.Class"></field>
+    </annotation>
+    <annotation name="javax.persistence.PrimaryKeyJoinColumn">
+      <field name="name" type="java.lang.String"><tags>orm:columnName</tags></field>
+      <field name="columnDefinition" type="java.lang.String"></field>
+      <field name="foreignKey" type="javax.persistence.ForeignKey"><tags>orm:foreignKey</tags></field>
+      <field name="referencedColumnName" type="java.lang.String"></field>
+    </annotation>
+    <annotation name="javax.persistence.JoinColumns">
+      <field name="value" type="javax.persistence.JoinColumn[]"></field>
+    </annotation>
+    <annotation name="javax.persistence.JoinColumn">
+      <field name="name" type="java.lang.String"><tags>orm:columnName</tags></field>
+      <field name="columnDefinition" type="java.lang.String"></field>
+      <field name="foreignKey" type="javax.persistence.ForeignKey"><tags>orm:foreignKey</tags></field>
+      <field name="referencedColumnName" type="java.lang.String"></field>
+      <field name="insertable" type="boolean" alias="nullable, unique, updatable"></field>
+      <field name="table" type="java.lang.String"><tags>orm:tableName</tags></field>
+    </annotation>
+    <annotation name="javax.persistence.JoinTable">
+      <field name="name" type="java.lang.String"><tags>orm:tableName</tags></field>
+      <field name="foreignKey" type="javax.persistence.ForeignKey"><tags>orm:foreignKey</tags></field>
+      <field name="inverseForeignKey" type="javax.persistence.ForeignKey"><tags>orm:foreignKey</tags></field>
+      <field name="joinColumns" type="javax.persistence.JoinColumn[]"></field>
+      <field name="inverseJoinColumns" type="javax.persistence.JoinColumn[]"></field>
+      <field name="indexes" type="javax.persistence.Index[]"><tags>orm:index</tags></field>
+      <field name="catalog" type="java.lang.String"><tags>orm:catalog</tags></field>
+      <field name="schema" type="java.lang.String"><tags>orm:schema</tags></field>
+      <field name="uniqueConstraints" type="javax.persistence.UniqueConstraint[]"><tags>orm:constraint</tags></field>
+    </annotation>
+    <annotation name="javax.persistence.MapsId"><field name="value" type="java.lang.String"></field></annotation>
+
+    <!-- Inheritance mapping -->
+    <annotation name="javax.persistence.Inheritance">
+      <field name="strategy" type="javax.persistence.InheritanceType"></field>
+    </annotation>
+    <annotation name="javax.persistence.DiscriminatorColumn">
+      <field name="columnDefinition" type="java.lang.String"></field>
+      <field name="distriminatorType" type="javax.persistence.DiscriminatorType"></field>
+      <field name="length" type="int"></field>
+      <field name="name" type="java.lang.String"><tags>orm:columnName</tags></field>
+    </annotation>
+    <annotation name="javax.persistence.DiscriminatorValue">
+      <field name="value" type="java.lang.String"></field>
+    </annotation>
+
+    <!-- callbacks -->
+    <annotation name="javax.persistence.PrePersist"></annotation>
+    <annotation name="javax.persistence.PostPersist"></annotation>
+    <annotation name="javax.persistence.PreUpdate"></annotation>
+    <annotation name="javax.persistence.PostUpdate"></annotation>
+    <annotation name="javax.persistence.PreRemove"></annotation>
+    <annotation name="javax.persistence.PostRemove"></annotation>
+    <annotation name="javax.persistence.PostLoad"></annotation>
+
+    <class name="javax.persistence.Persistence">
+      <method name="createEntityManagerFactory" signature="createEntityManagerFactory(java.lang.String)" match="name">
+        <return type="javax.persistence.EntityManagerFactory"/>
+      </method>
+    </class>
+
+    <class name="javax.persistence.EntityManagerFactory" kind="interface">
+      <method name="createEntityManager" signature="createEntityManager()">
+        <return type="javax.persistence.EntityManager"/>
+      </method>
+      <method name="createEntityManager_1" signature="createEntityManager(java.util.Map)">
+        <return type="javax.persistence.EntityManager"/>
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="createEntityManager_2" signature="createEntityManager(javax.persistence.SynchronizationType, java.util.Map)">
+        <return type="javax.persistence.EntityManager"/>
+        <sink argpos="1" kind="connection_string_injection" resource="database"/>
+      </method>
+      <method name="addNamedEntityGraph" signature="addNamedEntityGraph(java.lang.String, javax.persistence.EntityGraph)"></method>
+      <method name="addNamedQuery" signature="addNamedQuery(java.lang.String, javax.persistence.Query)"></method>
+      <method name="close" signature="close()"></method>
+      <method name="getCriteriaBuilder" signature="getCriteriaBuilder()">
+        <return type="javax.persistence.criteria.CriteriaBuilder"/>
+      </method>
+      <method name="getMetamodel" signature="getMetamodel()"><return type="javax.persistence.Metamodel"/></method>
+    </class>
+
+    <class name="javax.persistence.EntityManager" kind="interface">
+      <method name="clear" signature="clear()"></method>
+      <method name="close" signature="close()"></method>
+      <method name="flush" signature="flush()"/>
+
+      <method name="contains" signature="contains(java.lang.Object)"><return type="boolean"/></method>
+      <method name="createEntityGraph" signature="createEntityGraph(java.lang.String)" match="name"><return type="javax.persistence.EntityGraph"/></method>
+
+      <method name="createNamedQuery" signature="createNamedQuery(java.lang.String)">
+        <return type="javax.persistence.Query"/>
+        <!-- if untrusted input could choose the name of the named query to execute, this is considered SQLi -->
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="createNamedQuery_2" signature="createNamedQuery(java.lang.String, java.lang.Class)">
+        <return type="javax.persistence.TypedQuery"/>
+        <!-- if untrusted input could choose the name of the named query to execute, this is considered SQLi -->
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="createNamedStoredProcedureQuery" signature="createNamedStoredProcedureQuery(java.lang.String)">
+        <return type="javax.persistence.StoredProcedureQuery"/>
+        <!-- if untrusted input could choose the name of the named query to execute, this is considered SQLi -->
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+
+      <method name="createNativeQuery" signature="createNativeQuery(java.lang.String)" match="name">
+        <return type="javax.persistence.Query"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="createStoredProcedureQuery" signature="createStoredProcedureQuery(java.lang.String)" match="name">
+        <return type="javax.persistence.StoredProcedureQuery"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="createQuery" signature="createQuery(java.lang.String)" match="fullsignature">
+        <return type="javax.persistence.Query"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="createQuery" signature="createQuery(java.lang.String, java.lang.Class)" match="fullsignature">
+        <return type="javax.persistence.TypedQuery"/>
+        <sink argpos="0" kind="sql_injection" resource="database"/>
+      </method>
+      <method name="createQuery" signature="createQuery(javax.persistence.criteria.CriteriaDelete)" match="fullsignature">
+        <return type="javax.persistence.Query"/>
+      </method>
+      <method name="createQuery" signature="createQuery(javax.persistence.criteria.CriteriaUpdate)" match="fullsignature">
+        <return type="javax.persistence.Query"/>
+      </method>
+      <method name="createQuery" signature="createQuery(javax.persistence.criteria.CriteriaQuery)" match="fullsignature">
+        <return type="javax.persistence.TypedQuery"/>
+      </method>
+
+      <method name="find" signature="find(java.lang.Class, java.lang.Object)" match="name">
+        <return type="java.lang.Object"/>
+        <source kind="database_input" argpos="-1" resource="database"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="persist" signature="persist(java.lang.Object)">
+        <tags>write</tags>
+      </method>
+      <method name="merge" signature="merge(java.lang.Object)">
+        <tags>write</tags>
+        <return type="java.lang.Object"/>
+        <propagate from="0" to="-1"/>
+      </method>
+      <method name="remove" signature="remove(java.lang.Object)">
+        <tags>write</tags>
+      </method>
+
+      <method name="getCriterialBuilder" signature="getCriterialBuilder()">
+        <return type="javax.persistence.criteria.CriteriaBuilder"/>
+      </method>
+      <method name="getEntityGraph" signature="getEntityGraph(java.lang.String)">
+        <return type="javax.persistence.EntityGraph"/>
+      </method>
+      <method name="getEntityGraphs" signature="getEntityGraphs(java.lang.Class)">
+        <return type="java.util.List" elementType="javax.persistence.EntityGraph"/>
+      </method>
+      <method name="getEntityManagerFactory" signature="getEntityManagerFactory()"><return type="javax.persistence.EntityManagerFactory"/></method>
+      <method name="getReference" signature="getReference(java.lang.Class, java.lang.Object)">
+        <tags>read</tags>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+      <method name="refresh" signature="refresh(java.lang.Object)" match="name">
+        <tags>read</tags>
+        <source argpos="-1" kind="database_input" resource="database"/>
+      </method>
+    </class>
+
+    <class name="javax.persistence.Query" kind="interface">
+      <method name="executeUpdate" signature="executeUpdate()"><tags>write</tags><return type="int"/></method>
+      <method name="getParameter" signature="getParameter(int)" match="name"><return type="javax.persistence.Parameter"/></method>
+      <method name="getParameters" signature="getParameters()"><return type="java.util.Set" elementType="javax.persistence.Parameter"/></method>
+      <method name="getParameterValue" signature="getParameterValue(int)" match="name"><return type="java.lang.Object"/></method>
+      <method name="getResultList" signature="getResultList()">
+        <tags>read</tags>
+        <return type="java.util.List"/>
+        <source kind="database_input" argpos="-1" resource="database"/>
+      </method>
+      <method name="getSingleResult" signature="getSingleResult()">
+        <tags>read</tags>
+        <return type="java.lang.Object"/>
+        <source kind="database_input" argpos="-1" resource="database"/>
+      </method>
+      <method name="setFirstResult" signature="setFirstResult(int)"><return type="@self"/></method>
+      <method name="setFlushMode" signature="setFlushMode(javax.persistence.FlushModeType)"><return type="@self"/></method>
+      <method name="setHint" signature="setHint(java.lang.String, java.lang.Object)"><return type="@self"/></method>
+      <method name="setLockMode" signature="setLockMode(javax.persistence.LockModeType)"><return type="@self"/></method>
+      <method name="setMaxResults" signature="setMaxResults(int)"><return type="@self"/></method>
+      <method name="setParameter" signature="setParameter(int, java.lang.Object)" match="name"><return type="@self"/></method>
+      <method name="unwrap" signature="unwrap(java.lang.Class)">
+        <return type="java.lang.Object"/>
+        <propagate from="-2" to="-1"/>
+      </method>
+    </class>
+
+    <class name="javax.persistence.TypedQuery" kind="interface" supertypes="javax.persistence.Query"></class>
+    <class name="javax.persistence.StoredProcedureQuery" kind="interface" supertypes="javax.persistence.Query">
+      <method name="execute" signature="execute()"><return type="boolean"/></method>
+      <method name="getOutputParameterValue" signature="getOutputParameterValue(int)" match="numargs">
+        <tags>read</tags>
+        <return type="java.lang.Object"/>
+        <source kind="database_input" argpos="-1" resource="database"/>
+      </method>
+      <method name="getUpdateCount" signature="getUpdateCount()"><return type="int"/></method>
+      <method name="hasMoreResults" signature="hasMoreResults()"><return type="boolean"/></method>
+      <method name="registerStoredProcedureParameter" signature="registerStoredProcedureParameter(int, java.lang.Class, javax.persistence.ParameterMode)">
+        <return type="@self"/>
+      </method>
+    </class>
+
+    <class name="javax.persistence.criteria.CriteriaBuilder" kind="interface">
+      <method name="abs" signature="abs(javax.persistence.criteria.Expression)" alias="avg">
+        <return type="javax.persistence.criteria.Expression"/>
+      </method>
+      <method name="all" signature="all(javax.persistence.criteria.Subquery)" alias="any">
+        <return type="javax.persistence.criteria.Expression"/>
+      </method>
+      <method name="and" signature="and(javax.persistence.criteria.Expression, javax.persistence.criteria.Expression)">
+        <return type="javax.persistence.criteria.Predicate"/>
+      </method>
+      <method name="and" signature="and(javax.persistence.criteria.Predicate...)">
+        <return type="javax.persistence.criteria.Predicate"/>
+      </method>
+      <method name="array" signature="array(javax.persistence.criteria.Selection...)">
+        <return type="javax.persistence.criteria.CompoundSelection"/>
+      </method>
+      <method name="asc" signature="asc(javax.persistence.criteria.Expression)">
+        <return type="javax.persistence.criteria.Order"/>
+      </method>
+      <method name="between" signature="between(javax.persistence.criteria.Expression, java.lang.Object, java.lang.Object)">
+        <return type="javax.persistence.criteria.Predicate"/>
+      </method>
+      <method name="coalesce" signature="coalesce(javax.persistence.criteria.Expression, javax.persistence.criteria.Expression)">
+        <return type="javax.persistence.criteria.Expression"/>
+      </method>
+      <method name="concat" signature="concat(javax.persistence.criteria.Expression, javax.persistence.criteria.Expression)">
+
+      </method>
+    </class> 
+
+  </module>
+
+  <module name="javax.mail" standard="JavaMail">
+    <description url="https://javaee.github.io/javamail/docs/api/">JavaMail API</description>
+
+    <class name="javax.mail.Part" kind="interface">
+    </class>
+
+    <class name="javax.mail.Message" kind="abstract_class" supertypes="javax.mail.Part">
+      <method name="setSubject" signature="setSubject(java.lang.String)" match="name">
+        <sink argpos="0" kind="mail_command_injection" resource="network"/>
+      </method>
+    </class>
+
+    <class name="javax.mail.internet.MimeMessage" supertypes="javax.mail.Message">
+    </class>
+
+    <class name="com.sun.mail.smtp.SMTPMessage" supertypes="javax.mail.internet.MimeMessage">
+    </class>
+
+    <class name="javax.mail.Transport" kind="abstract_class">
+      <method name="send" signature="send(javax.mail.Message,java.lang.String,java.lang.String)">
+        <tags>write, mail, username:1, password:2</tags>
+        <sink argpos="1,2" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="send_2" signature="send(javax.mail.Message,javax.mail.Address[],java.lang.String,java.lang.String)">
+        <tags>write, mail, username:2, password:3</tags>
+        <sink argpos="2,3" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+
+    <class name="com.sun.mail.smtp.SMTPTransport" supertypes="javax.mail.Transport">
+      <method name="sendCommand" signature="sendCommand(java.lang.String)" alias="simpleCommand,issueCommand" match="name">
+        <sink argpos="0" kind="mail_command_injection" resource="network"/>
+      </method>
+    </class>
+
+    <class name="com.sun.mail.smtp.SMTPSSLTransport" supertypes="com.sun.mail.smtp.SMTPTransport">
+    </class>
+
+    <class name="com.sun.mail.iap.Protocol">
+      <method name="command" signature="command(java.lang.String,com.sun.mail.iap.Argument)" alias="simpleCommand,writeCommand" match="name">
+        <sink argpos="0" kind="mail_command_injection" resource="network"/>
+      </method>
+    </class>
+
+    <class name="com.sun.mail.imap.protocol.IMAPProtocol" supertypes="com.sun.mail.iap.Protocol">
+      <method name="login" signature="login(java.lang.String,java.lang.String)" alias="proxyauth" match="name">
+        <sink argpos="0,1" kind="mail_command_injection" resource="network"/>
+      </method>
+      <method name="enable" signature="enable(java.lang.String)" alias="enable,getQuota" match="name">
+        <sink argpos="0" kind="mail_command_injection" resource="network"/>
+      </method>
+      <method name="status" signature="status(java.lang.String,java.lang.String[])" match="name">
+        <sink argpos="1" kind="mail_command_injection" resource="network"/>
+      </method>
+      <method name="list" signature="list(java.lang.String,java.lang.String[])" alias="lsub" match="name">
+        <sink argpos="0,1" kind="mail_command_injection" resource="network"/>
+      </method>
+      <method name="fetchBody" signature="fetchBody(int,java.lang.String[])" alias="peekBody,fetchRFC822" match="name">
+        <sink argpos="1" kind="mail_command_injection" resource="network"/>
+      </method>
+      <method name="fetch" signature="fetch(int,java.lang.lang.String)">
+        <sink argpos="1" kind="mail_command_injection" resource="network"/>
+      </method>
+      <method name="fetch_2" signature="fetch(int,int,java.lang.lang.String)">
+        <sink argpos="2" kind="mail_command_injection" resource="network"/>
+      </method>
+    </class>
+  </module>
+
+  <!-- FACES -->
+  <module name="javax.faces" standard="JSF">
+    <description url="https://javaee.github.io/javaserverfaces-spec/">JavaServer Faces (JSF)</description>
+
+    <class name="javax.faces.context.FacesContext">
+      <method name="getCurrentInstance" signature="getCurrentInstance()">
+        <return type="javax.faces.context.FacesContext"/>
+      </method>
+      <method name="getApplication" signature="getApplication()">
+        <return type="javax.faces.application.Application"/>
+      </method>
+      <method name="getELContext" signature="getELContext()" >
+        <return type="javax.el.ELContext" />
+      </method>
+      <method name="getExternalContext" signature="getExternalContext()">
+        <return type="javax.faces.context.ExternalContext"/>
+      </method>
+      <method name="getPartialViewContext" signature="getPartialViewContext" >
+        <return type="javax.faces.context.PartialViewContext" />
+      </method>
+      <method name="getResponseStream" signature="getResponseStream()" >
+        <return type="javax.faces.context.ResponseStream"/>
+        <source argpos="-1" kind="user_output" resource="web"/>
+      </method>
+      <method name="getResponseWriter" signature="getResponseWriter()" >
+        <return type="javax.faces.context.ResponseWriter"/>
+        <source argpos="-1" kind="user_output" resource="web"/>
+        <sink argpos="-2" kind="password_in_comment" resource="web"/>
+      </method>
+    </class>
+    <class name="javax.faces.context.FacesContextFactory" >
+      <method name="getFacesContext" signature="getFacesContext()" >
+        <return type="javax.faces.context.FacesContext" />
+      </method>
+      <method name="getWrapped" signature="getWrapped()" >
+        <return type="javax.faces.context.FacesContextFactory" />
+      </method>
+    </class>
+
+    <class name="javax.faces.context.ResponseStream" supertypes="java.io.OutputStream" />
+    <class name="javax.faces.context.ResponseWriter" supertypes="java.io.Writer" />
+
+    <class name="javax.faces.application.Application" kind="abstract_class">
+      <method name="getExpressionFactory" signature="getExpressionFactory()">
+        <return type="javax.el.ExpressionFactory"/>
+      </method>
+    </class>
+    <class name="javax.faces.application.ApplicationFactory" >
+      <method name="getApplication" signature="getApplication()">
+        <return type="javax.faces.application.Application"/>
+      </method>
+      <method name="getWrapped" signature="getWrapped()" >
+        <return type="javax.faces.application.ApplicationFactory" />
+      </method>
+    </class>
+
+    <class name="javax.faces.component.visit.VisitContext" >
+      <method name="createVisitContext" signature="createVisitContext()" >
+        <return type="javax.faces.component.visit.VisitContext" />
+      </method>
+      <method name="getFacesContext" signature="getFacesContext()" >
+        <return type="javax.faces.context.FacesContext" />
+      </method>
+    </class>
+    <class name="javax.faces.component.visit.VisitContextFactory" >
+      <method name="getVisitContext" signature="getVisitContext()">
+        <return type="javax.faces.component.visit.VisitContext"/>
+      </method>
+      <method name="getWrapped" signature="getWrapped()" >
+        <return type="javax.faces.component.visit.VisitContextFactory" />
+      </method>
+    </class>
+
+    <class name="javax.faces.context.ExternalContext">
+      <method name="addResponseCookie" signature="addResponseCookie(java.lang.String,java.lang.String,java.util.Map)" >
+        <tags>cookie.create,cookie.name:0,cookie.value:1,cookie.options:2</tags>
+        <sink argpos="1" kind="cookie_plaintext_storage" resource="web" />
+        <sink argpos="1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="addResponseHeader" signature="addResponseHeader(java.lang.String,java.lang.String)" >
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="0,1" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="dispatch" signature="dispatch(java.lang.String)">
+        <!-- This is really a RequestDispatcher.forward()  -->
+        <sink argpos="0" kind="file_disclosure" resource="web"/>
+        <sink argpos="0" kind="open_redirect" resource="web"/>
+        <sink kind="execution_after_redirect" argpos="-1" resource="web"/>
+      </method>
+      <method name="getClientWindow" signature="getClientWindow()" >
+        <return type="javax.faces.lifecycle.ClientWindow" />
+      </method>
+      <method name="getContext" signature="getContext()">
+        <return type="javax.faces.context.FacesContext"/>
+      </method>
+      <method name="getRequestScheme" signature="getRequestScheme()" >
+        <return type="java.lang.String" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestServerName" signature="getRequestServerName()" >
+        <return type="java.lang.String" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestServerPort" signature="getRequestServerPort()" >
+        <return type="int" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestContextPath" signature="getRequestContextPath()" >
+        <return type="java.lang.String" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestCookieMap" signature="getRequestCookieMap()" >
+        <return type="java.util.Map" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestHeaderMap" signature="getRequestHeaderMap()" >
+        <return type="java.util.Map" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestHeaderValuesMap" signature="getRequestHeaderValuesMap()" >
+        <return type="java.util.Map" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestLocale" signature="getRequestLocale()" >
+        <return type="java.util.Locale" />
+      </method>
+      <method name="getRequestLocales" signature="getRequestLocales()" >
+        <return type="java.util.Iterator" />
+      </method>
+      <method name="getRequestMap" signature="getRequestMap()" >
+        <return type="java.util.Map" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestParameterMap" signature="getRequestParameterMap()" >
+        <return type="java.util.Map" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestParameterNames" signature="getRequestParameterNames()" >
+        <return type="java.util.Iterator" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestParameterValuesMap" signature="getRequestParameterValuesMap()" >
+        <return type="java.util.Map" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestPathInfo" signature="getRequestPathInfo()" >
+        <return type="java.lang.String" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestServletPath" signature="getRequestServletPath()" >
+        <return type="java.lang.String" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestCharacterEncoding" signature="getRequestCharacterEncoding()" >
+        <return type="java.lang.String" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestContentType" signature="getRequestContentType()" >
+        <return type="java.lang.String" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRequestContentLength" signature="getRequestContentLength()" >
+        <return type="int" />
+        <source kind="user_input" argpos="-1" resource="network" />
+      </method>
+      <method name="getRemoteUser" signature="getRemoteUser()">
+        <source argpos="-1" kind="user_input" resource="web"/>
+      </method>
+      <method name="getResponseOutputStream" signature="getResponseOutputStream()" match="name">
+        <return type="java.io.OutputStream"/>
+        <source argpos="-1" kind="user_output" resource="web"/>
+      </method>
+      <method name="getResponseOutputWriter" signature="getResponseOutputWriter()" match="name">
+        <return type="java.io.Writer"/>
+        <source argpos="-1" kind="user_output" resource="web"/>
+        <sink argpos="-2" kind="password_in_comment" resource="web"/>
+      </method>
+      <method name="getUserPrincipal" signature="getUserPrincipal()">
+        <return type="java.security.Principal"/>
+      </method>
+      <method name="isUserInRole" signature="isUserInRole(java.lang.String)">
+        <sink argpos="0" kind="security_decision" resource="web"/>
+      </method>
+      <method name="log" signature="log(java.lang.String)" >
+        <sink argpos="0" kind="log_forging" />
+      </method>
+      <method name="log" signature="log(java.lang.String,java.lang.Throwable)" >
+        <sink argpos="0" kind="log_forging" />
+      </method>
+      <method name="redirect" signature="redirect(java.lang.String)">
+        <!-- For non-ajax. this is equivalent to HttpServletResponse.sendRedirect() -->
+        <sink argpos="0" kind="open_redirect" resource="web"/>
+        <sink kind="execution_after_redirect" argpos="-1" resource="web"/>
+      </method>
+      <method name="setResponseContentType" signature="setResponseContentType(java.lang.String)" >
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setResponseHeader" signature="setResponseHeader(String)">
+        <tags>header.name:0,header.value:1</tags>
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+      <method name="setResponseCharacterEncoding" signature="setResponseCharacterEncoding(java.lang.String)">
+        <tags>CWE:113,header.name:Content-Type,header.value:0</tags>
+        <sink argpos="0" kind="header_manipulation" resource="web"/>
+      </method>
+    </class>
+    <class name="javax.faces.context.ExternalContextFactory" >
+      <method name="getExternalContext" signature="getExternalContext()">
+        <return type="javax.faces.context.ExternalContext"/>
+      </method>
+      <method name="getWrapped" signature="getWrapped()" >
+        <return type="javax.faces.context.ExternalContextFactory" />
+      </method>
+    </class>
+    <class name="javax.faces.context.Flash" />
+    <class name="javax.faces.context.FlashFactory" >
+      <method name="getFlash" signature="getFlash(boolean)">
+        <return type="javax.faces.context.Flash"/>
+      </method>
+      <method name="getWrapped" signature="getWrapped()" >
+        <return type="javax.faces.context.FlashFactory" />
+      </method>
+    </class>
+    <class name="javax.faces.context.ExternalContextWrapper" supertypes="javax.faces.context.ExternalContext" />
+
+    <class name="javax.faces.context.ResponseWriter" supertypes="java.io.Writer" />
+    <class name="javax.faces.context.ResponseWriterWrapper" supertypes="javax.faces.context.ResponseWriter" />
+    <class name="javax.faces.context.PartialResponseWriter" supertypes="javax.faces.context.ResponseWriterWrapper" />
+
+    <class name="javax.faces.context.PartialViewContext" >
+      <method name="getPartialResponseWriter" signature="getPartialResponseWriter()" >
+        <return type="javax.faces.context.PartialResponseWriter" />
+      </method>
+    </class>
+    <class name="javax.faces.context.PartialViewContextFactory" >
+      <method name="getPartialViewContext" signature="getPartialViewContext(javax.faces.context.FacesContex)">
+        <return type="javax.faces.context.PartialViewContext"/>
+      </method>
+      <method name="getWrapped" signature="getWrapped()" >
+        <return type="javax.faces.context.PartialViewContextFactory" />
+      </method>
+    </class>
+  </module>
+
+  <module name="javax.el" standard="javax.el">
+    <description url="https://docs.oracle.com/javaee/7/api/javax/el/package-summary.html">Unified Expression Language</description>
+
+    <class name="javax.el.ExpressionFactory" kind="abstract_class">
+      <method name="newInstance" signature="newInstance()" match="name">
+        <return type="javax.el.ExpressionFactory"/>
+      </method>
+      <method name="createMethodExpression" signature="createMethodExpression()" match="name">
+        <return type="javax.el.MethodExpression"/>
+        <sink argpos="1" kind="code_injection" resource="environment"/>
+      </method>
+      <method name="createValueExpression" signature="createValueExpression()" match="name">
+        <return type="javax.el.ValueExpression"/>
+        <sink argpos="1" kind="code_injection" resource="environment"/>
+      </method>
+    </class>
+  </module>
+
+  <module name="javax.jms" standard="JMS">
+    <description url="https://docs.oracle.com/javaee/7/api/javax/jms/package-summary.html">Java Message Service (JMS) API</description>
+
+    <class name="javax.jms.ConnectionFactory" >
+      <method name="createConnection" signature="createConnection()" >
+        <return type="javax.jms.Connection" />
+      </method>
+      <method name="createConnection" signature="createConnection(java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <return type="javax.jms.Connection" />
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="createContext" signature="createContext()" >
+        <return type="javax.jms.JMSContext" />
+      </method>
+      <method name="createContext" signature="createContext(int)" >
+        <return type="javax.jms.JMSContext" />
+      </method>
+      <method name="createContext" signature="createContext(java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <return type="javax.jms.JMSContext" />
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+      <method name="createContext" signature="createContext(java.lang.String,java.lang.String,int)" >
+        <tags>username:0,password:1</tags>
+        <return type="javax.jms.JMSContext" />
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="javax.jms.QueueConnectionFactory" supertypes="javax.jms.ConnectionFactory" >
+      <method name="createQueueConnection" signature="createQueueConnection()" >
+        <return type="javax.jms.QueueConnection" />
+      </method>
+      <method name="createQueueConnection" signature="createQueueConnection(java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <return type="javax.jms.QueueConnection" />
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="javax.jms.TopicConnectionFactory" supertypes="javax.jms.ConnectionFactory" >
+      <method name="createTopicConnection" signature="createTopicConnection()" >
+        <return type="javax.jms.QueueConnection" />
+      </method>
+      <method name="createTopicConnection" signature="createTopicConnection(java.lang.String,java.lang.String)" >
+        <tags>username:0,password:1</tags>
+        <return type="javax.jms.QueueConnection" />
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="javax.jms.XAConnectionFactory" >
+      <method name="createXAConnection" signature="createXAConnection()" >
+        <return type="javax.jms.XAConnection" />
+      </method>
+      <method name="createXAConnection" signature="createXAConnection(java.lang.String,java.lang.String)" >
+        <tags>username:1,password:2</tags>
+        <return type="javax.jms.XAConnection" />
+        <sink argpos="0,1" kind="hardcoded_credentials" resource="network"/>
+      </method>
+    </class>
+    <class name="javax.jms.XAQueueConnectionFactory" supertypes="javax.jms.QueueConnectionFactory,javax.jms.XAConnectionFactory" />
+    <class name="javax.jms.XATopicConnectionFactory" supertypes="javax.jms.TopicConnectionFactory,javax.jms.XAConnectionFactor" />
+
+    <class name="javax.jms.Message" kind="interface" >
+      <method name="getBody" signature="getBody(java.lang.Class)" >
+        <return type="java.lang.Object" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+    </class>
+    <class name="javax.jms.TextMessage" kind="interface" supertypes="javax.jms.Message" >
+      <method name="getText" signature="getText()" >
+        <return type="java.lang.String" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+    </class>
+    <class name="javax.jms.ObjectMessage" kind="interface" supertypes="javax.jms.Message" >
+      <method name="getObject" signature="getObject(java.lang.Class)" >
+        <return type="java.io.Serializable" />
+        <source kind="database_input" argpos="-1" resource="database" />
+      </method>
+    </class>
+    <class name="javax.jms.BytesMessage" kind="interface" supertypes="javax.jms.Message" >
+      <method name="readBoolean" signature="readBoolean()" >
+        <return type="boolean" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readByte" signature="readByte()" >
+        <return type="byte" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readBytes" signature="readBytes()" match="name" >
+        <return type="byte[]" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readChar" signature="readChar()" >
+        <return type="char" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readDouble" signature="readDouble()" >
+        <return type="double" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readFloat" signature="readFloat()" >
+        <return type="float" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readInt" signature="readInt()" >
+        <return type="int" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readLong" signature="readLong()" >
+        <return type="long" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readShort" signature="readShort()" >
+        <return type="short" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readUnsignedByte" signature="readUnsignedByte()" >
+        <return type="int" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readUnsignedShort" signature="readUnsignedShort()" >
+        <return type="int" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readUTF" signature="readUTF()" >
+        <return type="java.lang.String" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+    </class>
+    <class name="javax.jms.MapMessage" kind="interface" supertypes="javax.jms.Message" >
+      <method name="readBoolean" signature="readBoolean(java.lang.String)" >
+        <return type="boolean" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readByte" signature="readByte(java.lang.String)" >
+        <return type="byte" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readBytes" signature="readBytes(java.lang.String)" match="name" >
+        <return type="byte[]" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readChar" signature="readChar(java.lang.String)" >
+        <return type="char" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readDouble" signature="readDouble(java.lang.String)" >
+        <return type="double" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readFloat" signature="readFloat(java.lang.String)" >
+        <return type="float" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readInt" signature="readInt(java.lang.String)" >
+        <return type="int" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readLong" signature="readLong(java.lang.String)" >
+        <return type="long" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="getObject" signature="getObject(java.lang.String)" >
+        <return type="java.lang.Object" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readShort" signature="readShort(java.lang.String)" >
+        <return type="short" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+    </class>
+    <class name="javax.jms.StreamMessage" kind="interface" supertypes="javax.jms.Message" >
+      <method name="readBoolean" signature="readBoolean()" >
+        <return type="boolean" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readByte" signature="readByte()" >
+        <return type="byte" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readBytes" signature="readBytes()" match="name" >
+        <return type="byte[]" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readChar" signature="readChar()" >
+        <return type="char" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readDouble" signature="readDouble()" >
+        <return type="double" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readFloat" signature="readFloat()" >
+        <return type="float" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readInt" signature="readInt()" >
+        <return type="int" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readLong" signature="readLong()" >
+        <return type="long" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readShort" signature="readShort()" >
+        <return type="short" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+      <method name="readString" signature="readString()" >
+        <return type="java.lang.String" />
+        <source kind="external_input" argpos="-1" resource="database" />
+      </method>
+    </class>
+  </module>
+
+  <module name="javax.management" standard="JMX">
+    <description url="https://www.oracle.com/java/technologies/javase/docs-jmx-jsp.html">Java Management Extensions (JMX) API</description>
+
+    <class name="javax.management.remote.JMXServiceURL" >
+      <constructor name="JMXServiceURL" signature="JMXServiceURL(java.lang.String)" >
+        <sink kind="ssrf" argpos="0" resource="network" />
+        <sink kind="insecure_transport" argpos="0" resource="web" />
+      </constructor>
+      <constructor name="JMXServiceURL" signature="JMXServiceURL(java.lang.String,java.lang.String,int)" >
+        <sink kind="ssrf" argpos="1" resource="network" />
+        <sink kind="insecure_transport" argpos="1" resource="web" />
+        <sink kind="resource_injection" argpos="2" resource="network" />
+      </constructor>
+      <constructor name="JMXServiceURL" signature="JMXServiceURL(java.lang.String,java.lang.String,int,java.lang.String)" >
+        <sink kind="ssrf" argpos="1" resource="network" />
+        <sink kind="insecure_transport" argpos="1" resource="web" />
+        <sink kind="resource_injection" argpos="2" resource="network" />
+        <sink kind="http_parameter_pollution" argpos="3" resource="network" />
+      </constructor>
+    </class>
+  </module>
+
+  <module name="javax.websocket" standard="WebSocket">
+    <description url="https://javaee.github.io/tutorial/websocket.html">Java API for WebSocket (JSR-356)</description>
+    <!-- https://javaee.github.io/javaee-spec/javadocs/javax/websocket/package-summary.html -->
+    <!-- https://javaee.github.io/javaee-spec/javadocs/javax/websocket/server/package-summary.html -->
+    
+    <annotation name="javax.websocket.ClientEndpoint">
+      <field name="configurator" type="java.lang.Class"/>
+      <field name="decoders" type="java.lang.Class[]" alias="encoders"/>
+      <field name="subprotocols" type="java.lang.String[]"/>
+    </annotation>
+    <annotation name="javax.websocket.OnOpen"></annotation>
+    <annotation name="javax.websocket.OnMessage">
+      <source kind="network_input" argpos="0" resource="web"/>
+    </annotation>
+    <annotation name="javax.websocket.OnError"></annotation>
+    <annotation name="javax.websocket.OnClose"></annotation>
+
+    <annotation name="javax.websocket.server.PathParam">
+      <field name="value" type="java.lang.String"/>
+      <source argpos="-1" kind="user_input" resource="web"/>
+    </annotation>
+    <annotation name="javax.websocket.server.ServerEndpoint">
+      <field name="value" type="java.lang.String"/>
+      <field name="configurator" type="java.lang.Class"/>
+      <field name="decoders" type="java.lang.Class[]" alias="encoders"/>
+      <field name="subprotocols" type="java.lang.String[]"/>
+    </annotation>
+
+    <class name="javax.websocket.Session" kind="interface" supertypes="java.io.Closeable, java.lang.AutoCloseable">
+      <method name="addMessageHandler" signature="addMessageHandler(javax.websocket.MessageHandler)"></method>
+      <method name="addMessageHandler_2" signature="addMessageHandler(java.lang.Class, javax.websocket.MessageHandler)"></method>
+      <method name="removeMessageHandler" signature="removeMessageHandler(javax.websocket.MessageHandler)"></method>
+
+      <method name="close" signature="close()"></method>
+      <method name="close_2" signature="close(javax.websocket.CloseReason)"></method>
+      <method name="getAsyncRemote" signature="getAsyncRemote()"><return type="javax.websocket.RemoteEndpoint.Async"/></method>
+      <method name="getBasicRemote" signature="getBasicRemote()"><return type="javax.websocket.RemoteEndpoint.Basic"/></method>
+      <method name="getContainer" signature="getContainer()"><return type="javax.websocket.WebSocketContainer"/></method>
+      <method name="getId" signature="getId()">
+        <tags>sensitive_info</tags>
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="sensitive_info" resource="web"/>
+      </method>
+      <method name="getMessageHandlers" signature="getMessageHandlers()"><return type="java.util.Set" elementType="javax.websocket.MessageHandler"/></method>
+      <method name="getNegotiatedExtensions" signature="getNegotiatedExtensions()"><return type="java.util.Set" elementType="javax.websocket.Extension"/></method>
+      <method name="getNegotiatedSubprotocol" signature="getNegotiatedSubprotocol()"><return type="java.lang.String"/></method>
+      <method name="getOpenSessions" signature="getOpenSessions()"><return type="java.util.Set" elementType="javax.websocket.Session"/></method>
+      <method name="getPathParameters" signature="getPathParameters()" alias="getRequestParameterMap">
+        <return type="java.util.Map"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+      <method name="getProtocolVersion" signature="getProtocolVersion()"><return type="java.lang.String"/></method>
+      <method name="getQueryString" signature="getQueryString()">
+        <return type="java.lang.String"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+      <method name="getRequestURI" signature="getRequestURI()">
+        <return type="java.net.URI"/>
+        <source argpos="-1" kind="network_input" resource="web"/>
+      </method>
+      <method name="getUserPrincipal" signature="getUserPrincipal()"><return type="java.security.Principal"/></method>
+      <method name="getUserProperties" signature="getUserProperties()"><return type="java.util.Map"/></method>
+      <method name="isOpen" signature="isOpen()" alias="isSecure"><return type="boolean"/></method>
+      <method name="setMaxBinaryMessageBufferSize" signature="setMaxBinaryMessageBufferSize(int)" alias="	setMaxTextMessageBufferSize"></method>
+      <method name="setMaxIdleTimeout" signature="setMaxIdleTimeout(long)"></method>
+    </class>
+
+    <class name="javax.websocket.MessageHandler" kind="interface">
+      <method name="onMessage" signature="onMessage(java.lang.Object)" match="name">
+        <source argpos="0" kind="network_input" resource="web"/>
+      </method>
+    </class>
+
+    <class name="javax.websocket.Encoder" kind="interface">
+      <method name="init" signature="init(javax.websocket.EndpointConfig)"></method>
+      <method name="destroy" signature="destroy()"></method>
+    </class>
+    <class name="javax.websocket.Encoder.Binary" kind="interface" supertypes="javax.websocket.Encoder">
+      <method name="encode" signature="encode(java.lang.Object)"><return type="java.nio.ByteBuffer"/></method>
+    </class>
+    <class name="javax.websocket.Encoder.BinaryStream" kind="interface" supertypes="javax.websocket.Encoder">
+      <method name="encode" signature="encode(java.lang.Object, java.io.OutputStream)"></method>
+    </class>
+    <class name="javax.websocket.Encoder.Text" kind="interface" supertypes="javax.websocket.Encoder">
+      <method name="encode" signature="encode(java.lang.Object)"><return type="java.lang.String"/></method>
+    </class>
+    <class name="javax.websocket.Encoder.TextStream" kind="interface" supertypes="javax.websocket.Encoder">
+      <method name="encode" signature="encode(java.lang.Object, java.io.Writer)"></method>
+    </class>
+    <class name="javax.websocket.Decoder" kind="interface">
+      <method name="init" signature="init(javax.websocket.EndpointConfig)"></method>
+      <method name="destroy" signature="destroy()"></method>
+    </class>
+    <class name="javax.websocket.Decoder.Binary" kind="interface" supertypes="javax.websocket.Decoder">
+      <method name="decode" signature="decode(java.nio.ByteBuffer)"><return type="java.lang.Object"/></method>
+    </class>
+    <class name="javax.websocket.Decoder.BinaryStream" kind="interface" supertypes="javax.websocket.Decoder">
+      <method name="decode" signature="decode(java.io.InputStream)"><return type="java.lang.Object"/></method>
+    </class>
+    <class name="javax.websocket.Decoder.Text" kind="interface" supertypes="javax.websocket.Decoder">
+      <method name="decode" signature="decode(java.lang.String)"><return type="java.lang.Object"/></method>
+    </class>
+    <class name="javax.websocket.Decoder.TextStream" kind="interface" supertypes="javax.websocket.Decoder">
+      <method name="decode" signature="decode(java.io.Reader)"><return type="java.lang.Object"/></method>
+    </class>
+
+
+    <class name="javax.websocket.RemoteEndpoint" kind="interface">
+      <method name="sendPing" signature="sendPing(java.nio.ByteBuffer)"><sink kind="network_output" argpos="0"/></method>
+      <method name="sendPong" signature="sendPong(java.nio.ByteBuffer)"><sink kind="network_output" argpos="0"/></method>
+    </class>
+    <class name="javax.websocket.RemoteEndpoint.Async" kind="interface" supertypes="javax.websocket.RemoteEndpoint">
+      <method name="sendBinary" signature="sendBinary(java.nio.ByteBuffer)">
+        <return type="java.util.concurrent.Future" elementType="java.lang.Void"/>
+        <sink kind="network_output" argpos="0" resource="web"/>
+      </method>
+      <method name="sendBinary_2" signature="sendBinary(java.nio.ByteBuffer, javax.websocket.SendHandler)">
+        <sink kind="network_output" argpos="0" resource="web"/>
+      </method>
+      <method name="sendText" signature="sendText(java.lang.String)">
+        <return type="java.util.concurrent.Future" elementType="java.lang.Void"/>
+        <sink kind="network_output" argpos="0" resource="web"/>
+      </method>
+      <method name="sendText_2" signature="sendText(java.lang.String, javax.websocket.SendHandler)">
+        <sink kind="network_output" argpos="0" resource="web"/>
+      </method>
+      <method name="sendObject" signature="sendObject(java.lang.Object)">
+        <return type="java.util.concurrent.Future" elementType="java.lang.Void"/>
+        <sink kind="network_output" argpos="0" resource="web"/>
+      </method>
+      <method name="sendObject_2" signature="sendObject(java.lang.Object, javax.websocket.SendHandler)">
+        <sink kind="network_output" argpos="0" resource="web"/>
+      </method>
+      <method name="setSendTimeout" signature="setSendTimeout(long)"></method>
+    </class>
+    <class name="javax.websocket.RemoteEndpoint.Basic" kind="interface" supertypes="javax.websocket.RemoteEndpoint">
+      <method name="getSendStream" signature="getSendStream()">
+        <return type="java.io.OutputStream"/>
+        <sink kind="network_output" argpos="-1" resource="web"/>
+      </method>
+      <method name="getSendWriter" signature="getSendWriter()">
+        <return type="java.io.Writer"/>
+        <sink kind="network_output" argpos="-1" resource="web"/>
+      </method>
+      <method name="sendBinary" signature="sendBinary(java.nio.ByteBuffer)" match="name">
+        <sink kind="network_output" argpos="0" resource="web"/>
+      </method>
+      <method name="sendText" signature="sendText(java.lang.String)" match="name">
+        <sink kind="network_output" argpos="0" resource="web"/>
+      </method>
+      <method name="sendObject" signature="sendObject(java.lang.Object)">
+        <sink kind="network_output" argpos="0" resource="web"/>
+      </method>
+    </class>
+
+    <class name="javax.websocket.SendHandler" kind="interface">
+      <method name="onResult" signature="onResult(javax.websocket.SendResult)"></method>
+    </class>
+    <class name="javax.websocket.SendResult">
+      <method name="isOK" signature="isOK()"><return type="boolean"/></method>
+      <method name="getException" signature="getException()"><return type="java.lang.Throwable"/></method>
+    </class>
+
+    <class name="javax.websocket.Endpoint" kind="abstract_class">
+      <method name="onOpen" signature="onOpen(javax.websocket.Session, javax.websocket.EndpointConfig)"></method>
+      <method name="onClose" signature="onClose(javax.websocket.Session, javax.websocket.CloseReason)"></method>
+      <method name="onError" signature="onError(javax.websocket.Session, java.lang.Throwable)"></method>
+    </class>
+
+    <class name="javax.websocket.EndpointConfig" kind="interface">
+      <method name="getDecoders" signature="getDecoders()"><return type="java.util.List" elementType="javax.websocket.Decoder"/></method>
+      <method name="getEncoders" signature="getEncoders()"><return type="java.util.List" elementType="javax.websocket.Encoder"/></method>
+      <method name="getUserProperties" signature="getUserProperties()"><return type="java.util.Map"/></method>
+    </class>
+
+    <class name="javax.websocket.ClientEndpointConfig" kind="interface" supertypes="javax.websocket.EndpointConfig">
+      <method name="getConfigurator" signature="getConfigurator()"><return type="javax.websocket.ClientEndpointConfig.Configurator"/></method>
+      <method name="getExtensions" signature="getExtensions()"><return type="java.util.List" elementType="javax.websocket.Extension"/></method>
+      <method name="getPreferredSubprotocols" signature="getPreferredSubprotocols()"><return type="java.util.List" elementType="java.util.String"/></method>
+    </class>
+    <class name="javax.websocket.ClientEndpointConfig.Builder">
+      <method name="create" signature="create()" instance="false"><return type="@self"/></method>
+      <method name="encoders" signature="encoders(java.util.List)" alias="decoders, extensions, preferredSubprotocols"><return type="@self"/></method>
+      <method name="configurator" signature="configurator(javax.websocket.ClientEndpointConfig.Configurator)"><return type="@self"/></method>
+      <method name="build" signature="build()"><return type="javax.websocket.ClientEndpointConfig"/></method>
+    </class>
+
+    <class name="javax.websocket.server.ServerEndpointConfig" kind="interface" supertypes="javax.websocket.EndpointConfig">
+      <method name="getEndpointClass" signature="getEndpointClass()"><return type="java.lang.Class"/></method>
+      <method name="getPath" signature="getPath()"><return type="java.lang.String"/></method>
+      <method name="getConfigurator" signature="getConfigurator()"><return type="javax.websocket.server.ServerEndpointConfig.Configurator"/></method>
+      <method name="getExtensions" signature="getExtensions()"><return type="java.util.List" elementType="javax.websocket.Extension"/></method>
+      <method name="getSubprotocols" signature="getSubprotocols()"><return type="java.util.List" elementType="java.util.String"/></method>
+    </class>
+    <class name="javax.websocket.server.ServerEndpointConfig.Builder">
+      <method name="create" signature="create(java.lang.Class, java.lang.String)" instance="false">
+        <return type="@self"/>
+        <sink kind="resource_injection" argpos="1" resource="web"/>
+      </method>
+      <method name="encoders" signature="encoders(java.util.List)" alias="decoders, extensions, subprotocols"><return type="@self"/></method>
+      <method name="configurator" signature="configurator(javax.websocket.server.ServerEndpointConfig.Configurator)"><return type="@self"/></method>
+      <method name="build" signature="build()"><return type="javax.websocket.server.ServerEndpointConfig"/></method>
+    </class>
+
+    <class name="javax.websocket.server.ServerApplicationConfig">
+      <method name="getAnnotatedEndpointClasses" signature="getAnnotatedEndpointClasses(java.lang.Set)">
+        <return type="java.util.Set" elementType="java.lang.Class"/>
+      </method>
+      <method name="getEndpointConfigs" signature="getEndpointConfigs(java.lang.Set)">
+        <return type="java.util.Set" elementType="javax.websocket.server.ServerEndpointConfig"/>
+      </method>
+    </class>
+
+    <class name="javax.websocket.WebSocketContainer">
+      <method name="connectToServer" signature="connectToServer(java.lang.Object, java.net.URI)">
+        <return type="javax.websocket.Session"/>
+      </method>
+      <method name="connectToServer_2" signature="connectToServer(javax.websocket.Endpoint, javax.websocket.ClientEndpointConfig, java.net.URI)">
+        <return type="javax.websocket.Session"/>
+      </method>
+      <method name="setAsyncSendTimeout" signature="setAsyncSendTimeout(long)"></method>
+      <method name="setDefaultMaxSessionIdleTimeout" signature="setDefaultMaxSessionIdleTimeout(long)"></method>
+      <method name="setDefaultMaxBinaryMessageBufferSize" signature="setDefaultMaxBinaryMessageBufferSize(int)"></method>
+      <method name="setDefaultMaxTextMessageBufferSize" signature="setDefaultMaxTextMessageBufferSize(int)"></method>
+    </class>
+    
+    <class name="javax.websocket.server.ServerContainer" kind="interface" supertypes="javax.websocket.WebSocketContainer">
+      <method name="addEndpoint" signature="addEndpoint(javax.websocket.server.ServerEndpointConfig)"></method>
+    </class>
+
+  </module>
+  
+</library>

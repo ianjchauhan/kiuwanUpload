@@ -1,0 +1,2646 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="qaking_swift" updated="">
+  <description>Nykaa_Web</description>
+  <rule name="OPT.SWIFT.SECURITY.AvoidSMS" message="AvoidSMS: Avoid performing SMS-related operations" class="com.optimyth.qaking.swift.rules.security.AvoidSMS" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.14.5,ASVS-v4.0.2:13.1.4,ASVS-v4.0.2:13.4.2,ASVS-v4.0.2:14.2.6,ASVS-v4.0.2:4.1.3,ASVS-v4.0.2:4.1.5,ASVS-v4.0.2:7.2.2,ASVS-v4.0.2:8.3.3,ASVS-v4.0.2:8.3.8,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Operations involving SMS shouldn't be performed if they aren't totally essential. It exists malware written
+for  mobile devices that could abuse such funcionality to steal money or user data.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import MessageUI
+import Foundation
+
+let composeVC = MFMessageComposeViewController() //VIOLATION
+composeVC.messageComposeDelegate = self
+
+// Configure the fields of the interface.
+composeVC.recipients = ["4085551212"]
+composeVC.body = "Hello from California!"
+
+// Present the view controller modally.
+self.presentViewController(composeVC, animated: true, completion: nil)]]></example>
+    <repair><![CDATA[ //Don't perform SMS-related operations]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/285.html,http://cwe.mitre.org/data/definitions/265.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:265,CWE:285,OWASP-M:2016:M1,OWASP:2021:A5,WASC:02]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.BiometricWithoutMessage" message="BiometricWithoutMessage: User is asked for fingerprints without reason" class="com.optimyth.qaking.swift.rules.security.BiometricWithoutMessage" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.6,ASVS-v4.0.2:14.2.3,ASVS-v4.0.2:14.2.4,ASVS-v4.0.2:2.10.3,ASVS-v4.0.2:5.3.9,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[An application always has to explain to users why fingerprints are requested. Not doing so can be confusing to the user
+and can get the application banned from the AppStore.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve user friendliness when biometrics are requested.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import LocalAuthentication
+
+let context = LAContext()
+
+context.evaluatePolicy(LAPolicy.DeviceOwnerAuthenticationWithBiometrics, localizedReason: "", reply: { (success, error) -> Void in      // VIOLATION
+        if (success) {
+            print("Auth was OK");
+        }
+        else {
+            print("Error received: %d", error!);
+        }
+})
+
+context.evaluatePolicy(LAPolicy.DeviceOwnerAuthenticationWithBiometrics, localizedReason: nil, reply: { (success, error) -> Void in      // VIOLATION
+        if (success) {
+            print("Auth was OK");
+        }
+        else {
+            print("Error received: %d", error!);
+        }
+})]]></example>
+    <repair><![CDATA[import LocalAuthentication
+
+let context = LAContext()
+
+context.evaluatePolicy(LAPolicy.DeviceOwnerAuthenticationWithBiometrics, localizedReason: "do it!", reply: { (success, error) -> Void in      // OK
+        if (success) {
+            print("Auth was OK");
+        }
+        else {
+            print("Error received: %d", error!);
+        }
+})]]></repair>
+    <reference><![CDATA[https://developer.apple.com/documentation/localauthentication/lapolicy/1622327-deviceownerauthenticationwithbio,https://cwe.mitre.org/data/definitions/829.html,https://cwe.mitre.org/data/definitions/522.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:522,CWE:829,CWETOP25:2021:21,OWASP:2021:A8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.CodeInjection" message="CodeInjection: Avoid non-neutralized user-controlled input in dynamic code evaluation" class="com.optimyth.qaking.swift.rules.security.CodeInjection" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.4,ASVS-v4.0.2:5.2.5,ASVS-v4.0.2:5.2.8,ASVS-v4.0.2:5.5.4,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[Code injection is a general term for attack types which consist of injecting code that is dynamically evaluated and executed by the vulnerable application.
+
+In Swift applications, as most of popular languages and frameworks, the main ways to evaluate code dynamically are using
+the evaluateJavaScript from the class WKWebView from WebKit or the method stringByEvaluatingJavaScript from the classes UIWebView
+from UIKit and WebView from WebKit.
+
+Code injection attacks can lead to loss of data integrity and can often result in the execution of arbitrary code.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevents from code injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import WebKit
+import UIKit
+
+var inputTextField : UITextField    /* source */
+
+var webView : WKWebView
+webView.evaluateJavaScript("document.body.style.backgroundColor=\"\(inputTextField.text)\";",  completionHandler:nil)       /* VIOLATION */
+
+var oldWebView : UIWebView
+oldWebView.stringByEvaluatingJavaScript(from:"document.body.style.backgroundColor=\"\(inputTextField.text)\";")       /* VIOLATION */
+
+var oldWebView2 : WebView
+var text : String = inputTextField.text
+oldWebView.stringByEvaluatingJavaScript(from:"document.body.style.backgroundColor=\"\(text)\";")       /* VIOLATION */]]></example>
+    <repair><![CDATA[import WebKit
+import UIKit
+
+var inputTextField : UITextField    /* source */
+var text : String = inputTextField.text
+
+func validate (text: String) -> String {
+    /* add a neutralization here */
+}
+
+var webView : WKWebView
+webView.evaluateJavaScript("document.body.style.backgroundColor=\"\(validate(text))\";",  completionHandler:nil)       /* Ok */]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/w/page/13246933/Improper%20Input%20Handling,https://www.owasp.org/index.php/Code_Injection,http://cwe.mitre.org/data/definitions/95.html,http://cwe.mitre.org/data/definitions/94.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:94,CWE:95,CWETOP25:2021:28,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.CommandInjection" message="CommandInjection: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')" class="com.optimyth.qaking.swift.rules.security.CommandInjection" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.5,ASVS-v4.0.2:5.3.8,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[Swift programs constructs all or part of an operating system (OS) command using externally-influenced input,
+without properly neutralizing special characters that could modify the intended OS command to be executed.
+
+This flaw could allow attackers to execute unexpected, dangerous commands directly on the operating system.
+There are two variants:
+
+1. The program could intend to execute a single, fixed program, taking external input as argument(s) to the program.
+   If the program does not remove command separators from the external input, the attacker could place such command separators
+   into the arguments, which allows him to execute additional, unexpected OS commands or programs. For example,
+   shell metacharacters like ";", "&" or "|" are typically used for command separators.
+
+2. The program accepts an input that it uses to fully select which program to run, as well as which commands to use.
+   The program simply redirects this entire command to the operating system. If the input is under attacker control,
+   then the attacker can execute arbitrary OS commands or programs.
+
+In the first variant, the programmer clearly intends that external, untrusted input will be part of the arguments of the OS command
+to execute, but the attacker could force the execution of additional OS commands. In the second variant, the programmer
+does not intend for the command to be accessible to any untrusted party, but the programmer probably has not accounted for
+alternate ways in which malicious attackers could control program inputs.
+
+When the attacker is able to execute unauthorized commands, he/she could gain further privileges, produce a
+denial-of-service condition, read files or directories, read or modify application data, modify application or system
+configuration, or hide activities, among others.
+
+The rule detects a path in code between an user-input statement (source) and a command execution call (sink), with
+command depending on non neutralized input. This allows for an attacker to change the intended command to execute or to
+add a malicious extra command, executed with the application rights.
+
+A neutralization function either validates inputs and report an (neutral) error without allowing command execution, or
+replaces sensitive shell characters in the input to avoid that the resulting command has different semantics.
+If possible, use "accept known good" input validation strategy (whitelist).
+
+First, ask yourself if you really need to execute OS commands.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid malicious commands execution.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+
+var input : String = readLine()     /* Source */
+
+func executeCommand(command: String, args: [String]) -> String {
+
+    let task = Process()
+
+    task.launchPath = command
+    task.arguments = args
+
+    let pipe = Pipe()
+    task.standardOutput = pipe
+    task.launch()
+
+    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+    let output: String = String(data: data, encoding: NSUTF8StringEncoding)
+
+    return output
+}
+
+let commandOutput = executeCommand(input, [""])      /* VIOLATION */]]></example>
+    <repair><![CDATA[import Foundation
+
+var input : String = readLine()     /* Source */
+
+func executeCommand(command: String, args: [String]) -> String {
+
+    let task = Process()
+
+    task.launchPath = command
+    task.arguments = args
+
+    let pipe = Pipe()
+    task.standardOutput = pipe
+    task.launch()
+
+    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+    let output: String = String(data: data, encoding: NSUTF8StringEncoding)
+
+    return output
+}
+
+func validate (text: String) -> String {
+    /* add a neutralization here */
+}
+
+var command = validate(input)
+
+let commandOutput = executeCommand(command, ["Hello, I am here!"])      /* VIOLATION */]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Command_Injection,http://cwe.mitre.org/data/definitions/78.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:77,CWE:78,CWETOP25:2021:5,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:31]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input,database_input,file_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.ConnectionStringParameterPollution" message="ConnectionStringParameterPollution: Connection string polluted with untrusted input" class="com.optimyth.qaking.swift.rules.security.ConnectionStringParameterPollution" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.2.7,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When the connection string for an application resource (like database, remote server, persistence entity manager...) could
+be affected by an untrusted source, not properly neutralized, the application is vulnerable to a Connection String Parameter Pollution attack.
+
+An attack targeted at this vulnerability may use special characters (like ';' or ':') to add unexpected parts to the connection string,
+for example to gain extra privileges, or to deactivate security features.
+
+"Untrusted input" means, in this context, a user-controlled application input, an environment variable, or data fetched
+from an external web source.
+
+It should be suspicious that a connection string depends on untrusted input. Normally the application configuration uses
+a fixed connection string, but other attacks, depending on where the connection string is stored (like an SQL injection or
+path traversal attack) may affect the configuration item. This rule only checks for connection strings that are constructed
+programmatically with untrusted input.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import sqlite3
+
+var input = readLine()
+
+sqlite3_open(input, &db)    // VIOLATION]]></example>
+    <repair><![CDATA[// Validate (white-list approach) the untrusted input combined into the connection string.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/159.html,https://www.blackhat.com/presentations/bh-dc-10/Alonso_Chema/Blackhat-DC-2010-Alonso-Connection-String-Parameter-Pollution-wp.pdf]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:15,OWASP:2021:A5,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.CrossSiteScripting" message="CrossSiteScripting: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')" class="com.optimyth.qaking.swift.rules.security.CrossSiteScripting" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.3,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,essential]]></tags>
+    <description><![CDATA[Software places user-controlled input in page content. An attacker could inject browser script code that is executed
+in the client browser. The end-user is the attacked subject, and the software is the vehicle for the attack.
+There are two main kinds of XSS:
+
+* Reflected XSS: Attacker causes victim to supply malicious content to a vulnerable web application, which
+  renders HTML content embedding a malicious script executed in victim's browser. A variation of this is named
+  DOM-based XSS, where the vulnerable software does not generate content depending on user input but include
+  script code that use user-controlled input.
+
+* Persisted XSS: Attacker provides malicious content to vulnerable application. When other user access to
+  vulnerable pages that embed without proper neutralization the attacker content, script code is executed in the
+  victim's browser.
+
+The script executed in the victim's browser could perform malicious activities.
+
+Many browsers could limit the damage via security restrictions (e.g. 'same origin policy'), but user browsers
+generally allow scripting languages (e.g. JavaScript) in their browsers (disabling JavaScript severely limits
+a web site).]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[// sample reflected xss
+
+import WebKit
+import UIKit
+import Foundation
+
+let webView : WKWebView
+let inputTextField : UITextField
+
+webView.loadHTMLString(inputTextField.text, baseURL:nil)        /* VIOLATION */
+
+
+// sample stored xss - database_input
+
+import WebKit
+import UIKit
+
+let db = FMDatabase(path: databasePath as String)
+let webView : WKWebView
+let view : UIWebView
+
+if db.open() {
+    let querySQL = "SELECT name FROM CONTACTS"
+
+    let results:FMResultSet? = db.executeQuery(querySQL, withArgumentsInArray: nil)
+
+    var text : String = nil
+
+    if results?.next() == true {
+        text = results?.stringForColumn("name")    /* database_input */
+    }
+
+    contactDB.close()
+
+    webView.loadHTMLString(text, baseURL:nil)        /* VIOLATION */
+}]]></example>
+    <repair><![CDATA[        // sample reflected xss
+
+import WebKit
+import UIKit
+import Foundation
+
+let webView : WKWebView
+let inputTextField : UITextField
+
+let validated = neutralize (inputTextField.text);
+
+webView.loadHTMLString(validated, baseURL:nil)        /* VIOLATION */]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/XSS_(Cross_Site_Scripting)_Prevention_Cheat_Sheet,http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting,http://cwe.mitre.org/data/definitions/79.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:79,CWETOP25:2021:2,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.7,WASC:08]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input,database_input,file_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.HardcodedIp" message="HardcodedIp: Do not write IP address in source code" class="com.optimyth.qaking.swift.rules.security.HardcodedIp" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality,infoleak]]></tags>
+    <description><![CDATA[Hardcoding an IP address can create a potential security breach if it is discovered by a
+malicious attacker who successfully decompiles the code.
+
+Also maintainability and portability is deteriorated because the IP address must be directly modified into the code.
+
+The customizable parameter ipPattern contains the pattern used to identify the hardcoded IP.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid potential security breaches.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[var hostAddress = "98.139.180.149"       /* VIOLATION */]]></example>
+    <repair><![CDATA[var hostAddress = configuration.ipAddress   /* Ok */]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/200.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:200,CWETOP25:2021:20]]></security>
+    </normatives>
+    <properties>
+      <property name="ipPattern" descname="Pattern used to recognize harcoded IP addresses." value="(.*(^|\s|\\|//)(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\s|:|$).*|^(\p{XDigit}{1,4}(?:\:\p{XDigit}{1,4}){3,7}))"/>
+      <property name="strictMode" descname="When enabled only fully matched strings will be reported." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.HardcodedUsernamePassword" message="HardcodedUsernamePassword: Use of Hard-coded Credentials" class="com.optimyth.qaking.swift.rules.security.HardcodedUsernamePassword" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.10.4,ASVS-v4.0.2:3.5.2,ASVS-v4.0.2:6.4.1,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,credentials,essential]]></tags>
+    <description><![CDATA[Hardcoded credentials (username / password) are visible to any person reading the source code.
+If the resource protected by such hardcoded credentials is important, this may compromise system security.
+
+With hardcoded credentials, change is difficult. If the target account is compromised, and the software
+is deployed in production, a code change is needed, which forces a redeployment.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credential leakage.
+If an account is compromised, changing credentials in an external repository does not need changes in code plus software deployment.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[let CookieUsername : String = "admin123";    // VIOLATION
+let Password : String = "dvpassword";     // VIOLATION]]></example>
+    <repair><![CDATA[// Don't hardcode credentials]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/798.html,https://www.kiuwan.com/docs/display/K5/Avoid+hard-coded+or+in-comment+passwords+in+code]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:798,CWETOP25:2021:16,OWASP-M:2016:M4,OWASP:2021:A7,PCI-DSS:6.5.3,WASC:01]]></security>
+    </normatives>
+    <properties>
+      <property name="passwordPattern" descname="Regular expression for matching field names containing passwords." value=""/>
+      <property name="usernamePattern" descname="Regular expression for matching field names containing user ids." value=".*(user|username).*|(^|.*_)id(_.*|$)"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.HeaderManipulation" message="HeaderManipulation: Avoid including unvalidated data in HTTP response header or in Cookies" class="com.optimyth.qaking.swift.rules.security.HeaderManipulation" technology="SWIFT" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Including unvalidated data in Cookies can lead to HTTP Response header manipulation and
+enables:
+  - cache-poisoning
+  - cross-site scripting
+  - cross-user defacement
+  - page hijacking
+  - cookie manipulation
+  - open redirect
+
+Header Manipulation vulnerabilities occur when:
+  - Data enters a web application through an untrusted source, most frequently an HTTP request.
+  - The data is included in an HTTP response header sent to a web user without being validated.
+
+Using this vulnerability, an attacker can pass malicious data to a vulnerable application and the application can
+include the data into an HTTP response header.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Performing the input data validation improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import UIKit
+import Foundation
+
+var inputTextField : UITextField    /* source */
+
+// let's add a header
+var headers = []
+var value = inputTextField.text
+headers["name"] = value
+
+let config = URLSessionConfiguration.background(withIdentifier: "com.corp")
+
+config.httpAdditionalHeaders = headers      /* VIOLATION */
+
+// let's add a cookie
+var cookieStorage : HTTPCookieStorage = HTTPCookieStorage.shared
+
+let properties : [HTTPCookiePropertyKey : Any] = [
+    HTTPCookiePropertyKey.name: key,
+    HTTPCookiePropertyKey.value: value
+]
+let cookie : HTTPCookie? = HTTPCookie(properties:properties)
+
+cookieStorage.setCookie(cookie)
+
+config.httpCookieStorage = cookieStorage      /* VIOLATION */]]></example>
+    <repair><![CDATA[import UIKit
+import Foundation
+
+var inputTextField : UITextField    /* source */
+
+func validate (text: String) -> String {
+    /* add a neutralization here */
+}
+
+var headers = []
+headers[name] = validate(inputTextField.text)
+
+let config = URLSessionConfiguration.background(withIdentifier: "com.corp")
+
+config.httpAdditionalHeaders = headers      /* VIOLATION */]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/113.html,http://projects.webappsec.org/w/page/13246931/HTTP%20Response%20Splitting]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:113,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:25]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.HttpParameterPollutionRule" message="HttpParameterPollutionRule: HTTP parameter pollution (HPP)" class="com.optimyth.qaking.swift.rules.security.HttpParameterPollutionRule" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.1,CWEScope:Integrity,http-parameter-pollution]]></tags>
+    <description><![CDATA[Concatenating untrusted input into path, query string, or parameters for HTTP message (in
+the URL or in the request body) may allow an attacker to override/add unexpected request parameters. Attacker may change the intended
+HTTP request semantics, and may give him/her access to unauthorized data or bypass web application
+firewall validations.
+
+Note: Do not confuse HPP with Server-Side Request Forgery (SSRF), where the attacker has control over the
+full request URL, including host and port. For HPP attack, attacker has control over other parts like the query string
+part of the URL. Remember the format of an HTTP URL: scheme://user:password@host:port/path?query#fragment
+where query is typically param=value&param2=value. HPP is about attackers controlling path, query or fragment,
+while SSRF means controlling scheme, user, password, host or port.
+
+Like other injection issues, with HPP attackers play with "&" to inject additional parameter (similar to the quote
+in SQL injection), "../" to change the path, ";" (to add matrix parameters to URL at different path segments), or "#"
+to remove ending URL characters (like "--" comment delimiter in SQL injection).
+
+Controlling the path typically changes the semantics of the action represented by the HTTP resource.
+Some REST services use request parameter like _method for selecting the HTTP method, which may be subverted by an HPP attack
+(an HTTP header manipulation flaw could also be leveraged with X-HTTP-Method-Override or similar headers in certain frameworks).
+
+For example, imagine a web application that calls to a remote home-banking REST API. The webapp emits
+a (GET) url https://mybank.com/show-balance/account/X/monetaryUnit?date=now to show the balance for the user account X,
+where X is taken from a trusted source, but where monetaryUnit is taken from a cookie, and concatenated without
+any validation or encoding into the URL. An attacker could pass a Cookie request header set to "../../../transfer/X/to/Y?_method=POST#",
+so the vulnerable web application will create https://mybank.com/show-balance/account/X/../../../transfer/X/to/Y?_method=POST#?date=now
+which is equivalent to a POST https://mybank.com/transfer/X/to/Y.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Performing input data validation improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+
+var inputString = readLine()
+
+let urlString : String = "http://myserver.com/?lat=\(latitude)&lon=\(longitude)"
+let url : URL = URL(string:urlString + inputString)
+let request : NSURLRequest = NSURLRequest(url:url)  /* VIOLATION */
+var err : NSError?
+var response : NSURLResponse?
+var data : NSData =  NSURLConnection.sendSynchronousRequest(request, returningResponse: &response, error:&err)]]></example>
+    <repair><![CDATA[// Sanitize user inputs before using them into an URL]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/235.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:235,OWASP:2021:A3,PCI-DSS:6.5.6,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.HTTPResponseCachingLeak" message="HTTPResponseCachingLeak: HTTP sensitive responses being cached" class="com.optimyth.qaking.swift.rules.security.HTTPResponseCachingLeak" technology="SWIFT" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,global,infoleak,privacy]]></tags>
+    <description><![CDATA[HTTP may contain sensitive information like keys, health data, etc.
+
+By default Swift caches HTTP response to improve the application performance, and they are saved into a local
+decrypted database. If a malicious attacker gain access to the system, he / she might recover all of these
+screenshots and gain access to emails, passwords, bank account numbers,...etc.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.
+
+This rule reports violation when responses to requests containing sensitive information are being cached.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import HealthKit
+import Foundation
+
+let healthStore = HKHealthStore()
+let blood = try healthStore.bloodType()  /* Source */
+let urlString : String = "http://myserver.com/?data=\(blood.bloodType)"
+let authURL = URL(string: urlString)
+var request = URLRequest(url: authURL!)
+
+URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in       // Violation
+}).resume()]]></example>
+    <repair><![CDATA[import HealthKit
+import Foundation
+
+let healthStore = HKHealthStore()
+let blood = try healthStore.bloodType()  /* Source */
+let urlString : String = "http://myserver.com/?data=\(blood.bloodType)"
+let authURL = URL(string: urlString)
+var request = URLRequest(url: authURL!)
+
+URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in       // Delegate neutralized
+}).resume()
+
+[Session Delegate]
+import Foundation
+
+class SessionDelegate : URLSessionDataDelegate {
+
+    open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, willCacheResponse proposedResponse: CachedURLResponse, completionHandler: @escaping (CachedURLResponse?) -> Void) {
+        var newProposedResponse:CachedURLResponse? = proposedResponse
+        if newProposedResponse?.response.url?.scheme == "https" {
+            newProposedResponse = nil
+            completionHandler(newProposedResponse)
+        }
+    }
+}]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Privacy_Violation]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:313,OWASP-M:2016:M2,OWASP:2013:A8,OWASP:2021:A2,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.InsecureTemporaryFile" message="InsecureTemporaryFile: Creating and using insecure temporary files can leave application and system data vulnerable to attack." class="com.optimyth.qaking.swift.rules.security.InsecureTemporaryFile" technology="SWIFT" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,global,infoleak,privacy]]></tags>
+    <description><![CDATA[When using the method write along with the atomically clause in Swift by providing a true value to the
+atomically argument, then the information is previously stored into a temporary folder, and at the end it's moved to the
+output destination.
+
+This intermediate copy to a temporary path may compromise this information, since it could be accessible by a
+malicious attacker, and even the temporary copy might not been correctly deleted.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid exposing sensitive data.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+import UIKit
+
+class MyViewController: UIViewController {
+
+    @IBOutlet var usernameTextField: UITextField!
+    @IBOutlet var passwordTextField: UITextField!
+
+    @IBAction func saveInPlistFileTapped(_ sender: Any) {
+      func documentsDirectory() -> String {
+          let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+          let documentsDirectory = paths.first!
+          return documentsDirectory
+      }
+
+    	let data = NSMutableDictionary()
+      guard let username = usernameTextField.text else { return }
+      guard let password = passwordTextField.text else { return }
+      data.setValue(username, forKey: "username")
+      data.setValue(password, forKey: "password")
+      data.write(toFile: dataFilePath(), atomically: true)    // VIOLATION
+    }
+}]]></example>
+    <repair><![CDATA[import Foundation
+import UIKit
+
+class MyViewController: UIViewController {
+
+    @IBOutlet var usernameTextField: UITextField!
+    @IBOutlet var passwordTextField: UITextField!
+
+    @IBAction func saveInPlistFileTapped(_ sender: Any) {
+      func documentsDirectory() -> String {
+          let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+          let documentsDirectory = paths.first!
+          return documentsDirectory
+      }
+
+    	let data = NSMutableDictionary()
+      guard let username = usernameTextField.text else { return }
+      guard let password = passwordTextField.text else { return }
+      data.setValue(username, forKey: "username")
+      data.setValue(password, forKey: "password")
+      data.write(toFile: dataFilePath(), atomically: false)    // OK
+    }
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/377.html,https://developer.apple.com/documentation/foundation/nsdata/1408033-writetofile,http://projects.webappsec.org/Information-Leakage]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:377,OWASP-M:2016:M2,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.InsecureTransport" message="InsecureTransport: Insecure transport" class="com.optimyth.qaking.swift.rules.security.InsecureTransport" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Communications sent over HTTP (Hypertext Transfer Protocol) protocol are in plain text, so
+they are fully exposed to attacks such as man in the middle. This situation is not acceptable when sensible information
+is being communicated.
+
+Using HTTPS (Hypertext Transfer Protocol Secure) allows to perform encrypted connections between the user and the server
+using SSL (Secure Sockets Layer) or TLS (Transport Layer Security) certificates. These certificates use an asymmetric
+public key infrastructure (PKI) system, which consists in two keys, one of them public distributed to the users, and the
+other private stored into the server.
+
+When a connection to a web page is started the server sends a SSL/ TSL certificate to the user's browser, and then they
+stablish a secure connection.
+
+This rule requires that all requests for a remote HTTP resource are performed on a secure transport (SSL/TLS) by using
+HTTPS and TSL 1.1 or TSL 1.2.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve security at transport layer, avoiding sensible data, like bank details, interception.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+
+let url = URL(string: "http://www.kiuwan.com")
+let request : MutableURLRequest = MutableURLRequest(URL:url)
+let conn : NSURLConnection = NSURLConnection(request:request, delegate:self)     /* VIOLATION using http protocol */
+
+let configuration : URLSessionConfiguration = URLSessionConfiguration.`default`
+configuration.tlsMinimumSupportedProtocol = sslProtocol3
+let mySession = URLSession(configuration: configuration, delegate: self, delegateQueue: operationQueue)       /* VIOLATION using SSL protocol */]]></example>
+    <repair><![CDATA[import Foundation
+
+let url = URL(string: "https://www.kiuwan.com")
+let request : MutableURLRequest = MutableURLRequest(URL:url)
+let conn : NSURLConnection = NSURLConnection(request:request, delegate:self)     /* Ok */
+
+let configuration_safe : URLSessionConfiguration = URLSessionConfiguration.`default`
+configuration_safe.tlsMinimumSupportedProtocol = tlsProtocol12
+let mySession = URLSession(configuration: configuration_safe, delegate: self, delegateQueue: operationQueue)      /* Ok */]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/311.html,http://cwe.mitre.org/data/definitions/326.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP:2021:A4,PCI-DSS:6.5.4,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="checkFtpConn" descname="When true then insecure FTP connections are checked too." value="true"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.JSONInjection" message="JSONInjection: Avoid using non-neutralized user-controlled input into JSON entities - JSON Injection" class="com.optimyth.qaking.swift.rules.security.JSONInjection" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:13.2.6,ASVS-v4.0.2:13.3.2,ASVS-v4.0.2:3.5.3,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Unvalidated untrusted input is concatenated to a JSON stream, which is sent as request to a potentially service.
+This allows an attacker to inject tailored content that change the semantics of the original JSON message.
+
+Depending on how the JSON-formatted data is later used, the attacker could execute unexpected dynamic code, or
+escape from authentication or authorization controls. If the resulting JSON string is evaluated in JavaScript
+(JavaScript may eval a string and treat it as an array or JavaScript object), the attacker may add additional
+code (for example, an attack payload like "'}; while(1); //" that could produce a denial-of-service condition.
+
+Note: Do not confuse this issue with JSON (or JavaScript) hijacking, which is a browser-side vulnerability
+where an attacker can steal sensitive information sent as JSON to victim's browser.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid JSON Injection attacks]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+
+let input = readLine()      /* Source */
+
+JSONSerialization.writeJSONObject(input, to: stream, options: [], error: &error)    /* VIOLATION */]]></example>
+    <repair><![CDATA[import Foundation
+
+let input = readLine()      /* Source */
+
+func validate (query: String) -> String {
+    /* add a neutralization here */
+}
+
+var safe = validate(input)
+
+JSONSerialization.writeJSONObject(safe, to: stream, options: [], error: &error)    /* Ok */]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/345.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.KeyboardCachingLeak" message="KeyboardCachingLeak: Sensitive data leaked through keyboard cache" class="com.optimyth.qaking.swift.rules.security.KeyboardCachingLeak" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,global,infoleak,privacy]]></tags>
+    <description><![CDATA[According to apple, iOS keyboard usually caches text input values from user inputs to improves the autocorrection feature.
+
+Some exceptions are:
+  - When text field is marked as secure.
+  - When text field has disabled autocorrection.
+
+If a malicious attacker gain access to the system, he / she might recover all of these cache logs gaining access to
+emails, passwords, bank account numbers,...etc.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information. Thus sensitive info must be hidden before moving the
+application to background.
+
+This rule reports violation when potential sensitive fields are cached by the keyboard.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import LocalAuthentication
+import UIKit
+
+class MainViewController: UIViewController {
+
+  @IBOutlet weak private var passwordTextField: UITextField!        /* VIOLATION */
+
+  private var blurView: UIView?
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+  }
+}]]></example>
+    <repair><![CDATA[import LocalAuthentication
+import UIKit
+
+class MainViewController: UIViewController {
+
+  @IBOutlet weak private var passwordTextField: UITextField!        /* Ok */
+
+  private var blurView: UIView?
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+
+     passwordTextField.isSecureTextEntry = true
+     passwordTextField.autocorrectionType = .No
+  }
+}]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Privacy_Violation,https://developer.apple.com/library/content/documentation/iPhone/Conceptual/iPhoneOSProgrammingGuide/StrategiesforHandlingAppStateTransitions/StrategiesforHandlingAppStateTransitions.html,http://cwe.mitre.org/data/definitions/359.html,http://projects.webappsec.org/Information-Leakage]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP-M:2016:M2,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.LogForging" message="LogForging: Improper Output Neutralization for Logs" class="com.optimyth.qaking.swift.rules.security.LogForging" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:7.3.1,ASVS-v4.0.2:7.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation]]></tags>
+    <description><![CDATA[When the application writes untrusted input to a log destination (using any Swift logging API),
+a "log forging" attack could be launched to inject false log entries, corrupt log entries,
+or even exploit a vulnerability in an external "log viewer" application.
+
+Corrupted log entries could hinder detection for malicious activity, or implicate another party
+in the commission of a malicious act.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+
+var source = readLine()
+
+NSLog("Value is = %@", source)      /* VIOLATION */]]></example>
+    <repair><![CDATA[import Foundation
+
+var source = readLine()
+
+func validate (text: String) -> String {
+    /* add a neutralization here */
+}
+
+NSLog("Value is = %@", validate(source))      /* Ok */]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/117.html,https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:117,OWASP-M:2016:M7,OWASP:2021:A9,PCI-DSS:10.5.2,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.MailCommandInjection" message="MailCommandInjection: Mail Command Injection" class="com.optimyth.qaking.swift.rules.security.MailCommandInjection" technology="SWIFT" active="true">
+    <tags><![CDATA[CWEScope:Integrity]]></tags>
+    <description><![CDATA[Mail command injection vulnerabilities occur when an attacker can influence the commands sent to an SMTP mail server.
+
+If the library or the developer fails to safely encode the line breaks, an attacker controlling any of the arguments for these commands
+will be able to inject line breaks and new commands after them.
+
+As line breaks are the usual mechanism that attackers use to change the expected behaviour, this vulnerability
+is considered a special CRLF Injection attack.
+
+What the attacker may launch by exploiting a Mail Command Injection vulnerability include:
+- Generate spam (SMTP). The application acts as a "mail proxy" that attackers may use to create spam messages.
+- Abusing a trusted server to send HTML emails with malicious contents.
+- Change authentication or security options, to skip security controls in mail servers.
+
+See "MX Injection: Capturing and Exploiting Hidden Mail Servers", from Vicente Aguilera, for a full description on
+the benefits that an attacker may gain.
+
+The rule checks when vulnerable mail libraries are called with untrusted input, without validation, which might be vulnerable
+to Mail Command Injection attacks.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid Mail Command Injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import MessageUI
+
+var input = readLine()      /* Source */
+
+let composeVC = MFMailComposeViewController()
+composeVC.mailComposeDelegate = self
+
+// Configure the fields of the interface.
+composeVC.setToRecipients([input])  // VIOLATION
+composeVC.setSubject("Hello!" + input)  // VIOLATION
+composeVC.setMessageBody("Hello from California!" + input, isHTML: false)  // VIOLATION
+
+// Present the view controller modality.
+self.presentViewController(composeVC, animated: true, completion: nil)]]></example>
+    <repair><![CDATA[Sanitize user inputs before using them into a mail command.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/93.html,http://projects.webappsec.org/w/page/13246948/Mail%20Command%20Injection,OWASP Testing for IMAP/SMTP injection: https://www.owasp.org/index.php/Testing_for_IMAP/SMTP_Injection_(OTG-INPVAL-011)]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:93,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:30]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.NoSQLInjection" message="NoSQLInjection: Improper neutralization of special elements in data query logic (NoSQL injection)" class="com.optimyth.qaking.swift.rules.security.NoSQLInjection" technology="SWIFT" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,NoSQL]]></tags>
+    <description><![CDATA[The application generates a query intended to access or manipulate data in a data store such as a NoSQL database,
+but it does not neutralize or incorrectly neutralizes special elements that can modify the intended logic of the query.
+
+Depending on the capabilities of the query language, an attacker could inject additional login into the query to:
+- Modify the intended selection criteria, thus changing which data entities (e.g., records) are returned, modified, or otherwise manipulated.
+- Append additional commands to the query.
+- Return more or fewer entities than intended.
+- Cause entities to be sorted in an unexpected way.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent NoSQL injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import MongoSwift
+
+var input = readLine()
+
+MongoSwift.initialize()
+
+let client = try MongoClient(connectionString: "mongodb://localhost:27017")
+let db = try client.db("myDB")
+let collection = try db.createCollection("myCollection")
+
+let doc: Document = ["_id": 100, "a": 1, "b": 2, "c": input]
+let result = try collection.insertOne(doc)    // VIOLATION]]></example>
+    <repair><![CDATA[// Validate external inputs passed as NoSQL filters to ensure that the query semantics does not change]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/943.html,https://technopy.com/mongodb-injection-how-to-hack-mongodb-html/]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:943,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, system_information, other_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.OpenRedirect" message="OpenRedirect: Do not allow to control the URL used in a redirect by an unvalidated input" class="com.optimyth.qaking.swift.rules.security.OpenRedirect" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.1.5,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Allowing unvalidated input to control the URL used in a redirect can aid phishing attacks.
+
+Through open redirects, malicious users may mislead other users to visit a URL to a trusted site and redirect them to a
+malicious site.
+
+By encoding the URL, a malicious user can make it difficult to realize the target of malicious redirect.
+
+The rule detects a path in code between an input statement (source) and a redirect statement (sink), to an URL depending
+on non neutralized input.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Limits phishing attacks, and unintended client-side redirections, improving security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+import Alamofire
+
+URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
+
+    let urlString : String = data
+
+    Alamofire.request(urlString, headers: headers)  /* VIOLATION */
+}).resume()]]></example>
+    <repair><![CDATA[import Foundation
+import Alamofire
+
+URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
+
+    let urlString : String = validate(data) // Custom neutralization
+
+    Alamofire.request(urlString, headers: headers)
+}).resume()]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/w/page/13246981/URL%20Redirector%20Abuse,http://cwe.mitre.org/data/definitions/601.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:601,CWETOP25:2021:37,OWASP:2013:A10,PCI-DSS:6.5.1,WASC:38]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.PasswordInCommentRule" message="PasswordInCommentRule: Storing passwords or password details in plaintext anywhere in the system or system code can compromise system security" class="com.optimyth.qaking.swift.rules.security.PasswordInComments" technology="SWIFT" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[It is never a good idea to hardcode a password. Storing password details within comments
+is equivalent to hardcoding passwords.
+
+Not only does it allow all of the project's developers to view the password, it also makes fixing the problem extremely
+difficult.
+
+Once the code is in production, the password is now leaked to the outside world and cannot be protected or changed
+without patching the software.
+
+If the account protected by the password is compromised, the owners of the system will be forced to choose between
+security and availability.
+
+The rule checks if there are comments in the code that contain expressions that match with the pattern, so it can lead
+to several false positives and/or false negatives.]]></description>
+    <priority>4</priority>
+    <effort>1</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Ensuring that password is kept in secret improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[/**
+ *
+ * password: someFunnyWorDs   // VIOLATION
+ **/
+
+// password: lol_secret   // VIOLATION]]></example>
+    <repair><![CDATA[Do not code passwords in source code comments.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/615.html,http://projects.webappsec.org/Information-Leakage]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:615,OWASP-M:2016:M2,OWASP:2021:A2,PCI-DSS:6.5.8,WASC:13]]></security>
+    </normatives>
+    <properties>
+      <property name="passwordPattern" descname="Pattern to check for hardcoded passwords in comments. If blank, the default pattern will be used." value=""/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.PasswordInConfigurationFile" message="PasswordInConfigurationFile: Use of credentials into configuration file" class="com.optimyth.qaking.swift.rules.security.PasswordInConfigurationFile" technology="SWIFT" active="true">
+    <tags><![CDATA[CWEScope:Access-Control]]></tags>
+    <description><![CDATA[Passwords written into a configuration file which is distributed along with the code are
+visible to any person reading the source code. If the resource protected by such hardcoded credentials is important, this
+may compromise system security.
+
+A better programming practice would be storing these credential into an environment variable.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid credential leakage.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>KeychainPath</key>
+    <string>/path/to/filename.keychain</string>
+    <key>KeychainPassword</key>
+    <string>password</string>
+  </dict>
+</plist>]]></example>
+    <repair><![CDATA[// Use an environment variable to store credentials.]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/260.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:260,OWASP-M:2016:M2,OWASP:2021:A5]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.PasteboardCachingLeak" message="PasteboardCachingLeak: Sensitive data leaked through the pasteboard caching mechanism" class="com.optimyth.qaking.swift.rules.security.PasteboardCachingLeak" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,global,infoleak,privacy]]></tags>
+    <description><![CDATA[According to the Apple official documentation, when a text is copied it's stored into a cache where it can be accessed later.
+
+When an application collect sensitive data and then this info is copied to the pasteboard, then the sensitive data might be
+accessed by other applications.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information. Thus sensitive info must be hidden before moving the
+application to background.
+
+This rule reports violation when potential sensitive fields can be accessed through the pasteboard.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import LocalAuthentication
+import UIKit
+
+class MainViewController: UIViewController {
+
+  @IBOutlet weak private var passwordTextField: UITextField!        /* VIOLATION */
+
+  private var blurView: UIView?
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+  }
+}]]></example>
+    <repair><![CDATA[import LocalAuthentication
+import UIKit
+
+class MainViewController: UIViewController {
+
+  @IBOutlet weak private var passwordTextField: UITextField!        /* OK */
+
+  private var blurView: UIView?
+
+  override func viewDidLoad() {
+      super.viewDidLoad()
+
+      passwordTextField.isSecureTextEntry = true
+    }
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/359.html,https://www.owasp.org/index.php/Privacy_Violation,http://projects.webappsec.org/Information-Leakage]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP-M:2016:M2,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.PathTraversal" message="PathTraversal: Avoid non-neutralized user-controlled input composed in a pathname to a resource" class="com.optimyth.qaking.swift.rules.security.PathTraversal" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.1,ASVS-v4.0.2:12.3.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software uses external input to construct a pathname that is intended to identify a file or directory
+that is located underneath a restricted parent directory, but the software does not properly neutralize
+special elements within the pathname that can cause the pathname to resolve to a location outside the
+restricted directory.
+
+Under an application server, if the application server configuration does not restrict access to files outside
+certain restricted directories, the attacker may fetch sensitive files, and if the file is written with contents
+controlled by user input, the attacker may change configuration files or libraries (for more insidious code injection attacks).
+Access to system files (the customary /etc/password) could also allowed with the app permissions.
+
+It is recommended, besides ensuring that files depending on user-controlled input do not exit the intended directories,
+that the OS account does have the minimal permissions, to reduce the impact of a successful path traversal attack.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>File handling</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+import UIKit
+
+
+func testFileManager() -> Data {
+    var fileName : UITextField    /* source */
+
+    let filePath : String = "/Documents/\(fileName.text)"
+    let fm : FileManager = FileManager.default
+    return fm.contents(atPath: filePath) //VIOLATION
+}]]></example>
+    <repair><![CDATA[import Foundation
+import UIKit
+
+func testFileManager3() -> Data {
+    var fileName : UITextField    /* source */
+    let filePath : String = "/Documents/\(fileName.text)"
+    let fm : FileManager = FileManager.default
+    return fm.contentsOfDirectory(at: validate(filePath), includingPropertiesForKeys: nil)
+}
+
+
+func validate (text: String) -> String {
+    /* add a neutralization here */
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/22.html,http://cwe.mitre.org/data/definitions/73.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:22,CWE:73,CWETOP25:2021:8,OWASP:2021:A4,OWASP:2021:A5,PCI-DSS:6.5.8,WASC:33]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.PotentialInfiniteLoop" message="PotentialInfiniteLoop: Loop with Unreachable Exit Condition ('Infinite Loop')" class="com.optimyth.qaking.swift.rules.security.PotentialInfiniteLoop" technology="SWIFT" active="true">
+    <tags><![CDATA[CWEScope:Availability,essential,potential-bug]]></tags>
+    <description><![CDATA[The program contains an iteration or loop with an exit condition that cannot be reached, i.e., an infinite loop.
+Such infinite loop conditions are due typically to logical errors in the loop exit conditions and/or loop variables update,
+where the loop exit condition is never reached.
+
+An infinite loop will cause unexpected consumption of resources, such as CPU cycles or memory, and might compromise software availability.
+
+NOTE: Rule OPT.SWIFT.SECURITY.UncheckedInputInLoopCondition (CWE-606) checks when an untrusted input, not validated, might influence
+loop termination leading to a denial-of-service condition.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Control flow management</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid DDOS.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[while (true) {  // VIOLATION
+  doDDOS();
+}]]></example>
+    <repair><![CDATA[while ( i < 10 ) {  // OK
+  do();
+  i = i + 1;
+}]]></repair>
+    <reference><![CDATA[https://blog.jooq.org/2015/01/16/infinite-loops-or-anything-that-can-possibly-go-wrong-does/,https://cwe.mitre.org/data/definitions/835.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:835,CWETOP25:2020:36]]></security>
+    </normatives>
+    <properties>
+      <property name="allowExplicitInfiniteLoops" descname="Intentional non-empty infinite loops, coded as &quot;while (true)&quot;, are allowed." value="false"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.PrivacyViolation" message="PrivacyViolation: Exposure of Private Information ('Privacy Violation')" class="com.optimyth.qaking.swift.rules.security.PrivacyViolation" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[Managing private user information can compromise user privacy.
+
+Privacy violations occur when private user data are stored in an external location, when they are appended to the log or
+when they are sent as plain-text.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import HealthKit
+import Foundation
+
+let defaults : UserDefaults = UserDefaults.standardUserDefaults()
+
+// Add password to user defaults
+defaults.setObject("Super Secret", forKey:"passwd")  /* VIOLATION */
+
+let healthStore = HKHealthStore()
+let blood = try healthStore.bloodType() /* Source */
+print(blood.bloodType)  /* VIOLATION */
+
+let urlString : String = "http://myserver.com/?data=\(blood.bloodType)"
+let url : NSURL = NSURL(string:urlString)
+let request : NSURLRequest = NSURLRequest(URL:url)
+var err : NSError?
+var response : NSURLResponse?
+var data : NSData =  NSURLConnection.sendSynchronousRequest(request, returningResponse: &response, error:&err)  /* VIOLATION */]]></example>
+    <repair><![CDATA[// Avoid exposing sensitive data]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/359.html,http://projects.webappsec.org/Information-Leakage,https://www.owasp.org/index.php/Privacy_Violation]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP-M:2016:M2,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.RegexInjection" message="RegexInjection: Prevent denial of service attack through malicious regular expression ('Regex Injection')" class="com.optimyth.qaking.swift.rules.security.RegexInjection" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.1.1,CWEScope:Access-Control,ReDoS,denial-of-service]]></tags>
+    <description><![CDATA[If the software creates a regular expression ("pattern", "regex") from untrusted input, an attacker may supply
+malicious input that produces a denial-of-service (DoS) condition during regular expression matching.
+
+Alternatively, if the regular expression is used for input validation, the attacker-controlled regular expression
+may fail to neutralize undesired input, which may bypass the intended restrictions or render useless
+a security control.
+
+In Swift, the NSRegularExpression class, and a few methods in NSPredicate class, provide
+an API to regular expressions. The regular expression engine uses backtracking to match input strings,
+and there are certain regular expressions (named "evil regexes") that take exponential time (relative to input size)
+to match in the worst case.
+
+If the attacker controls also the input to be matched, he/she could craft an input for the evil regex that
+takes an inordinate amount of time to match, consuming resources (like CPU).
+Evil regex typically has a group with repetition, and the repeated group has repetition or alternation with overlapping.
+For example: "(a+)+", "([a-z]+)*", "(a|aa)+" or "(aa|aab?)*".
+
+For example, a "(a+)+" regex will take long computing time when matching "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"
+takes many seconds to complete, and longer strings (with exponential time increase) may lead to DoS conditions.
+
+Please note that regular expressions are often used for security controls and input validation.
+Even OWASP validation regex repository contained some known evil regular expressions.
+Note: Attackers may use tools like Google CodeSearch to find evil regex in open-source code ('CodeSearch hacking').
+
+The rule checks for potential injection of untrusted input into regex APIs.
+
+Note: Attacks like ReDoS are named "directed/intelligent/application" DoS, as an attacker with few resources
+could render unavailable a web application, in contrast with brute-force DoS.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid DoS conditions produced by regular expression injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+
+// regex injection
+
+var str : String = "some funny thing"
+
+// NSPredicate
+let input : String = readLine() /* Source */
+let pred : NSPredicate = NSPredicate(format:"SELF MATCHES \(input)")        /* VIOLATION */
+if (pred.evaluateWithObject(str)) {
+  //do something
+}
+
+
+// NSRegularExpression
+let regex = try! NSRegularExpression(pattern: input, options: [])        /* VIOLATION */
+let matches = regex.matchesInString(str, options: [], range: NSRange(location: 0, length: str.characters.count))]]></example>
+    <repair><![CDATA[import Foundation
+
+func validateRegex (query: String) -> String {
+    /* add a neutralization here */
+}
+
+var str : String = "some funny thing"
+/* evil hardcoded regex */
+let regex : String = "__w-((?:-?\d+)+)__"
+let neutralizedRegex = validateRegex(regex)
+
+let pred : NSPredicate = NSPredicate(format: neutralizedRegex)        /* Ok, neutralized */
+if (pred.evaluateWithObject(str)) {
+  print(str)
+}]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS,https://en.wikipedia.org/wiki/ReDoS,https://cwe.mitre.org/data/definitions/400.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:400,CWETOP25:2021:27,OWASP:2004:A9,PCI-DSS:6.5.1]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.ResourceInjection" message="ResourceInjection: Improper control of resource identifiers (&quot;Resource Injection&quot;)" class="com.optimyth.qaking.swift.rules.security.ResourceInjection" technology="SWIFT" active="true">
+    <tags><![CDATA[CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Software takes from an untrusted source the identifier for a system resource (like a port number),
+and allows access to a non-expected resource. Attackers may use the flaw for malicious behaviour,
+for example a port scan, change software configuration, transmit sensitive information to a third-party server,
+etc.
+
+This vulnerability is also known as "Insecure Direct Object Reference" instead of "Resource Injection".
+
+Note: Please note that other rules may check injection flaws for specific resources (like Path Traversal rule for filesystem resources,
+or SSRF for network addresses). This rule reports injection flaws on resource identifiers not covered by other rules.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import WebKit
+import UIKit
+import CoreFoundation
+
+@UIApplicationMain
+class AppDelegate: UIResponder, UIApplicationDelegate {
+
+    func application(_ app: UIApplication, open url: URL, options: [String : AnyObject]) -> Bool {
+        var inputStream : NSInputStream?
+        var outputStream : NSOutputStream?
+        var readStream : Unmanaged<CFReadStream>?
+        var writeStream : Unmanaged<CFWriteStream>?
+        let rHost = getQueryStringParameter(url.absoluteString, "host")
+        CFStreamCreatePairWithSocketToHost(kCFAllocatorDefault, rHost, 80, &readStream, &writeStream);      // VIOLATION
+    }
+
+    func getQueryStringParameter(url: String?, param: String) -> String? {
+        if let url = url, urlComponents = NSURLComponents(string: url), queryItems = (urlComponents.queryItems as? [NSURLQueryItem]) {
+            return queryItems.filter({ (item) in item.name == param }).first?.value!
+        }
+
+        return nil
+    }
+}]]></example>
+    <repair><![CDATA[import WebKit
+import UIKit
+import CoreFoundation
+
+@UIApplicationMain
+class AppDelegate: UIResponder, UIApplicationDelegate {
+
+    func validate (query: String) -> String {
+      /* add a neutralization here */
+    }
+
+    func application(_ app: UIApplication, open url: URL, options: [String : AnyObject]) -> Bool {
+        var inputStream : NSInputStream?
+        var outputStream : NSOutputStream?
+        var readStream : Unmanaged<CFReadStream>?
+        var writeStream : Unmanaged<CFWriteStream>?
+        let rHost = getQueryStringParameter(url.absoluteString, "host")
+        CFStreamCreatePairWithSocketToHost(kCFAllocatorDefault, validate(rHost), 80, &readStream, &writeStream);
+    }
+
+    func getQueryStringParameter(url: String?, param: String) -> String? {
+        if let url = url, urlComponents = NSURLComponents(string: url), queryItems = (urlComponents.queryItems as? [NSURLQueryItem]) {
+            return queryItems.filter({ (item) in item.name == param }).first?.value!
+        }
+
+        return nil
+    }
+}]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Resource_Injection]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:99,OWASP-M:2016:M7,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.ScreenCachingLeak" message="ScreenCachingLeak: Sensitive data leaked through the screen caching mechanism when app is backgrounded" class="com.optimyth.qaking.swift.rules.security.ScreenCachingLeak" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,global,infoleak,privacy]]></tags>
+    <description><![CDATA[According to the Apple official documentation, when an app is moved to background then the system takes an screenshot from
+the actual application state, so it can be shown as thumbnail and also to be used by the animations when the app is life
+cycle state changes.
+
+When an application collect sensitive data and it's moved to background, then the sensitive data which is currently showing
+will be captured by the screenshot. If a malicious attacker gain access to the system, he / she might recover all of these
+screenshots and gain access to emails, passwords, bank account numbers,...etc.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information. Thus sensitive info must be hidden before moving the
+application to background.
+
+This rule reports violation when potential sensitive fields are not hidden when the app is backgrounded.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[[Controller]
+import LocalAuthentication
+import UIKit
+
+class MainViewController: AppViewController {
+
+  @IBOutlet weak private var passwordTextField: UITextField!        /* VIOLATION */
+
+  private var blurView: UIView?
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+  }
+}
+
+[Delegate]
+import UIKit
+import CoreData
+
+@UIApplicationMain
+class AppDelegate: UIResponder, UIApplicationDelegate {
+
+    var window: UIWindow?
+
+    func applicationDidEnterBackground(_ application: UIApplication) {
+       // nothing
+    }
+}]]></example>
+    <repair><![CDATA[import LocalAuthentication
+import UIKit
+
+class MainViewController: AppViewController {
+
+  @IBOutlet weak private var passwordTextField: UITextField!        /* Ok */
+
+  private var blurView: UIView?
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+  }
+}
+
+[Delegate]
+import UIKit
+import CoreData
+
+@UIApplicationMain
+class AppDelegate: UIResponder, UIApplicationDelegate {
+
+    var window: UIWindow?
+
+    func applicationDidEnterBackground(_ application: UIApplication) {
+      let imageView = UIImageView(frame: self.window!.bounds)
+      imageView.backgroundColor = UIColor.white
+
+      UIApplication.shared.keyWindow?.subviews.last?.addSubview(imageView)
+    }
+}]]></repair>
+    <reference><![CDATA[https://developer.apple.com/library/content/documentation/iPhone/Conceptual/iPhoneOSProgrammingGuide/StrategiesforHandlingAppStateTransitions/StrategiesforHandlingAppStateTransitions.html,http://cwe.mitre.org/data/definitions/359.html,https://www.owasp.org/index.php/Privacy_Violation,http://projects.webappsec.org/Information-Leakage]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP-M:2016:M2,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.SensitiveCoreData" message="SensitiveCoreData: Sensitive data stored into CoreData('Privacy Violation')" class="com.optimyth.qaking.swift.rules.security.SensitiveCoreData" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[Managing private user information can compromise user privacy.
+
+Privacy violations occur when private user data are stored into the CoreData object due to its content is written to
+the filesystem as plain-text.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[class MyController: UIViewController {
+
+    @IBOutlet var passwordTextField: UITextField!
+
+    public func do() {
+      let context = CoreDataStack.shared.persistentContainer.viewContext
+      let newUser = NSEntityDescription.insertNewObject(forEntityName: "User", into: context) as? User   // VIOLATION
+      newUser?.phone = phoneTextField.text
+    }
+}]]></example>
+    <repair><![CDATA[// Don't store sensitive data into the CoreData]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP-M:2016:M2,OWASP:2021:A4,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.SensitiveDataAccessedFromItunes" message="SensitiveDataAccessedFromItunes: Exposure of Private Information ('Privacy Violation')" class="com.optimyth.qaking.swift.rules.security.SensitiveDataAccessedFromItunes" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:10.2.1,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[Documents directory is intended to store temporary - non sensitive - data , allowing the user, in example, running the
+application even when the data network is down.
+
+However, if property UIFileSharingEnabled is enabled into the application Info.plist, then iTunes can have access to all
+these decrypted data.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+
+let documents = SearchPathForDirectoriesInDomains(.documentDirectory, .UserDomainMask, true)[0] as String
+let passwd_path = URL(fileURLWithPath: documents).URLByAppendingPathComponent("secret.txt")
+let password: Data = getSensitiveData()
+try password.write(to:passwd_path, atomically:true)       // VIOLATION
+
+[Info.plist]
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>plistKeys</key>
+    <array>
+      <string>MinimumOSVersion</string>
+      <string>UIFileSharingEnabled</string>
+      <string>CFBundleURLTypes</string>
+      <string>UIBackgroundModes</string>
+      <string>FacebookAppID</string>
+    </array>
+    <key>UIFileSharingEnabled</key>
+    <true/>
+  </dict>
+</plist>]]></example>
+    <repair><![CDATA[import Foundation
+
+let documents = SearchPathForDirectoriesInDomains(.documentDirectory, .UserDomainMask, true)[0] as String
+let passwd_path = URL(fileURLWithPath: documents).URLByAppendingPathComponent("secret.txt")
+let password: Data = getSensitiveData()
+try password.write(to:passwd_path, atomically:true)       // OK
+
+[Info.plist]
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>plistKeys</key>
+    <array>
+      <string>MinimumOSVersion</string>
+      <string>UIFileSharingEnabled</string>
+      <string>CFBundleURLTypes</string>
+      <string>UIBackgroundModes</string>
+      <string>FacebookAppID</string>
+    </array>
+    <key>UIFileSharingEnabled</key>
+    <false/>
+  </dict>
+</plist>]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/Information-Leakage,https://developer.apple.com/library/content/documentation/General/Reference/InfoPlistKeyReference/Articles/iPhoneOSKeys.html#//apple_ref/doc/uid/TP40009252-SW20,http://cwe.mitre.org/data/definitions/359.html,https://www.owasp.org/index.php/Privacy_Violation]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:359,OWASP-M:2016:M2,OWASP:2021:A1,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.SensitiveNoSQL" message="SensitiveNoSQL: Sensitive data stored into a NoSQL database('Privacy Violation')" class="com.optimyth.qaking.swift.rules.security.SensitiveNoSQL" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[Managing private user information can compromise user privacy.
+
+Privacy violations occur when private user data are stored into a NoSQL database which stores the data as plaintext.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import MongoSwift
+
+var password = "This is my bestt secret"
+
+MongoSwift.initialize()
+
+let client = try MongoClient(connectionString: "mongodb://localhost:27017")
+let db = try client.db("myDB")
+let collection = try db.createCollection("myCollection")
+
+let doc: Document = ["_id": 100, "a": 1, "b": 2, "c": password]
+let result = try collection.insertOne(doc)    // VIOLATION]]></example>
+    <repair><![CDATA[// Don't store sensitive data into a NoSQL database as plaintext]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP-M:2016:M2,OWASP:2021:A4,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.SensitiveSQL" message="SensitiveSQL: Sensitive data stored into a SQL database('Privacy Violation')" class="com.optimyth.qaking.swift.rules.security.SensitiveSQL" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[Managing private user information can compromise user privacy.
+
+Privacy violations occur when private user data are stored into a SQL database which stores the data as plaintext.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import SQLite3
+
+var db: OpaquePointer? = nil
+sqlite3_open(part1DbPath, &db)
+
+let input = readLine()
+let insertStatementString = "SELECT name FROM CONTACTS WHERE gender \(input)"
+
+var insertStatement: OpaquePointer? = nil
+if sqlite3_prepare_v2(db, insertStatementString, -1, &insertStatement, nil) == SQLITE_OK {      /* VIOLATION */
+    let id: Int32 = 1
+    let name: NSString = "Ray"
+
+    sqlite3_bind_int(insertStatement, 1, id)
+
+    sqlite3_bind_text(insertStatement, 2, name.utf8String, -1, nil)
+
+
+    if sqlite3_step(insertStatement) == SQLITE_DONE {
+      print("Successfully inserted row.")
+    } else {
+      print("Could not insert row.")
+    }
+  } else {
+    print("INSERT statement could not be prepared.")
+  }
+
+sqlite3_finalize(insertStatement)]]></example>
+    <repair><![CDATA[// Don't store sensitive data into a SQL database as plaintext]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/Information-Leakage,https://www.owasp.org/index.php/Privacy_Violation,http://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP-M:2016:M2,OWASP:2021:A4,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.SensitiveUserDefaults" message="SensitiveUserDefaults: Sensitive data stored into UserDefaults('Privacy Violation')" class="com.optimyth.qaking.swift.rules.security.SensitiveUserDefaults" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:6.1.1,ASVS-v4.0.2:6.1.2,ASVS-v4.0.2:6.1.3,CWEScope:Confidentiality,infoleak,privacy]]></tags>
+    <description><![CDATA[Managing private user information can compromise user privacy.
+
+Privacy violations occur when private user data are stored into the UserDefaults object due to its content is written to
+the filesystem as plain-text.
+
+User private information mustn't be exposed. Depending on its location, an organization may be required to comply with
+one or more state regulations to assurance of private information.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+
+let defaults : UserDefaults = UserDefaults.standard
+let context = delegate.managedObjectContext!
+
+let fr:NSFetchRequest<NSFetchRequestResult> = User.fetchRequest()
+fr.returnsObjectsAsFaults = false
+fr.predicate = NSPredicate(format: "(password LIKE '\(password)')",argumentArray:  nil)
+
+let users : Array<User> = try! context.fetch(fr) as! Array<User>
+defaults.set(users[0].password! as NSString, forKey: "password")      // VIOLATION
+defaults.set(true, forKey: "loggedin")
+defaults.synchronize()]]></example>
+    <repair><![CDATA[// Don't store sensitive data into the UserDefaults object]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/311.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:311,OWASP-M:2016:M2,OWASP:2021:A4,PCI-DSS:8.2.1,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.SerializationInjection" message="SerializationInjection: Deserialization of untrusted data" class="com.optimyth.qaking.swift.rules.security.SerializationInjection" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.5.2,ASVS-v4.0.2:5.5.1,ASVS-v4.0.2:5.5.3,CWEScope:Availability,CWEScope:Integrity,serialization]]></tags>
+    <description><![CDATA[When application deserializes untrusted data (possibly chosen by an attacker), malformed
+data or unexpected data could be used to abuse application logic, deny service, or execute arbitrary code, when
+deserialized.
+
+The vulnerability occurs when user-supplied input is not properly sanitized before being passed to one of the encode()
+functions from NSCoder. Since Swift allows object serialization, attackers could pass ad-hoc serialized strings to a vulnerable call, resulting
+in an arbitrary Swift object(s) injection into the application scope.]]></description>
+    <priority>3</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid deserializing untrusted data inputs.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+
+var input = readLine()
+
+var coder : NSCoder = getCoder()
+
+coder.encode(input)    // VIOLATION]]></example>
+    <repair><![CDATA[import Foundation
+
+var input = readLine()
+input = validate(input)
+
+var coder : NSCoder = getCoder()
+
+if (coder.encode(input)    // Ok, input validated]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/502.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:502,CWETOP25:2021:13,OWASP-M:2016:M8,OWASP:2021:A3,OWASP:2021:A8,PCI-DSS:6.5.1,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.ServerTrustCredentialCheck" message="ServerTrustCredentialCheck: Evaluate server certificate trust chain" class="com.optimyth.qaking.swift.rules.security.ServerTrustCredentialCheck" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.9.2,ASVS-v4.0.2:9.2.1,CWEScope:Authentication,CWEScope:Integrity]]></tags>
+    <description><![CDATA[When credentials are create using a server certificate. its trust must be evaluated beforehand to ensure credentials are
+safe.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Permissions, privileges and access controls</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Ensure credentials are safe.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[let serverTrust = challenge.protectionSpace.serverTrust  // VIOLATION]]></example>
+    <repair><![CDATA[let serverTrust = challenge.protectionSpace.serverTrust  // OK
+if errSecSuccess == SecTrustEvaluate(serverTrust, &secresult), cert.isEqual(to: localCert) {
+  doSomething()
+}]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/295.html,https://developer.apple.com/documentation/foundation/url_loading_system/handling_an_authentication_challenge/performing_manual_server_trust_authentication]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:295,CWETOP25:2021:26,OWASP-M:2016:M3,OWASP:2021:A7,WASC:04]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.SqlInjection" message="SqlInjection: Avoid SQL code formed with non neutralized user input (vulnerable to SQL Injection attacks)" class="com.optimyth.qaking.swift.rules.security.SqlInjection" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.4,ASVS-v4.0.2:5.3.5,CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[NEVER concatenate untrusted inputs in SQL code.
+
+The best way to avoid SQL injection is to use parameters in the SQL command.
+That way, even unvalidated inputs are considered data and not part of the SQL statement, which is safe
+(unless when executing a flawed stored procedure that builds SQL by concatenation and runs dynamic SQL).
+
+A common use-case is the need to build parts of the SQL statement dynamically, depending on the input provided.
+Try to avoid concatenation of inputs, instead concatenate constant fragments of SQL (literals) with parameter placeholders.
+
+If dynamic SQL is the unique way to build a complex SQL statement, at least validate carefully the inputs to be concatenated,
+accepting only valid inputs (use regular expression patterns, or convert inputs to a primitive data type). This way,
+any attacker payload will be neutralized before reaching the database.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent SQL injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import FMDB
+
+let input = readLine()
+
+let db = FMDatabase(path: databasePath as String)
+let querySQL = "SELECT name FROM CONTACTS WHERE gender = " + input
+
+let results:FMResultSet? = db.executeQuery(querySQL, withArgumentsInArray: nil)     /* VIOLATION */]]></example>
+    <repair><![CDATA[import FMDB
+
+let input = readLine()
+
+let db = FMDatabase(path: databasePath as String)
+let querySQL = "SELECT name FROM CONTACTS WHERE gender IN ?"
+
+let results:FMResultSet? = db.executeQuery(querySQL, withArgumentsInArray: input)]]></repair>
+    <reference><![CDATA[]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:89,CWETOP25:2021:6,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:19]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.StringFormatInjection" message="StringFormatInjection: Exclude unsanitized user input from format strings" class="com.optimyth.qaking.swift.rules.security.StringFormatInjection" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.4.2,CWEScope:Access-Control,denial-of-service]]></tags>
+    <description><![CDATA[This vulnerability ca be also known as Predicate injection.
+
+If the format string is constructed with untrusted input, an attacker may produce unexpected application behaviour.
+It may cause an exception (which, if not catched, may lead to a denial-of-service condition), or information leak.
+
+Consequently, unsanitized input from untrusted source should never be incorporated into format strings.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[[Avoid denial of service.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+
+var str : String = "some funny thing"
+
+// NSPredicate
+let input : String = readLine() /* Source */
+let pred : NSPredicate = NSPredicate(format:"SELF MATCHES \(input)")        /* VIOLATION */
+if (pred.evaluateWithObject(str)) {
+  //do something
+}
+
+printf("Hello %s", input)        /* VIOLATION */]]></example>
+    <repair><![CDATA[import Foundation
+
+var str : String = "some funny thing"
+
+// NSPredicate
+let input : String = readLine() /* Source */
+
+func validate (query: String) -> String {
+  /* add a neutralization here */
+}
+
+let pred : NSPredicate = NSPredicate(format:"SELF MATCHES \(validate(input))")        /* Ok */
+if (pred.evaluateWithObject(str)) {
+  //do something
+}]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/134.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:134,CWETOP25:2011:23,OWASP:2004:A5,PCI-DSS:6.5.1,WASC:10]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.ThirdPartyKeyboardAllowed" message="ThirdPartyKeyboardAllowed: Avoid exposing sensitive data to third party keyboards." class="com.optimyth.qaking.swift.rules.security.ThirdPartyKeyboardAllowed" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:12.3.6,ASVS-v4.0.2:14.2.3,ASVS-v4.0.2:14.2.4,ASVS-v4.0.2:2.10.3,ASVS-v4.0.2:5.3.9,CWEScope:Access-Control,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[Third party keyboards might not be completely trustable and using them can be a risk when
+the application handles sensitive information.]]></description>
+    <priority>3</priority>
+    <effort>2</effort>
+    <vulntype>Information leaks</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Keeping private data safe improves security.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[@implementation AppDelegate: UIApplicationDelegate  // VIOLATION
+
+@synthesize managedObjectContext = _managedObjectContext;
+@synthesize managedObjectModel = _managedObjectModel;
+@synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
+
+@end]]></example>
+    <repair><![CDATA[@implementation AppDelegate: UIApplicationDelegate
+
+@synthesize managedObjectContext = _managedObjectContext;
+@synthesize managedObjectModel = _managedObjectModel;
+@synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
+
+-(BOOL)application:(UIApplication *)application shouldAllowExtensionPointIdentifier:(NSString *)extensionPointIdentifier
+{
+    if (extensionPointIdentifier == UIApplicationKeyboardExtensionPointIdentifier)
+    {
+        return NO;
+    }
+
+    return YES;
+}
+
+@end]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/829.html,https://cwe.mitre.org/data/definitions/522.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:522,CWE:829,CWETOP25:2021:21,OWASP:2021:A8]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.UnsafeCookie" message="UnsafeCookie: Generate server-side cookies with adequate security properties" class="com.optimyth.qaking.swift.rules.security.UnsafeCookie" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:14.3.3,ASVS-v4.0.2:3.2.3,ASVS-v4.0.2:3.4.1,ASVS-v4.0.2:7.3.3,ASVS-v4.0.2:8.3.4,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[Checks that cookies generated server-side have the following security properties:
+
+* Non persistent - Cookie is not stored persistently by the browser (it is hold in memory)
+* Secure - Cookie is sent in HTTP/SSL communications only (more difficult to capture on the net)
+* Path - Path should not match a certain patterns that allow transmission to unintended web applications.
+* Domain - Domain should not be too wide so the cookie is sent to unintended servers.
+
+Additionally, the name of any session cookie should be chosen to avoid providing common names that may give clues
+to the attacker about how are sessions handled in the server.
+
+Other rules (like HeaderManipulation) check other conditions, like HTTP Splitting, that could be
+produced when the cookie value depends on user-controlled input non properly neutralized.
+
+NOTE: Not setting domain or path forces browser to send the cookie to the originator's domain and
+application path, so this is considered secure.]]></description>
+    <priority>3</priority>
+    <effort>4</effort>
+    <vulntype>Misconfiguration</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+
+let properties : [HTTPCookiePropertyKey : Any] = [
+    HTTPCookiePropertyKey.domain: "www.example.com",
+    HTTPCookiePropertyKey.path: "/service",
+    HTTPCookiePropertyKey.name: key,
+    HTTPCookiePropertyKey.value: value
+]
+let cookie : HTTPCookie? = HTTPCookie(properties:properties)        /* VIOLATION Unsecure cookie */]]></example>
+    <repair><![CDATA[import Foundation
+let properties2 : [HTTPCookiePropertyKey : Any] = [
+    HTTPCookiePropertyKey.domain: "www.example.com",
+    HTTPCookiePropertyKey.path: "/service",
+    HTTPCookiePropertyKey.name: key,
+    HTTPCookiePropertyKey.value: value,
+    HTTPCookiePropertyKey.secure: "TRUE"    /* Ok */
+]
+let cookie : HTTPCookie? = HTTPCookie(properties:properties2)]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/539.html,http://cwe.mitre.org/data/definitions/614.html,http://projects.webappsec.org/w/page/13246936/Information%20Leakage,http://cwe.mitre.org/data/definitions/200.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:1004,CWE:200,CWE:539,CWE:614,CWETOP25:2021:20,PCI-DSS:6.5.3,WASC:13]]></security>
+    </normatives>
+    <properties>
+      <property name="domainPatternToAvoid" descname="Domain pattern to avoid" value="\.[^\.]+"/>
+      <property name="avoidPersistentCookies" descname="Avoid persistent cookies" value="true"/>
+      <property name="avoidUnsecureCookies" descname="Avoid unsecure cookies" value="false"/>
+      <property name="pathPatternToAvoid" descname="Path pattern to avoid" value="/"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.UnsafeReflection" message="UnsafeReflection: Use of Externally-Controlled Input to Select Classes or Code ('Unsafe Reflection')" class="com.optimyth.qaking.swift.rules.security.UnsafeReflection" technology="SWIFT" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity,reflection]]></tags>
+    <description><![CDATA[The software uses external input with reflection to select which classes or code to use, but it does not prevent
+the input from selecting improper classes or code.
+
+If the application uses external inputs to determine which class to instantiate or which method to invoke, then an attacker
+could supply values to select unexpected classes or methods. If this occurs, then the attacker could execute code that
+was not intended by the developer. It may bypass authentication or access control checks, or otherwise cause unexpected behaviour.
+
+It the attacker is able to upload files in a location that appears in the classpath, or add new entries to the classpath,
+this flaw could lead to execution of arbitrary code, chosen by the attacker.]]></description>
+    <priority>2</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Limit potential unexpected code execution, or uncontrolled access to sensitive information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import UIKit
+
+@UIApplicationMain
+class AppDelegate: UIResponder, UIApplicationDelegate {
+
+    var window: UIWindow?
+
+    func application(_ app: UIApplication, open url : URL, options: [String : AnyObject]) -> Bool {
+        let query = url.query
+        let pathExt = url.pathExtension
+        let selector = Selector(pathExt!)
+        performSelector(selector, with:query)     /* VIOLATION */
+    }
+}]]></example>
+    <repair><![CDATA[import UIKit
+
+@UIApplicationMain
+class AppDelegate: UIResponder, UIApplicationDelegate {
+
+    var window: UIWindow?
+
+    func application(_ app: UIApplication, open url : URL, options: [String : AnyObject]) -> Bool {
+        let query = url.query
+        let pathExt = url.pathExtension
+        let selector = Selector(validate(pathExt!))
+        performSelector(selector, with:query)     /* VIOLATION */
+    }
+
+    func validate(_: String) {
+      // perform some validation here
+    }
+}]]></repair>
+    <reference><![CDATA[https://www.owasp.org/index.php/Resource_Injection,https://cwe.mitre.org/data/definitions/470.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:470,OWASP:2021:A3,PCI-DSS:6.5.8,WASC:20]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.WeakCryptographicHash" message="WeakCryptographicHash: Weak cryptographic hashes cannot guarantee data integrity" class="com.optimyth.qaking.swift.rules.security.WeakCryptographicHash" technology="SWIFT" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,crypto,hash]]></tags>
+    <description><![CDATA[MD5, SHA-1 and RIPEMD160 are popular cryptographic hash functions often used to verify the integrity of messages, and for other usages.
+Recent advances in cryptanalysis have discovered weaknesses in both algorithms. Consequently, MD5, SHA-1 or RIPEMD160
+should no longer be relied upon in security-critical contexts.
+
+Techniques for breaking MD5 hashes are advanced and widely available enough that the algorithm must not be relied upon for security.
+In the case of SHA-1 or RIPEMD160, current techniques still require a significant amount of computational power and are more difficult to implement.
+However, attackers have found the Achilles heal for the algorithm, and techniques for breaking it will likely lead to the discovery
+of even faster attacks. In particular, Google has reported recently an example of colliding SHA-1 hashes.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve security, by avoiding not allowed access to sensible data or information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import CommonCrypto
+
+let encodedText = text.cStringUsingEncoding(NSUTF8StringEncoding)
+let textLength = CC_LONG(text.lengthOfBytesUsingEncoding(NSUTF8StringEncoding))
+let digestLength = Int(CC_MD5_DIGEST_LENGTH)
+let result = UnsafeMutablePointer<CUnsignedChar>.alloc(digestLength)
+
+CC_MD5(encodedText, textLength, result)      /* VIOLATION */
+
+CC_MD5(imageData, length, result)      /* VIOLATION */
+
+CC_SHA1(imageData, length, result)     /* VIOLATION */
+
+CCHmac(kCCHmacAlgSHA1,      /* VIOLATION */
+           cKey,
+           strlen(cKey),
+           cData,
+           strlen(cData),
+           cHMAC)]]></example>
+    <repair><![CDATA[import CommonCrypto
+
+CC_SHA512(imageData, length, result)     /* Ok */]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/328.html,https://en.wikipedia.org/wiki/Hash_function_security_summary]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:328,OWASP-M:2016:M5,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:50]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="Comma-separated list of allowed hash functions." value="RIPEMD160, MACTripleDES, SHA256, SHA384, SHA512"/>
+      <property name="forbiddenAlgorithms" descname="List of weak hash functions" value="MD5, SHA1"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.WeakCryptographicHashSalt" message="WeakCryptographicHashSalt: Weak cryptographic salts cannot guarantee data integrity" class="com.optimyth.qaking.swift.rules.security.WeakCryptographicHashSalt" technology="SWIFT" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,crypto]]></tags>
+    <description><![CDATA[In addition to the secure algorithm selected, we should take special attention to salts, as they should:
+  * Not be nil or empty, and long enough to guarantee a secure encryption.
+  * Not be hardcoded, as any person with access to the source code will know its value. Also changing a hardcoded salt
+    once it is in production is extremely difficult.
+  * Not be reused, because this makes easier to break the encryption, due to two users with the same password will have
+    the same hash.
+  * Not be controlled by user input.
+
+This rule checks if a salt can be considered secure.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Using a strong salt along with a secure algorithm makes data harder to leak.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import CommonCrypto
+
+let algorithm: CCPBKDFAlgorithm = CCPBKDFAlgorithm(kCCPBKDF2)
+let rounds : UInt32 = 10000
+let hash = CCPBKDFAlgorithm(kCCPRFHmacAlgSHA256)
+
+var saltFromUser : String = readLine()
+let saltData : Data? = saltFromUser.data(using: .utf8)
+
+CCKeyDerivationPBKDF(algorithm, // VIOLATION, salt from external input
+  password, passwordLen,
+  saltData, saltData.count,
+  hash, rounds,
+  derivedKey, derivedKeyLen
+)
+
+let hardcodedSalt = Data(bytes: [0x73, 0x61, 0x6c, 0x74, 0x44, 0x61, 0x74, 0x61])
+
+CCKeyDerivationPBKDF(algorithm,     /* VIOLATION - hardcoded salt */
+  password, passwordLen,
+  hardcodedSalt, hardcodedSalt.count,
+  hash, rounds,
+  derivedKey, derivedKeyLen
+)]]></example>
+    <repair><![CDATA[import CommonCrypto
+
+var salt = Int(arc4random_uniform(6))
+var salt_length = salt.count
+
+/* FIXED - salt is generated as a random array of bytes */
+func randomSalt(length : UInt) -> NSData {
+    let salt        = NSMutableData(length: Int(length))
+    var saltPointer = UnsafeMutablePointer<UInt8>(salt.mutableBytes)
+    SecRandomCopyBytes(kSecRandomDefault, length, saltPointer);
+    return salt
+}
+
+let randomSalt = salt(16)
+
+CCKeyDerivationPBKDF(algorithm,
+  password, passwordLen,
+  randomSalt, randomSalt.count,
+  hash, count,
+  derivedKey, derivedKeyLen
+)]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/759.html,http://cwe.mitre.org/data/definitions/328.html,http://cwe.mitre.org/data/definitions/760.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:328,CWE:759,CWE:760,OWASP-M:2016:M5,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:50]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.WeakCryptographicKey" message="WeakCryptographicKey: Weak keys used for cryptographic purposes" class="com.optimyth.qaking.swift.rules.security.WeakCryptographicKey" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.6.1,ASVS-v4.0.2:1.6.2,ASVS-v4.0.2:1.6.3,ASVS-v4.0.2:1.6.4,ASVS-v4.0.2:2.8.2,ASVS-v4.0.2:2.9.1,ASVS-v4.0.2:6.4.2,CWEScope:Access-Control,crypto]]></tags>
+    <description><![CDATA[A robust cryptographic algorithm (like RSA or AES) with a small key length could be vulnerable to brute-force type attacks.
+
+For symmetric ciphers, AES-CBC (FIPS 197) is the most often recommended algorithm nowadays, with a block size of at least
+64 bits (128 bits for the better). Recommended minimum key length for AES is 128 bits for most usages, but for long-range
+security, 192 bits or even 256 bits are often recommended.
+
+DES and DESede (or "triple-DES") are, nowadays, not robust enough for most applications. Many algorithms used in the past,
+like Blowfish or RC2, are now deemed insecure.
+
+For asymetric cryptography ("public key"), the algorithm most often used is RSA. Most experts consider 2048 as the
+most adequate key length for common needs, as its usage in digital signature and other applications demand cryptographic
+robustness for a long period of time. Experts now consider 1024 bits for RSA keys (modulus) not enough secure.
+
+Algoritms based on elliptic curves cryptography (like EC-DSA) typically require smaller key sizes, around 200 bits.
+
+See http://www.keylength.com for an interactive site showing current recommendations in cryptographic algorithms,
+key length and other issues to take into account.
+
+This rule reports violation when;
+  - It's emtpy.
+  - It's nil.
+  - It's hardcoded.
+  - Its size is too low.
+  - It's user controlled.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Making strong keys allows keeping sensitive data safe]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import CommonCrypto
+
+CCCrypt(UInt32(kCCEncrypt),     /* VIOLATION */
+UInt32(kCCAlgorithmAES128),
+UInt32(kCCOptionPKCS7Padding),
+"_my_password____",
+16,
+iv,
+plaintext,
+plaintext.length,
+ciphertext.mutableBytes,
+ciphertext.length,
+&numBytesEncrypted)
+
+CCHmac(UInt32(kCCHmacAlgSHA256), "", 0, plaintext, plaintextLen, &output)     /* VIOLATION */
+
+let cStatus = CCCrypt(UInt32(kCCEncrypt),       /* VIOLATION */
+UInt32(kCCAlgorithmDES),
+UInt32(kCCOptionPKCS7Padding),
+key,
+UInt32(kCCKeySizeDES), // 64-bit key size
+iv,
+plaintext,
+plaintextLength,
+ciphertext,
+ciphertextLength,
+&numBytesEncrypted)]]></example>
+    <repair><![CDATA[import CommonCrypto
+
+var input : String = readLine()
+
+CCCrypt(UInt32(kCCEncrypt),     /* OK */
+UInt32(kCCAlgorithmAES128),
+UInt32(kCCOptionPKCS7Padding),
+input,
+512,
+iv,
+plaintext,
+plaintext.length,
+ciphertext.mutableBytes,
+ciphertext.length,
+&numBytesEncrypted)]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/321.html,https://cwe.mitre.org/data/definitions/320.html,http://cwe.mitre.org/data/definitions/259.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:259,CWE:320,CWE:321,OWASP-M:2016:M5,OWASP:2021:A7,WASC:13]]></security>
+    </normatives>
+    <properties>
+      <property name="minKeySize" descname="Comma-separated list of minimum key size per algorithm." value="AES/128, TripleDES/192, RC2/128, RSA/2048, DSA/2048, ECDsa/256, ECDiffieHellman/256"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.WeakEncryption" message="WeakEncryption: Weak symmetric encryption algorithm" class="com.optimyth.qaking.swift.rules.security.WeakEncryption" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.9.3,ASVS-v4.0.2:6.2.2,ASVS-v4.0.2:8.3.7,CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,cipher,crypto]]></tags>
+    <description><![CDATA[The program uses a weak encryption algorithm that cannot guarantee the confidentiality of sensitive data.
+
+Old encryption algorithms such as DES no longer provide sufficient protection for use with sensitive data.
+Encryption algorithms rely on key size as one of the primary mechanism to ensure cryptographic strength.
+Cryptographic strength is often measured by the time and computational power needed to generate a valid key.
+Advances in computing power have made it possible to obtain small encryption keys in a reasonable amount of time.
+
+For example, the 56-bit key used in DES posed a significant computational hurdle in the 1970's when the algorithm
+was first developed, but today DES can be cracked in less than a day using commonly available equipment.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Improve security, by avoiding not allowed access to sensible data or information.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import CommonCrypto
+
+let cStatus = CCCrypt(UInt32(kCCEncrypt),       /* VIOLATION */
+UInt32(kCCAlgorithmDES),
+UInt32(kCCOptionPKCS7Padding),
+key,
+keyLength,
+iv,
+plaintext,
+plaintextLength,
+ciphertext,
+ciphertextLength,
+&numBytesEncrypted)]]></example>
+    <repair><![CDATA[import CommonCrypto
+
+let cStatus = CCCrypt(UInt32(kCCEncrypt),       /* Ok */
+UInt32(kCCAlgorithm3DES),
+UInt32(kCCOptionPKCS7Padding),
+key,
+keyLength,
+iv,
+plaintext,
+plaintextLength,
+ciphertext,
+ciphertextLength,
+&numBytesEncrypted)]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/327.html,https://www.securecoding.cert.org/confluence/display/java/MSC61-J.+Do+not+use+insecure+or+weak+cryptographic+algorithms,http://projects.webappsec.org/w/page/13246936/Information%20Leakage]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:327,OWASP-M:2016:M5,OWASP:2021:A2,PCI-DSS:6.5.3,WASC:04]]></security>
+    </normatives>
+    <properties>
+      <property name="allowedAlgorithms" descname="Comma-separated list of allowed ciphers." value="DESEDE, AES, IDEA"/>
+      <property name="forbiddenAlgorithms" descname="Comma-separated list of ciphers that should NOT be used." value="DES, RC2, RC4, RC5"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.WeakKeyDerivationIteration" message="WeakKeyDerivationIteration: Too weak iteration count on key derivation" class="com.optimyth.qaking.swift.rules.security.WeakKeyDerivationIteration" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.4.1,ASVS-v4.0.2:2.4.2,ASVS-v4.0.2:2.4.3,ASVS-v4.0.2:2.4.4,ASVS-v4.0.2:2.4.5,CWEScope:Access-Control,crypto]]></tags>
+    <description><![CDATA[When a key is derived from a password (and other data) and an iteration count, it's mandatory using a enough number of
+iterations to ensure the key is not weak.
+
+Otherwise key would result weak to dictionary or rainbow tables attacks.
+
+This rule set the minimum iterations number in 100000, but it can be modified in the "minIterations" parameter.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Making strong keys allows keeping sensitive data safe]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import CommonCrypto
+
+let ITERATION_DEFINED = 50
+
+CCKeyDerivationPBKDF(kCCPBKDF2,     /* VIOLATION */
+                     password,
+                     passwordLen,
+                     salt,
+                     saltLen,
+                     kCCPRFHmacAlgSHA256,
+                     ITERATION_DEFINED,
+                     derivedKey,
+                     derivedKeyLen)]]></example>
+    <repair><![CDATA[import CommonCrypto
+
+let ITERATION_DEFINED = 150000
+
+CCKeyDerivationPBKDF(kCCPBKDF2,     /* Ok */
+                     password,
+                     passwordLen,
+                     salt,
+                     saltLen,
+                     kCCPRFHmacAlgSHA256,
+                     ITERATION_DEFINED,
+                     derivedKey,
+                     derivedKeyLen)]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/916.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:916,OWASP-M:2016:M5,OWASP:2021:A2]]></security>
+    </normatives>
+    <properties>
+      <property name="minIterations" descname="Minimum number of iterations when deriving a key." value="100000"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.WeakKeyDerivationPassword" message="WeakKeyDerivationPassword: Empty or nil password used in key derivation" class="com.optimyth.qaking.swift.rules.security.WeakKeyDerivationPassword" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:1.6.1,ASVS-v4.0.2:1.6.2,ASVS-v4.0.2:1.6.3,ASVS-v4.0.2:1.6.4,ASVS-v4.0.2:2.8.2,ASVS-v4.0.2:2.9.1,ASVS-v4.0.2:6.4.2,CWEScope:Access-Control,crypto]]></tags>
+    <description><![CDATA[When a key is derived from a password (and other data) and an iteration count, it's mandatory using a strong password. It
+shouldn't be at least empty or nil.
+
+Otherwise key would result weak to dictionary or rainbow tables attacks.
+
+This rule checks if password is empty or nil.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Making strong keys allows keeping sensitive data safe.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import CommonCrypto
+
+CCKeyDerivationPBKDF(CCPBKDFAlgorithm(kCCPBKDF2),       /* VIOLATION */
+"",
+999999,
+salt,
+saltLen,
+CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
+100000,
+derivedKey,
+derivedKeyLen)
+
+CCKeyDerivationPBKDF(CCPBKDFAlgorithm(kCCPBKDF2),       /* VIOLATION */
+nil,
+999999999,
+salt,
+saltLen,
+CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
+100000,
+derivedKey,
+derivedKeyLen)
+
+CCKeyDerivationPBKDF(CCPBKDFAlgorithm(kCCPBKDF2),       /* VIOLATION */
+"loogjdfj",
+99999,
+salt,
+saltLen,
+CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
+100000,
+derivedKey,
+derivedKeyLen)
+
+CCKeyDerivationPBKDF(CCPBKDFAlgorithm(kCCPBKDF2),       /* VIOLATION */
+password,
+0,
+salt,
+saltLen,
+CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
+100000,
+derivedKey,
+derivedKeyLen)]]></example>
+    <repair><![CDATA[import CommonCrypto
+
+var input : String = readLine()
+
+CCKeyDerivationPBKDF(CCPBKDFAlgorithm(kCCPBKDF2),       /* Ok */
+input,
+input.count,
+salt,
+saltLen,
+CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
+100000,
+derivedKey,
+derivedKeyLen)]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/760.html,https://cwe.mitre.org/data/definitions/320.html,http://cwe.mitre.org/data/definitions/321.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:320,CWE:321,OWASP-M:2016:M4,OWASP:2021:A2,WASC:13]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.WeakSymmetricEncryptionInitializationVector" message="WeakSymmetricEncryptionInitializationVector: Weak encryption initialization vector" class="com.optimyth.qaking.swift.rules.security.WeakSymmetricEncryptionInitializationVector" technology="SWIFT" active="true">
+    <tags><![CDATA[CWEScope:Access-Control,CWEScope:Confidentiality,CWEScope:Integrity,crypto]]></tags>
+    <description><![CDATA[In cryptography, an initialization vector (IV) is a block of bits that is required to allow encryption
+a cipher by blocks, in one of the encryption modes, with a result independent of other ciphers
+produced by the same key.
+
+Using an insecure initialization vector produces ciphered text much more predictable and susceptible to a dictionary attack.
+
+The rule reports initialization vectors which are not generated by a pseudorandom generator.]]></description>
+    <priority>1</priority>
+    <effort>2</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Using random initialization vectors makes encryption stronger.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import CommonCrypto
+
+let cStatus = CCCrypt(UInt32(kCCEncrypt),       /* VIOLATION */
+UInt32(kCCAlgorithmAES128),
+UInt32(kCCOptionPKCS7Padding),
+key,
+keyLength,
+nil,
+plaintext,
+plaintextLength,
+ciphertext,
+ciphertextLength,
+&numBytesEncrypted)]]></example>
+    <repair><![CDATA[Use a pseudorandom number generator to generate de initialization vector.]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/329.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:329,OWASP-M:2016:M5,OWASP:2021:A1]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.WeakSymmetricEncryptionModeOfOperation" message="WeakSymmetricEncryptionModeOfOperation: Do not use weak modes of operation with symmetric encryption" class="com.optimyth.qaking.swift.rules.security.WeakSymmetricEncryptionModeOfOperation" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:2.9.3,ASVS-v4.0.2:6.2.2,ASVS-v4.0.2:8.3.7,CWEScope:Accountability,CWEScope:Confidentiality,CWEScope:Integrity,CWEScope:Non-Repudiation,crypto]]></tags>
+    <description><![CDATA[For block ciphers, like AES, Triple-DES or RC5, mode of operation is the way the plaintext/ciphertext blocks are combined during
+encryption/decyption of the message.
+
+Many modes of operation (like CTR, OFB or CFB) transforms a block cipher into a stream cipher. Other modes (named Authenticated Encryption modes)
+were designed to combine secrecy and authentication in a single cryptographic primitive (like OCB, CCM or GCM modes).
+
+This rule detects modes that are considered too weak for general usage. For example, ECB mode (the simplest mode, with no feedback)
+is typically a too-weak mode because encrypting the same block always produce the same cipher block. This allows the attacker
+to (1) detect whether two ECB-encrypted messages are identical, (2) detect whether two EBC-encrypted messages share a common prefix
+or other common substrings aligned at block boundaries, or (3) detect whether (and where) a single ECB-encrypted message contains
+repetitive data (zeros, spaces or null bytes), repeated header fields, or repeated phrases in text, and (4) without additional message
+authentication, an attacker can insert previously ciphertext blocks anywhere ("too-much malleable").
+
+A real case that lead to a massive real-world data compromise was the 2013 Adobe password database leak.
+
+Please note that most modes (except EBC) require a unique binary sequence, called initialization vector (IV) for each encryption operation,
+that should not be reused (and typically should be random for most modes). Besides choosing a proper mode of operation,
+a proper IV generation and last-block padding should be also taken into account.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Encryption and randomness</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Using a strong mode of operation makes encryption stronger.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import CommonCrypto
+
+ccStatus = CCCrypt(UInt32(kCCEncrypt),      /* VIOLATION */
+                UInt32(kCCAlgorithmAES128),
+                UInt32(kCCOptionECBMode),
+                keyData.bytes,
+                keyLength,
+                keyData.bytes,
+                data.bytes,
+                data.length,
+                cryptData.mutableBytes,
+                cryptData.length,
+                &numBytesEncrypted)]]></example>
+    <repair><![CDATA[import CommonCrypto
+
+ccStatus = CCCrypt(UInt32(kCCEncrypt),      /* VIOLATION */
+                UInt32(kCCAlgorithmAES128),
+                UInt32(kCCModeCBC),
+                keyData.bytes,
+                keyLength,
+                keyData.bytes,
+                data.bytes,
+                data.length,
+                cryptData.mutableBytes,
+                cryptData.length,
+                &numBytesEncrypted)]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/327.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:327,OWASP-M:2016:M5,OWASP:2021:A2]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.XMLEntityInjection" message="XMLEntityInjection: XML entity injection" class="com.optimyth.qaking.swift.rules.security.XMLEntityInjection" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.5.2,CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[In XML parsers, when XML document to parse could be altered by untrusted input, and the untrusted input may
+alter the Document Type Definition (DTD, embedded or external), the parser should be configured to avoid
+two kinds of potential attacks:
+
+* XML entity expansion DoS (XML bomb or "billion laughs attack"), CWE-776, where well-formed DTD with
+  internal entities are expanded exponentially until they exhaust memory.
+
+* XML external entity injection (XXE), CWE-611, where an external entity controlled by the attacker refers to the URL
+  of a resource that gives unauthorized access to sensitive files on the server machine, or to a resource
+  like /dev/random in Unix systems that, when entity is expanded, leads to a denial-of-service condition.
+  A variant of this attack is the server-side request forgery (SSRF), where the URL for external DTD or XML-Schema
+  is processed by the URL handler used by the XML parser, allowing the attacker access to an unexpected
+  network resource (for cross-site request forgery attacks or port-scanning enumeration).
+
+Please note that most Swift parsers are not vulnerable by default to XML entity injection attacks because their
+default settings have both entity expansion and external entity resolution disabled.
+
+XML parsing could be hidden in other frameworks and libraries. For example, with REST, when a resource has an XML
+representation, the REST framework typically use an underlying XML parser for processing the request message, which
+obviously is fully under control of a potential attacker.
+
+To be safe during XML processing coming from untrusted sources, a number of XML features should be not enabled
+when configuring the parser. Specifically shouldResolveExternalEntities options should not be enabled.
+
+The rule checks that there is a path between an untrusted input and the XML document to parse,
+then verifies that the XML parser is configured to avoid both external entity and entity expansion attacks.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid XML entity attacks that could cause denial-of-service and information leakage.]]></benefits>
+    <inconvenients><![CDATA[Dependencies on certain features related to DTD or entity expansion may render runtime errors.]]></inconvenients>
+    <example><![CDATA[import Foundation
+
+var input = readLine()      /* Source */
+
+let parser = XMLParser(data: input)
+
+parser.delegate = self;
+parser.shouldResolveExternalEntities = true
+
+parser.parse()      /* VIOLATION */]]></example>
+    <repair><![CDATA[import Foundation
+
+var input = readLine()      /* Source */
+
+let parser = XMLParser(data: input)
+
+parser.delegate = self;
+parser.shouldResolveExternalEntities = false  /* This line is optional as it's safe by default */
+
+parser.parse()      /* Ok */]]></repair>
+    <reference><![CDATA[https://cwe.mitre.org/data/definitions/611.html,https://cwe.mitre.org/data/definitions/776.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:611,CWE:776,CWETOP25:2021:23,OWASP:2021:A5,PCI-DSS:6.5.1,WASC:43,WASC:44]]></security>
+    </normatives>
+    <properties/>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.XMLInjection" message="XMLInjection: XML Injection (aka Blind XPath Injection)" class="com.optimyth.qaking.swift.rules.security.XMLInjection" technology="SWIFT" active="true">
+    <tags><![CDATA[CWEScope:Availability,CWEScope:Confidentiality,CWEScope:Integrity]]></tags>
+    <description><![CDATA[The extensible markup language (XML) is used in a wide range of applications, from remote
+procedure calls to storage, exchange and retrieval of data.
+
+By injecting XML content or structures into an XML document, an attacker can alter the logic of the application or
+insert malicious content.
+
+Input data must be validated before writing into an XML document.]]></description>
+    <priority>2</priority>
+    <effort>2</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Prevent XML injection attacks.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import AEXML
+
+var input = readLine()      /* Source */
+
+let yourXML = AEXMLDocument()
+let attributes = ["xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance", "xmlns:xsd" : "http://www.w3.org/2001/XMLSchema"]
+yourXML.addChild(name: "name", value: input)        /* VIOLATION */
+print(yourXML.xmlString)]]></example>
+    <repair><![CDATA[import AEXML
+
+var input = readLine()      /* Source */
+
+let yourXML = AEXMLDocument()
+let attributes = ["xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance", "xmlns:xsd" : "http://www.w3.org/2001/XMLSchema"]
+
+func validate (text: String) -> String {
+    /* add a neutralization here */
+}
+
+yourXML.addChild(name: "name", value: validate(input))        /* Ok */
+print(yourXML.xmlString)]]></repair>
+    <reference><![CDATA[http://cwe.mitre.org/data/definitions/91.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:91,OWASP:2021:A3,WASC:23]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <rule name="OPT.SWIFT.SECURITY.XpathInjection" message="XpathInjection: Avoid XPath expressions formed with non neutralized user input" class="com.optimyth.qaking.swift.rules.security.XpathInjection" technology="SWIFT" active="true">
+    <tags><![CDATA[ASVS-v4.0.2:5.3.10,CWEScope:Access-Control,CWEScope:Confidentiality]]></tags>
+    <description><![CDATA[The software uses external input to dynamically construct an XPath expression used to
+retrieve data from an XML database, but it does not neutralize or incorrectly neutralizes that input.
+This allows an attacker to control the structure of the query.
+
+Effect: the attacker will have control over the information selected from the XML database and may use that ability
+to control application flow, modify logic, retrieve unauthorized data, or bypass important checks (e.g. authentication).
+
+This check looks for calls that create or execute an XPath expression, and detects if an untrusted input could
+change the XPath code used at that call.]]></description>
+    <priority>1</priority>
+    <effort>3</effort>
+    <vulntype>Injection</vulntype>
+    <impl>1</impl>
+    <benefits><![CDATA[Avoid Xpath injection attacks produced by non neutralized user inputs.]]></benefits>
+    <inconvenients><![CDATA[]]></inconvenients>
+    <example><![CDATA[import Foundation
+
+var input = readLine()      /* Source */
+
+let xmlnode = XMLNode(kind)
+let result = xmlnode.nodes(forXPath: input)       /* VIOLATION */
+let result = xmlnode.objects(forXQuery: input)       /* VIOLATION */]]></example>
+    <repair><![CDATA[import Foundation
+
+var input = readLine()      /* Source */
+
+func validate (text: String) -> String {
+    /* add a neutralization here */
+}
+
+let xmlnode = XMLNode(kind)
+let result = xmlnode.nodes(forXPath: validate(input))       /* Ok */
+let result = xmlnode.objects(forXQuery: validate(input))       /* Ok */]]></repair>
+    <reference><![CDATA[http://projects.webappsec.org/w/page/13247005/XPath%20Injection,Prevent XPath Injection: https://www.securecoding.cert.org/confluence/pages/viewpage.action?pageId=62849047,http://cwe.mitre.org/data/definitions/643.html]]></reference>
+    <normatives>
+      <security><![CDATA[CWE:643,OWASP-M:2016:M8,OWASP:2021:A3,PCI-DSS:6.5.1,WASC:39]]></security>
+    </normatives>
+    <properties>
+      <property name="inputs" descname="Comma-separated list of input types to consider as sources (user_input, file_input, database_input, other_input, environment_input, system_input)" value="user_input"/>
+    </properties>
+    <idcat>OPT.CRITERIUM_VALUE.CQM.SECURITY</idcat>
+  </rule>
+  <categories>
+    <category name="SWIFT" technology="SWIFT" active="true" weight="1.0">
+      <description><![CDATA[SWIFT rules]]></description>
+      <children>
+        <category name="OPT.CRITERIUM_VALUE.CQM.EFFICIENCY" technology="SWIFT" active="true" weight="8.0">
+          <description><![CDATA[Efficiency]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.MAINTAINABILITY" technology="SWIFT" active="true" weight="10.0">
+          <description><![CDATA[Maintainability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.PORTABILITY" technology="SWIFT" active="true" weight="5.0">
+          <description><![CDATA[Portability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.RELIABILITY" technology="SWIFT" active="true" weight="10.0">
+          <description><![CDATA[Reliability]]></description>
+        </category>
+        <category name="OPT.CRITERIUM_VALUE.CQM.SECURITY" technology="SWIFT" active="true" weight="4.0">
+          <description><![CDATA[Security]]></description>
+        </category>
+      </children>
+    </category>
+  </categories>
+</ruleset>

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library.database
+  xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  technology="plsql" name="plsql_thirdparty" standard="PL/SQL_third_party">
+
+  <description>Common PL/SQL third-party libraries</description>
+
+  <type name="file_type" kind="object">
+    <description>http://plsqlexecoscomm.sourceforge.net/plsqldoc/index.html</description>
+    <field name="file_path" type="varchar2"/>
+    <field name="file_name" type="varchar2"/>
+    <field name="file_size" type="number"/>
+    <field name="file_exists" type="char"/>
+    <field name="is_dir" type="char"/>
+    <field name="is_readable" type="char"/>
+    <field name="is_writeable" type="char"/>
+    <field name="last_modified" type="date"/>
+
+    <!--
+    IMPORTANT: path_traversal need proper Java policy permissions set on the paths (which could be poorly specified).
+    In any case, file operations should not depend on paths under control of untrusted inputs
+    -->
+    <function name="append_to_file" signature="append_to_file(p_content blob)"><return type="number"/></function>
+    <procedure name="close_stream" signature="close_stream()"/>
+    <function name="copy" signature="copy(p_target_file file_type)" alias="move"><return type="file_type"/></function>
+    <function name="create_dir" signature="create_dir(p_dirname varchar2)">
+      <return type="file_type"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="create_file" signature="create_file(p_dirname varchar2)">
+      <return type="file_type"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="delete_file" signature="delete_file()"><return type="file_type"/></function>
+    <function name="delete_recursive" signature="delete_recursive()"><return type="file_type"/></function>
+    <function name="get_bfile" signature="get_bfile(p_directory_name varchar2)">
+      <return type="bfile"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="get_content_as_blob" signature="get_content_as_blob()">
+      <return type="blob"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="get_content_as_clob" signature="get_content_as_clob(p_charset varchar2)">
+      <return type="clob"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="get_directory" signature="get_directory()">
+      <return type="file_type"/>
+    </function>
+    <function name="get_file" signature="get_file(p_file_path varchar2)">
+      <return type="file_type"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="get_free_space" signature="get_free_space()"><return type="number"/></function>
+    <function name="get_parent" signature="get_parent()">
+      <return type="file_type"/>
+    </function>
+    <function name="is_stream_open" signature="is_stream_open()"><return type="number"/></function>
+    <function name="make_all_dirs" signature="make_all_dirs()" alias="make_dir"><return type="file_type"/></function>
+    <function name="make_file" signature="make_file()"><return type="file_type"/></function>
+    <procedure name="open_stream" signature="open_stream()"></procedure>
+    <function name="read_byte" signature="read_byte()">
+      <return type="number"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="read_bytes" signature="read_bytes(p_amount number, p_position number)">
+      <return type="raw"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+    <function name="read_string" signature="read_string(p_amount number, p_position number, p_charset varchar2)">
+      <return type="varchar2"/>
+      <source argpos="-1" kind="file_input" resource="filesystem"/>
+    </function>
+    <procedure name="skip_bytes" signature="skip_bytes(p_amount number)"></procedure>
+    <function name="write_bytes" signature="write_bytes(p_bytes raw, p_offset number)">
+      <return type="number"/>
+      <sink argpos="0" kind="file_output" resource="filesystem"/>
+    </function>
+    <function name="write_string" signature="write_string(p_string varchar2, p_offset number, p_charset varchar2)">
+      <return type="number"/>
+      <sink argpos="0" kind="file_output" resource="filesystem"/>
+    </function>
+    <function name="write_to_file" signature="write_to_file(p_content blob)">
+      <return type="number"/>
+      <sink argpos="0" kind="file_output" resource="filesystem"/>
+    </function>
+  </type>
+
+  <type name="file_list_type" kind="collection" elementType="file_type">
+  </type>
+
+  <package name="file_pkg">
+    <function name="get_file" signature="get_file(p_file_path varchar2)">
+      <return type="file_type"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="get_file" signature="get_file(p_directory varchar2, p_filename varchar2)">
+      <return type="file_type"/>
+      <sink argpos="0,1" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="get_file_list" signature="get_file_list(p_directory_name varchar2)"
+              alias="get_file_list_p, get_recursive_file_list, get_recursive_file_list_p">
+      <return type="file_list_type"/>
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </function>
+    <function name="get_fs_encoding" signature="get_fs_encoding()"><return type="varchar2"/></function>
+    <function name="get_path_separator" signature="get_path_separator()"><return type="varchar2"/></function>
+    <function name="get_root_directories" signature="get_root_directories()">
+      <return type="file_list_type"/>
+    </function>
+    <function name="get_root_directory" signature="get_root_directory()">
+      <return type="file_type"/>
+    </function>
+    <function name="remove_multiple_separators" signature="remove_multiple_separators(p_path varchar2)">
+      <return type="varchar2"/>
+    </function>
+  </package>
+
+  <package name="file_security">
+    <field name="READ" type="pls_integer"/>
+    <field name="WRITE" type="pls_integer"/>
+    <field name="EXEC" type="pls_integer"/>
+    <function name="get_script_grant_java_privs" signature="get_script_grant_java_privs(p_directory varchar2, p_grantee varchar2)">
+      <return type="varchar2"/>
+    </function>
+    <procedure name="grant_permission" signature="grant_permission(p_file_path varchar2, p_grantee varchar2, p_permission pls_integer)">
+      <sink argpos="0,1,2" kind="security_setting_injection" resource="filesystem"/>
+    </procedure>
+    <procedure name="grant_stdin_stdout" signature="grant_stdin_stdout(p_grantee varchar2)">
+      <sink argpos="0" kind="security_setting_injection" resource="filesystem"/>
+    </procedure>
+    <procedure name="restrict_permission" signature="restrict_permission(p_file_path varchar2, p_grantee varchar2, p_permission pls_integer)"
+               alias="revoke_permission">
+    </procedure>
+  </package>
+
+  <package name="lob_writer_plsql">
+    <tags>deprecated</tags>
+    <procedure name="write_blob" signature="write_blob(p_directory varchar2, p_filename varchar2, p_data blob)">
+      <sink argpos="0,1" kind="path_traversal" resource="filesystem"/>
+      <sink argpos="2" kind="file_output" resource="filesystem"/>
+    </procedure>
+    <procedure name="write_clob" signature="write_clob(p_directory varchar2, p_filename varchar2, p_data clob)">
+      <sink argpos="0,1" kind="path_traversal" resource="filesystem"/>
+      <sink argpos="2" kind="file_output" resource="filesystem"/>
+    </procedure>
+  </package>
+  
+  <package name="os_command">
+    <function name="exec" signature="exec(p_command varchar2, p_stdin blob, p_stdout blob, p_stderr blob)">
+      <return type="number"/>
+      <sink argpos="0" kind="command_injection" resource="os"/>
+    </function>
+    <function name="exec_blob" signature="exec_blob(p_command varchar2, p_stdin blob)">
+      <return type="blob"/>
+      <sink argpos="0" kind="command_injection" resource="os"/>
+    </function>
+    <function name="exec_clob" signature="exec_clob(p_command varchar2, p_stdin blob)">
+      <return type="clob"/>
+      <sink argpos="0" kind="command_injection" resource="os"/>
+    </function>
+    <function name="get_env_var" signature="get_env_var(p_env_name varchar2)">
+      <return type="varchar2"/>
+      <source argpos="-1" kind="environment_input" resource="environment"/>
+    </function>
+    <procedure name="set_shell" signature="set_shell(p_shell_path varchar2, p_shell_switch varchar2)">
+      <sink argpos="0,1" kind="command_injection" resource="os"/>
+    </procedure>
+    <procedure name="set_working_dir" signature="set_working_dir(p_workdir file_type)">
+      <sink argpos="0" kind="path_traversal" resource="filesystem"/>
+    </procedure>
+  </package>
+
+</library.database>

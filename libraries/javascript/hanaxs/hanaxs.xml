@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="hanaxs" standard="hanaxs">
+
+  <description url="https://help.sap.com/viewer/d89d4595fae647eabc14002c0340a999/2.0.02/en-US/3459a57b68f440448350aea1bec1d4f8.html">Server-side SAP HANA XS library</description>
+
+  <typeAnnotation name="hanaxs" class="com.optimyth.qaking.js.frameworks.hanaxs.HanaXsTypeAnnotation"/>
+
+  <module name="hanaxs" >
+    <class name="hanaxs/$">
+      <field name="application" type="hanaxs/Application"/>
+      <field name="request" type="hanaxs/web.WebRequest"/>
+      <field name="response" type="hanaxs/web.WebResponse"/>
+      <field name="session" type="hanaxs/Session"/>
+      <field name="db" type="hanaxs/db"/>
+      <field name="hdb" type="hanaxs/hdb"/>
+      <field name="jobs" type="hanaxs/jobs"/>
+      <field name="net" type="hanaxs/net"/>
+      <field name="security" type="hanaxs/security"/>
+      <field name="util" type="hanaxs/util"/>
+    </class>
+
+    <class name="hanax/$.web">
+      <field name="Body" type="hanaxs/web.Body"/>
+      <field name="WebRequest" type="hanaxs/web.WebRequest"/>
+      <field name="WebResponse" type="hanaxs/web.WebResponse"/>
+      <function name="WebRequest">
+        <sink kind="http_parameter_pollution" argpos="1" resource="web"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="hanaxs/web" >
+    <class name="hanaxs/web.Body">
+      <function name="asArrayBuffer">
+        <return type="ArrayBuffer"/>
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+      <function name="asString">
+        <return type="String"/>
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+      <function name="asWebRequest">
+        <return type="hanaxs/web.WebRequest"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/web.WebEntityRequest">
+      <field name="body" type="hanaxs/web.Body"/>
+      <field name="contentType" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="entities" type="hanaxs/web.EntityList"><!-- multipart request -->
+      </field>
+      <field name="headers" type="hanaxs/web.TupelList">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="parameters" type="hanaxs/web.TupelList">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <function name="followUp"></function>
+      <function name="setBody"></function>
+    </class>
+
+    <class name="hanaxs/web.WebRequest" supertypes="hanaxs/web.WebEntityRequest">
+      <field name="cookies" type="hanaxs/web.RequestCookies">
+        <source kind="external_input" resource="web"/>
+      </field>
+      <field name="language" type="String"></field>
+      <field name="method" type="String"></field>
+      <field name="path" type="String"></field>
+      <field name="queryPath" type="String">
+        <source kind="external_input" resource="web"/>
+      </field>
+
+    </class>
+
+    <class name="hanaxs/web.WebEntityResponse">
+      <field name="body" type="hanaxs/web.Body"></field>
+      <field name="contentType" type="String">
+        <tags>header.name:Content-Type, header.value:1</tags>
+        <sink kind="header_manipulation" resource="web"/>
+      </field>
+      <field name="entities" type="hanaxs/web.EntityList"></field>
+      <field name="headers" type="hanaxs/web.TupelList">
+        <tags>header:0</tags>
+        <sink kind="header_manipulation" resource="web"/>
+      </field>
+      <function name="followUp"></function>
+      <function name="setBody">
+        <sink kind="xss" resource="web" argpos="0"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/web.WebResponse" supertypes="hanaxs/web.WebEntityResponse">
+      <field name="cacheControl" type="String">
+        <tags>header.name:Cache-Control, header.value:0</tags>
+        <sink kind="header_manipulation" resource="web"/>
+      </field>
+      <field name="cookies" type="hanaxs/web.ResponseCookies">
+      </field>
+      <field name="status" type="Number"/>
+    </class>
+
+    <class name="hanaxs/Session"/>
+
+    <class name="hanaxs/web.EntityList" itemType="hanaxs/web.WebEntityRequest" supertypes="Array">
+      <function name="create">
+        <return type="hanaxs/web.WebEntityResponse"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/web.TupelList" supertypes="Array">
+      <function name="get">
+        <return type="String"/>
+      </function>
+      <function name="set"/>
+    </class>
+
+    <class name="hanaxs/web.RequestCookies" supertypes="hanaxs/web.TupelList">
+      <function name="get">
+        <return type="String"/>
+        <source argpos="-1" kind="external_input" resource="web"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/web.ResponseCookies" supertypes="hanaxs/web.TupelList">
+      <function name="set">
+        <tags>cookie.name:0, cookie.value:1</tags>
+        <sink kind="cookie_poisoning" resource="web" argpos="0,1"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="hanaxs/db" >
+    <class name="hanaxs/db">
+      <function name="getConnection">
+        <return type="hanaxs/db.Connection"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/db.Connection">
+      <function name="prepareCall">
+        <return type="hanaxs/db.CallableStatement"/>
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+      </function>
+      <function name="prepareStatement">
+        <return type="hanaxs/db.PreparedStatement"/>
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/db.CallableStatement">
+      <function name="execute">
+        <tags>state_change</tags>
+      </function>
+      <function name="getBString">
+        <return type="ArrayBuffer"/>
+      </function>
+      <function name="getString" alias="getBString,getClob,getNClob,getNString,getText">
+        <return type="String"/>
+        <source kind="database_input" argpos="-1" resource="database"/>
+      </function>
+      <function name="getResultSet">
+        <return type="hanaxs/db.ResultSet"/>
+      </function>
+      <function name="getSQLWarning">
+        <source kind="sensitive_error_info" resource="database" argpos="-1"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/db.PreparedStatement">
+      <function name="addBatch">
+        <tags>state_change</tags>
+      </function>
+      <function name="close"/>
+      <function name="execute" alias="executeUpdate">
+        <tags>state_change</tags>
+      </function>
+      <function name="executeBatch">
+        <tags>state_change</tags>
+        <return type="Array"/>
+      </function>
+      <function name="executeQuery">
+        <return type="hanaxs/db.ResultSet"/>
+      </function>
+      <function name="getResultSet">
+        <return type="hanaxs/db.ResultSet"/>
+      </function>
+      <function name="getSQLWarning">
+        <source kind="sensitive_error_info" resource="database" argpos="-1"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/db.ResultSet">
+      <function name="getString" alias="getBString,getClob,getNClob,getNString,getText">
+        <return type="String"/>
+        <source kind="database_input" argpos="-1" resource="database"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="hanaxs/hdb" >
+    <class name="hanaxs/hdb">
+      <function name="getConnection">
+        <return type="hanaxs/hdb.Connection"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/hdb.Connection">
+      <function name="executeQuery">
+        <return type="hanaxs/hdb.ResultSet"/>
+        <source kind="database_input" resource="database" argpos="-1"/>
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+      </function>
+      <function name="executeUpdate">
+        <tags>state_change</tags>
+        <return type="Number"/>
+        <sink kind="sql_injection" resource="database" argpos="0"/>
+      </function>
+      <function name="getLastWarning">
+        <source kind="sensitive_error_info" resource="database" argpos="-1"/>
+      </function>
+      <function name="loadProcedure">
+        <return type="Function"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/hdb.ResultSet">
+      <function name="getIterator">
+        <return type="hanaxs/hdb.ResultSetIterator"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/hdb.ResultSetIterator">
+      <function name="value">
+        <return type="Object"/>
+        <source kind="database_input" resource="database" argpos="-1"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="hanaxs/jobs" >
+    <class name="hanaxs/jobs">
+      <function name="Job">
+        <return type="hanaxs/jobs.Job"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/jobs.Job">
+      <field name="schedules" type="hanaxs/jobs.JobSchedules"/>
+      <function name="activate" alias="configure,deactivate">
+        <sink kind="sensitive_data" resource="other">
+          <arg pos="0" field="user,password"/>
+        </sink>
+      </function>
+    </class>
+
+    <class name="hanaxs/jobs.JobSchedules" itemType="hanaxs/jobs.JobSchedule">
+      <function name="add"></function>
+      <function name="delete"></function>
+      <function name="deleteAll"></function>
+    </class>
+  </module>
+
+  <module name="hanaxs/net" >
+    <class name="hanaxs/net">
+      <field name="http" type="hanaxs/net.http"/>
+      <function name="readDestination">
+        <return type="hanaxs/net.Destination"/>
+      </function>
+      <function name="Mail">
+        <return type="hanaxs/net.Mail"/>
+        <sink kind="mail_header_manipulation" argpos="0" resource="network"/>
+      </function>
+      <function name="SMTPConnection">
+        <return type="hanaxs/net.SMTPConnection"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/net.Destination">
+      <field name="host" type="String"/>
+      <field name="port" type="Number"/>
+    </class>
+
+    <class name="hanaxs/net.http">
+      <function name="Client">
+        <return type="hanaxs/net.http.Client"/>
+      </function>
+      <function name="readDestination">
+        <return type="hanaxs/net.http.Destination"/>
+      </function>
+      <function name="Request">
+        <return type="hanaxs/net.http.Request"/>
+        <sink kind="http_parameter_pollution" argpos="1" resource="web"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/net.http.Client">
+      <function name="getResponse">
+        <return type="hanaxs/web.WebResponse"/>
+      </function>
+      <function name="request">
+        <parameters>
+          <param type="hanaxs/net.http.Request"/>
+          <param type="hanaxs/net.http.Destination"/>
+        </parameters>
+        <sink kind="ssrf" resource="network" argpos="1"/><!-- could be an URL or a Destination -->
+      </function>
+    </class>
+
+    <class name="hanaxs/net.http.Destination" supertypes="hanaxs/net.Destination"/>
+
+    <class name="net.http.Request" supertypes="hanaxs/web.WebRequest">
+    </class>
+
+    <class name="hanaxs/net.Mail">
+      <field name="subject" type="String">
+        <sink kind="mail_header_manipulation" resource="network"/>
+      </field>
+      <field name="sender" type="Object">
+        <sink kind="mail_header_manipulation" resource="network"/>
+      </field>
+      <field name="cc" type="Array">
+        <sink kind="mail_header_manipulation" resource="network"/>
+      </field>
+      <field name="bcc" type="Array">
+        <sink kind="mail_header_manipulation" resource="network"/>
+      </field>
+      <field name="to" type="Array">
+        <sink kind="mail_header_manipulation" resource="network"/>
+      </field>
+      <function name="send">
+        <tags>state_change</tags>
+        <return type="Object"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/net.SMTPConnection">
+      <function name="send">
+        <tags>state_change</tags>
+        <parameters><param type="hanaxs/net.Mail"/></parameters>
+      </function>
+    </class>
+  </module>
+
+  <module name="hanaxs/security" >
+    <class name="hanaxs/security">
+      <field name="crypto" type="hanaxs/security.crypto"/>
+      <field name="x509" type="hanaxs/security.x509"/>
+      <function name="Store">
+        <return type="hanaxs/security.Store"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/security.crypto">
+      <function name="md5">
+        <tags>hash,algo:md5</tags>
+      </function>
+      <function name="sha1">
+        <tags>hash,algo:sha1</tags>
+      </function>
+      <function name="sha256">
+        <tags>hash,algo:sha256</tags>
+      </function>
+    </class>
+
+    <class name="hanaxs/security.Store">
+      <function name="read" alias="readForUser"/>
+      <function name="remove" alias="removeForUser"/>
+      <function name="store" alias="storeForUser"/>
+    </class>
+  </module>
+
+  <module name="hanaxs/util" >
+    <class name="hanaxs/util">
+      <field name="codec" type="hanaxs/util.coded"/>
+      <field name="sql" type="hanaxs/util.sql"/>
+      <function name="SAXParser">
+        <return type="hanaxs/util.SAXParser"/>
+      </function>
+      <function name="Zip">
+        <return type="hanaxs/util.Zip"/>
+        <sink kind="sensitive_data" resource="other">
+          <arg pos="0" field="password"/>
+        </sink>
+      </function>
+      <function name="createUuid">
+        <return type="String"/>
+      </function>
+      <function name="stringify">
+        <return type="String"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/util.SAXParser">
+      <function name="parse">
+        <sink kind="xml_injection" argpos="0" resource="other"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/util.Zip" supertypes="Array">
+      <field name="_metadata_" type="String"/>
+      <field name="_password_">
+        <sink kind="sensitive_data" resource="other"/>
+      </field>
+      <function name="asArrayBuffer">
+        <return type="ArrayBuffer"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/util.codec">
+      <function name="decodeBase64" alias="decodeHex">
+        <return type="ArrayBuffer"/>
+      </function>
+      <function name="encodeBase64" alias="encodeHex">
+        <return type="String"/>
+      </function>
+    </class>
+
+    <class name="hanaxs/util.sql">
+      <function name="isValidParam">
+        <neutralization kind="sql_injection" resource="database" argpos="0"/>
+      </function>
+    </class>
+  </module>
+</library>

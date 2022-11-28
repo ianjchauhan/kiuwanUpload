@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Oracle schema export" default="run" basedir=".">
+    <description>
+Extract SQL schema descriptor from Oracle using vendor specific queries.
+
+Usage: ant -f schemaOracle.xml -Dconfig=MYFILE.properties -Doutput=OUTPUT_DIR
+  </description>
+
+    <property environment="env" />
+      <property name="AGENT_HOME" value=".."/>
+      <property name="config" value="${AGENT_HOME}/conf/schemaExtractConfig.properties"/>
+      
+    <property file="${config}" />
+
+    <path id="extractor.classpath">
+    	<fileset dir="${AGENT_HOME}/lib.custom" includes="*.jar"/>
+        <pathelement path="${AGENT_HOME}"/>
+        <pathelement path="${AGENT_HOME}/conf"/>
+        <fileset dir="${AGENT_HOME}/lib.engine">
+            <include name="ant.jar" />
+            <include name="alsUtils.jar" />
+            <include name="guava*.jar" />
+            <include name="analyzer.jar" />
+            <include name="log4j*.jar" />
+        </fileset>
+        <pathelement path="${jdbc.driver.classpath}"/>
+    </path>
+
+    <taskdef name="extract.task" classname="com.optimyth.qaking.sqlschema.extract.OracleExtractor" classpathref="extractor.classpath" />
+
+    <target name="run" description="Extract Oracle schema">
+      <!-- Delete previously exported SQL elements -->
+      <delete dir="${output}/FUNCTION" failonerror="false" />
+      <delete dir="${output}/PACKAGE" failonerror="false" />
+      <delete dir="${output}/PACKAGE BODY" failonerror="false" />
+      <delete dir="${output}/PROCEDURE" failonerror="false" />
+      <delete dir="${output}/TRIGGER" failonerror="false" />
+      <delete dir="${output}/TYPE" failonerror="false" />
+      <delete dir="${output}/TYPE BODY" failonerror="false" />
+
+      <!-- Invokes the extraction task on Oracle dictionary -->
+      <extract.task
+      	dbType="${dbType}" dbName="${dbName}" schema="${schema}"
+        host="${host}" port="${port}" user="${user}" password="${password}"
+        output="${output}" include="${include}" exclude="${exclude}" prefix="${prefix}"
+        classpathref="extractor.classpath" fork="true">
+          <jvmarg value="-Xms${memory.start}"/>
+          <jvmarg value="-Xmx${memory.max}"/>
+          <jvmarg value="-Xss${stack.size}"/>
+      </extract.task>
+
+      <echo>Oracle schema info exported to ${output}/${dbName}.${schema}.ext.xml descriptor</echo>
+    </target>
+
+    <target name="help">
+        <echo>
+Extract SQL schema descriptor from Oracle using vendor specific queries.
+
+Usage: ant -f schemaExtract -Dconfig=MYFILE.properties -Doutput=OUTPUT_DIR
+
+See sampleConfig.properties for an example of a configuration file that could be customized for your needs.
+    </echo>
+    </target>
+
+</project>

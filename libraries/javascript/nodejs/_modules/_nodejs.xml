@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="nodejs" standard="Node.js">
+
+  <description url="https://nodejs.org/">JavaScript runtime built on Chrome's V8 JavaScript engine</description>
+
+  <typeAnnotation name="nodejs" class="com.optimyth.qaking.js.frameworks.nodejs.NodejsAnnotation"/>
+
+  <module name="nodejs" >
+    <!-- globals in node.js -->
+    <globalObject name="__dirname" type="String"><checker id="inNodejs"/></globalObject>
+    <globalObject name="__filename" type="String"><checker id="inNodejs"/></globalObject>
+
+    <globalObject name="process" type="nodejs/Process">
+      <checker id="inNodejs"/>
+    </globalObject>
+
+    <class name="nodejs/Process">
+      <field name="arch" alias="platform,release,version,versions">
+        <sink argpos="-1" kind="sensitive_system_info"/>
+      </field>
+      <field name="argv" type="Array">
+        <source kind="external_input" resource="os"/>
+      </field>
+      <field name="env" type="Object">
+        <source kind="external_input" resource="environment"/>
+      </field>
+      <field name="execArgv" type="Object">
+        <source kind="external_input" resource="os"/>
+      </field>
+      <field name="execPath" type="String"><sink kind="sensitive_system_info"/></field>
+      <field name="pid" type="Number"/>
+
+
+      <function name="abort"></function>
+      <function name="chdir"><sink argpos="0" kind="path_traversal"/></function>
+      <function name="exit"></function>
+      <function name="kill">
+        <sink kind="process_control" argpos="0"/>
+      </function>
+      <function name="send"/>
+      <function name="setuid" alias="setgid,seteuid,setegid,setgroups">
+        <sink kind="system_permissions_manipulation" argpos="0" resource="os"/>
+      </function>
+      <function name="umask">
+        <sink kind="file_permissions_manipulation" argpos="0" resource="os"/>
+      </function>
+    </class>
+
+    <globalObject name="console" type="nodejs/Console">
+      <checker id="inNodejs"/>
+    </globalObject>
+
+    <function name="Console">
+      <return type="nodejs/Console"/>
+      <checker id="inNodejs"/>
+    </function>
+
+    <class name="nodejs/Console">
+      <function name="Console"><return type="nodejs/Console"/></function>
+      <function name="assert"></function>
+      <function name="log" alias="dir,error,warn,info"/>
+      <function name="trace"></function>
+    </class>
+
+    <globalObject name="Buffer" type="nodejs/Buffer">
+      <checker id="inNodejs"/>
+    </globalObject>
+    <class name="nodejs/Buffer" supertypes="Uint8Array">
+      <field name="length" type="Number"/>
+      <function name="alloc"><return type="nodejs/Buffer"/></function>
+      <function name="allocUnsafe" alias="allowUnsafeSlow"><tags>sensitive-info-leak</tags><return type="nodejs/Buffer"/></function>
+      <function name="from"><return type="nodejs/Buffer"/></function>
+      <function name="concat"><return type="nodejs/Buffer"/></function>
+      <function name="copy">
+        <parameters>
+          <param type="nodejs/Buffer" set="true"/>
+        </parameters>
+      </function>
+      <function name="entries" alias="keys,values"><return type="Iterator"/></function>
+      <function name="fill"><return type="nodejs/Buffer"/></function>
+      <function name="includes"><return type="Boolean"/></function>
+      <function name="indexOf" alias="lastIndexOf"><return type="Number"/></function>
+      <function name="slice"><return type="nodejs/Buffer"/></function>
+      <function name="swap16" alias="swap32,swap64"><return type="nodejs/Buffer"/></function>
+      <function name="toJSON"><return type="Object"/></function>
+      <function name="toString"><return type="String"/></function>
+      <function name="write"></function>
+    </class>
+
+    <!-- crypto modules -->
+    <class name="nodejs/crypto-js" supertypes="CryptoJS">
+      <description>Node.js module over CryptoJS</description>
+    </class>
+  </module>
+
+</library>

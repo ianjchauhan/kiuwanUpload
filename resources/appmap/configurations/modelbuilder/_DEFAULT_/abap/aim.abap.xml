@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+">
+  <description>AIM rules for abap language</description>
+
+  <import resource="../common/aim.common.xml"/>
+  <import resource="classpath:resources/qaking-tech-abap.xml"/>
+    
+  <bean id="aim.abap.parser" class="com.optimyth.apm.builder.parser.QakingFileParserAdapter">
+    <description>abap parser</description>
+    <property name="filter" ref="aim.abap.filter"/>
+    <property name="languageSupport" ref="ls_abap"/>
+  </bean>
+  
+  <!-- Rules -->
+  <bean id="aim.abap.rule" class="com.optimyth.apm.builder.rules.abap.AbapBuilderRule">
+    <description>abap rule</description>
+    <property name="active" value="${aim.abap.rule.active}"/>
+    <property name="filter" ref="aim.abap.filter"/>
+    <property name="callback" ref="aim.abap.rule.callback"/>
+    <property name="sapRepository" ref="aim.abap.sapRepository"/>
+  </bean>
+  
+  <bean id="aim.abap.rule.callback" class="com.optimyth.apm.builder.rules.abap.DefaultAbapCallback">
+    <description>abap callback</description>
+    <property name="createSqlNodes" value="${aim.abap.createSqlNodes}"/>
+    <property name="processInternalTables" value="${aim.abap.processInternalTables}"/>
+    <property name="registerTableReferences" value="${aim.abap.registerTableReferences}"/>
+    <property name="registerSapCalls" value="${aim.abap.registerSapCalls}"/>
+    <!--property name="resolveArtifacts" value="${aim.abap.resolveArtifacts}" /-->
+    <property name="sapRepository" ref="aim.abap.sapRepository" />
+    <property name="softwareName" value="${aim.abap.software}" />
+    <property name="databaseType" value="${aim.abap.dbsystem}" />
+    <property name="databaseName" value="${aim.abap.dbname}" />
+    <property name="temporaryDataOnFile" value="false"/>
+  </bean>
+  
+  <bean id="aim.abap.sapRepository" class="com.optimyth.apm.builder.rules.abap.SapRepository">
+    <property name="repositoryDir" value="${aim.abap.repository.dir}" />
+  </bean>
+  
+  <!-- Filters -->
+  <bean id="aim.abap.filter" class="com.optimyth.apm.builder.rules.common.FromMapFactoryBean">
+    <property name="defaultValue" ref="aim.abap.filter.default"/>
+    <property name="objectType" value="java.io.FileFilter"/>
+    <property name="key" value="${aim.abap.filter}"/>
+    <property name="map"><map>
+      <entry key="pattern" value-ref="aim.abap.filter.pattern"/>
+    </map></property>
+  </bean>
+
+  <bean id="aim.abap.filter.default" parent="ls_abap_matcher"/>
+
+  <bean id="aim.abap.filter.pattern" class="com.optimyth.apm.builder.file.AntPatternFilter">
+    <property name="pattern" value="${aim.abap.filter.pattern}"/>
+  </bean> 
+  
+</beans>

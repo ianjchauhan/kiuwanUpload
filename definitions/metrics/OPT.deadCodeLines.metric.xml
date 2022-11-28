@@ -1,0 +1,732 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metric-definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.optimyth.com/schema/definitions/metric" version="1.1">
+
+  <metric id="OPT.deadCodeLines" unit="" aggregation="sum" aggregationScope="program"> 
+
+    <!-- Criteria values: better is, scopes, language parsers, etc. -->
+    <criteria-values>
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_TYPE.SIZE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.METRIC_HIERARCHY.SIZE.CODE" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.BETTER_IS.NA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.SYSTEM" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.SCOPE.PROGRAM" />
+      <!-- 
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL" />
+       -->
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA" />
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT" />      
+      <criterium-value ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET" />
+    </criteria-values>
+
+    <!-- Valid range -->
+    <range>
+      <minimum value="0" included="true" />
+      <maximum value="+inf" included="false" />
+    </range>
+
+    <!-- Metric thresholds (up to three) -->
+    <thresholds>
+      <criterium-value>
+        <threshold from="0.00" to="1000.00" meaning="good" />
+        <threshold from="1000.00" to="+inf" meaning="bad" />
+      </criterium-value>
+    </thresholds>
+
+    <!-- Metric parameters (applies to implementations that reference them) -->
+    <parameters />
+
+     <!-- Metric implementations for each language parser -->
+    <implementations>
+<!-- 
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+        <internal-name id="OPT.ABAP.USELESSLINES.DEADCODE" />
+        <java-class></java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+        <internal-name id="OPT.COBOL.USELESSLINES.DEADCODE" />
+        <java-class></java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+ -->
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <internal-name id="OPT.CSHARP.USELESSLINES.DEADCODE" />
+        <java-class>com.optimyth.csharp.metrics.uselessLines.DeadCodeLinesMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>  
+ 
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <internal-name id="OPT.JAVA.USELESSLINES.DEADCODE" />
+        <java-class>com.als.java.metrics.uselessLines.DeadCodeLinesMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+        <internal-name id="OPT.JS.USELESSLINES.DEADCODE" />
+        <java-class>com.optimyth.qaking.javascript.metrics.uselessLines.DeadCodeLinesMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>      
+      
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <internal-name id="OPT.VBNET.USELESSLINES.DEADCODE" />
+        <java-class>com.optimyth.vbnet.metrics.uselessLines.DeadCodeLinesMetricRule</java-class>
+        <java-version>1.5</java-version>
+        <parameters />
+      </language-parser>      
+
+      <reference><![CDATA[Optimyth (http://www.optimyth.com)]]></reference>
+
+    </implementations>
+
+	  <!-- Code examples for each language parser -->
+	  <code-examples>
+<!-- 	
+		  <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+		    <code-example name="metricCodeExampleAbap" result-value="">
+				<![CDATA[
+				]]>
+		    </code-example>
+		  </language-parser>
+		
+		  <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+		    <code-example name="metricCodeExampleCobol" result-value="">
+				<![CDATA[
+				]]>
+		    </code-example>
+		  </language-parser>
+ -->		
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+        <code-example name="UnusedPrivateMethodsAndClass" result-value="28.0">
+        <![CDATA[
+public class MyClass {
+    
+    public void method01() {               //  public method not used
+        this.doSomething();
+        InnerUsedClass var = new InnerUsedClass();
+        int num = InnerUsedClass02.getInt();
+    }
+    
+    private class InnerClass {             //  private inner class not used  - 10 lines
+
+        private void method02() { }        //  private method not used (but inside unused class)
+
+        protected bool method03() {                           // no private method
+            NodePredicate predicate = new NodePredicate();    
+        }
+        public bool isNode(BaseNode node){ }    // public method not used
+        private void otherMethod() {            // private method not used (but inside unused class)
+          doSomething01();
+        }        
+    }
+    
+    private void method04() {              //  private method not used - 5 lines
+        this.doSomething02();
+        ImportedClass01 var = new ImportedClass01();
+        ImportedClass02 var = new ImportedClass02(); 
+    }
+    
+    NodeVisitor visitor = new NodeVisitor();   
+
+    public void visit(BaseNode node) {    // public method not used
+       doSomething03();
+    }
+
+    private void method05() {             // private method not used - 3 lines
+       doSomething04();
+    }    
+    
+    public class innerPublicClass {       //  public inner class
+        public String var;        
+        private void method06() {         //  private method not used - 3  lines
+            this.doSomething05();
+        }
+    }
+    
+    private void doSomething() {}   //  private method, used from public method not used -> used
+    private void doSomething01() {} //  private method, used from private method not used - 1 line
+    private void doSomething02() {} //  private method, used from private method not used - 1 line
+    private void doSomething03() {} //  private method, used from public method not used -> used
+    private void doSomething04() {} //  private method, used from private method not used - 1 line
+    private void doSomething05() {  //  private method, used from private method not used - 3 lines
+        this.doSomething06();
+    }
+    
+    private void doSomething06() {}  //  private method, used from private method not used - 1 line
+
+    private class InnerUsedClass {  //  used class
+        String var = "";
+    }
+    
+    private class InnerUsedClass02 { //  used class
+        public static int getInt() {}  // used method
+    }
+}        
+        ]]>
+        </code-example>
+        
+        <code-example name="SingleEmptyPublicConstructor" result-value="5.0">
+        <![CDATA[
+public class MyClass {
+
+  public void method() {
+    NestedClass01 one = new NestedClass01();
+    NestedClass02 two = new NestedClass02();
+    NestedClass03 three = new NestedClass03();
+    NestedClass04 four = new NestedClass04();
+  }
+
+  public MyClass() {}                          // single public empty constructor - 1 line
+
+  private class NestedClass01 {
+    public NestedClass01(){}                   // single public empty constructor - 1 line
+  }
+
+  private class NestedClass02 {
+    public NestedClass02() { doSomething(); }  // single public not empty constructor
+  }
+
+  private class NestedClass03 {
+    public NestedClass03() {}                  // not single public empty constructor
+    public NestedClass03(int a) {}
+  }
+
+  private class NestedClass04 {
+    private NestedClass04() {}        // single private empty constructor
+  }
+
+  private class NotUsedNestedClass {  // not used nested private class - 3 lines
+    public NotUsedNestedClass(){}     // single public empty constructor, but inside not used nested private class
+  }
+}        
+        ]]>
+        </code-example>
+        
+        <code-example name="CodeAfterReturnBreakContinue" result-value="7.0">
+        <![CDATA[
+public class ExampleClass {
+
+  public void doSomething(int n)
+  {
+    for (int i = 0; i < n; i++) {
+      if (i == getInt()) {
+        break;
+        doSomethingElse();   // after break - 1 line
+      }
+    }
+    for (int i = 0; i < n; i++)
+    {
+      if (i == getInt()+2) {
+        continue;                
+        doSomethingElse();   // after continue - 1 line
+      }
+    }
+  }
+
+  public int getSomething(int n) {
+    return getInt()+n;       // after return - 1 line
+    doSomethingElse();
+  }
+  
+  private int getValue() {   // private not used method - 4
+    return getInt();
+    doSomethingElse();       // after return - but inside private not used method
+  }  
+
+  public void doSomethingElse()
+  {
+    // ...
+  } 
+
+  public int getInt() {
+    return ExampleConstants.intValue;
+  }
+}      
+        ]]>
+        </code-example>                  
+      </language-parser> 
+ 
+		  <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+        <code-example name="UnusedPrivateMethodsAndClass" result-value="30.0">
+        <![CDATA[
+public class MyClass {
+
+  public void method01 () {                      // public method not used
+   doSomething();
+   InnerUsedClass var = new InnerUsedClass();
+   int num = InnerUsedClass02.getInt();
+  }
+  
+  private class InnerClass {                     // private inner class not used  - 12 lines
+
+    private void method02(){}                    // private method not used (but inside unused class)
+
+    boolean method03(){
+      NodePredicate predicate = new NodePredicate(){   // anonymous class
+        public boolean is(BaseNode node){
+            // ...
+           /*
+            *
+            */  
+        }
+        private void otherMethod() {            // private method not used (inside anonymous class, but inside unused class)
+          doSomething01();
+        }
+      };
+    }
+  }
+
+  private void method04 () {                    // private method not used - 5 lines
+    doSomething02();
+    ImportedClass01 var = new ImportedClass01(); 
+    ImportedClass02 var = new ImportedClass02();  
+  }
+
+  NodeVisitor visitor = new NodeVisitor(){    // anonymous class
+   public void visit(BaseNode node) {         // public method not used
+      doSomething03();
+   }
+   private void method05() {                  // private method not used (inside anonymous class) - 3 lines
+      doSomething04();
+   }
+  };
+
+  public class innerPublicClass {             // public inner class
+   public String var;
+   private void method06() {                  // private method not used - 3  lines
+      doSomething05();
+   }
+  }
+
+  private void doSomething() {}    // private method, used from public method not used -> used
+  private void doSomething01() {}  // private method, used from private method not used - 1 line
+  private void doSomething02() {}  // private method, used from private method not used - 1 line
+  private void doSomething03() {}  // private method, used from public method not used -> used
+  private void doSomething04() {}  // private method, used from private method not used - 1 line
+  private void doSomething05() {   // private method, used from private method not used - 3 lines
+    doSomething06();
+  }
+  private void doSomething06() {}  // private method, used from private method not used - 1 line
+
+  private class InnerUsedClass {   // used class
+   String var = "";
+  }
+
+  private class InnerUsedClass02 {  // used class
+   static int getInt() {}           // used method
+  }
+}
+        ]]>
+        </code-example>
+        
+        <code-example name="SingleEmptyPublicConstructor" result-value="2.0">
+        <![CDATA[
+public class MyClass {
+
+  public void method() {
+    NestedClass01 one = new NestedClass01();
+    NestedClass02 two = new NestedClass02();
+    NestedClass03 three = new NestedClass03();
+    NestedClass04 four = new NestedClass04();
+  }
+
+  public MyClass() {}                       // single public empty constructor - 1 line
+
+  private class NestedClass01 {
+    public NestedClass01(){}                // single public empty constructor - 1 line
+  }
+
+  private class NestedClass02 {
+    public NestedClass02() { doSomething(); }    // single public not empty constructor
+  }
+
+  private class NestedClass03 {
+    public NestedClass03() {}               // not single public empty constructor
+    public NestedClass03(int a) {}
+  }
+
+  private class NestedClass04 {
+    private NestedClass04() {}             // single private empty constructor
+  }
+
+}        
+        ]]>
+        </code-example> 		    
+		  </language-parser>
+		  
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+        <code-example name="deadCode" result-value="14.0">
+        <![CDATA[
+function announceTime() {            // empty function - 2 lines
+   // empty body
+}
+
+var myEventHandler = function() {}   // "Anonymous" functions are ignored
+
+function sayHello() {
+  if (true) {
+    return;   
+    var b;                       // unreachable - 1 line
+  } else {
+    var c;
+  }
+  
+  for(i=0;i<10;i++){
+    if(i==a){
+      continue;   
+      doSomething();            // unreachable - 1 line
+    }
+    break;
+  }
+
+  while (true) {
+    break;                
+    var d;                      // unreachable - 1 line
+  }
+}
+switch(a){
+case 1:
+  doSomething();
+  break;
+case 2:
+  doSomethingElse();
+  break;
+default: 
+  break;    
+  doSomething();                // unreachable - 1 line
+}
+
+function doSomething(n)
+{
+  for (i = 0; i < n; i++) {
+    if (i == getInt()) {
+      break;
+      doSomethingElse();        // after break - 1 line
+    }
+  }
+  for (i = 0; i < n; i++)
+  {
+    if (i == getInt()+2) {
+      continue;                
+      doSomethingElse();       // after continue - 1 line
+    }
+  }
+}
+
+function getSomething(n) {
+  return getInt()+n;           // after return - 1 line
+  doSomethingElse();
+}
+
+function doSomethingElse()     // empty function - 3 lines
+{
+  // ...
+} 
+
+function getValue() {   
+  return getInt();
+  doSomethingElse();      // after return - 1 line
+  var b;                  // after return - 1 line
+}        
+        ]]>
+        </code-example>
+      </language-parser>		  
+		  
+      <language-parser ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+        <code-example name="UnusedPrivateMethodsAndClass" result-value="34.0">
+        <![CDATA[
+Public Class ExampleClass
+
+    Public Sub method01()         '  public method not used
+        Me.doSomething()
+        Dim var As New InnerUsedClass()
+        Dim num As Integer = InnerUsedClass02.getInt()
+    End Sub
+
+    Private Class InnerClass      '  private inner class not used  - 12 lines
+
+        Private Sub method02()    '  private method not used (but inside unused class)
+        End Sub
+    
+        Protected Function method03() As Boolean     ' no private method
+            Dim predicate As New NodePredicate()
+        End Function
+
+        Public Function isNode(node As BaseNode) As Boolean  ' public method not used
+        End Function
+        
+        Private Sub otherMethod()   ' private method not used (but inside unused class)
+            doSomething01()
+        End Sub
+    End Class
+
+    Private Sub method04()          '  private method not used - 5 lines
+        Me.doSomething02()
+        Dim var As New ImportedClass01()
+        Dim var As New ImportedClass02()    
+    End Sub
+
+    Private visitor As New NodeVisitor()
+
+    Public Sub visit(node As BaseNode)   ' public method not used
+        doSomething03()
+    End Sub
+
+    Private Sub method05()       ' private method not used - 3 lines
+        doSomething04()
+    End Sub
+
+    Public Class innerPublicClass      '  public inner class
+        Public var As String
+        Private Sub method06()         '  private method not used - 3  lines
+            Me.doSomething05()
+        End Sub
+    End Class
+
+    Private Sub doSomething()     '  private method, used from public method not used -> used
+    End Sub
+    
+    Private Sub doSomething01()   '  private method, used from private method not used - 2 lines
+    End Sub
+    
+    Private Sub doSomething02()   '  private method, used from private method not used - 2 lines
+    End Sub
+    
+    Private Sub doSomething03()   '  private method, used from public method not used -> used
+    End Sub
+    
+    Private Sub doSomething04()   '  private method, used from private method not used - 2 lines
+    End Sub
+
+    Private Sub doSomething05()   '  private method, used from private method not used - 3 lines
+        Me.doSomething06()
+    End Sub
+
+    Private Sub doSomething06()   '  private method, used from private method not used - 2 lines
+    End Sub
+
+    Private Class InnerUsedClass      '  used class
+        Private var As String = ""
+    End Class
+
+    Private Class InnerUsedClass02                   ' used class
+        Public Shared Function getInt() As Integer   ' used method
+        End Function
+    End Class
+End Class        
+        ]]>
+        </code-example>
+        
+        <code-example name="SingleEmptyPublicConstructor" result-value="8.0">
+        <![CDATA[
+Public Class ExampleClass
+
+  Public Sub method()
+    Dim one As New NestedClass01()
+    Dim two As New NestedClass02()
+    Dim three As New NestedClass03()
+    Dim four As New NestedClass04()
+  End Sub
+
+  Public Sub New()       ' single public empty constructor - 2 line
+  End Sub
+  
+  Private Class NestedClass01
+    Public Sub New()     ' single public empty constructor - 2 line
+    End Sub
+  End Class
+
+  Private Class NestedClass02
+    Public Sub New()     ' single public not empty constructor
+      doSomething()
+    End Sub
+  End Class
+
+  Private Class NestedClass03
+    Public Sub New()      ' not single public empty constructor
+    End Sub
+    
+    Public Sub New(a As Integer)
+    End Sub
+  End Class
+
+  Private Class NestedClass04
+    Private Sub New()     ' single private empty constructor
+    End Sub
+  End Class
+
+  Private Class NotUsedNestedClass  ' not used nested private class - 4 lines
+    Public Sub New()  ' single public empty constructor, but inside not used nested private class     
+    End Sub
+  End Class
+
+End Class        
+        ]]>
+        </code-example>
+        
+        <code-example name="CodeAfterReturnExitContinue" result-value="7.0">
+        <![CDATA[
+Public Class ExampleClass
+
+  Public Sub doSomething(n As Integer)
+
+    For i As Integer = 0 To n - 1
+      If i = getInt() Then
+        Exit For
+        doSomethingElse()       ' after exit - 1 line
+      End If
+    Next
+
+    For i As Integer = 0 To n - 1
+      If i = getInt() + 2 Then
+        Continue For              
+        doSomethingElse()       ' after continue - 1 line
+      End If
+    Next
+  End Sub
+
+  Public Function getSomething(n As Integer) As Integer
+    Return getInt() + n
+    doSomethingElse()           ' after return - 1 line
+  End Function
+
+  Public Sub doSomethingElse()
+    ' ...
+  End Sub
+
+  Private Function getValue() As Integer      ' private not used method - 4
+    Return getInt()
+    doSomethingElse()     ' after return - but inside private not used method
+  End Function
+
+  Public Function getInt() As Integer
+    Return ExampleConstants.intValue
+  End Function
+End Class        
+        ]]>
+        </code-example>                
+      </language-parser>		  
+	      
+	  </code-examples>
+	
+    <!-- Internationalizations for each human language -->
+    <i18ns>
+	    <i18n ref="OPT.LANGUAGE.SPANISH">
+	      <name><![CDATA[Código muerto]]></name>
+	      <description><![CDATA[
+La métrica cuenta el número de líneas de código muerto contenidas en la clase, líneas que no representan código funcional.	
+NOTA: no se tienen en cuenta líneas en blanco o de comentarios.      
+	      ]]></description>
+	
+	      <implementation-descriptions>
+	<!-- 
+	        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+	        <![CDATA[
+	        ]]>
+	        </implementation-description>
+	        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+	        <![CDATA[
+	        ]]>
+	        </implementation-description>
+ -->	       
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+          <![CDATA[
+Se entiende por líneas de código muerto:
+  - métodos y clases privadas no utilizados desde el propio fichero que los define.
+  - definición de un único constructor por clase, público y sin funcionalidad.      
+  - sentencias después de cláusulas 'Return', 'Break' y 'Continue'.  
+          ]]>
+          </implementation-description>  
+	        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+	        <![CDATA[
+Se entiende por líneas de código muerto:
+  - métodos y clases privadas no utilizados desde el propio fichero que los define.
+  - definición de un único constructor por clase, público y sin funcionalidad.
+	        ]]>
+	        </implementation-description>
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+          <![CDATA[
+Se entiende por líneas de código muerto:
+  - funciones con cuerpo vacío (las funciones 'anónimas' no se tienen en cuenta).
+  - sentencias después de cláusulas 'return', 'break', 'continue' y 'throw'.       
+          ]]>
+          </implementation-description>	        
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+          <![CDATA[
+Se entiende por líneas de código muerto:
+  - métodos y clases privadas no utilizados desde el propio fichero que los define.
+  - definición de un único constructor por clase, público y sin funcionalidad.      
+  - sentencias después de cláusulas 'Return', 'Exit' y 'Continue'.          
+          ]]>
+          </implementation-description>	        
+          	
+	      </implementation-descriptions>
+	      <parameters />
+	    </i18n>
+
+	    <i18n ref="OPT.LANGUAGE.ENGLISH">
+	      <name><![CDATA[Dead code]]></name>
+	      <description>
+	      <![CDATA[
+The metric counts the number of dead code lines contained in the class, the lines that do not represent functional code.
+NOTE: do not take into account blank lines or comments.       	      
+	      ]]></description>
+	
+	      <implementation-descriptions>
+	<!-- 
+	        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.ABAP">
+	        <![CDATA[
+	        ]]>
+	        </implementation-description>
+	        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.COBOL">
+	        <![CDATA[
+	        ]]>
+	        </implementation-description>
+ -->	        
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.CSHARP">
+          <![CDATA[
+Dead code is:
+  - private classes and methods, not used from the file itself.
+  - single public constructor definition, with no functionality.       
+  - statements after 'Return', 'Break' and 'Continue' clauses.   
+          ]]>
+          </implementation-description> 
+	        <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVA">
+	        <![CDATA[
+Dead code is:
+  - private classes and methods, not used from the file itself.
+  - single public constructor definition, with no functionality.	        
+	        ]]>
+	        </implementation-description>
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.VBNET">
+          <![CDATA[
+Dead code is:
+  - private classes and methods, not used from the file itself.
+  - single public constructor definition, with no functionality.       
+  - statements after 'Return', 'Exit' and 'Continue' clauses.          
+          ]]>
+          </implementation-description>	 
+          <implementation-description ref="OPT.CRITERIUM_VALUE.LANGUAGE_PARSER.JAVASCRIPT">
+          <![CDATA[ 
+Dead code is:
+  - empty body functions ('anonymous' functions are ignored)
+  - statements after 'return', 'break', 'continue' and 'throw' clauses.    
+          ]]>
+          </implementation-description>          
+
+	      </implementation-descriptions>
+	
+	      <parameters />
+	    </i18n>
+    </i18ns>
+  </metric>
+</metric-definition>

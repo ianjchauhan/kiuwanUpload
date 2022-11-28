@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="swift" name="sql" standard="swift">
+
+<!-- (TODO? True, SQLite isn’t the only way to persist data on iOS.
+Besides Core Data (https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CoreData/index.html),
+there are lots of other alternatives for data persistence, including Realm (https://realm.io/), Couchbase Lite (https://developer.couchbase.com/mobile/#couchbase-lite),
+Firebase (https://firebase.google.com/docs/), and NSCoding (https://nshipster.com/nscoding/).) -->
+
+  <module name="FMDB">
+    <description url="https://github.com/ccgus/fmdb">Wrapper around SQLite</description>
+
+    <class name="FMDatabase">
+      <constructor name="FMDatabase" signature="FMDatabase(path: databasePath)" >
+        <parameters>
+          <param type="String" name="path"/>
+        </parameters>
+        <sink paramNames="path" kind="resource_injection" resource="database" />
+        <sink paramNames="path" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      <constructor name="FMDatabase" signature="FMDatabase(URL: url)" >
+        <parameters>
+          <param type="Foundation.URL" name="url"/>
+        </parameters>
+        <sink paramNames="path" kind="resource_injection" resource="database" />
+        <sink paramNames="path" kind="connection_string_injection" resource="database"/>
+      </constructor>
+      
+      <method name="executeQuery" signature="executeQuery(String : sql)" >
+        <parameters>
+          <param type="String" />
+        </parameters>
+        <return type="FMDB.FMResultSet" />
+        <source argpos="-1" kind="database_input" resource="database" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_sql" resource="database" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+      </method>
+      <method name="executeQueryWithFormat" signature="executeQueryWithFormat(format)" >
+        <parameters>
+          <param type="String" />
+        </parameters>
+        <return type="FMDB.FMResultSet" />
+        <source argpos="-1" kind="database_input" resource="database" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_sql" resource="database" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+      </method>
+      <method name="executeQuery" signature="executeQuery(String : sql, withArgumentsInArray : Array)" >
+        <tags>pk_pos:withArgumentsInArray</tags>
+        <parameters>
+          <param type="String" />
+          <param type="Array" name="withArgumentsInArray" />
+        </parameters>
+        <return type="FMDB.FMResultSet" />
+        <source argpos="-1" kind="database_input" resource="database" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_sql" resource="database" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+        <sink argpos="0" kind="primary_controlled_key" resource="database" />
+      </method>
+      <method name="executeQuery" signature="executeQuery(String : sql, withParameterDictionary : Dictionary)" >
+        <tags>pk_pos:withParameterDictionary</tags>
+        <parameters>
+          <param type="String" />
+          <param type="Dictionary" name="withParameterDictionary" />
+        </parameters>
+        <return type="FMDB.FMResultSet" />
+        <source argpos="-1" kind="database_input" resource="database" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_sql" resource="database" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+        <sink argpos="0" kind="primary_controlled_key" resource="database" />
+      </method>
+      <method name="executeQuery" signature="executeQuery(String : sql, values : Array, error : Error)" >
+        <tags>pk_pos:values</tags>
+        <parameters>
+          <param type="String" />
+          <param type="Array" name="values" />
+          <param type="Error" name="error" />
+        </parameters>
+        <return type="FMDB.FMResultSet" />
+        <source argpos="-1" kind="database_input" resource="database" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_sql" resource="database" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+        <sink argpos="0" kind="primary_controlled_key" resource="database" />
+      </method>
+
+      <method name="executeUpdate" signature="executeUpdate(String : sql)" >
+        <parameters>
+          <param type="String" />
+        </parameters>
+        <return type="FMDB.FMResultSet" />
+        <source argpos="-1" kind="database_input" resource="database" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_sql" resource="database" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+      </method>
+      <method name="executeUpdateWithFormat" signature="executeUpdateWithFormat(format)" >
+        <parameters>
+          <param type="String" />
+        </parameters>
+        <return type="FMDB.FMResultSet" />
+        <source argpos="-1" kind="database_input" resource="database" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_sql" resource="database" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+      </method>
+      <method name="executeUpdate" signature="executeUpdate(String : sql, withArgumentsInArray : Array)" >
+        <tags>pk_pos:withArgumentsInArray</tags>
+        <parameters>
+          <param type="String" />
+          <param type="Array" name="withArgumentsInArray" />
+        </parameters>
+        <return type="FMDB.FMResultSet" />
+        <source argpos="-1" kind="database_input" resource="database" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_sql" resource="database" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+        <sink argpos="0" kind="primary_controlled_key" resource="database" />
+      </method>
+      <method name="executeUpdate" signature="executeUpdate(String : sql, withParameterDictionary : Dictionary)" >
+        <tags>pk_pos:withParameterDictionary</tags>
+        <parameters>
+          <param type="String" />
+          <param type="Dictionary" name="withParameterDictionary" />
+        </parameters>
+        <return type="FMDB.FMResultSet" />
+        <source argpos="-1" kind="database_input" resource="database" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_sql" resource="database" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+        <sink argpos="0" kind="primary_controlled_key" resource="database" />
+      </method>
+      <method name="executeUpdate" signature="executeUpdate(String : sql, values : Array, error : Error)" >
+        <tags>pk_pos:values</tags>
+        <parameters>
+          <param type="String" />
+          <param type="Array" name="values" />
+          <param type="Error" name="error" />
+        </parameters>
+        <return type="FMDB.FMResultSet" />
+        <source argpos="-1" kind="database_input" resource="database" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_sql" resource="database" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+        <sink argpos="0" kind="primary_controlled_key" resource="database" />
+      </method>
+      <method name="executeStatements" signature="executeStatements(String : sql)" >
+        <return type="bool" />
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_sql" resource="database" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+      </method>
+    </class>
+
+    <class name="FMResultSet">
+      <method name="next" signature="next()" >
+        <return type="FMDB.FMResultSet" />
+      </method>
+      <method name="nextWithError" signature="nextWithError()" >
+        <return type="FMDB.FMResultSet" />
+      </method>
+      <method name="hasAnotherRow" signature="hasAnotherRow()" >
+        <return type="Bool" />
+      </method>
+    </class>
+  </module>
+
+  <module name="sqlite3" >
+    <description url="https://www.sqlite.org/c3ref/exec.html">Wrapper around sqlite3</description>
+
+    <function name="sqlite3_open"
+              signature="int sqlite3_open(char path, sqlite3*)">
+      <parameters><param type="const char*"/><param type="sqlite3*"/></parameters>
+      <return type="BOOL"/>
+      <sink argpos="0" kind="connection_string_injection" resource="database"/>
+    </function>
+
+    <function name="sqlite3_exec"
+              signature="int sqlite3_exec(sqlite3*, const char *sql, int(*callback)(void*,int,char**,char**), void* cbarg, char ** errmsg)">
+      <parameters><param type="sqlite3*"/><param type="const char*"/></parameters>
+      <return type="int"/>
+      <!-- exec and prepare* are susceptible to SQL injection if the SQL is "tainted" by external input -->
+      <sink argpos="1" kind="sql_injection" resource="database"/>
+      <sink argpos="1" kind="sensitive_sql" resource="database">
+        <checker id="sensitiveSQLChecker" />
+      </sink>
+    </function>
+    <function name="sqlite3_prepare" signature="sqlite3_prepare(OpaquePointer, sql, length, handler, pointer)" >
+      <sink argpos="1" kind="sql_injection" resource="database" />
+      <sink argpos="1" kind="sensitive_sql" resource="database" >
+        <checker id="sensitiveSQLChecker" />
+      </sink>
+      <sink argpos="1" kind="primary_controlled_key" resource="database" />
+    </function>
+    <function name="sqlite3_prepare_v2" signature="sqlite3_prepare_v2(OpaquePointer, sql, length, handler, pointer)" >
+      <sink argpos="1" kind="sql_injection" resource="database" />
+      <sink argpos="1" kind="sensitive_sql" resource="database" >
+        <checker id="sensitiveSQLChecker" />
+      </sink>
+      <sink argpos="1" kind="primary_controlled_key" resource="database" />
+    </function>
+    <function name="sqlite3_prepare_v3" signature="sqlite3_prepare_v3(OpaquePointer, sql, length, handler, pointer)" >
+      <sink argpos="1" kind="sql_injection" resource="database" />
+      <sink argpos="1" kind="sensitive_sql" resource="database" >
+        <checker id="sensitiveSQLChecker" />
+      </sink>
+      <sink argpos="1" kind="primary_controlled_key" resource="database" />
+    </function>
+    <function name="sqlite3_prepare16" signature="sqlite3_prepare16(OpaquePointer, sql, length, handler, pointer)" >
+      <sink argpos="1" kind="sql_injection" resource="database" />
+      <sink argpos="1" kind="sensitive_sql" resource="database" >
+        <checker id="sensitiveSQLChecker" />
+      </sink>
+      <sink argpos="1" kind="primary_controlled_key" resource="database" />
+    </function>
+    <function name="sqlite3_prepare16_v2" signature="sqlite3_prepare16_v2(OpaquePointer, sql, length, handler, pointer)" >
+      <sink argpos="1" kind="sql_injection" resource="database" />
+      <sink argpos="1" kind="sensitive_sql" resource="database" >
+        <checker id="sensitiveSQLChecker" />
+      </sink>
+      <sink argpos="1" kind="primary_controlled_key" resource="database" />
+    </function>
+    <function name="sqlite3_prepare16_v3" signature="sqlite3_prepare16_v3(OpaquePointer, sql, length, handler, pointer)" >
+      <sink argpos="1" kind="sql_injection" resource="database" />
+      <sink argpos="1" kind="sensitive_sql" resource="database" >
+        <checker id="sensitiveSQLChecker" />
+      </sink>
+      <sink argpos="1" kind="primary_controlled_key" resource="database" />
+    </function>
+
+    <function name="sqlite3_bind_int" signature="sqlite3_bind_int(insertStatement, pos, id)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_blob" signature="sqlite3_bind_blob(sqlite3_stmt*, int, const void*, n, void(*)(void*))" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_blob64" signature="ssqlite3_bind_blob64(sqlite3_stmt*, int, const void*, sqlite3_uint64, void(*)(void*))" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_double" signature="sqlite3_bind_double(sqlite3_stmt*, int, int)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_int64" signature="sqlite3_bind_int64(sqlite3_stmt*, int, sqlite3_int64)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_null" signature="sqlite3_bind_null(sqlite3_stmt*, int)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_text" signature="sqlite3_bind_text(sqlite3_stmt*,int,const char*,int,void(*)(void*))" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_text16" signature="sqlite3_bind_text16(sqlite3_stmt*, int, const void*, int, void(*)(void*))" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_text64" signature="sqlite3_bind_text64(sqlite3_stmt*, int, const char*, sqlite3_uint64,void(*)(void*), unsigned char encoding)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_value" signature="sqlite3_bind_value(sqlite3_stmt*, int, const sqlite3_value*)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_pointer" signature="sqlite3_bind_pointer(sqlite3_stmt*, int, void*, const char*,void(*)(void*))" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_zeroblob" signature="sqlite3_bind_zeroblob(sqlite3_stmt*, int, n)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_zeroblob64" signature="sqlite3_bind_zeroblob64(sqlite3_stmt*, int, sqlite3_uint64)" >
+      <tags>potentialPk:1</tags>
+    </function>
+  </module>
+
+  <module name="SQLite3" >
+    <description url="https://www.sqlite.org/c3ref/exec.html">Wrapper around sqlite3</description>
+
+    <function name="sqlite3_open"
+              signature="int sqlite3_open(char path, sqlite3*)">
+      <parameters><param type="const char*"/><param type="sqlite3*"/></parameters>
+      <return type="BOOL"/>
+      <sink argpos="0" kind="connection_string_injection" resource="database"/>
+    </function>
+
+    <function name="sqlite3_exec"
+              signature="int sqlite3_exec(sqlite3*, const char *sql, int(*callback)(void*,int,char**,char**), void* cbarg, char ** errmsg)">
+      <parameters><param type="sqlite3*"/><param type="const char*"/></parameters>
+      <return type="int"/>
+      <!-- exec and prepare* are susceptible to SQL injection if the SQL is "tainted" by external input -->
+      <sink argpos="1" kind="sql_injection" resource="database"/>
+      <sink argpos="1" kind="sensitive_sql" resource="database">
+        <checker id="sensitiveSQLChecker" />
+      </sink>
+    </function>
+    <function name="sqlite3_prepare" signature="sqlite3_prepare(OpaquePointer, sql, length, handler, pointer)" >
+      <sink argpos="1" kind="sql_injection" resource="database" />
+      <sink argpos="1" kind="sensitive_sql" resource="database" >
+        <checker id="sensitiveSQLChecker" />
+      </sink>
+      <sink argpos="1" kind="primary_controlled_key" resource="database" />
+    </function>
+    <function name="sqlite3_prepare_v2" signature="sqlite3_prepare_v2(OpaquePointer, sql, length, handler, pointer)" >
+      <sink argpos="1" kind="sql_injection" resource="database" />
+      <sink argpos="1" kind="sensitive_sql" resource="database" >
+        <checker id="sensitiveSQLChecker" />
+      </sink>
+      <sink argpos="1" kind="primary_controlled_key" resource="database" />
+    </function>
+    <function name="sqlite3_prepare_v3" signature="sqlite3_prepare_v3(OpaquePointer, sql, length, handler, pointer)" >
+      <sink argpos="1" kind="sql_injection" resource="database" />
+      <sink argpos="1" kind="sensitive_sql" resource="database" >
+        <checker id="sensitiveSQLChecker" />
+      </sink>
+      <sink argpos="1" kind="primary_controlled_key" resource="database" />
+    </function>
+    <function name="sqlite3_prepare16" signature="sqlite3_prepare16(OpaquePointer, sql, length, handler, pointer)" >
+      <sink argpos="1" kind="sql_injection" resource="database" />
+      <sink argpos="1" kind="sensitive_sql" resource="database" >
+        <checker id="sensitiveSQLChecker" />
+      </sink>
+      <sink argpos="1" kind="primary_controlled_key" resource="database" />
+    </function>
+    <function name="sqlite3_prepare16_v2" signature="sqlite3_prepare16_v2(OpaquePointer, sql, length, handler, pointer)" >
+      <sink argpos="1" kind="sql_injection" resource="database" />
+      <sink argpos="1" kind="sensitive_sql" resource="database" >
+        <checker id="sensitiveSQLChecker" />
+      </sink>
+      <sink argpos="1" kind="primary_controlled_key" resource="database" />
+    </function>
+    <function name="sqlite3_prepare16_v3" signature="sqlite3_prepare16_v3(OpaquePointer, sql, length, handler, pointer)" >
+      <sink argpos="1" kind="sql_injection" resource="database" />
+      <sink argpos="1" kind="sensitive_sql" resource="database" >
+        <checker id="sensitiveSQLChecker" />
+      </sink>
+      <sink argpos="1" kind="primary_controlled_key" resource="database" />
+    </function>
+
+    <function name="sqlite3_bind_int" signature="sqlite3_bind_int(insertStatement, pos, id)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_blob" signature="sqlite3_bind_blob(sqlite3_stmt*, int, const void*, n, void(*)(void*))" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_blob64" signature="ssqlite3_bind_blob64(sqlite3_stmt*, int, const void*, sqlite3_uint64, void(*)(void*))" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_double" signature="sqlite3_bind_double(sqlite3_stmt*, int, int)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_int64" signature="sqlite3_bind_int64(sqlite3_stmt*, int, sqlite3_int64)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_null" signature="sqlite3_bind_null(sqlite3_stmt*, int)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_text" signature="sqlite3_bind_text(sqlite3_stmt*,int,const char*,int,void(*)(void*))" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_text16" signature="sqlite3_bind_text16(sqlite3_stmt*, int, const void*, int, void(*)(void*))" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_text64" signature="sqlite3_bind_text64(sqlite3_stmt*, int, const char*, sqlite3_uint64,void(*)(void*), unsigned char encoding)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_value" signature="sqlite3_bind_value(sqlite3_stmt*, int, const sqlite3_value*)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_pointer" signature="sqlite3_bind_pointer(sqlite3_stmt*, int, void*, const char*,void(*)(void*))" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_zeroblob" signature="sqlite3_bind_zeroblob(sqlite3_stmt*, int, n)" >
+      <tags>potentialPk:1</tags>
+    </function>
+    <function name="sqlite3_bind_zeroblob64" signature="sqlite3_bind_zeroblob64(sqlite3_stmt*, int, sqlite3_uint64)" >
+      <tags>potentialPk:1</tags>
+    </function>
+  </module>
+  
+  <module name="GRDB" >
+    <description url="https://github.com/groue/GRDB.swift">Toolkit for SQLite databases</description>
+
+    <function name="makeDatabaseQueue" signature="makeDatabaseQueue" >
+      <return type="GRDB.DatabaseQueue" />
+    </function>
+
+    <class name="DatabaseQueue">
+      <constructor name="DatabaseQueue" signature="DatabaseQueue(path:String)" >
+        <parameters>
+          <param type="String" name="path" />
+        </parameters>
+        <sink paramNames="path" kind="connection_string_injection" resource="database"/>
+      </constructor>
+
+      <method name="inDatabase" signature="inDatabase(Database)" >
+        <tags>param0:GRDB.DatabaseQueue</tags>
+        <sink argpos="0" kind="resource_injection" resource="database" />
+      </method>
+      <method name="inTransaction" signature="inTransaction(Database.TransactionKind, Database)" >
+        <tags>param0:GRDB.Database.TransactionKind, param1:GRDB.DatabaseQueue</tags>
+      </method>
+
+      <method name="execute" signature="execute(String, arguments : Array)" >
+        <tags>pk_pos:arguments</tags>
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_sql" resource="database" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+        <sink argpos="0" kind="primary_controlled_key" resource="database" />
+      </method>
+    </class>
+    
+    <class name="Row">
+      <method name="fetchCursor" signature="fetchCursor(GRDB.DatabaseQueue, String, arguments: Array)" >
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="fetchAll" signature="fetchAll(GRDB.DatabaseQueue, String, arguments: Array)" >
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="fetchOne" signature="fetchOne(GRDB.DatabaseQueue, String, arguments: Array)" >
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+    </class>
+
+    <class name="Int" supertypes="GRDB.Row" />
+    <class name="Bool" supertypes="GRDB.Row" />
+    <class name="Double" supertypes="GRDB.Row" />
+    <class name="Float" supertypes="GRDB.Row" />
+    <class name="String" supertypes="GRDB.Row" />
+    <class name="Data" supertypes="GRDB.Row" />
+    <class name="Date" supertypes="GRDB.Row" />
+    <class name="DateComponents" supertypes="GRDB.Row" />
+    <class name="NSNull" supertypes="GRDB.Row" />
+    <class name="NSNumber" supertypes="GRDB.Row" />
+    <class name="NSString" supertypes="GRDB.Row" />
+    <class name="URL" supertypes="GRDB.Row" />
+    <class name="CGFloat" supertypes="GRDB.Row" />
+    <class name="UUID" supertypes="GRDB.Row" />
+
+  </module>
+
+  <module name="RealmSwift" >
+    <description url="https://github.com/realm/realm-cocoa">Mobile database</description>
+
+    <class name="Realm">
+      <function name="objects" signature="objects(Object)" >
+        <return type="Array" />
+        <source argpos="0" kind="database_input" resource="database" />
+      </function>
+      <method name="add" signature="add(NSObject" >
+        <sink argpos="0" kind="sensitive_sql" resource="database" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+      </method>
+    </class>
+  </module>
+  
+  <module name="SQLite">
+    <description url="https://github.com/stephencelis/SQLite.swift">SQLite is a self-contained, high-reliability, embedded, full-featured, public-domain, SQL database engine</description>
+
+    <class name="Connection">
+      <constructor name="Connection" signature="Connection(String)" >
+        <parameters>
+          <param type="String" />
+        </parameters>
+        <sink argpos="0" kind="connection_string_injection" resource="database"/>
+      </constructor>
+
+      <method name="prepare" signature="prepare(String)" >
+        <parameters>
+          <param type="String" />
+        </parameters>
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+      <method name="scalar" signature="scalar(String)" >
+        <sink argpos="0" kind="sql_injection" resource="database" />
+        <sink argpos="0" kind="sensitive_sql" resource="database" >
+          <checker id="sensitiveSQLChecker" />
+        </sink>
+        <source argpos="-1" kind="database_input" resource="database" />
+      </method>
+    </class>
+  </module>
+</library>

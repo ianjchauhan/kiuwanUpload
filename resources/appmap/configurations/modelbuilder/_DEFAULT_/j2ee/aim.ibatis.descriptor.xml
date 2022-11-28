@@ -1,0 +1,154 @@
+<!DOCTYPE block SYSTEM "../aim.configuration.dtd">
+<block tech='j2ee' subtech='ibatis' descriptor='j2ee/aim.ibatis.xml' label='Process iBatis mapping descriptors and API'>
+  <description>
+    Process iBatis (also known as myBatis) SQL mapping framework. Supports iBatis v1, v2 and v3 (myBatis).
+    iBatis mapping descriptors (.xml) and java classes with iBatis annotations or calls to iBatis API are processed.
+    <br/>
+    Dependencies between Java classes (either mappers or client classes), SQL statements declared in iBatis
+    mapping descriptors or annotations in Java mappers, and database tables / views referenced in SQL statements
+    are modelled.
+    <br/>
+    Database items (tables or views) are resolved using the global database resolver (if any),
+    or the <code>dbname</code> / <code>dbsystem</code> pair is used as the container of the database items found.
+  </description>
+
+  <dependencies>
+    <dependency>j2ee/java</dependency>
+  </dependencies>
+
+  <properties>
+    <property id='aim.ibatis.rule.mapping.active' type='bool'>
+      <name>active.mapping</name>
+      <example>false</example>
+      <description>If true, iBatis mapping descriptors are processed.</description>
+    </property>
+
+    <property id='aim.ibatis.rule.java.active' type='bool'>
+      <name>active.java</name>
+      <example>false</example>
+      <description>If true, iBatis java code is processed for analyzing mapping annotations or API code.</description>
+    </property>
+
+    <property id='aim.ibatis.filter.mappings' type='list' subtype='antPattern'>
+      <name>patterns.mapping</name>
+      <example>**/*.xml</example>
+      <description>Ant patterns for iBatis descriptors to analyze. If descriptors follow a naming convention, you may set a more precise filter.</description>
+    </property>
+
+    <property id='aim.ibatis.filter.code' type='list' subtype='antPattern'>
+      <name>patterns.code</name>
+      <example>**/*.java</example>
+      <description>Ant patterns for iBatis Java files to analyze. If iBatis code artifacts follow a naming convention, you may set a more precise filter.</description>
+    </property>
+
+    <property id='aim.ibatis.software' type='string'>
+      <name>software</name>
+      <example>${aim.common.software}</example>
+      <description>The default software name to place iBatis artifacts found (if no global resolver finds it).</description>
+    </property>
+
+    <property id='aim.ibatis.dbsystem' type='string'>
+      <name>dbsystem</name>
+      <example>${aim.common.database.dbsystem}</example>
+      <description>The default database system (or database name) to use when the target database entity cannot be resolved.</description>
+    </property>
+
+    <property id='aim.ibatis.dbname' type='string'>
+      <name>dbname</name>
+      <example>${aim.common.database.dbname}</example>
+      <description>The default database name (or schema) to use when the target database entity cannot be resolved.</description>
+    </property>
+
+    <property id='aim.ibatis.ignoreCase' type='string'>
+      <name>ignoreCase</name>
+      <example>${aim.common.ignoreCase}</example>
+      <description>
+        If true, case in database names is ignored in database items (tables or views).
+      </description>
+    </property>
+
+    <property id='aim.ibatis.addSqlCode' type='bool'>
+      <name>addSqlCode</name>
+      <example>true</example>
+      <description>If true, SQL code will be added to SQL components.</description>
+    </property>
+
+    <property id='aim.ibatis.sqlKind' type='enum'>
+      <name>sqlKind</name>
+      <example>oracle</example>
+      <description>
+        The kind of database dialect to consider when parsing SQL (one of "oracle", "sqlserver", "sql92", or "any").
+      </description>
+      <possible>
+        <enumval name="oracle">Oracle</enumval>
+        <enumval name="sqlserver">SQL Server</enumval>
+        <enumval name="sql92">SQL-92 database</enumval>
+        <enumval name="any">Any database</enumval>
+      </possible>
+    </property>
+
+    <property id='aim.ibatis.useFallbackParser' type='bool'>
+      <name>useFallbackParser</name>
+      <example>true</example>
+      <description>
+        If true, use "non-grammar" parser to try to discover database dependencies on unparseable dynamic SQL statements.
+        If false, unparseable SQL statements will not have database dependencies resolved.
+      </description>
+    </property>
+
+    <property id='aim.ibatis.rule.mapping.defaultExpressionValue' type='string' >
+      <name>defaultExpressionValue</name>
+      <example>UNKNOWN_SCHEMA</example>
+      <description>
+        The default expression value for dynamic SQL elements like ${var} or $var$,
+        when trying to parse dynamic SQL in iBatis descriptors.
+      </description>
+    </property>
+
+    <property id='aim.ibatis.rule.java.apiResolver.methodsToCheck' type='list' subtype='string'>
+      <name>methodsToCheck</name>
+      <example>select, selectOne, selectList, selectMap, insert, update, delete, getMapper, queryForObject, queryForList, queryWithRowHandler, queryForPaginatedList, queryForMap</example>
+      <description>Comma-separated list of API methods to check for resolving SQL used in Java code.</description>
+    </property>
+
+    <property id='aim.ibatis.rule.java.apiResolver.daoClasses' type='list' subtype='string'>
+      <name>daoClasses</name>
+      <example>com.myframework.ibatis.dao.AbstractIbatisDAOImpl</example>
+      <description>
+        Comma-separated list of DAO super classes in custom persistence frameworks that DAO classes
+        could extend from, besides the standard com.ibatis.dao.client.template.SqlMapDaoTemplate.
+      </description>
+    </property>
+
+  </properties>
+
+  <createdEntities>
+    <values>configuration,class,sql,table,view</values>
+    <description>
+      Creates a configuration component for each iBatis mapping descriptor processed, a class component for each
+      class that performs queries or provides a mapping interface to SQL queries, and table and view components
+      for database entities found in queries.
+    </description>
+  </createdEntities>
+
+  <createdRelations>
+    <values>
+      configuration-configuration->sql,
+      class-uses|calls->sql,
+      sql-select|insert|update|delete->table|view,
+      class-calls->class
+    </values>
+    <description>
+      Creates a "configuration" relation between configuration descriptor and declared SQL,
+      a "uses" relation between mapper class and SQL statements declared in annotations,
+      a "calls" relation between iBatis client class and SQL invoked,
+      a "calls" relation between iBatis client class and iBatis mapper invoked,
+      and a select / insert / update / delete between SQL statements and tables / views referenced.
+    </description>
+  </createdRelations>
+
+  <importantConfigurations activation="aim.ibatis.rule.mapping.active">
+    <alternative><value>aim.ibatis.rule.java.active=true</value></alternative>
+  </importantConfigurations>
+
+</block>

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="http://www.optimyth.com/schema/definitions/library_metadata"
+         technology="javascript" name="cordova" standard="Apache_Cordova">
+
+  <description url="https://cordova.apache.org/docs/en/latest/#plugin-apis">
+    Mobile development framework. Use standard web technologies (HTML5 + CSS3 + JavaScript) for cross-platform development
+  </description>
+
+  <module name="cordova" >
+    <globalObject name="navigator" type="Navigator" />
+    <globalObject name="device" type="Device" />
+    <globalObject name="cordova" type="Cordova" />
+
+    <class name="Navigator" >
+      <field name="geolocation" type="Geolocation" />
+      <field name="contacts" type="Contacts" />
+      <field name="connection" type="Connection" />
+      <field name="notification" type="Notification" />
+    </class>
+
+    <class name="Notification" >
+      <function name="prompt" >
+        <parameters>
+          <param type="String" />
+          <param type="function(Object)" callback="true" />
+          <param type="String" />
+          <param type="Array" />
+          <param type="String" />
+        </parameters>
+        <source argpos="1" kind="external_input" resource="gui" />
+      </function>
+    </class>
+  </module>
+
+  <module name="cordova-file-transfer" >
+    <class name="FileTransfer" >
+      <function name="download">
+        <parameters>
+          <param type="String"/>
+          <param type="String"/>
+          <param type="function(LocalFileSystem/FileSystemFileEntry)" callback="true"/>
+          <param type="function(Error)" callback="true"/>
+        </parameters>
+        <sink kind="path_traversal" argpos="1" resource="filesystem"/>
+        <sink kind="ssrf" argpos="0" resource="web"/>
+        <sink kind="resource_injection" argpos="0" resource="web"/>
+        <source kind="external_input" argpos="2" resource="web"/>
+      </function>
+      <function name="upload">
+        <parameters>
+          <param type="String"/>
+          <param type="String"/>
+          <param type="function(LocalFileSystem/FileSystemFileEntry)" callback="true"/>
+          <param type="function(Error)" callback="true"/>
+          <param type="FileUploadOptions)" />
+        </parameters>
+        <sink kind="path_traversal" argpos="1" resource="filesystem"/>
+        <sink kind="ssrf" argpos="0" resource="web"/>
+        <sink kind="resource_injection" argpos="0" resource="web"/>
+        <source kind="external_input" argpos="2" resource="web"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="cordova-geolocation">
+    <class name="Geolocation" >
+      <function name="getCurrentPosition">
+        <parameters>
+          <param type="function(Position)" callback="true"/>
+          <param type="function(Error)" callback="true"/>
+          <param type="object" />
+        </parameters>
+        <source kind="sensitive_info" argpos="1" resource="web"/>
+      </function>
+      <function name="watchPosition">
+        <parameters>
+          <param type="function(Position)" callback="true"/>
+          <param type="function(Error)" callback="true"/>
+          <param type="object" />
+        </parameters>
+        <source kind="sensitive_info" argpos="1" resource="web"/>
+      </function>
+    </class>
+  </module>
+
+  <module name="cordova-device">
+    <class name="Device" >
+      <field name="cordova" type="String" >
+        <source argpos="-1" kind="system_information" resource="other" />
+      </field>
+      <field name="model" type="String" >
+        <source argpos="-1" kind="system_information" resource="other" />
+      </field>
+      <field name="platform" type="String" >
+        <source argpos="-1" kind="system_information" resource="other" />
+      </field>
+      <field name="uuid" type="String" >
+        <source argpos="-1" kind="system_information" resource="other" />
+      </field>
+      <field name="version" type="String" >
+        <source argpos="-1" kind="system_information" resource="other" />
+      </field>
+    </class>
+  </module>
+
+  <module name="cordova-media" >
+    <function name="Media" >
+      <parameters>
+        <param type="String" />
+        <param type="function()" callback="true"/>
+        <param type="function(Error)" callback="true"/>
+      </parameters>
+      <sink argpos="0" kind="path_traversal" resource="filesystem" />
+    </function>
+  </module>
+
+  <module name="cordova-contacts" >
+    <class name="Contacts" >
+      <function name="find" >
+        <parameters>
+          <param type="Array" />
+          <param type="function(Array)" callback="true"/>
+          <param type="function(Error)" callback="true"/>
+          <param type="ContactFindOptions"/>
+        </parameters>
+        <source argpos="1" kind="database_input" resource="database" />
+      </function>
+      <function name="pickContact" >
+        <parameters>
+          <param type="function(Array)" callback="true"/>
+          <param type="function(Error)" callback="true"/>
+        </parameters>
+        <source argpos="0" kind="database_input" resource="database" />
+      </function>
+    </class>
+  </module>
+
+  <module name="cordova-network-information" >
+    <class name="Connection" >
+      <field name="type" type="String" >
+        <source argpos="-1" kind="sensitive_info" resource="other" />
+      </field>
+    </class>
+  </module>
+
+  <module name="cordova-inappbrowser" >
+    <class name="Cordova" >
+      <field name="InAppBrowser" type="InAppBrowser" />
+    </class>
+
+    <class name="InAppBrowser" >
+      <function name="open" >
+        <parameters>
+          <param type="string"/>
+          <param type="string"/>
+          <param type="string"/>
+        </parameters>
+        <return type="InAppBrowser" />
+        <sink argpos="0" kind="open_redirect" resource="web"/>
+      </function>
+      <function name="executeScript" >
+        <sink argpos="0" kind="code_injection"/>
+      </function>
+    </class>
+  </module>
+
+</library>
